@@ -2,7 +2,7 @@ FROM tomcat:jdk21-temurin
 
 MAINTAINER rymcu.com
 
-RUN mkdir -p /logs/tenon
+RUN mkdir -p /logs/mortise
 
 RUN rm -rf /usr/local/tomcat/webapps.dist
 

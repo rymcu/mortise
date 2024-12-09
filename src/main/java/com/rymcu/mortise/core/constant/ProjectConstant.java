@@ -8,7 +8,7 @@ public final class ProjectConstant {
     /**当前环境*/
     public static final String ENV = "dev";
     /**项目基础包名称，根据自己公司的项目修改*/
-    public static final String BASE_PACKAGE = "com.rymcu.tenon";
+    public static final String BASE_PACKAGE = "com.rymcu.mortise";
     /**DTO所在包*/
     public static final String DTO_PACKAGE = BASE_PACKAGE + ".model";
     /**Model所在包*/
