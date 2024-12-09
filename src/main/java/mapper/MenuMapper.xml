@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rymcu.mortise.mapper.MenuMapper">
+    <resultMap id="BaseResultMap" type="com.rymcu.mortise.entity.Menu">
+        <id column="id" jdbcType="NUMERIC" property="idMenu"/>
+        <result column="label" jdbcType="VARCHAR" property="label"/>
+        <result column="permission" jdbcType="VARCHAR" property="permission"/>
+        <result column="created_time" jdbcType="TIMESTAMP" property="createdTime"/>
+        <result column="updated_time" jdbcType="TIMESTAMP" property="updatedTime"/>
+        <result column="status" jdbcType="NUMERIC" property="status"/>
+        <result property="parentId" column="PARENT_ID" jdbcType="NUMERIC"/>
+        <result property="sortNo" column="SORT_NO" jdbcType="NUMERIC"/>
+        <result property="menuType" column="MENU_TYPE" jdbcType="NUMERIC"/>
+        <result property="icon" column="ICON" jdbcType="VARCHAR"/>
+        <result property="href" column="HREF" jdbcType="VARCHAR"/>
+    </resultMap>
+    <update id="updateStatusByIdMenu">
+        update mortise_menu set status = #{status} where id = #{idMenu}
+    </update>
+    <update id="updateDelFlag">
+        update mortise_menu set del_flag = #{delFlag} where id = #{idMenu}
+    </update>
+    <select id="selectMenuListByIdRole" resultMap="BaseResultMap">
+        select id, label, permission
+        from mortise_menu tm
+        where del_flag = 1
+          and exists(select 1
+                     from mortise_role_menu trm
+                     where trm.id_mortise_menu = tm.id
+                       and trm.id_mortise_role = #{idRole})
+    </select>
+    <select id="selectMenuListByIdUser" resultMap="BaseResultMap">
+        select id, label, permission
+        from mortise_menu tm
+        where del_flag = 1
+          and exists(select 1
+                     from mortise_role_menu trm
+                     where trm.id_mortise_menu = tm.id
+                       and exists(select 1
+                                  from mortise_user_role tur
+                                  where tur.id_mortise_role = trm.id_mortise_role
+                                    and tur.id_mortise_user = #{idUser}))
+    </select>
+    <select id="selectMenuListByIdUserAndParentId" resultMap="BaseResultMap">
+        select id, label, permission, parent_id, sort_no, menu_type, icon, href
+        from mortise_menu tm
+        where del_flag = 1 and menu_type = 0 and parent_id = #{parentId}
+          and exists(select 1
+                     from mortise_role_menu trm
+                     where trm.id_mortise_menu = tm.id
+                       and exists(select 1
+                                  from mortise_user_role tur
+                                  where tur.id_mortise_role = trm.id_mortise_role
+                                    and tur.id_mortise_user = #{idUser}))
+    </select>
+    <select id="selectMenuListByParentId" resultMap="BaseResultMap">
+        select id, label, permission, parent_id, sort_no, menu_type, icon, href, created_time, updated_time, status
+        from mortise_menu
+        <trim prefix="where" prefixOverrides="and">
+            <choose>
+                <when test="parentId != null and parentId != ''">
+                    and parent_id = #{parentId}
+                </when>
+                <otherwise>
+                    and parent_id = 0
+                </otherwise>
+            </choose>
+        </trim>
+    </select>
+    <select id="selectMenuListByLabelAndParentId" resultMap="BaseResultMap">
+        select id, label, permission, parent_id, sort_no, menu_type, icon, href, created_time, updated_time, status
+        from mortise_menu
+        <trim prefix="where" prefixOverrides="and">
+            <if test="label != null and label != ''">
+                and label = #{label}
+            </if>
+            <choose>
+                <when test="parentId != null and parentId != ''">
+                    and parent_id = #{parentId}
+                </when>
+                <otherwise>
+                    and parent_id = 0
+                </otherwise>
+            </choose>
+        </trim>
+    </select>
+</mapper>

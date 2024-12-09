@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rymcu.mortise.mapper.DictMapper">
+    <resultMap id="BaseResultMap" type="com.rymcu.mortise.entity.Dict">
+        <id column="id" jdbcType="NUMERIC" property="idDict"/>
+        <result column="dict_type_code" jdbcType="VARCHAR" property="dictTypeCode"/>
+        <result column="label" jdbcType="VARCHAR" property="label"/>
+        <result column="value" jdbcType="VARCHAR" property="value"/>
+        <result column="sort_no" jdbcType="NUMERIC" property="sortNo"/>
+        <result column="created_time" jdbcType="TIMESTAMP" property="createdTime"/>
+        <result column="updated_time" jdbcType="TIMESTAMP" property="updatedTime"/>
+    </resultMap>
+    <update id="updateStatus">
+        update mortise_dict
+        set status = #{status}
+        where id = #{idDict}
+    </update>
+    <update id="updateDelFlag">
+        update mortise_dict
+        set del_flag = #{delFlag}
+        where id = #{idDict}
+    </update>
+    <select id="selectDictList" resultMap="BaseResultMap">
+        select
+        id,
+        dict_type_code,
+        label,
+        value,
+        sort_no,
+        created_time,
+        updated_time
+        from mortise_dict
+        where del_flag = 1
+        <if test="query != null and query != ''">
+            and instr(label, #{query}) > 0
+        </if>
+        <if test="dictTypeCode != null and dictTypeCode != ''">
+            and dict_type_code = #{dictTypeCode}
+        </if>
+        <if test="status != null">
+            and status = #{status}
+        </if>
+    </select>
+</mapper>

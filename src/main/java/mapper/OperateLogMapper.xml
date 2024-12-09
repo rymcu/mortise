@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rymcu.mortise.mapper.OperateLogMapper">
+    <resultMap type="com.rymcu.mortise.entity.OperateLog" id="OperateLogMap">
+        <result property="idOperateLog" column="ID" jdbcType="NUMERIC"/>
+        <result property="traceId" column="TRACE_ID" jdbcType="VARCHAR"/>
+        <result property="bizNo" column="BIZ_NO" jdbcType="VARCHAR"/>
+        <result property="tenant" column="TENANT" jdbcType="VARCHAR"/>
+        <result property="operator" column="OPERATOR" jdbcType="VARCHAR"/>
+        <result property="type" column="TYPE" jdbcType="VARCHAR"/>
+        <result property="subType" column="SUB_TYPE" jdbcType="VARCHAR"/>
+        <result property="content" column="CONTENT" jdbcType="VARCHAR"/>
+        <result property="extra" column="EXTRA" jdbcType="VARCHAR"/>
+        <result property="fail" column="FAIL" javaType="java.lang.Boolean" jdbcType="NUMERIC"/>
+        <result property="requestMethod" column="REQUEST_METHOD" jdbcType="VARCHAR"/>
+        <result property="requestUrl" column="REQUEST_URL" jdbcType="VARCHAR"/>
+        <result property="userIp" column="USER_IP" jdbcType="VARCHAR"/>
+        <result property="userAgent" column="USER_AGENT" jdbcType="VARCHAR"/>
+        <result property="javaMethod" column="JAVA_METHOD" jdbcType="VARCHAR"/>
+        <result property="createdTime" column="CREATED_TIME" jdbcType="TIMESTAMP"/>
+    </resultMap>
+    <select id="selectOperateLogs" resultMap="OperateLogMap">
+        SELECT * FROM mortise_OPERATE_LOG
+        <where>
+            <if test="bizNo != null and bizNo != ''">
+                AND BIZ_NO = #{bizNo}
+            </if>
+            <if test="type != null and type != ''">
+                AND TYPE = #{type}
+            </if>
+            <if test="subType != null and subType != ''">
+                AND SUB_TYPE = #{subType}
+            </if>
+            <if test="startDate != null and startDate != ''">
+                AND CREATE_TIME > TO_DATE(#{startDate}, 'yyyy-MM-dd')
+            </if>
+            <if test="endDate != null and endDate != ''">
+                AND CREATE_TIME <![CDATA[<]]> TO_DATE(#{endDate}, 'yyyy-MM-dd') + interval '1' day
+            </if>
+            ORDER BY CREATE_TIME DESC
+        </where>
+    </select>
+</mapper>

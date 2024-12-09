@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.rymcu.mortise.mapper.UserMapper">
+    <resultMap id="BaseResultMap" type="com.rymcu.mortise.entity.User">
+        <id column="id" property="idUser"/>
+        <result column="account" property="account"/>
+        <result column="password" property="password"/>
+        <result column="nickname" property="nickname"/>
+        <result column="real_name" property="realName"/>
+        <result column="avatar" property="avatar"/>
+        <result column="email" property="email"/>
+        <result column="phone" property="phone"/>
+        <result column="status" property="status"/>
+        <result column="last_login_time" property="lastLoginTime"/>
+        <result column="last_online_time" property="lastOnlineTime"/>
+        <result column="created_time" property="createdTime"/>
+    </resultMap>
+    <resultMap id="UserInfoMap" type="com.rymcu.mortise.model.UserInfo">
+        <id column="id" property="idUser"/>
+        <result column="account" property="account"/>
+        <result column="nickname" property="nickname"/>
+        <result column="avatar" property="avatarUrl"/>
+        <result column="email" property="email"/>
+        <result column="phone" property="phone"/>
+        <result column="status" property="status"/>
+        <result column="last_login_time" property="lastLoginTime"/>
+        <result column="last_online_time" property="lastOnlineTime"/>
+        <result column="created_time" property="createdTime"/>
+        <result column="role_names" property="roleNames"/>
+    </resultMap>
+    <insert id="insertUserRole">
+        insert into mortise_user_role (id_mortise_user, id_mortise_role) VALUES (#{idUser}, #{idRole})
+    </insert>
+    <update id="updateLastOnlineTimeByAccount">
+        update mortise_user set last_online_time = sysdate() where account = #{account}
+    </update>
+    <update id="updateLastLoginTime">
+        update mortise_user set last_login_time = sysdate() where id = #{idUser}
+    </update>
+    <update id="updatePasswordByEmail">
+        update mortise_user set password = #{password} where email = #{email}
+    </update>
+    <update id="updateStatus">
+        update mortise_user set status = #{status} where id = #{idUser}
+    </update>
+    <update id="updateDelFlag">
+        update mortise_user set del_flag = #{delFlag} where id = #{idUser}
+    </update>
+    <update id="updatePasswordById">
+        update mortise_user set password = #{password} where id = #{idUser}
+    </update>
+    <delete id="deleteUserRole">
+        delete from mortise_user_role where id_mortise_user = #{idUser}
+    </delete>
+    <select id="selectByAccount" resultMap="BaseResultMap">
+        select id,
+               nickname,
+               account,
+               password,
+               status,
+               avatar,
+               phone,
+               email
+        from mortise_user
+        where (account = #{account} or email = #{account} or phone = #{account})
+          and del_flag = 1
+    </select>
+    <select id="selectCountByNickname" resultType="java.lang.Integer">
+        select count(0) from mortise_user where nickname = #{nickname}
+    </select>
+    <select id="selectMaxAccount" resultType="java.lang.String">
+        select max(account) from mortise_user
+    </select>
+    <select id="selectUsers" resultMap="UserInfoMap">
+        select id,
+        nickname,
+        account,
+        status,
+        avatar,
+        email,
+        phone,
+        last_login_time,
+        last_online_time,
+        created_time,
+        (select GROUP_CONCAT(label SEPARATOR ',') from mortise_role tr where exists(select 1 from mortise_user_role tur
+        where tur.id_mortise_role = tr.id
+        and tur.id_mortise_user = tu.id)) as role_names
+        from mortise_user tu where tu.del_flag = 1
+        <if test="account != null and account != ''">
+            and account = #{account}
+        </if>
+        <if test="email != null and email != ''">
+            and email = #{email}
+        </if>
+        <if test="query != null and query != ''">
+            and (instr(account, #{query}) > 0 or instr(nickname, #{query}) > 0)
+        </if>
+        <if test="startDate != null and startDate != ''">
+            and created_time between str_to_date(#{startDate}, '%Y-%m-%d') and str_to_date(#{endDate}, '%Y-%m-%d') +
+            interval 1 day
+        </if>
+        <if test="sort != null and sort != ''">
+            order by #{sort}
+            <if test="order != null and order != ''">
+                #{order}
+            </if>
+        </if>
+    </select>
+    <select id="selectUserInfoById" resultMap="UserInfoMap">
+        select id,
+               nickname,
+               account,
+               phone,
+               status,
+               avatar,
+               email,
+               last_login_time,
+               last_online_time,
+               created_time
+        from mortise_user
+        where id = #{idUser}
+    </select>
+</mapper>
