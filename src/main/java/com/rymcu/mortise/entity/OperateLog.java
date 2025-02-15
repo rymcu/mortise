@@ -1,12 +1,11 @@
 package com.rymcu.mortise.entity;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import java.util.Date;
 
 /**
@@ -17,7 +16,7 @@ import java.util.Date;
  * @desc : com.rymcu.mortise.entity
  */
 @Data
-@Table(name = "mortise_operate_log")
+@Table(name = "mortise_operate_log", schema = "mortise")
 public class OperateLog {
 
     /**
@@ -25,7 +24,6 @@ public class OperateLog {
      */
     @Id
     @Column(name = "id")
-    @GeneratedValue(generator = "JDBC")
     private Long idOperateLog;
     /**
      * 链路追踪编号

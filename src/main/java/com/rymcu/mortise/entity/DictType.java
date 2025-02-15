@@ -1,11 +1,10 @@
 package com.rymcu.mortise.entity;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import java.util.Date;
 
 /**
@@ -15,7 +14,7 @@ import java.util.Date;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.entity
  */
-@Table(name = "mortise_dict")
+@Table(name = "mortise_dict", schema = "mortise")
 @Data
 public class DictType {
     /**
@@ -23,7 +22,6 @@ public class DictType {
      */
     @Id
     @Column(name = "id")
-    @GeneratedValue(generator = "JDBC")
     private String id;
     /**
      * 名称

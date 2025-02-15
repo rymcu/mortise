@@ -1,12 +1,11 @@
 package com.rymcu.mortise.entity;
 
 import com.alibaba.fastjson.annotation.JSONField;
+import jakarta.persistence.Column;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 import lombok.Data;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -14,11 +13,10 @@ import java.util.Date;
  * @author ronger
  */
 @Data
-@Table(name = "mortise_role")
+@Table(name = "mortise_role", schema = "mortise")
 public class Role implements Serializable {
     @Id
     @Column(name = "id")
-    @GeneratedValue(generator = "JDBC")
     private Long idRole;
 
     /**

@@ -1,19 +1,23 @@
 services:
-  mysql:
-    container_name: mortise-mysql
-    image: 'mysql:8.0.29'
+  postgres:
+    image: postgres:17-alpine
+    container_name: mortise-postgres
+    restart: unless-stopped
     environment:
-      - 'MYSQL_DATABASE=mortise'
-      - 'MYSQL_ROOT_PASSWORD=XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl'
-      - 'TZ=Asia/Shanghai'
+      POSTGRES_USER: mortise
+      POSTGRES_PASSWORD: XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl
+      POSTGRES_DB: rymcu
     ports:
-      - "3306:3306"
+      - "5432:5432"
     volumes:
-      - "./mortise.sql:/mortise.sql"
-      - "mysql8-volume:/etc/mysql/conf.d"
-      - "mysql8-volume:/var/lib/mysql"
-      - "mysql8-volume:/logs"
-    command: ["--default-authentication-plugin=mysql_native_password", "--init-file=/mortise.sql"]
+      - ./data:/var/lib/postgresql/data
+      - ./logs:/var/log/postgresql
+      - ./config/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./config/pg_hba.conf:/etc/postgresql/pg_hba.conf
+    command:
+      - "postgres"
+      - "-c"
+      - "config_file=/etc/postgresql/postgresql.conf"
   redis:
     image: 'redis:7.0.8'
     container_name: mortise-redis

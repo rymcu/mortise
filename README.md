@@ -28,7 +28,7 @@ Built by RYMCU
 ## Requirements
 
 - Eclipse Temurin 21
-- MySQL 5.8
+- MySQL 5.8 / PostgreSQL 17
 - Maven 3.6.0+
 
 ## Licenses

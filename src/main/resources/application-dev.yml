@@ -21,10 +21,12 @@ spring:
           max-idle: 500
           min-idle: 0
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/mortise?characterEncoding=UTF-8&autoReconnect=true&useSSL=false&serverTimezone=Asia/Shanghai&allowMultiQueries=true
+    #    url: jdbc:mysql://127.0.0.1:3306/mortise?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+    url: jdbc:postgresql://127.0.0.1:5432/xxx
     username: root
     password: # 替换为你的数据库密码
-    driver-class-name: com.mysql.cj.jdbc.Driver
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+    driver-class-name: org.postgresql.Driver
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
       connection-timeout: 30000
@@ -34,6 +36,7 @@ spring:
       minimum-idle: 5
       pool-name: mortisePool
       connection-test-query: SELECT 1
+      schema: mortise
   mail:
     host: smtp.ym.163.com
     port: 465
@@ -43,10 +46,9 @@ spring:
     multipart:
       max-file-size: 10MB
       max-request-size: 20MB
-  ai:
-    openai:
-      api-key: # 替换为你的 OpenAI API Key
-      base-url: https://api.openai.com/
+  sql:
+    init:
+      schema-locations: mortise
 logging:
   file:
     path: /logs/mortise
@@ -65,3 +67,14 @@ server:
 version: 1.0
 resource:
   domain: # 替换为你的域名
+dromara:
+  x-file-storage: #文件存储配置
+    default-platform: local-plus #默认存储平台
+    local-plus:
+      - platform: local-plus-1 # 存储平台标识
+        enable-storage: true  #启用存储
+        enable-access: true #启用访问（线上请使用 Nginx 配置，效率更高）
+        domain: /mortise/file/ # 访问域名，例如：“http://127.0.0.1:8030/file/”，注意后面要和 path-patterns 保持一致，“/”结尾，本地存储建议使用相对路径，方便后期更换域名
+        base-path: local-plus/ # 基础路径
+        path-patterns: /file/** # 访问路径
+        storage-path: /opt/mortise/storage/ # 存储路径
