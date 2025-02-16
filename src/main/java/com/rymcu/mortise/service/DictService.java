@@ -5,8 +5,6 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rymcu.mortise.entity.Dict;
 import com.rymcu.mortise.model.DictSearch;
 
-import java.util.List;
-
 /**
  * Created on 2024/9/22 20:04.
  *

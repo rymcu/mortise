@@ -1,6 +1,5 @@
 package com.rymcu.mortise.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rymcu.mortise.entity.Role;
 import com.rymcu.mortise.model.BindRoleMenuInfo;
