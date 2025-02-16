@@ -1,9 +1,9 @@
 package com.rymcu.mortise.entity;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -13,10 +13,11 @@ import java.util.Date;
  * @author ronger
  */
 @Data
-@Table(name = "mortise_role", schema = "mortise")
+@TableName(value = "mortise_role", schema = "mortise")
 public class Role implements Serializable {
-    @Id
-    @Column(name = "id")
+
+    @TableId
+    @TableField(value = "id")
     private Long idRole;
 
     /**

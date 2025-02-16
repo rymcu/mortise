@@ -1,6 +1,7 @@
 package com.rymcu.mortise.service;
 
-import com.rymcu.mortise.core.service.Service;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rymcu.mortise.entity.Dict;
 import com.rymcu.mortise.model.DictSearch;
 
@@ -13,12 +14,14 @@ import java.util.List;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.service
  */
-public interface DictService extends Service<Dict> {
-    List<Dict> findDictList(DictSearch search);
+public interface DictService {
+    IPage<Dict> findDictList(Page<Dict> page, DictSearch search);
 
     Boolean saveDict(Dict dict);
 
     Boolean updateStatus(Long idDict, Integer status);
 
     Boolean updateDelFlag(Long idDict, Integer delFlag);
+
+    Dict findById(Long idDict);
 }

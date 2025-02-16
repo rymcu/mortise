@@ -20,6 +20,7 @@
         <shiro.version>2.0.2</shiro.version>
         <jjwt.version>0.12.5</jjwt.version>
         <mockito.version>5.11.0</mockito.version>
+        <mybatis-plus.version>3.5.10.1</mybatis-plus.version>
     </properties>
     <dependencies>
         <dependency>
@@ -127,17 +128,17 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
-        <!-- 通用Mapper插件 -->
+        <!-- MybatisPlus 插件 -->
         <dependency>
-            <groupId>tk.mybatis</groupId>
-            <artifactId>mapper</artifactId>
-            <version>5.0.1</version>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+            <version>${mybatis-plus.version}</version>
         </dependency>
-        <!-- pagehelper -->
+        <!-- https://mvnrepository.com/artifact/com.baomidou/mybatis-plus-jsqlparser -->
         <dependency>
-            <groupId>com.github.pagehelper</groupId>
-            <artifactId>pagehelper</artifactId>
-            <version>5.3.2</version>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-jsqlparser</artifactId>
+            <version>${mybatis-plus.version}</version>
         </dependency>
         <!-- fastjson -->
         <dependency>

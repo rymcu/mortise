@@ -1,6 +1,7 @@
 package com.rymcu.mortise.mapper;
 
-import com.rymcu.mortise.core.mapper.Mapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.model.UserInfo;
 import org.apache.ibatis.annotations.Param;
@@ -14,7 +15,7 @@ import java.util.List;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.mapper
  */
-public interface UserMapper extends Mapper<User> {
+public interface UserMapper extends BaseMapper<User> {
     int updateLastOnlineTimeByAccount(@Param("account") String account);
 
     User selectByAccount(@Param("account") String account);
@@ -27,7 +28,7 @@ public interface UserMapper extends Mapper<User> {
 
     String selectMaxAccount();
 
-    List<UserInfo> selectUsers(@Param("account") String account, @Param("email") String email, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("order") String order, @Param("sort") String sort, @Param("query") String query);
+    List<UserInfo> selectUsers(@Param("page") Page<UserInfo> page, @Param("account") String account, @Param("email") String email, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("order") String order, @Param("sort") String sort, @Param("query") String query);
 
     int updatePasswordByEmail(@Param("email") String email, @Param("password") String password);
 

@@ -32,7 +32,7 @@ public class LogRecordServiceImpl implements ILogRecordService {
         String javaMethod = logRecord.getCodeVariable().get(CodeVariableType.ClassName) + "#" + logRecord.getCodeVariable().get(CodeVariableType.MethodName);
         operateLog.setJavaMethod(javaMethod);
         operateLog.setTraceId(UlidCreator.getUlid().toString());
-        operateLogMapper.insertSelective(operateLog);
+        operateLogMapper.insert(operateLog);
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.rymcu.mortise.service;
 
-import com.rymcu.mortise.core.service.Service;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.model.BindUserRoleInfo;
 import com.rymcu.mortise.model.TokenUser;
@@ -17,7 +18,7 @@ import java.util.Set;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.service
  */
-public interface UserService extends Service<User> {
+public interface UserService {
 
     /**
      * @param account 用户账号
@@ -83,7 +84,7 @@ public interface UserService extends Service<User> {
      * @param search 查询条件
      * @return 用户信息列表
      */
-    List<UserInfo> findUsers(UserSearch search);
+    List<UserInfo> findUsers(Page<UserInfo> page, UserSearch search);
 
     Boolean forgetPassword(String code, String password);
 

@@ -1,8 +1,7 @@
 package com.rymcu.mortise.service;
 
-import com.rymcu.mortise.core.service.Service;
-import com.rymcu.mortise.model.OperateLogSearch;
 import com.rymcu.mortise.entity.OperateLog;
+import com.rymcu.mortise.model.OperateLogSearch;
 
 import java.util.List;
 
@@ -13,6 +12,6 @@ import java.util.List;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.service
  */
-public interface OperateLogService extends Service<OperateLog> {
+public interface OperateLogService {
     List<OperateLog> findOperateLogs(OperateLogSearch operateLogSearch);
 }

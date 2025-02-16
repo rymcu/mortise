@@ -1,12 +1,13 @@
 package com.rymcu.mortise.service.impl;
 
-import com.rymcu.mortise.core.service.AbstractService;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rymcu.mortise.entity.Menu;
 import com.rymcu.mortise.mapper.MenuMapper;
 import com.rymcu.mortise.model.Link;
 import com.rymcu.mortise.model.MenuSearch;
 import com.rymcu.mortise.service.MenuService;
-import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,14 +24,11 @@ import java.util.Objects;
  * @desc : com.rymcu.mortise.service.impl
  */
 @Service
-public class MenuServiceImpl extends AbstractService<Menu> implements MenuService {
-
-    @Resource
-    private MenuMapper menuMapper;
+public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements MenuService {
 
     @Override
     public List<Menu> findMenusByIdRole(Long idRole) {
-        return menuMapper.selectMenuListByIdRole(idRole);
+        return baseMapper.selectMenuListByIdRole(idRole);
     }
 
     @Override
@@ -40,7 +38,7 @@ public class MenuServiceImpl extends AbstractService<Menu> implements MenuServic
 
     @Override
     public List<Link> findMenus(MenuSearch search) {
-        List<Menu> menus = menuMapper.selectMenuListByLabelAndParentId(search.getQuery(), search.getParentId());
+        List<Menu> menus = baseMapper.selectMenuListByLabelAndParentId(null, search.getQuery(), search.getParentId());
         List<Link> links = new ArrayList<>();
         for (Menu menu : menus) {
             Link link = new Link();
@@ -61,7 +59,7 @@ public class MenuServiceImpl extends AbstractService<Menu> implements MenuServic
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean saveMenu(Menu menu) {
-        Menu oldMenu = menuMapper.selectByPrimaryKey(menu.getIdMenu());
+        Menu oldMenu = baseMapper.selectById(menu.getIdMenu());
         if (Objects.nonNull(oldMenu)) {
             oldMenu.setLabel(menu.getLabel());
             oldMenu.setPermission(menu.getPermission());
@@ -72,15 +70,15 @@ public class MenuServiceImpl extends AbstractService<Menu> implements MenuServic
             oldMenu.setSortNo(menu.getSortNo());
             oldMenu.setParentId(menu.getParentId());
             oldMenu.setUpdatedTime(menu.getUpdatedTime());
-            return menuMapper.updateByPrimaryKeySelective(oldMenu) > 0;
         }
         menu.setCreatedTime(new Date());
-        return menuMapper.insertSelective(menu) > 0;
+        return baseMapper.insertOrUpdate(menu);
     }
 
     @Override
-    public List<Link> findChildrenMenus(MenuSearch search) {
-        List<Menu> menus = menuMapper.selectMenuListByLabelAndParentId(search.getQuery(), search.getParentId());
+    public List<Link> findChildrenMenus(Page<Link> page, MenuSearch search) {
+        Page<Menu> menuPage = new Page<>(search.getPageNum(), search.getPageSize());
+        List<Menu> menus = baseMapper.selectMenuListByLabelAndParentId(menuPage, search.getQuery(), search.getParentId());
         List<Link> links = new ArrayList<>();
         for (Menu menu : menus) {
             links.add(convertLink(menu));
@@ -90,16 +88,21 @@ public class MenuServiceImpl extends AbstractService<Menu> implements MenuServic
 
     @Override
     public Boolean updateStatus(Long idMenu, Integer status) {
-        return menuMapper.updateStatusByIdMenu(idMenu, status) > 0;
+        return baseMapper.updateStatusByIdMenu(idMenu, status) > 0;
     }
 
     @Override
     public Boolean updateDelFlag(Long idMenu, Integer delFlag) {
-        return menuMapper.updateDelFlag(idMenu, delFlag) > 0;
+        return baseMapper.updateDelFlag(idMenu, delFlag) > 0;
+    }
+
+    @Override
+    public Menu findById(Long idMenu) {
+        return baseMapper.selectById(idMenu);
     }
 
     private List<Link> findLinkTreeMode(Long idUser, long parentId) {
-        List<Menu> menus = menuMapper.selectMenuListByIdUserAndParentId(idUser, parentId);
+        List<Menu> menus = baseMapper.selectMenuListByIdUserAndParentId(idUser, parentId);
         List<Link> links = new ArrayList<>();
         for (Menu menu : menus) {
             Link link = convertLink(menu);

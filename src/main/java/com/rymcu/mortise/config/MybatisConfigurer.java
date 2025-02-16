@@ -1,18 +1,20 @@
 package com.rymcu.mortise.config;
 
-import com.github.pagehelper.PageInterceptor;
+import com.baomidou.mybatisplus.annotation.DbType;
+import com.baomidou.mybatisplus.extension.plugins.MybatisPlusInterceptor;
+import com.baomidou.mybatisplus.extension.plugins.inner.PaginationInnerInterceptor;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import tk.mybatis.spring.mapper.MapperScannerConfigurer;
 
 import javax.sql.DataSource;
-import java.util.Properties;
 
-import static com.rymcu.mortise.core.constant.ProjectConstant.*;
+import static com.rymcu.mortise.core.constant.ProjectConstant.MAPPER_PACKAGE;
+import static com.rymcu.mortise.core.constant.ProjectConstant.MODEL_PACKAGE;
 
 
 /**
@@ -20,6 +22,7 @@ import static com.rymcu.mortise.core.constant.ProjectConstant.*;
  * @author ronger
  */
 @Configuration
+@MapperScan(basePackages = MAPPER_PACKAGE)
 public class MybatisConfigurer {
 
     @Bean
@@ -27,49 +30,17 @@ public class MybatisConfigurer {
         SqlSessionFactoryBean factory = new SqlSessionFactoryBean();
         factory.setDataSource(dataSource);
         factory.setTypeAliasesPackage(MODEL_PACKAGE);
-
-        // 配置分页插件，详情请查阅官方文档
-        PageInterceptor pageHelper = initDefaultPageInterceptor();
-
-        //添加插件
-        factory.setPlugins(pageHelper);
-
         //添加XML目录
         ResourcePatternResolver resolver = new PathMatchingResourcePatternResolver();
         factory.setMapperLocations(resolver.getResources("classpath:mapper/**/*.xml"));
         return factory.getObject();
     }
 
-    private static PageInterceptor initDefaultPageInterceptor() {
-        PageInterceptor pageHelper = new PageInterceptor();
-        Properties properties = new Properties();
-        properties.setProperty("helperDialect", "mysql");
-        // 分页尺寸为0时查询所有纪录不再执行分页
-        properties.setProperty("pageSizeZero", "true");
-        // 页码<=0 查询第一页，页码>=总页数查询最后一页
-        properties.setProperty("reasonable", "true");
-        // 支持通过 Mapper 接口参数来传递分页参数
-        properties.setProperty("supportMethodsArguments", "true");
-        properties.setProperty("rowBoundsWithCount", "true");
-        pageHelper.setProperties(properties);
-        return pageHelper;
-    }
-
     @Bean
-    public MapperScannerConfigurer mapperScannerConfigurer() {
-        MapperScannerConfigurer mapperScannerConfigurer = new MapperScannerConfigurer();
-        mapperScannerConfigurer.setSqlSessionFactoryBeanName("sqlSessionFactoryBean");
-        mapperScannerConfigurer.setBasePackage(MAPPER_PACKAGE);
-
-        //配置通用Mapper，详情请查阅官方文档
-        Properties properties = new Properties();
-        properties.setProperty("mappers", MAPPER_INTERFACE_REFERENCE);
-        properties.setProperty("notEmpty", "false");
-        properties.setProperty("IDENTITY", "JDBC");
-        mapperScannerConfigurer.setProperties(properties);
-
-
-        return mapperScannerConfigurer;
+    public MybatisPlusInterceptor mybatisPlusInterceptor() {
+        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.POSTGRE_SQL));
+        return interceptor;
     }
 
 }

@@ -1,6 +1,7 @@
 package com.rymcu.mortise.service;
 
-import com.rymcu.mortise.core.service.Service;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rymcu.mortise.entity.Role;
 import com.rymcu.mortise.model.BindRoleMenuInfo;
 import com.rymcu.mortise.model.RoleSearch;
@@ -15,12 +16,12 @@ import java.util.Set;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.service
  */
-public interface RoleService extends Service<Role> {
+public interface RoleService {
     List<Role> findRolesByIdUser(Long idUser);
 
     Boolean saveRole(Role role);
 
-    List<Role> findRoles(RoleSearch search);
+    List<Role> findRoles(Page<Role> page, RoleSearch search);
 
     Boolean bindRoleMenu(BindRoleMenuInfo bindRoleMenuInfo);
 
@@ -29,4 +30,6 @@ public interface RoleService extends Service<Role> {
     Set<Long> findRoleMenus(Long idRole);
 
     Boolean updateDelFlag(Long idRole, Integer delFlag);
+
+    Role findById(Long idRole);
 }

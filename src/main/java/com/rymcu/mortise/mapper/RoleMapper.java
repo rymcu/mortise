@@ -1,6 +1,7 @@
 package com.rymcu.mortise.mapper;
 
-import com.rymcu.mortise.core.mapper.Mapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rymcu.mortise.entity.Role;
 import org.apache.ibatis.annotations.Param;
 
@@ -14,12 +15,12 @@ import java.util.Set;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.mapper
  */
-public interface RoleMapper extends Mapper<Role> {
+public interface RoleMapper extends BaseMapper<Role> {
     List<Role> selectRolesByIdUser(@Param("idUser") Long idUser);
 
     Role selectRoleByPermission(@Param("permission") String permission);
 
-    List<Role> selectRoles(@Param("label") String label, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("order") String order, @Param("sort") String sort);
+    List<Role> selectRoles(@Param("page") Page<Role> page, @Param("label") String label, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("order") String order, @Param("sort") String sort);
 
     int insertRoleMenu(@Param("idRole") Long idRole, @Param("idMenu") Long idMenu);
 

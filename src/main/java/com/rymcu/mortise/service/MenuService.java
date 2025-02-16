@@ -1,6 +1,7 @@
 package com.rymcu.mortise.service;
 
-import com.rymcu.mortise.core.service.Service;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rymcu.mortise.entity.Menu;
 import com.rymcu.mortise.model.Link;
 import com.rymcu.mortise.model.MenuSearch;
@@ -14,7 +15,7 @@ import java.util.List;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.service
  */
-public interface MenuService extends Service<Menu> {
+public interface MenuService {
     List<Menu> findMenusByIdRole(Long idRole);
 
     List<Link> findLinksByIdUser(Long idUser);
@@ -23,9 +24,11 @@ public interface MenuService extends Service<Menu> {
 
     Boolean saveMenu(Menu menu);
 
-    List<Link> findChildrenMenus(MenuSearch search);
+    List<Link> findChildrenMenus(Page<Link> page, MenuSearch search);
 
     Boolean updateStatus(Long idMenu, Integer status);
 
     Boolean updateDelFlag(Long idMenu, Integer delFlag);
+
+    Menu findById(Long idMenu);
 }

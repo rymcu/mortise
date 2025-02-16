@@ -1,7 +1,7 @@
 package com.rymcu.mortise.web;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.core.result.GlobalResultGenerator;
 import com.rymcu.mortise.entity.Role;
@@ -37,19 +37,19 @@ public class AdminController {
     private MenuService menuService;
 
     @GetMapping("/users")
-    public GlobalResult<PageInfo<UserInfo>> users(UserSearch search) {
-        PageHelper.startPage(search.getPageNum(), search.getPageSize());
-        List<UserInfo> list = userService.findUsers(search);
-        PageInfo<UserInfo> pageInfo = new PageInfo<>(list);
-        return GlobalResultGenerator.genSuccessResult(pageInfo);
+    public GlobalResult<IPage<UserInfo>> users(UserSearch search) {
+        Page<UserInfo> page = new Page<>(search.getPageNum(), search.getPageSize());
+        List<UserInfo> list = userService.findUsers(page, search);
+        page.setRecords(list);
+        return GlobalResultGenerator.genSuccessResult(page);
     }
 
     @GetMapping("/roles")
-    public GlobalResult<PageInfo<Role>> roles(RoleSearch search) {
-        PageHelper.startPage(search.getPageNum(), search.getPageSize());
-        List<Role> list = roleService.findRoles(search);
-        PageInfo<Role> pageInfo = new PageInfo<>(list);
-        return GlobalResultGenerator.genSuccessResult(pageInfo);
+    public GlobalResult<IPage<Role>> roles(RoleSearch search) {
+        Page<Role> page = new Page<>(search.getPageNum(), search.getPageSize());
+        List<Role> list = roleService.findRoles(page, search);
+        page.setRecords(list);
+        return GlobalResultGenerator.genSuccessResult(page);
     }
 
     @GetMapping("/menus")
@@ -59,11 +59,11 @@ public class AdminController {
     }
 
     @GetMapping("/children-menus")
-    public GlobalResult<PageInfo<Link>> childrenMenus(MenuSearch search) {
-        PageHelper.startPage(search.getPageNum(), search.getPageSize());
-        List<Link> list = menuService.findChildrenMenus(search);
-        PageInfo<Link> pageInfo = new PageInfo<>(list);
-        return GlobalResultGenerator.genSuccessResult(pageInfo);
+    public GlobalResult<IPage<Link>> childrenMenus(MenuSearch search) {
+        Page<Link> page = new Page<>(search.getPageNum(), search.getPageSize());
+        List<Link> list = menuService.findChildrenMenus(page, search);
+        page.setRecords(list);
+        return GlobalResultGenerator.genSuccessResult(page);
     }
 
 }

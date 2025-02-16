@@ -28,7 +28,7 @@ public class MenuController {
 
     @GetMapping("/detail/{idMenu}")
     public GlobalResult<Menu> menu(@PathVariable Long idMenu) {
-        return GlobalResultGenerator.genSuccessResult(menuService.findById(String.valueOf(idMenu)));
+        return GlobalResultGenerator.genSuccessResult(menuService.findById(idMenu));
     }
 
     @PostMapping("/menu/post")

@@ -26,7 +26,7 @@ public class RoleController {
 
     @GetMapping("/detail/{idRole}")
     public GlobalResult<Role> role(@PathVariable Long idRole) {
-        return GlobalResultGenerator.genSuccessResult(roleService.findById(String.valueOf(idRole)));
+        return GlobalResultGenerator.genSuccessResult(roleService.findById(idRole));
     }
 
     @PostMapping("/post")

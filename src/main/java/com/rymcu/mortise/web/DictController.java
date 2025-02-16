@@ -1,7 +1,7 @@
 package com.rymcu.mortise.web;
 
-import com.github.pagehelper.PageHelper;
-import com.github.pagehelper.PageInfo;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.core.result.GlobalResultGenerator;
 import com.rymcu.mortise.entity.Dict;
@@ -12,8 +12,6 @@ import com.rymcu.mortise.service.DictService;
 import com.rymcu.mortise.util.UserUtils;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 /**
  * Created on 2024/9/22 20:21.
@@ -30,16 +28,15 @@ public class DictController {
     private DictService dictService;
 
     @GetMapping("/list")
-    public GlobalResult<PageInfo<Dict>> dictList(DictSearch search) {
-        PageHelper.startPage(search.getPageNum(), search.getPageSize());
-        List<Dict> list = dictService.findDictList(search);
-        PageInfo<Dict> pageInfo = new PageInfo<>(list);
-        return GlobalResultGenerator.genSuccessResult(pageInfo);
+    public GlobalResult<IPage<Dict>> dictList(DictSearch search) {
+        Page<Dict> page = new Page<>(search.getPageNum(), search.getPageSize());
+        IPage<Dict> list = dictService.findDictList(page, search);
+        return GlobalResultGenerator.genSuccessResult(list);
     }
 
     @GetMapping("/detail/{idDict}")
     public GlobalResult<Dict> dictDetail(@PathVariable Long idDict) {
-        Dict dict = dictService.findById(String.valueOf(idDict));
+        Dict dict = dictService.findById(idDict);
         return GlobalResultGenerator.genSuccessResult(dict);
     }
 

@@ -1,9 +1,9 @@
 package com.rymcu.mortise.entity;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -17,10 +17,11 @@ import java.util.Date;
  * @desc : com.rymcu.mortise.entity
  */
 @Data
-@Table(name = "mortise_user", schema = "mortise")
+@TableName(value = "mortise_user", schema = "mortise")
 public class User implements Serializable {
-    @Id
-    @Column(name = "id")
+
+    @TableId
+    @TableField(value = "id")
     private Long idUser;
     /**
      * 登录账号
@@ -84,8 +85,4 @@ public class User implements Serializable {
      */
     @JSONField(format = "yyyy-MM-dd HH:mm:ss")
     private Date lastOnlineTime;
-
-    public Object findUserInfo(Long idUser) {
-        return null;
-    }
 }

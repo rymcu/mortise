@@ -1,8 +1,8 @@
 package com.rymcu.mortise.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.util.Date;
@@ -14,14 +14,14 @@ import java.util.Date;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.entity
  */
-@Table(name = "mortise_dict", schema = "mortise")
+@TableName(value = "mortise_dict", schema = "mortise")
 @Data
 public class DictType {
     /**
      * 主键
      */
-    @Id
-    @Column(name = "id")
+    @TableId
+    @TableField(value = "id")
     private String id;
     /**
      * 名称

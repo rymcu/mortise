@@ -1,5 +1,8 @@
 package com.rymcu.mortise.service.impl;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.github.f4b6a3.ulid.UlidCreator;
 import com.rymcu.mortise.auth.JwtConstants;
 import com.rymcu.mortise.auth.TokenManager;
@@ -7,7 +10,6 @@ import com.rymcu.mortise.core.constant.ProjectConstant;
 import com.rymcu.mortise.core.exception.AccountExistsException;
 import com.rymcu.mortise.core.exception.BusinessException;
 import com.rymcu.mortise.core.exception.CaptchaException;
-import com.rymcu.mortise.core.service.AbstractService;
 import com.rymcu.mortise.entity.Menu;
 import com.rymcu.mortise.entity.Role;
 import com.rymcu.mortise.entity.User;
@@ -42,10 +44,8 @@ import java.util.concurrent.TimeUnit;
  * @desc : com.rymcu.mortise.service.impl
  */
 @Service
-public class UserServiceImpl extends AbstractService<User> implements UserService {
+public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
-    @Resource
-    private UserMapper userMapper;
     @Resource
     private TokenManager tokenManager;
     @Resource
@@ -63,7 +63,7 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
 
     @Override
     public int updateLastOnlineTimeByAccount(String account) {
-        return userMapper.updateLastOnlineTimeByAccount(account);
+        return baseMapper.updateLastOnlineTimeByAccount(account);
     }
 
     @Override
@@ -73,7 +73,7 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
         String validateCode = redisTemplate.boundValueOps(validateCodeKey).get();
         if (StringUtils.isNotBlank(validateCode)) {
             if (validateCode.equals(code)) {
-                User user = userMapper.selectByAccount(email);
+                User user = baseMapper.selectByAccount(email);
                 if (user != null) {
                     throw new AccountExistsException("该邮箱已被注册！");
                 } else {
@@ -83,7 +83,7 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
                     user.setEmail(email);
                     user.setPassword(Utils.encryptPassword(password));
                     user.setAvatar(DEFAULT_AVATAR);
-                    int result = userMapper.insertSelective(user);
+                    int result = baseMapper.insert(user);
                     if (result > 0) {
                         // 注册成功后执行相关初始化事件
                         applicationEventPublisher.publishEvent(new RegisterEvent(user.getIdUser(), user.getAccount(), ""));
@@ -100,7 +100,7 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
 
     private String checkNickname(String nickname) {
         nickname = formatNickname(nickname);
-        int result = userMapper.selectCountByNickname(nickname);
+        int result = baseMapper.selectCountByNickname(nickname);
         if (result > 0) {
             StringBuilder stringBuilder = new StringBuilder(nickname);
             return checkNickname(stringBuilder.append("_").append(System.currentTimeMillis()).toString());
@@ -120,7 +120,7 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
             account = BigDecimal.valueOf(Long.parseLong(currentAccount));
         } else {
             // 查询数据库
-            currentAccount = userMapper.selectMaxAccount();
+            currentAccount = baseMapper.selectMaxAccount();
             if (StringUtils.isNotBlank(currentAccount)) {
                 account = BigDecimal.valueOf(Long.parseLong(currentAccount));
             } else {
@@ -134,11 +134,11 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
 
     @Override
     public TokenUser login(@NotBlank String account, @NotBlank String password) {
-        User user = userMapper.selectByAccount(account);
+        User user = baseMapper.selectByAccount(account);
         if (Objects.nonNull(user)) {
             if (Utils.comparePassword(password, user.getPassword())) {
-                userMapper.updateLastLoginTime(user.getIdUser());
-                userMapper.updateLastOnlineTimeByAccount(user.getAccount());
+                baseMapper.updateLastLoginTime(user.getIdUser());
+                baseMapper.updateLastOnlineTimeByAccount(user.getAccount());
                 TokenUser tokenUser = new TokenUser();
                 tokenUser.setToken(tokenManager.createToken(user.getAccount()));
                 tokenUser.setRefreshToken(UlidCreator.getUlid().toString());
@@ -155,7 +155,7 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
     public TokenUser refreshToken(String refreshToken) {
         String account = redisTemplate.boundValueOps(refreshToken).get();
         if (StringUtils.isNotBlank(account)) {
-            User user = userMapper.selectByAccount(account);
+            User user = baseMapper.selectByAccount(account);
             if (user != null) {
                 TokenUser tokenUser = new TokenUser();
                 tokenUser.setToken(tokenManager.createToken(user.getAccount()));
@@ -198,7 +198,7 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
 
     @Override
     public User findByAccount(String account) {
-        return userMapper.selectByAccount(account);
+        return baseMapper.selectByAccount(account);
     }
 
     /**
@@ -208,15 +208,15 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
      * @return 用户信息列表
      */
     @Override
-    public List<UserInfo> findUsers(UserSearch search) {
-        List<UserInfo> users = userMapper.selectUsers(search.getAccount(), search.getEmail(), search.getStartDate(), search.getEndDate(), search.getOrder(), search.getSort(), search.getQuery());
-        users.forEach(userInfo -> {
+    public List<UserInfo> findUsers(Page<UserInfo> page, UserSearch search) {
+        List<UserInfo> list = baseMapper.selectUsers(page, search.getAccount(), search.getEmail(), search.getStartDate(), search.getEndDate(), search.getOrder(), search.getSort(), search.getQuery());
+        list.forEach(userInfo -> {
             Avatar avatar = new Avatar();
             avatar.setAlt(userInfo.getNickname());
             avatar.setSrc(userInfo.getAvatarUrl());
             userInfo.setAvatar(avatar);
         });
-        return users;
+        return list;
     }
 
     @Override
@@ -225,7 +225,7 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
         if (StringUtils.isBlank(email)) {
             throw new CaptchaException();
         } else {
-            int result = userMapper.updatePasswordByEmail(email, Utils.encryptPassword(password));
+            int result = baseMapper.updatePasswordByEmail(email, Utils.encryptPassword(password));
             if (result == 0) {
                 throw new BusinessException("密码修改失败!");
             }
@@ -235,7 +235,7 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
 
     @Override
     public UserInfo findUserInfoById(Long idUser) {
-        return userMapper.selectUserInfoById(idUser);
+        return baseMapper.selectUserInfoById(idUser);
     }
 
     @Override
@@ -244,7 +244,7 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
         boolean isUpdate = userInfo.getIdUser() != null;
         User user;
         if (isUpdate) {
-            user = userMapper.selectByPrimaryKey(userInfo.getIdUser());
+            user = baseMapper.selectById(userInfo.getIdUser());
             if (Objects.nonNull(user)) {
                 // 用户已存在
                 user.setEmail(userInfo.getEmail());
@@ -252,7 +252,7 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
                 user.setNickname(checkNickname(userInfo.getNickname()));
                 user.setStatus(userInfo.getStatus());
                 user.setAvatar(userInfo.getAvatar().getSrc());
-                return userMapper.updateByPrimaryKeySelective(user) > 0;
+                return baseMapper.updateById(user) > 0;
             }
             throw new BusinessException("用户不存在");
         } else {
@@ -268,7 +268,7 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
             user.setAvatar(DEFAULT_AVATAR);
             user.setAccount(nextAccount());
             user.setCreatedTime(new Date());
-            boolean result = userMapper.insertSelective(user) > 0;
+            boolean result = baseMapper.insert(user) > 0;
             if (result) {
                 // 注册成功后执行相关初始化事件
                 applicationEventPublisher.publishEvent(new RegisterEvent(user.getIdUser(), user.getEmail(), code));
@@ -279,38 +279,38 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
 
     @Override
     public Boolean updateUserInfo(UserInfo userInfo) {
-        User user = userMapper.selectByPrimaryKey(userInfo.getIdUser());
+        User user = baseMapper.selectById(userInfo.getIdUser());
         user.setNickname(checkNickname(userInfo.getNickname()));
         user.setAvatar(userInfo.getAvatar().getSrc());
         user.setEmail(userInfo.getEmail());
         user.setPhone(userInfo.getPhone());
-        return userMapper.updateByPrimaryKeySelective(user) > 0;
+        return baseMapper.updateById(user) > 0;
     }
 
     @Override
     public Boolean bindUserRole(BindUserRoleInfo bindUserRoleInfo) {
         int num = 0;
         // 先删除原有关系
-        userMapper.deleteUserRole(bindUserRoleInfo.getIdUser());
+        baseMapper.deleteUserRole(bindUserRoleInfo.getIdUser());
         for (Long idRole : bindUserRoleInfo.getIdRoles()) {
-            num += userMapper.insertUserRole(bindUserRoleInfo.getIdUser(), idRole);
+            num += baseMapper.insertUserRole(bindUserRoleInfo.getIdUser(), idRole);
         }
         return num == bindUserRoleInfo.getIdRoles().size();
     }
 
     @Override
     public Boolean updateStatus(Long idUser, Integer status) {
-        return userMapper.updateStatus(idUser, status) > 0;
+        return baseMapper.updateStatus(idUser, status) > 0;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String resetPassword(Long idUser) {
-        User user = userMapper.selectByPrimaryKey(idUser);
+        User user = baseMapper.selectById(idUser);
         if (Objects.nonNull(user)) {
             String code = String.valueOf(Utils.genCode());
             String password = Utils.encryptPassword(code);
-            int result = userMapper.updatePasswordById(idUser, password);
+            int result = baseMapper.updatePasswordById(idUser, password);
             if (result > 0) {
                 applicationEventPublisher.publishEvent(new ResetPasswordEvent(user.getEmail(), code));
             }
@@ -321,6 +321,6 @@ public class UserServiceImpl extends AbstractService<User> implements UserServic
 
     @Override
     public Boolean updateDelFlag(Long idUser, Integer delFlag) {
-        return userMapper.updateDelFlag(idUser, delFlag) > 0;
+        return baseMapper.updateDelFlag(idUser, delFlag) > 0;
     }
 }

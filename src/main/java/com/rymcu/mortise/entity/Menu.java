@@ -1,9 +1,9 @@
 package com.rymcu.mortise.entity;
 
 import com.alibaba.fastjson.annotation.JSONField;
-import jakarta.persistence.Column;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.util.Date;
@@ -16,10 +16,10 @@ import java.util.Date;
  * @desc : com.rymcu.mortise.entity
  */
 @Data
-@Table(name = "mortise_menu", schema = "mortise")
+@TableName(value = "mortise_menu", schema = "mortise")
 public class Menu {
-    @Id
-    @Column(name = "id")
+    @TableId
+    @TableField(value = "id")
     private Long idMenu;
 
     /**
