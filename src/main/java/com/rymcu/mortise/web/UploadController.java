@@ -3,7 +3,7 @@ package com.rymcu.mortise.web;
 import com.alibaba.fastjson2.JSONObject;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.core.result.GlobalResultGenerator;
-import com.rymcu.mortise.service.impl.FileDetailService;
+import com.rymcu.mortise.service.UploadService;
 import jakarta.annotation.Resource;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.dromara.x.file.storage.core.FileInfo;
@@ -29,7 +29,7 @@ import java.security.NoSuchAlgorithmException;
 public class UploadController {
 
     @Resource
-    private FileDetailService fileDetailService;
+    private UploadService uploadService;
 
     @PostMapping("/file")
     @Transactional(rollbackFor = Exception.class)
@@ -45,7 +45,7 @@ public class UploadController {
             return GlobalResultGenerator.genSuccessResult(data);
         }
 
-        FileInfo fileInfo = fileDetailService.uploadFile(multipartFile);
+        FileInfo fileInfo = uploadService.uploadFile(multipartFile);
 
         data.put("fileUrl", fileInfo.getUrl());
         return GlobalResultGenerator.genSuccessResult(data);
