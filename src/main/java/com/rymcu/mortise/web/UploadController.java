@@ -5,8 +5,8 @@ import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.core.result.GlobalResultGenerator;
 import com.rymcu.mortise.service.UploadService;
 import jakarta.annotation.Resource;
-import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.dromara.x.file.storage.core.FileInfo;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,7 +25,7 @@ import java.security.NoSuchAlgorithmException;
  */
 @RestController
 @RequestMapping("/api/v1/upload")
-@RequiresPermissions(value = "user")
+@PreAuthorize("isAuthenticated()")
 public class UploadController {
 
     @Resource
@@ -33,7 +33,6 @@ public class UploadController {
 
     @PostMapping("/file")
     @Transactional(rollbackFor = Exception.class)
-    @RequiresPermissions(value = "user")
     public GlobalResult<JSONObject> uploadFile(@RequestParam(value = "file", required = false) MultipartFile multipartFile) throws NoSuchAlgorithmException {
         if (multipartFile == null) {
             return GlobalResultGenerator.genErrorResult("请选择要上传的文件");

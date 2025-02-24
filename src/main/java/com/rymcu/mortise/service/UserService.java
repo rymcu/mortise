@@ -1,12 +1,14 @@
 package com.rymcu.mortise.service;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.rymcu.mortise.core.exception.AccountExistsException;
 import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.model.BindUserRoleInfo;
 import com.rymcu.mortise.model.TokenUser;
 import com.rymcu.mortise.model.UserInfo;
 import com.rymcu.mortise.model.UserSearch;
 
+import javax.security.auth.login.AccountNotFoundException;
 import java.util.List;
 import java.util.Set;
 
@@ -34,7 +36,7 @@ public interface UserService {
      * @param code     验证码
      * @return Boolean 注册成功标志
      */
-    Boolean register(String email, String nickname, String password, String code);
+    Boolean register(String email, String nickname, String password, String code) throws AccountExistsException;
 
     /**
      * 登录接口
@@ -43,7 +45,7 @@ public interface UserService {
      * @param password 密码
      * @return TokenUser
      */
-    TokenUser login(String account, String password);
+    TokenUser login(String account, String password) throws AccountNotFoundException;
 
     /**
      * 刷新 token 接口
@@ -51,7 +53,7 @@ public interface UserService {
      * @param refreshToken 刷新 token
      * @return TokenUser
      */
-    TokenUser refreshToken(String refreshToken);
+    TokenUser refreshToken(String refreshToken) throws AccountNotFoundException;
 
     /**
      * 查询用户菜单权限

@@ -38,7 +38,8 @@ public class RedisTokenManager implements TokenManager {
         // 生成密钥
         SecretKey key = JwtUtils.getSecretKey();
         //使用 account 作为源 token
-        String token = Jwts.builder().id(id).subject(id).issuedAt(new Date()).signWith(key).compact();
+        Date now = new Date();
+        String token = Jwts.builder().id(id).subject(id).issuedAt(now).expiration(new Date(now.getTime() + JwtConstants.TOKEN_EXPIRES_MINUTE * 60 * 1000)).signWith(key).compact();
         //存储到 redis 并设置过期时间
         redisTemplate.boundValueOps(id).set(token, JwtConstants.TOKEN_EXPIRES_MINUTE, TimeUnit.MINUTES);
         return token;

@@ -7,6 +7,7 @@ import com.rymcu.mortise.enumerate.DelFlag;
 import com.rymcu.mortise.model.BindRoleMenuInfo;
 import com.rymcu.mortise.service.RoleService;
 import jakarta.annotation.Resource;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Set;
@@ -20,6 +21,7 @@ import java.util.Set;
  */
 @RestController
 @RequestMapping("/api/v1/admin/role")
+@PreAuthorize("hasRole('admin')")
 public class RoleController {
     @Resource
     private RoleService roleService;

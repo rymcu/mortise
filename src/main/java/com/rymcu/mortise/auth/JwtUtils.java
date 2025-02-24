@@ -6,7 +6,7 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.shiro.authz.UnauthenticatedException;
+import org.springframework.security.authentication.BadCredentialsException;
 
 import javax.crypto.SecretKey;
 import java.util.Objects;
@@ -38,7 +38,7 @@ public class JwtUtils {
                 SecretKey key = JwtUtils.getSecretKey();
                 claims = Jwts.parser().verifyWith(key).build().parseSignedClaims(token).getPayload();
             } catch (final Exception e) {
-                throw new UnauthenticatedException();
+                throw new BadCredentialsException(e.getMessage());
             }
             Object account = claims.getId();
             if (StringUtils.isNotBlank(Objects.toString(account, ""))) {
@@ -48,7 +48,7 @@ public class JwtUtils {
                 }
             }
         }
-        throw new UnauthenticatedException();
+        throw new BadCredentialsException("");
     }
 
 }

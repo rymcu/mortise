@@ -11,7 +11,10 @@ import com.rymcu.mortise.model.DictSearch;
 import com.rymcu.mortise.service.DictService;
 import com.rymcu.mortise.util.UserUtils;
 import jakarta.annotation.Resource;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import javax.security.auth.login.AccountNotFoundException;
 
 /**
  * Created on 2024/9/22 20:21.
@@ -22,6 +25,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/v1/admin/dict")
+@PreAuthorize("hasRole('admin')")
 public class DictController {
 
     @Resource
@@ -41,7 +45,7 @@ public class DictController {
     }
 
     @PostMapping("/post")
-    public GlobalResult<Boolean> addDict(@RequestBody Dict dict) {
+    public GlobalResult<Boolean> addDict(@RequestBody Dict dict) throws AccountNotFoundException {
         User user = UserUtils.getCurrentUserByToken();
         dict.setCreatedBy(user.getIdUser());
         Boolean flag = dictService.saveDict(dict);
@@ -49,7 +53,7 @@ public class DictController {
     }
 
     @PutMapping("/post")
-    public GlobalResult<Boolean> updateDict(@RequestBody Dict dict) {
+    public GlobalResult<Boolean> updateDict(@RequestBody Dict dict) throws AccountNotFoundException {
         User user = UserUtils.getCurrentUserByToken();
         dict.setUpdatedBy(user.getIdUser());
         Boolean flag = dictService.saveDict(dict);

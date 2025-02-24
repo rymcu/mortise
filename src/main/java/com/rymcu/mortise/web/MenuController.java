@@ -6,6 +6,7 @@ import com.rymcu.mortise.entity.Menu;
 import com.rymcu.mortise.enumerate.DelFlag;
 import com.rymcu.mortise.service.MenuService;
 import jakarta.annotation.Resource;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/v1/admin/menu")
+@PreAuthorize("hasRole('admin')")
 public class MenuController {
     @Resource
     private MenuService menuService;

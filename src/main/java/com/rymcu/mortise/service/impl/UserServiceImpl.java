@@ -23,14 +23,13 @@ import com.rymcu.mortise.util.Utils;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotBlank;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.shiro.authc.UnknownAccountException;
-import org.apache.shiro.authz.UnauthenticatedException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.security.auth.login.AccountNotFoundException;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -67,7 +66,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean register(String email, String nickname, String password, String code) {
+    public Boolean register(String email, String nickname, String password, String code) throws AccountExistsException {
         String validateCodeKey = ProjectConstant.REDIS_REGISTER + email;
         String validateCode = redisTemplate.boundValueOps(validateCodeKey).get();
         if (StringUtils.isNotBlank(validateCode)) {
@@ -132,7 +131,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public TokenUser login(@NotBlank String account, @NotBlank String password) {
+    public TokenUser login(@NotBlank String account, @NotBlank String password) throws AccountNotFoundException {
         User user = baseMapper.selectByAccount(account);
         if (Objects.nonNull(user)) {
             if (Utils.comparePassword(password, user.getPassword())) {
@@ -147,11 +146,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 return tokenUser;
             }
         }
-        throw new UnknownAccountException();
+        throw new AccountNotFoundException("未知账号");
     }
 
     @Override
-    public TokenUser refreshToken(String refreshToken) {
+    public TokenUser refreshToken(String refreshToken) throws AccountNotFoundException {
         String account = redisTemplate.boundValueOps(refreshToken).get();
         if (StringUtils.isNotBlank(account)) {
             User user = baseMapper.selectByAccount(account);
@@ -163,10 +162,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 redisTemplate.delete(refreshToken);
                 return tokenUser;
             } else {
-                throw new UnknownAccountException("未知账号");
+                throw new AccountNotFoundException();
             }
         }
-        throw new UnauthenticatedException();
+        throw new AccountNotFoundException();
     }
 
     @Override

@@ -15,9 +15,11 @@ import com.rymcu.mortise.service.UserService;
 import com.rymcu.mortise.util.BeanCopierUtil;
 import com.rymcu.mortise.util.UserUtils;
 import jakarta.annotation.Resource;
-import org.apache.shiro.authz.UnauthenticatedException;
+import org.springframework.security.authentication.AccountExpiredException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.security.auth.login.AccountNotFoundException;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,11 +38,8 @@ public class AuthController {
     TokenManager tokenManager;
 
     @GetMapping("/menus")
-    public GlobalResult<List<Link>> menus() {
+    public GlobalResult<List<Link>> menus() throws AccountNotFoundException {
         User user = UserUtils.getCurrentUserByToken();
-        if (Objects.isNull(user)) {
-            throw new UnauthenticatedException();
-        }
         List<Link> menus = menuService.findLinksByIdUser(user.getIdUser());
         return GlobalResultGenerator.genSuccessResult(menus);
     }
@@ -49,7 +48,7 @@ public class AuthController {
     @LogRecord(success = "提交成功", type = "系统", subType = "账号登录", bizNo = "{\"account\": {{#user.account}}}",
             fail = "提交失败，失败原因：「{{#_errorMsg ? #_errorMsg : #result.message }}」", extra = "{\"account\": {{#user.account}}}",
             successCondition = "{{#result.code==200}}")
-    public GlobalResult<TokenUser> login(@RequestBody User user) {
+    public GlobalResult<TokenUser> login(@RequestBody User user) throws AccountNotFoundException {
         TokenUser tokenUser = userService.login(user.getAccount(), user.getPassword());
         LogRecordContext.putVariable("idUser", tokenUser.getIdUser());
         tokenUser.setIdUser(null);
@@ -59,13 +58,13 @@ public class AuthController {
     }
 
     @PostMapping("/refresh-token")
-    public GlobalResult<TokenUser> refreshToken(@RequestBody TokenUser tokenUser) {
+    public GlobalResult<TokenUser> refreshToken(@RequestBody TokenUser tokenUser) throws AccountNotFoundException {
         tokenUser = userService.refreshToken(tokenUser.getRefreshToken());
         return GlobalResultGenerator.genSuccessResult(tokenUser);
     }
 
     @PostMapping("/logout")
-    public GlobalResult logout() {
+    public GlobalResult logout() throws AccountNotFoundException {
         User user = UserUtils.getCurrentUserByToken();
         if (Objects.nonNull(user)) {
             tokenManager.deleteToken(user.getAccount());
@@ -74,7 +73,7 @@ public class AuthController {
     }
 
     @GetMapping("/user")
-    public GlobalResult<JSONObject> user() {
+    public GlobalResult<JSONObject> user() throws AccountNotFoundException {
         User user = UserUtils.getCurrentUserByToken();
         AuthInfo authInfo = new AuthInfo();
         BeanCopierUtil.copy(user, authInfo);

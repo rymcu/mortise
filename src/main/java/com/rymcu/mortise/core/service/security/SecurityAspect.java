@@ -6,20 +6,22 @@ import com.rymcu.mortise.auth.JwtConstants;
 import com.rymcu.mortise.model.TokenUser;
 import com.rymcu.mortise.util.UserUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.shiro.authz.UnauthenticatedException;
-import org.apache.shiro.authz.UnauthorizedException;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.HandlerMapping;
 
 import jakarta.servlet.http.HttpServletRequest;
+
+import javax.security.auth.login.AccountNotFoundException;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,7 +50,7 @@ public class SecurityAspect {
      * @throws Throwable 调用出错
      */
     @Before(value = "securityPointCut()")
-    public void doBefore(JoinPoint joinPoint) {
+    public void doBefore(JoinPoint joinPoint) throws AccountNotFoundException {
         logger.info("检查用户修改信息权限 start ...");
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
         String idUser = "";
@@ -77,11 +79,11 @@ public class SecurityAspect {
             if (StringUtils.isNotBlank(authHeader)) {
                 TokenUser tokenUser = UserUtils.getTokenUser(authHeader);
                 if (!idUser.equals(tokenUser.getIdUser().toString())) {
-                    throw new UnauthorizedException();
+                    throw new BadCredentialsException("签名错误");
                 }
             }
         } else {
-            throw new UnauthenticatedException();
+            throw new AuthorizationDeniedException("无权限");
         }
         logger.info("检查用户修改信息权限 end ...");
     }

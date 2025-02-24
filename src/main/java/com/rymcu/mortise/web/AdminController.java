@@ -10,7 +10,7 @@ import com.rymcu.mortise.service.MenuService;
 import com.rymcu.mortise.service.RoleService;
 import com.rymcu.mortise.service.UserService;
 import jakarta.annotation.Resource;
-import org.apache.shiro.authz.annotation.RequiresRoles;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,7 +26,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/v1/admin")
-@RequiresRoles("admin")
+@PreAuthorize("hasRole('admin')")
 public class AdminController {
 
     @Resource

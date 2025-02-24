@@ -12,8 +12,9 @@ import com.rymcu.mortise.service.JavaMailService;
 import com.rymcu.mortise.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.mail.MessagingException;
-import org.apache.shiro.authc.UnknownAccountException;
 import org.springframework.web.bind.annotation.*;
+
+import javax.security.auth.login.AccountNotFoundException;
 
 /**
  * Created on 2024/4/18 18:43.
@@ -32,7 +33,7 @@ public class CommonController {
     private UserService userService;
 
     @GetMapping("/get-email-code")
-    public GlobalResult<String> getEmailCode(@RequestParam("email") String email) throws MessagingException {
+    public GlobalResult<String> getEmailCode(@RequestParam("email") String email) throws MessagingException, AccountExistsException {
         User user = userService.findByAccount(email);
         if (user != null) {
             throw new AccountExistsException("该邮箱已被注册!");
@@ -46,7 +47,7 @@ public class CommonController {
     }
 
     @GetMapping("/get-forget-password-email")
-    public GlobalResult<String> getForgetPasswordEmail(@RequestParam("email") String email) throws MessagingException, ServiceException {
+    public GlobalResult<String> getForgetPasswordEmail(@RequestParam("email") String email) throws MessagingException, ServiceException, AccountNotFoundException {
         User user = userService.findByAccount(email);
         if (user != null) {
             Integer result = javaMailService.sendForgetPasswordEmail(email);
@@ -54,7 +55,7 @@ public class CommonController {
                 throw new ServiceException(GlobalResultMessage.SEND_FAIL.getMessage());
             }
         } else {
-            throw new UnknownAccountException("未知账号");
+            throw new AccountNotFoundException("未知账号");
         }
         return GlobalResultGenerator.genSuccessResult(GlobalResultMessage.SEND_SUCCESS.getMessage());
     }
@@ -66,7 +67,7 @@ public class CommonController {
     }
 
     @PostMapping("/register")
-    public GlobalResult<Boolean> register(@RequestBody RegisterInfo registerInfo) {
+    public GlobalResult<Boolean> register(@RequestBody RegisterInfo registerInfo) throws AccountExistsException {
         boolean flag = userService.register(registerInfo.getEmail(), registerInfo.getNickname(), registerInfo.getPassword(), registerInfo.getCode());
         return GlobalResultGenerator.genSuccessResult(flag);
     }

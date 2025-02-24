@@ -8,6 +8,7 @@ import com.rymcu.mortise.model.BindUserRoleInfo;
 import com.rymcu.mortise.model.UserInfo;
 import com.rymcu.mortise.service.UserService;
 import jakarta.annotation.Resource;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/v1/admin/user")
+@PreAuthorize("hasRole('admin')")
 public class UserController {
 
     @Resource

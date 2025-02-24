@@ -7,12 +7,10 @@ import com.rymcu.mortise.core.exception.ServiceException;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.core.result.ResultCode;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.shiro.authc.AccountException;
-import org.apache.shiro.authc.UnknownAccountException;
-import org.apache.shiro.authz.UnauthenticatedException;
-import org.apache.shiro.authz.UnauthorizedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.HandlerMethod;
@@ -22,6 +20,9 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import javax.security.auth.login.AccountException;
+import javax.security.auth.login.AccountNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,13 +40,13 @@ public class BaseExceptionHandler {
     public Object errorHandler(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
         if (isAjax(request)) {
             GlobalResult<ResultCode> result = new GlobalResult<>();
-            if (ex instanceof UnauthenticatedException) {
+            if (ex instanceof BadCredentialsException) {
                 result = new GlobalResult<>(ResultCode.UNAUTHENTICATED);
-                logger.info("token错误");
-            } else if (ex instanceof UnauthorizedException) {
+                logger.info("签名错误");
+            } else if (ex instanceof AuthorizationDeniedException) {
                 result = new GlobalResult<>(ResultCode.UNAUTHORIZED);
                 logger.info("用户无权限");
-            } else if (ex instanceof UnknownAccountException) {
+            } else if (ex instanceof AccountNotFoundException) {
                 // 账号或密码错误
                 result = new GlobalResult<>(ResultCode.UNKNOWN_ACCOUNT);
                 logger.info(ex.getMessage());
@@ -82,11 +83,11 @@ public class BaseExceptionHandler {
             FastJsonView view = new FastJsonView();
             Map<String, Object> attributes = new HashMap<>(2);
             switch (ex) {
-                case UnauthenticatedException unauthenticatedException -> {
+                case BadCredentialsException unauthenticatedException -> {
                     attributes.put("code", ResultCode.UNAUTHENTICATED.getCode());
                     attributes.put("message", ResultCode.UNAUTHENTICATED.getMessage());
                 }
-                case UnauthorizedException unauthorizedException -> {
+                case AuthorizationDeniedException unauthorizedException -> {
                     attributes.put("code", ResultCode.UNAUTHORIZED.getCode());
                     attributes.put("message", ResultCode.UNAUTHORIZED.getMessage());
                 }
