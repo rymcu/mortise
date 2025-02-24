@@ -13,7 +13,7 @@ Built by RYMCU
 
 ## Introduction
 
-一款现代化的后台管理脚手架项目，使用 Spring Boot 3 + Shiro + JWT + Mybatis Plus + Redis 实现
+一款现代化的后台管理脚手架项目，使用 Spring Boot 3 + Spring Security + JWT + Mybatis Plus + Redis 实现
 
 ## Features
 
