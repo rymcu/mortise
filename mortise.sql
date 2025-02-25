@@ -340,9 +340,8 @@ comment on index mortise_operate_log_search_index is '操作日志表搜索索�
 
 create table mortise_file_detail
 (
-    id                bigint default nextval('mortise.file_detail_id_seq'::regclass) not null
-        constraint file_detail_pkey
-            primary key,
+    id               bigserial
+        primary key,
     url               varchar(512),
     size              bigint,
     filename          varchar(256),

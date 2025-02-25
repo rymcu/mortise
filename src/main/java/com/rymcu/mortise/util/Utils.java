@@ -1,5 +1,6 @@
 package com.rymcu.mortise.util;
 
+import com.rymcu.mortise.core.constant.ProjectConstant;
 import jakarta.servlet.http.HttpServletRequest;
 import org.jasypt.encryption.StringEncryptor;
 import org.jasypt.encryption.pbe.PooledPBEStringEncryptor;
@@ -96,7 +97,7 @@ public class Utils {
 
 
     public static void main(String[] args) {
-
+        System.out.println(encryptJasyptPassword("XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl", System.getenv(ProjectConstant.ENCRYPTION_KEY)));
     }
 
     public static Integer genCode() {

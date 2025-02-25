@@ -9,9 +9,9 @@ spring:
     cache: false
   data:
     redis:
-      host: 127.0.0.1
+      host: 192.168.12.101
       port: 6379
-      password: # 替换为你的 Redis 密码
+      password: ENC(8kZ8YYjALJ8QVOoArjU7xf4Jlltc2/Kcv100KUr9EQk=)
       database: 1
       timeout: 3000
       jedis:
@@ -21,11 +21,9 @@ spring:
           max-idle: 500
           min-idle: 0
   datasource:
-    #    url: jdbc:mysql://127.0.0.1:3306/mortise?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
-    url: jdbc:postgresql://127.0.0.1:5432/xxx
-    username: root
-    password: # 替换为你的数据库密码
-#    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:postgresql://192.168.12.101:5432/postgres
+    username: mortise
+    password: ENC(gqCvS0P65Xk4zQ0yxo8ycVaEctJO3CZlfl1asvo5kO/5JilBsYFyvxxSxJTMHV8D1P6hApJ28J4=)
     driver-class-name: org.postgresql.Driver
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
@@ -40,15 +38,30 @@ spring:
   mail:
     host: smtp.ym.163.com
     port: 465
-    username: # 替换为你的邮箱账号
-    password: # 替换为你的邮箱密码
+    username: service@rymcu.com
+    password: ENC(wYjMDevKQeoMzDmkks4Spe4tvNB1f5iSv6qEaA6VFys=)
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 20MB
-  sql:
-    init:
-      schema-locations: mortise
+  security:
+    oauth2:
+      client:
+        registration:
+          logto:
+            client-name: ATDAK
+            client-id: inpmkqjt9lcx4j0mddug1
+            client-secret: WdYaRzMfBzoM5c3m1um8y8HTobjkynU8
+            redirect-uri: ${baseUrl}/login/oauth2/code/logto
+            authorization-grant-type: authorization_code
+            scope: openid,profile,offline_access,email
+            provider: logto
+        provider:
+          logto:
+            issuer-uri: https://auth.atdak.com/oidc
+            authorization-uri: https://auth.atdak.com/oidc/auth
+            jwk-set-uri: https://auth.atdak.com/oidc/jwks
+            user-info-uri: https://auth.atdak.com/oidc/me
 logging:
   file:
     path: /logs/mortise
@@ -65,8 +78,7 @@ server:
     min-response-size: 10240
   max-http-request-header-size: 10240
 version: 1.0
-resource:
-  domain: # 替换为你的域名
+baseUrl: https://rymcu.com
 dromara:
   x-file-storage: #文件存储配置
     default-platform: local-plus #默认存储平台

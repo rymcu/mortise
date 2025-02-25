@@ -56,7 +56,7 @@ public class JavaMailServiceImpl implements JavaMailService {
     private String USERNAME;
     @Value("${spring.mail.password}")
     private String PASSWORD;
-    @Value("${resource.domain}")
+    @Value("${baseUrl}")
     private String BASE_URL;
 
     @Override

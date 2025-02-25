@@ -34,7 +34,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         if  (Objects.nonNull(user)) {
             Set<String> roles = userService.findUserRoleListByIdUser(user.getIdUser());
             Set<GrantedAuthority> authorities = roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
-            return new UserDetailInfo(user.getAccount(), user.getPassword(), authorities);
+            return new UserDetailInfo(user.getAccount(), user.getPassword(), user.getStatus(), authorities);
         }
         return null;
     }

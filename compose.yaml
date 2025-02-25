@@ -1,12 +1,18 @@
 services:
-  postgres:
+  postgresql:
     image: postgres:17-alpine
     container_name: mortise-postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: mortise
       POSTGRES_PASSWORD: XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl
-      POSTGRES_DB: rymcu
+      POSTGRES_DB: postgres
+      TZ: Asia/Shanghai
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready -U postgres' ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     ports:
       - "5432:5432"
     volumes:
@@ -21,18 +27,35 @@ services:
   redis:
     image: 'redis:7.0.8'
     container_name: mortise-redis
+    restart: unless-stopped
     sysctls:
       - net.core.somaxconn=1024
     ports:
       - "6379:6379"
     volumes:
-      - "redis-volume:/data"
+      - "./redis:/data"
     command:
       - /bin/sh
       - -c
       - redis-server --requirepass d9d2j9w2 --appendonly yes
     environment:
-      - TZ=Asia/Shanghai
-volumes:
-  mysql8-volume:
-  redis-volume:
+      TZ: Asia/Shanghai
+  logto:
+    image: svhd/logto
+    container_name: mortise-logto
+    restart: unless-stopped
+    ports:
+      - '3010:3010'
+      - '3011:3011'
+    depends_on:
+      postgresql:
+        condition: service_healthy
+    environment:
+      INTEGRATION_TEST: TRUE
+      TRUST_PROXY_HEADER: 1
+      DB_URL: postgresql://mortise:XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl@postgresql:5432/logto
+      PORT: 3010
+      ADMIN_PORT: 3011
+      ENDPOINT:
+      ADMIN_ENDPOINT:
+    entrypoint: ['sh', '-c', 'npm run cli db seed -- --swe && npm start']
