@@ -9,7 +9,7 @@ spring:
     cache: false
   data:
     redis:
-      host: 192.168.12.101
+      host: 127.0.0.1
       port: 6379
       password: ENC(8kZ8YYjALJ8QVOoArjU7xf4Jlltc2/Kcv100KUr9EQk=)
       database: 1
@@ -21,7 +21,7 @@ spring:
           max-idle: 500
           min-idle: 0
   datasource:
-    url: jdbc:postgresql://192.168.12.101:5432/postgres
+    url: jdbc:postgresql://127.0.0.1:5432/postgres
     username: mortise
     password: ENC(gqCvS0P65Xk4zQ0yxo8ycVaEctJO3CZlfl1asvo5kO/5JilBsYFyvxxSxJTMHV8D1P6hApJ28J4=)
     driver-class-name: org.postgresql.Driver
@@ -50,18 +50,18 @@ spring:
         registration:
           logto:
             client-name: ATDAK
-            client-id: inpmkqjt9lcx4j0mddug1
-            client-secret: WdYaRzMfBzoM5c3m1um8y8HTobjkynU8
+            client-id: ${LOGTO_CLIENT_ID}
+            client-secret: ${LOGTO_CLIENT_SECRET}
             redirect-uri: ${baseUrl}/api/auth/code/logto
             authorization-grant-type: authorization_code
             scope: openid,profile,offline_access,email
             provider: logto
         provider:
           logto:
-            issuer-uri: https://auth.atdak.com/oidc
-            authorization-uri: https://auth.atdak.com/oidc/auth
-            jwk-set-uri: https://auth.atdak.com/oidc/jwks
-            user-info-uri: https://auth.atdak.com/oidc/me
+            issuer-uri: https://auth.rymcu.local/oidc
+            authorization-uri: https://auth.rymcu.local/oidc/auth
+            jwk-set-uri: https://auth.rymcu.local/oidc/jwks
+            user-info-uri: https://auth.rymcu.local/oidc/me
 logging:
   file:
     path: /logs/mortise
@@ -77,8 +77,7 @@ server:
     mime-types: application/json,application/xml,text/html,text/xml,text/plain
     min-response-size: 10240
   max-http-request-header-size: 10240
-version: 1.0
-baseUrl: http://localhost:3000
+baseUrl: https://rymcu.local
 dromara:
   x-file-storage: #文件存储配置
     default-platform: local-plus #默认存储平台

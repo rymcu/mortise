@@ -56,8 +56,8 @@ services:
       DB_URL: postgresql://mortise:XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl@postgresql:5432/logto
       PORT: 3010
       ADMIN_PORT: 3011
-      ENDPOINT:
-      ADMIN_ENDPOINT:
+      ENDPOINT: https://auth.rymcu.local
+      ADMIN_ENDPOINT: https://logto.rymcu.local
     entrypoint: ['sh', '-c', 'npm run cli db seed -- --swe && npm start']
   app:
     image: 'jc21/nginx-proxy-manager:latest'
@@ -71,4 +71,23 @@ services:
       - ./app/npm/data:/data
       - ./app/npm/letsencrypt:/etc/letsencrypt
     environment:
+      # Postgres parameters:
+      DB_POSTGRES_HOST: 'db'
+      DB_POSTGRES_PORT: '5432'
+      DB_POSTGRES_USER: 'npm'
+      DB_POSTGRES_PASSWORD: 'XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl'
+      DB_POSTGRES_NAME: 'npm'
+      # Uncomment this if IPv6 is not enabled on your host
+      # DISABLE_IPV6: 'true'
       TZ: Asia/Shanghai
+    depends_on:
+      - db
+  db:
+    image: postgres:17-alpine
+    container_name: npm-db
+    environment:
+      POSTGRES_USER: 'npm'
+      POSTGRES_PASSWORD: 'XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl'
+      POSTGRES_DB: 'npm'
+    volumes:
+      - ./app/npm/postgres:/var/lib/postgresql/data
