@@ -8,18 +8,38 @@ IF %ERRORLEVEL% NEQ 0 (
     pause
     exit /b 1
 )
+set "LOCAL_IP="
+for /f "tokens=2 delims=:" %%a in ('ipconfig ^| findstr "IPv4"') do (
+    set ip=%%a
+    set ip=!ip: =!
+    echo !ip! | findstr "^192.168." >nul
+    if !errorlevel! equ 0 (
+        set "LOCAL_IP=!ip!"
+        rem Only the first IP found is taken
+        goto :FOUND_IP
+    )
+)
+
+:FOUND_IP
+if not defined LOCAL_IP (
+    echo No IP address in the 192.168.* range found.
+    pause
+    exit /b 1
+)
+
+echo Using IP address: !LOCAL_IP!
 
 :: Set hosts file path
 set "HOSTS_PATH=%SystemRoot%\System32\drivers\etc\hosts"
 
 :: Define domain mappings to add
 for %%D in (
-    "127.0.0.1 rymcu.local"
-    "127.0.0.1 logto.rymcu.local"
-    "127.0.0.1 auth.rymcu.local"
-    "127.0.0.1 npm.rymcu.local"
+    "rymcu.local"
+    "logto.rymcu.local"
+    "auth.rymcu.local"
+    "npm.rymcu.local"
 ) do (
-    set "domain_entry=%%~D"
+    set "domain_entry=!LOCAL_IP! %%~D"
 
     :: Check if domain entry already exists in hosts file
     findstr /X /C:"!domain_entry!" "%HOSTS_PATH%" >nul

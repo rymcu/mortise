@@ -45,19 +45,26 @@ services:
     container_name: mortise-logto
     restart: unless-stopped
     ports:
-      - '3010:3010'
-      - '3011:3011'
+      - '3001:3001'
+      - '3002:3002'
     depends_on:
       postgresql:
         condition: service_healthy
     environment:
-      INTEGRATION_TEST: TRUE
-      TRUST_PROXY_HEADER: 1
+      INTEGRATION_TEST: true
+      TRUST_PROXY_HEADER: true
       DB_URL: postgresql://mortise:XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl@postgresql:5432/logto
-      PORT: 3010
-      ADMIN_PORT: 3011
       ENDPOINT: https://auth.rymcu.local
       ADMIN_ENDPOINT: https://logto.rymcu.local
+      # Self-signed certificates require NODE_EXTRA_CA_CERTS to be configured
+      NODE_EXTRA_CA_CERTS: /usr/local/share/ca-certificates/logto-rootCA.crt
+    # Self-signed certificates need to be added to the container
+    volumes:
+      - ./config/certs/rootCA.pem:/usr/local/share/ca-certificates/logto-rootCA.crt
+    extra_hosts:
+      # Map the hostnames to the IP addresses of the host machine
+      - "auth.rymcu.local:192.168.12.101"
+      - "logto.rymcu.local:192.168.12.101"
     entrypoint: ['sh', '-c', 'npm run cli db seed -- --swe && npm start']
   app:
     image: 'jc21/nginx-proxy-manager:latest'
@@ -81,7 +88,8 @@ services:
       # DISABLE_IPV6: 'true'
       TZ: Asia/Shanghai
     depends_on:
-      - db
+      db:
+        condition: service_healthy
   db:
     image: postgres:17-alpine
     container_name: npm-db
@@ -89,5 +97,12 @@ services:
       POSTGRES_USER: 'npm'
       POSTGRES_PASSWORD: 'XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl'
       POSTGRES_DB: 'npm'
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready -U postgres' ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     volumes:
+      - ./config/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./config/pg_hba.conf:/etc/postgresql/pg_hba.conf
       - ./app/npm/postgres:/var/lib/postgresql/data
