@@ -16,8 +16,8 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - ./data:/var/lib/postgresql/data
-      - ./logs:/var/log/postgresql
+      - ./app/postgresql/data:/var/lib/postgresql/data
+      - ./app/postgresql/logs:/var/log/postgresql
       - ./config/postgresql.conf:/etc/postgresql/postgresql.conf
       - ./config/pg_hba.conf:/etc/postgresql/pg_hba.conf
     command:
@@ -33,7 +33,7 @@ services:
     ports:
       - "6379:6379"
     volumes:
-      - "./redis:/data"
+      - ./app/redis:/data
     command:
       - /bin/sh
       - -c
@@ -59,3 +59,16 @@ services:
       ENDPOINT:
       ADMIN_ENDPOINT:
     entrypoint: ['sh', '-c', 'npm run cli db seed -- --swe && npm start']
+  app:
+    image: 'jc21/nginx-proxy-manager:latest'
+    container_name: npm
+    restart: unless-stopped
+    ports:
+      - '80:80'
+      - '81:81'
+      - '443:443'
+    volumes:
+      - ./app/npm/data:/data
+      - ./app/npm/letsencrypt:/etc/letsencrypt
+    environment:
+      TZ: Asia/Shanghai

@@ -52,7 +52,7 @@ spring:
             client-name: ATDAK
             client-id: inpmkqjt9lcx4j0mddug1
             client-secret: WdYaRzMfBzoM5c3m1um8y8HTobjkynU8
-            redirect-uri: ${baseUrl}/login/oauth2/code/logto
+            redirect-uri: ${baseUrl}/api/auth/code/logto
             authorization-grant-type: authorization_code
             scope: openid,profile,offline_access,email
             provider: logto
@@ -78,7 +78,7 @@ server:
     min-response-size: 10240
   max-http-request-header-size: 10240
 version: 1.0
-baseUrl: https://rymcu.com
+baseUrl: http://localhost:3000
 dromara:
   x-file-storage: #文件存储配置
     default-platform: local-plus #默认存储平台
