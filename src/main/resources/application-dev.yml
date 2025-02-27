@@ -50,8 +50,8 @@ spring:
         registration:
           logto:
             client-name: ATDAK
-            client-id: ${LOGTO_CLIENT_ID}
-            client-secret: ${LOGTO_CLIENT_SECRET}
+            client-id: m6vopqpegsbtwe9lezd6a
+            client-secret: CoJtHNcDM8v8OcYscekMMGCgsytHEmSy
             redirect-uri: ${baseUrl}/api/oauth2/code/logto
             authorization-grant-type: authorization_code
             scope: openid,profile,offline_access,email

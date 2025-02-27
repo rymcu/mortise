@@ -7,6 +7,7 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 import javax.crypto.SecretKey;
 import java.util.Objects;
@@ -51,4 +52,7 @@ public class JwtUtils {
         throw new BadCredentialsException("");
     }
 
+    public static String generateToken(OidcUser oidcUser) {
+        return tokenManager.createToken(oidcUser.getEmail());
+    }
 }

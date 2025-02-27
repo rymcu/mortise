@@ -79,3 +79,5 @@ services:
       - ./app/npm/letsencrypt:/etc/letsencrypt
     environment:
       TZ: Asia/Shanghai
+    extra_hosts:
+      - "ip-ranges.amazonaws.com:172.67.156.236"

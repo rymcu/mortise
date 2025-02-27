@@ -35,7 +35,7 @@
         update mortise_user set last_online_time = sysdate() where account = #{account}
     </update>
     <update id="updateLastLoginTime">
-        update mortise_user set last_login_time = sysdate() where id = #{idUser}
+        update mortise_user set last_login_time = sysdate() where account = #{account}
     </update>
     <update id="updatePasswordByEmail">
         update mortise_user set password = #{password} where email = #{email}
@@ -119,5 +119,14 @@
                created_time
         from mortise_user
         where id = #{idUser}
+    </select>
+    <select id="selectByOpenId" resultType="com.rymcu.mortise.entity.User">
+        select * from mortise_user where provider = #{provider} and open_id = #{openId}
+    </select>
+    <select id="selectUserRolePermissionsByIdUser" resultType="java.lang.String">
+        select distinct tr.permission
+        from mortise_user_role tur
+                 join mortise_role tr on tur.id_mortise_role = tr.id
+        where tur.id_mortise_user = #{idUser}
     </select>
 </mapper>

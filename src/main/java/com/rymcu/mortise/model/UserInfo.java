@@ -45,4 +45,8 @@ public class UserInfo {
     private Integer onlineStatus;
 
     private String roleNames;
+
+    private String openId;
+
+    private String provider;
 }

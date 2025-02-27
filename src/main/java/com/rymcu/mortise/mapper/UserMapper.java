@@ -7,6 +7,7 @@ import com.rymcu.mortise.model.UserInfo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created on 2024/4/13 15:03.
@@ -20,7 +21,7 @@ public interface UserMapper extends BaseMapper<User> {
 
     User selectByAccount(@Param("account") String account);
 
-    int updateLastLoginTime(@Param("idUser") Long idUser);
+    int updateLastLoginTime(@Param("account") String account);
 
     int insertUserRole(@Param("idUser") Long idUser, @Param("idRole") Long idRole);
 
@@ -41,4 +42,8 @@ public interface UserMapper extends BaseMapper<User> {
     int updatePasswordById(@Param("idUser") Long idUser, @Param("password") String password);
 
     int updateDelFlag(@Param("idUser") Long idUser, @Param("delFlag") Integer delFlag);
+
+    User selectByOpenId(@Param("provider") String provider, @Param("openId") String openId);
+
+    Set<String> selectUserRolePermissionsByIdUser(@Param("idUser") Long idUser);
 }

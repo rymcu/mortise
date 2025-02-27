@@ -23,9 +23,15 @@ import com.rymcu.mortise.util.Utils;
 import jakarta.annotation.Resource;
 import jakarta.validation.constraints.NotBlank;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,8 +56,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private RoleMapper roleMapper;
     @Resource
     private MenuMapper menuMapper;
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    @Resource
+    private StringRedisTemplate stringRedisTemplate;
+    @Resource
+    private AuthenticationManager authenticationManager;
+    @Resource
+    private PasswordEncoder passwordEncoder;
     @Resource
     private ApplicationEventPublisher applicationEventPublisher;
 
@@ -68,7 +78,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Transactional(rollbackFor = Exception.class)
     public Boolean register(String email, String nickname, String password, String code) throws AccountExistsException {
         String validateCodeKey = ProjectConstant.REDIS_REGISTER + email;
-        String validateCode = redisTemplate.boundValueOps(validateCodeKey).get();
+        String validateCode = stringRedisTemplate.boundValueOps(validateCodeKey).get();
         if (StringUtils.isNotBlank(validateCode)) {
             if (validateCode.equals(code)) {
                 User user = baseMapper.selectByAccount(email);
@@ -79,13 +89,13 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                     user.setNickname(checkNickname(nickname));
                     user.setAccount(nextAccount());
                     user.setEmail(email);
-                    user.setPassword(Utils.encryptPassword(password));
+                    user.setPassword(passwordEncoder.encode(password));
                     user.setAvatar(DEFAULT_AVATAR);
                     int result = baseMapper.insert(user);
                     if (result > 0) {
                         // 注册成功后执行相关初始化事件
                         applicationEventPublisher.publishEvent(new RegisterEvent(user.getIdUser(), user.getAccount(), ""));
-                        redisTemplate.delete(validateCodeKey);
+                        stringRedisTemplate.delete(validateCodeKey);
                         return true;
                     }
                     throw new BusinessException("注册失败！");
@@ -112,7 +122,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     private String nextAccount() {
         // 获取当前账号
-        String currentAccount = redisTemplate.boundValueOps(CURRENT_ACCOUNT_KEY).get();
+        String currentAccount = stringRedisTemplate.boundValueOps(CURRENT_ACCOUNT_KEY).get();
         BigDecimal account;
         if (StringUtils.isNotBlank(currentAccount)) {
             account = BigDecimal.valueOf(Long.parseLong(currentAccount));
@@ -126,23 +136,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             }
         }
         currentAccount = account.add(BigDecimal.ONE).toString();
-        redisTemplate.boundValueOps(CURRENT_ACCOUNT_KEY).set(currentAccount);
+        stringRedisTemplate.boundValueOps(CURRENT_ACCOUNT_KEY).set(currentAccount);
         return currentAccount;
     }
 
     @Override
     public TokenUser login(@NotBlank String account, @NotBlank String password) throws AccountNotFoundException {
-        User user = baseMapper.selectByAccount(account);
-        if (Objects.nonNull(user)) {
-            if (Utils.comparePassword(password, user.getPassword())) {
-                baseMapper.updateLastLoginTime(user.getIdUser());
-                baseMapper.updateLastOnlineTimeByAccount(user.getAccount());
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(account, password));
+        if (authentication.isAuthenticated()) {
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            // 认证成功，可以获取用户信息
+            UserDetails user = (UserDetails) authentication.getPrincipal();
+            if (Objects.nonNull(user)) {
+                baseMapper.updateLastLoginTime(user.getUsername());
+                baseMapper.updateLastOnlineTimeByAccount(user.getUsername());
                 TokenUser tokenUser = new TokenUser();
-                tokenUser.setToken(tokenManager.createToken(user.getAccount()));
+                tokenUser.setToken(tokenManager.createToken(user.getUsername()));
                 tokenUser.setRefreshToken(UlidCreator.getUlid().toString());
-                redisTemplate.boundValueOps(tokenUser.getRefreshToken()).set(account, JwtConstants.REFRESH_TOKEN_EXPIRES_HOUR, TimeUnit.HOURS);
+                stringRedisTemplate.boundValueOps(tokenUser.getRefreshToken()).set(user.getUsername(), JwtConstants.REFRESH_TOKEN_EXPIRES_HOUR, TimeUnit.HOURS);
                 // 保存登录日志
-//                loginRecordService.saveLoginRecord(user.getIdUser());
+                //                loginRecordService.saveLoginRecord(user.getIdUser());
                 return tokenUser;
             }
         }
@@ -151,15 +164,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public TokenUser refreshToken(String refreshToken) throws AccountNotFoundException {
-        String account = redisTemplate.boundValueOps(refreshToken).get();
+        String account = stringRedisTemplate.boundValueOps(refreshToken).get();
         if (StringUtils.isNotBlank(account)) {
             User user = baseMapper.selectByAccount(account);
             if (user != null) {
                 TokenUser tokenUser = new TokenUser();
                 tokenUser.setToken(tokenManager.createToken(user.getAccount()));
                 tokenUser.setRefreshToken(UlidCreator.getUlid().toString());
-                redisTemplate.boundValueOps(tokenUser.getRefreshToken()).set(account, JwtConstants.REFRESH_TOKEN_EXPIRES_HOUR, TimeUnit.HOURS);
-                redisTemplate.delete(refreshToken);
+                stringRedisTemplate.boundValueOps(tokenUser.getRefreshToken()).set(account, JwtConstants.REFRESH_TOKEN_EXPIRES_HOUR, TimeUnit.HOURS);
+                stringRedisTemplate.delete(refreshToken);
                 return tokenUser;
             } else {
                 throw new AccountNotFoundException();
@@ -219,11 +232,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Boolean forgetPassword(String code, String password) {
-        String email = redisTemplate.boundValueOps(code).get();
+        String email = stringRedisTemplate.boundValueOps(code).get();
         if (StringUtils.isBlank(email)) {
             throw new CaptchaException();
         } else {
-            int result = baseMapper.updatePasswordByEmail(email, Utils.encryptPassword(password));
+            int result = baseMapper.updatePasswordByEmail(email, passwordEncoder.encode(password));
             if (result == 0) {
                 throw new BusinessException("密码修改失败!");
             }
@@ -262,8 +275,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             if (StringUtils.isBlank(code)) {
                 code = String.valueOf(Utils.genCode());
             }
-            user.setPassword(Utils.encryptPassword(code));
-            user.setAvatar(DEFAULT_AVATAR);
+            user.setPassword(passwordEncoder.encode(code));
+            user.setAvatar(Objects.isNull(userInfo.getAvatar()) ? DEFAULT_AVATAR : userInfo.getAvatar().getSrc());
             user.setAccount(nextAccount());
             user.setCreatedTime(new Date());
             boolean result = baseMapper.insert(user) > 0;
@@ -307,7 +320,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         User user = baseMapper.selectById(idUser);
         if (Objects.nonNull(user)) {
             String code = String.valueOf(Utils.genCode());
-            String password = Utils.encryptPassword(code);
+            String password = passwordEncoder.encode(code);
             int result = baseMapper.updatePasswordById(idUser, password);
             if (result > 0) {
                 applicationEventPublisher.publishEvent(new ResetPasswordEvent(user.getEmail(), code));
@@ -320,5 +333,43 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public Boolean updateDelFlag(Long idUser, Integer delFlag) {
         return baseMapper.updateDelFlag(idUser, delFlag) > 0;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public TokenUser oauth2Login(OidcUser oidcUser, String registrationId) {
+        // 提取 OIDC 用户信息
+        String email = oidcUser.getEmail();
+        String openId = oidcUser.getSubject();  // 唯一标识
+        String nickname = oidcUser.getName();
+        String picture = oidcUser.getPicture();
+        User user = baseMapper.selectByOpenId(registrationId, openId);
+        if (Objects.isNull(user)) {
+            user = new User();
+            user.setNickname(checkNickname(nickname));
+            user.setEmail(email);
+            user.setAvatar(picture);
+            user.setOpenId(openId);
+            user.setProvider(registrationId);
+            String code = UlidCreator.getUlid().toString();
+            user.setPassword(passwordEncoder.encode(code));
+            user.setAccount(nextAccount());
+            user.setCreatedTime(new Date());
+            boolean result = baseMapper.insert(user) > 0;
+            if (result) {
+                // 注册成功后执行相关初始化事件
+                applicationEventPublisher.publishEvent(new RegisterEvent(user.getIdUser(), user.getEmail(), code));
+            }
+        } else {
+            user.setNickname(checkNickname(nickname));
+            user.setEmail(email);
+            user.setAvatar(picture);
+            baseMapper.updateById(user);
+        }
+        TokenUser tokenUser = new TokenUser();
+        tokenUser.setToken(tokenManager.createToken(user.getAccount()));
+        tokenUser.setRefreshToken(UlidCreator.getUlid().toString());
+        stringRedisTemplate.boundValueOps(tokenUser.getRefreshToken()).set(user.getAccount(), JwtConstants.REFRESH_TOKEN_EXPIRES_HOUR, TimeUnit.HOURS);
+        return tokenUser;
     }
 }

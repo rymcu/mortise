@@ -7,6 +7,7 @@ import com.rymcu.mortise.model.BindUserRoleInfo;
 import com.rymcu.mortise.model.TokenUser;
 import com.rymcu.mortise.model.UserInfo;
 import com.rymcu.mortise.model.UserSearch;
+import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.util.List;
@@ -102,4 +103,6 @@ public interface UserService {
     String resetPassword(Long idUser);
 
     Boolean updateDelFlag(Long idUser, Integer delFlag);
+
+    TokenUser oauth2Login(OidcUser oidcUser, String registrationId);
 }
