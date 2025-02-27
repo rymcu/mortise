@@ -22,8 +22,7 @@ public class Dict {
     /**
      * 主键
      */
-    @TableId
-    @TableField(value = "id")
+    @TableId(value = "id")
     private Long idDict;
     /**
      * 代码

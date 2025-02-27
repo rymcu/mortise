@@ -18,8 +18,7 @@ import java.util.Date;
 @TableName(value = "mortise_file_part_detail", schema = "mortise")
 public class FilePartDetail {
 
-    @TableId
-    @TableField(value = "id")
+    @TableId(value = "id")
     private String id;
 
     private String platform;

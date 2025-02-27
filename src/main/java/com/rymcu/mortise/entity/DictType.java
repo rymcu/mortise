@@ -20,8 +20,7 @@ public class DictType {
     /**
      * 主键
      */
-    @TableId
-    @TableField(value = "id")
+    @TableId(value = "id")
     private String id;
     /**
      * 名称

@@ -18,8 +18,8 @@ import java.util.Date;
 @Data
 @TableName(value = "mortise_menu", schema = "mortise")
 public class Menu {
-    @TableId
-    @TableField(value = "id")
+
+    @TableId(value = "id")
     private Long idMenu;
 
     /**

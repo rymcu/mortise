@@ -279,7 +279,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user.setAvatar(Objects.isNull(userInfo.getAvatar()) ? DEFAULT_AVATAR : userInfo.getAvatar().getSrc());
             user.setAccount(nextAccount());
             user.setCreatedTime(new Date());
-            boolean result = baseMapper.insert(user) > 0;
+            boolean result = baseMapper.insertOrUpdate(user);
             if (result) {
                 // 注册成功后执行相关初始化事件
                 applicationEventPublisher.publishEvent(new RegisterEvent(user.getIdUser(), user.getEmail(), code));
@@ -355,7 +355,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user.setPassword(passwordEncoder.encode(code));
             user.setAccount(nextAccount());
             user.setCreatedTime(new Date());
-            boolean result = baseMapper.insert(user) > 0;
+            boolean result = baseMapper.insertOrUpdate(user);
             if (result) {
                 // 注册成功后执行相关初始化事件
                 applicationEventPublisher.publishEvent(new RegisterEvent(user.getIdUser(), user.getEmail(), code));

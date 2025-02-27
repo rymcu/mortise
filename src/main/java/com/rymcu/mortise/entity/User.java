@@ -20,8 +20,7 @@ import java.util.Date;
 @TableName(value = "mortise_user", schema = "mortise")
 public class User implements Serializable {
 
-    @TableId
-    @TableField(value = "id")
+    @TableId(value = "id")
     private Long idUser;
     /**
      * 登录账号

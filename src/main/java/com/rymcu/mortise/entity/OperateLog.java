@@ -22,8 +22,7 @@ public class OperateLog {
     /**
      * 日志主键
      */
-    @TableId
-    @TableField(value = "id")
+    @TableId(value = "id")
     private Long idOperateLog;
     /**
      * 链路追踪编号

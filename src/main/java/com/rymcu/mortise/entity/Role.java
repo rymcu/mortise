@@ -16,8 +16,7 @@ import java.util.Date;
 @TableName(value = "mortise_role", schema = "mortise")
 public class Role implements Serializable {
 
-    @TableId
-    @TableField(value = "id")
+    @TableId(value = "id")
     private Long idRole;
 
     /**

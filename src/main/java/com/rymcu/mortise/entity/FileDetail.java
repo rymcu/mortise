@@ -19,8 +19,7 @@ import java.util.Date;
 public class FileDetail {
 
 
-    @TableId
-    @TableField(value = "id")
+    @TableId(value = "id")
     private String id;
 
     private String url;
