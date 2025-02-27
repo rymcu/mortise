@@ -1,5 +1,7 @@
 databaseChangeLog:
   - include:
+      file: db/changelog/init/init-schema.yaml
+  - include:
       file: db/changelog/tables/mortise_user.yaml
   - include:
       file: db/changelog/tables/mortise_role.yaml

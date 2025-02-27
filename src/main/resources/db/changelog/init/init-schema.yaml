@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: init-schema
+      author: ronger
+      changes:
+        - sql:
+            sql: CREATE SCHEMA IF NOT EXISTS mortise
+            endDelimiter: ;

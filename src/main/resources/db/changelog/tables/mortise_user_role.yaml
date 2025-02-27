@@ -1,7 +1,12 @@
 databaseChangeLog:
   - changeSet:
       id: create-mortise-user-role-table
-      author: your_name
+      author: ronger
+      preConditions:
+        - onFail: CONTINUE
+        - not:
+            tableExists:
+              tableName: mortise_user_role
       changes:
         - createTable:
             tableName: mortise_user_role

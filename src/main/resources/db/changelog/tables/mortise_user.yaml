@@ -2,6 +2,12 @@ databaseChangeLog:
   - changeSet:
       id: create-mortise-user-table
       author: ronger
+      preConditions:
+        - onFail: CONTINUE
+        - not:
+            tableExists:
+              schemaName: mortise
+              tableName: mortise_user
       changes:
         - createTable:
             tableName: mortise_user
@@ -40,7 +46,7 @@ databaseChangeLog:
               - column:
                   name: status
                   type: SMALLINT
-                  defaultValueNumeric: 1
+                  defaultValueNumeric: '1'
               - column:
                   name: created_time
                   type: TIMESTAMP
@@ -57,7 +63,7 @@ databaseChangeLog:
               - column:
                   name: del_flag
                   type: SMALLINT
-                  defaultValueNumeric: 1
+                  defaultValueNumeric: '1'
 
         - sql:
             sql: COMMENT ON TABLE mortise_user IS '用户表';

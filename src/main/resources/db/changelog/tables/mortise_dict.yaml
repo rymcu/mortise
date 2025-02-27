@@ -1,7 +1,12 @@
 databaseChangeLog:
   - changeSet:
       id: create-mortise-dict-table
-      author: your_name
+      author: ronger
+      preConditions:
+        - onFail: CONTINUE
+        - not:
+            tableExists:
+              tableName: mortise_dict
       changes:
         - createTable:
             tableName: mortise_dict

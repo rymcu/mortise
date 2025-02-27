@@ -1,7 +1,12 @@
 databaseChangeLog:
   - changeSet:
       id: create-mortise-file-detail-table
-      author: your_name
+      author: ronger
+      preConditions:
+        - onFail: CONTINUE
+        - not:
+            tableExists:
+              tableName: mortise_file_detail
       changes:
         - createTable:
             tableName: mortise_file_detail

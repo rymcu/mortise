@@ -64,6 +64,8 @@ spring:
             user-info-uri: https://auth.rymcu.local/oidc/me
   liquibase:
     change-log: classpath:db/changelog/changelog-master.yaml
+    default-schema: mortise
+    liquibase-schema: public
 logging:
   file:
     path: /logs/mortise
