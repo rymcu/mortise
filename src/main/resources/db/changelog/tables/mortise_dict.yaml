@@ -1,0 +1,68 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-mortise-dict-table
+      author: your_name
+      changes:
+        - createTable:
+            tableName: mortise_dict
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: mortise_dict_pk
+              - column:
+                  name: label
+                  type: VARCHAR(128)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: value
+                  type: VARCHAR(256)
+              - column:
+                  name: dict_type_code
+                  type: VARCHAR(128)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: sort_no
+                  type: SMALLINT
+                  defaultValueNumeric: '50'
+              - column:
+                  name: status
+                  type: SMALLINT
+                  defaultValueNumeric: '1'
+              - column:
+                  name: created_by
+                  type: BIGINT
+              - column:
+                  name: created_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_by
+                  type: BIGINT
+              - column:
+                  name: updated_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: del_flag
+                  type: SMALLINT
+                  defaultValueNumeric: '1'
+
+        - sql: COMMENT ON TABLE mortise_dict IS '字典数据表'
+        - sql: COMMENT ON COLUMN mortise_dict.id IS '主键'
+        - sql: COMMENT ON CONSTRAINT mortise_dict_pk ON mortise_dict IS '字典数据表主键'
+        - sql: COMMENT ON COLUMN mortise_dict.label IS '名称'
+        - sql: COMMENT ON COLUMN mortise_dict.value IS '数据'
+        - sql: COMMENT ON COLUMN mortise_dict.dict_type_code IS '类别代码'
+        - sql: COMMENT ON COLUMN mortise_dict.sort_no IS '排序'
+        - sql: COMMENT ON COLUMN mortise_dict.status IS '状态'
+        - sql: COMMENT ON COLUMN mortise_dict.created_by IS '创建人'
+        - sql: COMMENT ON COLUMN mortise_dict.created_time IS '创建时间'
+        - sql: COMMENT ON COLUMN mortise_dict.updated_by IS '更新人'
+        - sql: COMMENT ON COLUMN mortise_dict.updated_time IS '更新时间'
+        - sql: COMMENT ON COLUMN mortise_dict.del_flag IS '删除标记'

@@ -1,0 +1,60 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-mortise-role-table
+      author: ronger
+      changes:
+        - createTable:
+            tableName: mortise_role
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: mortise_role_pk
+              - column:
+                  name: label
+                  type: VARCHAR(128)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: permission
+                  type: VARCHAR(128)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: SMALLINT
+                  defaultValueNumeric: 1
+              - column:
+                  name: created_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: del_flag
+                  type: SMALLINT
+                  defaultValueNumeric: 1
+
+        - sql: COMMENT ON TABLE mortise_role IS '角色表'
+        - sql: COMMENT ON COLUMN mortise_role.id IS '主键'
+        - sql: COMMENT ON CONSTRAINT mortise_role_pk ON mortise_role IS '角色表主键'
+        - sql: COMMENT ON COLUMN mortise_role.label IS '名称'
+        - sql: COMMENT ON COLUMN mortise_role.permission IS '权限'
+        - sql: COMMENT ON COLUMN mortise_role.status IS '状态'
+        - sql: COMMENT ON COLUMN mortise_role.created_time IS '创建时间'
+        - sql: COMMENT ON COLUMN mortise_role.updated_time IS '更新时间'
+        - sql: COMMENT ON COLUMN mortise_role.del_flag IS '删除标记'
+
+        - createIndex:
+            indexName: mortise_role_permission_uindex
+            tableName: mortise_role
+            unique: true
+            columns:
+              - column:
+                  name: permission
+        - sql: COMMENT ON INDEX mortise_role_permission_uindex IS '角色表权限索引'

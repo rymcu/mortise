@@ -1,0 +1,121 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-mortise-user-table
+      author: ronger
+      changes:
+        - createTable:
+            tableName: mortise_user
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: mortise_user_pk
+              - column:
+                  name: account
+                  type: VARCHAR(32)
+              - column:
+                  name: password
+                  type: VARCHAR(64)
+              - column:
+                  name: nickname
+                  type: VARCHAR(128)
+              - column:
+                  name: avatar
+                  type: VARCHAR(512)
+              - column:
+                  name: email
+                  type: VARCHAR(64)
+              - column:
+                  name: provider
+                  type: VARCHAR(64)
+              - column:
+                  name: open_id
+                  type: VARCHAR(64)
+              - column:
+                  name: phone
+                  type: VARCHAR(11)
+              - column:
+                  name: status
+                  type: SMALLINT
+                  defaultValueNumeric: 1
+              - column:
+                  name: created_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: last_login_time
+                  type: TIMESTAMP
+              - column:
+                  name: real_name
+                  type: VARCHAR(128)
+              - column:
+                  name: last_online_time
+                  type: TIMESTAMP
+              - column:
+                  name: del_flag
+                  type: SMALLINT
+                  defaultValueNumeric: 1
+
+        - sql:
+            sql: COMMENT ON TABLE mortise_user IS '用户表';
+            splitStatements: false
+
+        - sql:
+            sql: COMMENT ON CONSTRAINT mortise_user_pk ON mortise_user IS '用户表主键';
+            splitStatements: false
+
+        - sql: COMMENT ON COLUMN mortise_user.account IS '账号'
+        - sql: COMMENT ON COLUMN mortise_user.password IS '密码'
+        - sql: COMMENT ON COLUMN mortise_user.nickname IS '昵称'
+        - sql: COMMENT ON COLUMN mortise_user.avatar IS '头像'
+        - sql: COMMENT ON COLUMN mortise_user.email IS '邮箱'
+        - sql: COMMENT ON COLUMN mortise_user.provider IS '供应商'
+        - sql: COMMENT ON COLUMN mortise_user.open_id IS 'OpenID'
+        - sql: COMMENT ON COLUMN mortise_user.phone IS '手机号'
+        - sql: COMMENT ON COLUMN mortise_user.status IS '状态'
+        - sql: COMMENT ON COLUMN mortise_user.created_time IS '注册时间'
+        - sql: COMMENT ON COLUMN mortise_user.last_login_time IS '最后登录时间'
+        - sql: COMMENT ON COLUMN mortise_user.real_name IS '真实姓名'
+        - sql: COMMENT ON COLUMN mortise_user.last_online_time IS '最后在线时间'
+        - sql: COMMENT ON COLUMN mortise_user.del_flag IS '删除标记'
+
+        - createIndex:
+            indexName: mortise_user_account_uindex
+            tableName: mortise_user
+            unique: true
+            columns:
+              - column:
+                  name: account
+        - sql: COMMENT ON INDEX mortise_user_account_uindex IS '用户表-账号唯一索引'
+
+        - createIndex:
+            indexName: mortise_user_email_uindex
+            tableName: mortise_user
+            unique: true
+            columns:
+              - column:
+                  name: email
+        - sql: COMMENT ON INDEX mortise_user_email_uindex IS '用户表-邮箱唯一索引'
+
+        - createIndex:
+            indexName: mortise_user_phone_uindex
+            tableName: mortise_user
+            unique: true
+            columns:
+              - column:
+                  name: phone
+        - sql: COMMENT ON INDEX mortise_user_phone_uindex IS '用户表-手机号唯一索引'
+
+        - createIndex:
+            indexName: mortise_user_provider_open_id_uindex
+            tableName: mortise_user
+            unique: true
+            columns:
+              - column:
+                  name: provider
+              - column:
+                  name: open_id
+        - sql: COMMENT ON INDEX mortise_user_provider_open_id_uindex IS '用户表- OpenID 唯一索引'

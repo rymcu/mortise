@@ -1,0 +1,71 @@
+databaseChangeLog:
+  - changeSet:
+      id: create-mortise-dict-type-table
+      author: your_name
+      changes:
+        - createTable:
+            tableName: mortise_dict_type
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  autoIncrement: true
+                  constraints:
+                    primaryKey: true
+                    primaryKeyName: mortise_dict_type_pk
+              - column:
+                  name: label
+                  type: VARCHAR(128)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type_code
+                  type: VARCHAR(64)
+              - column:
+                  name: sort_no
+                  type: SMALLINT
+                  defaultValueNumeric: '50'
+              - column:
+                  name: status
+                  type: SMALLINT
+                  defaultValueNumeric: '1'
+              - column:
+                  name: created_by
+                  type: BIGINT
+              - column:
+                  name: created_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: updated_by
+                  type: BIGINT
+              - column:
+                  name: updated_time
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+              - column:
+                  name: del_flag
+                  type: SMALLINT
+                  defaultValueNumeric: '1'
+
+        - sql: COMMENT ON TABLE mortise_dict_type IS '字典类别表'
+        - sql: COMMENT ON COLUMN mortise_dict_type.id IS '主键'
+        - sql: COMMENT ON CONSTRAINT mortise_dict_type_pk ON mortise_dict_type IS '字典类别表主键'
+        - sql: COMMENT ON COLUMN mortise_dict_type.label IS '名称'
+        - sql: COMMENT ON COLUMN mortise_dict_type.type_code IS '代码'
+        - sql: COMMENT ON COLUMN mortise_dict_type.sort_no IS '排序'
+        - sql: COMMENT ON COLUMN mortise_dict_type.status IS '状态'
+        - sql: COMMENT ON COLUMN mortise_dict_type.created_by IS '创建人'
+        - sql: COMMENT ON COLUMN mortise_dict_type.created_time IS '创建时间'
+        - sql: COMMENT ON COLUMN mortise_dict_type.updated_by IS '更新人'
+        - sql: COMMENT ON COLUMN mortise_dict_type.updated_time IS '更新时间'
+        - sql: COMMENT ON COLUMN mortise_dict_type.del_flag IS '删除标记'
+
+        - createIndex:
+            indexName: mortise_dict_type_code_uindex
+            tableName: mortise_dict_type
+            unique: false
+            columns:
+              - column:
+                  name: type_code
+        - sql: COMMENT ON INDEX mortise_dict_type_code_uindex IS '字典类别表类别代码索引'

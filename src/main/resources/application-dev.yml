@@ -62,6 +62,8 @@ spring:
             authorization-uri: https://auth.rymcu.local/oidc/auth
             jwk-set-uri: https://auth.rymcu.local/oidc/jwks
             user-info-uri: https://auth.rymcu.local/oidc/me
+  liquibase:
+    change-log: classpath:db/changelog/changelog-master.yaml
 logging:
   file:
     path: /logs/mortise
