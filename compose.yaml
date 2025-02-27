@@ -60,11 +60,11 @@ services:
       NODE_EXTRA_CA_CERTS: /usr/local/share/ca-certificates/logto-rootCA.crt
     # Self-signed certificates need to be added to the container
     volumes:
-      - ./config/certs/rootCA.pem:/usr/local/share/ca-certificates/logto-rootCA.crt
+      - ./config/rootCA.pem:/usr/local/share/ca-certificates/logto-rootCA.crt
     extra_hosts:
       # Map the hostnames to the IP addresses of the host machine
-      - "auth.rymcu.local:192.168.12.101"
-      - "logto.rymcu.local:192.168.12.101"
+      - "auth.rymcu.local:172.17.0.1"
+      - "logto.rymcu.local:172.17.0.1"
     entrypoint: ['sh', '-c', 'npm run cli db seed -- --swe && npm start']
   app:
     image: 'jc21/nginx-proxy-manager:latest'
@@ -78,31 +78,4 @@ services:
       - ./app/npm/data:/data
       - ./app/npm/letsencrypt:/etc/letsencrypt
     environment:
-      # Postgres parameters:
-      DB_POSTGRES_HOST: 'db'
-      DB_POSTGRES_PORT: '5432'
-      DB_POSTGRES_USER: 'npm'
-      DB_POSTGRES_PASSWORD: 'XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl'
-      DB_POSTGRES_NAME: 'npm'
-      # Uncomment this if IPv6 is not enabled on your host
-      # DISABLE_IPV6: 'true'
       TZ: Asia/Shanghai
-    depends_on:
-      db:
-        condition: service_healthy
-  db:
-    image: postgres:17-alpine
-    container_name: npm-db
-    environment:
-      POSTGRES_USER: 'npm'
-      POSTGRES_PASSWORD: 'XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl'
-      POSTGRES_DB: 'npm'
-    healthcheck:
-      test: [ 'CMD-SHELL', 'pg_isready -U postgres' ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    volumes:
-      - ./config/postgresql.conf:/etc/postgresql/postgresql.conf
-      - ./config/pg_hba.conf:/etc/postgresql/pg_hba.conf
-      - ./app/npm/postgres:/var/lib/postgresql/data

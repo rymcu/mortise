@@ -3,7 +3,6 @@ package com.rymcu.mortise.auth;
 import com.alibaba.fastjson.JSONObject;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.core.result.GlobalResultGenerator;
-import com.rymcu.mortise.core.result.ResultCode;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
