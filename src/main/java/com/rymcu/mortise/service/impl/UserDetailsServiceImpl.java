@@ -1,9 +1,9 @@
 package com.rymcu.mortise.service.impl;
 
+import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.mapper.UserMapper;
 import com.rymcu.mortise.model.UserDetailInfo;
-import com.rymcu.mortise.service.UserService;
 import jakarta.annotation.Resource;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -37,7 +37,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
             Set<GrantedAuthority> authorities = roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
             return new UserDetailInfo(user.getAccount(), user.getPassword(), user.getStatus(), authorities);
         }
-        return null;
+        throw new UsernameNotFoundException(ResultCode.UNKNOWN_ACCOUNT.getMessage());
     }
 
 }

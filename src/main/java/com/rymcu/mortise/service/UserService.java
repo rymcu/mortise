@@ -9,7 +9,6 @@ import com.rymcu.mortise.model.UserInfo;
 import com.rymcu.mortise.model.UserSearch;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
-import javax.security.auth.login.AccountNotFoundException;
 import java.util.List;
 import java.util.Set;
 
@@ -46,7 +45,7 @@ public interface UserService {
      * @param password 密码
      * @return TokenUser
      */
-    TokenUser login(String account, String password) throws AccountNotFoundException;
+    TokenUser login(String account, String password);
 
     /**
      * 刷新 token 接口
@@ -54,7 +53,7 @@ public interface UserService {
      * @param refreshToken 刷新 token
      * @return TokenUser
      */
-    TokenUser refreshToken(String refreshToken) throws AccountNotFoundException;
+    TokenUser refreshToken(String refreshToken);
 
     /**
      * 查询用户菜单权限

@@ -3,12 +3,12 @@ package com.rymcu.mortise.util;
 import com.rymcu.mortise.auth.JwtConstants;
 import com.rymcu.mortise.auth.JwtUtils;
 import com.rymcu.mortise.auth.TokenModel;
+import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.mapper.UserMapper;
 import com.rymcu.mortise.model.TokenUser;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
-import javax.security.auth.login.AccountNotFoundException;
 import java.util.Objects;
 
 /**
@@ -26,17 +26,17 @@ public class UserUtils {
      * 通过token获取当前用户的信息
      * @return User
      */
-    public static User getCurrentUserByToken() throws AccountNotFoundException {
+    public static User getCurrentUserByToken() {
         String authHeader = ContextHolderUtils.getRequest().getHeader(JwtConstants.AUTHORIZATION);
         TokenModel tokenModel = JwtUtils.getTokenModel(authHeader);
         User user = userMapper.selectByAccount(tokenModel.getUsername());
         if (Objects.nonNull(user)) {
             return user;
         }
-        throw new AccountNotFoundException("未知账号");
+        throw new UsernameNotFoundException(ResultCode.UNKNOWN_ACCOUNT.getMessage());
     }
 
-    public static TokenUser getTokenUser(String token) throws AccountNotFoundException {
+    public static TokenUser getTokenUser(String token) {
         TokenModel tokenModel = JwtUtils.getTokenModel(token);
         User user = userMapper.selectByAccount(tokenModel.getUsername());
         if (Objects.nonNull(user)) {
@@ -46,6 +46,6 @@ public class UserUtils {
             tokenUser.setToken(token);
             return tokenUser;
         }
-        throw new AccountNotFoundException("未知账号");
+        throw new UsernameNotFoundException(ResultCode.UNKNOWN_ACCOUNT.getMessage());
     }
 }

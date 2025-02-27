@@ -6,23 +6,22 @@ import com.rymcu.mortise.core.exception.CaptchaException;
 import com.rymcu.mortise.core.exception.ServiceException;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.core.result.ResultCode;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import javax.security.auth.login.AccountException;
-import javax.security.auth.login.AccountNotFoundException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -46,7 +45,7 @@ public class BaseExceptionHandler {
             } else if (ex instanceof AuthorizationDeniedException) {
                 result = new GlobalResult<>(ResultCode.UNAUTHORIZED);
                 logger.info("用户无权限");
-            } else if (ex instanceof AccountNotFoundException) {
+            } else if (ex instanceof UsernameNotFoundException) {
                 // 账号或密码错误
                 result = new GlobalResult<>(ResultCode.UNKNOWN_ACCOUNT);
                 logger.info(ex.getMessage());
@@ -90,6 +89,12 @@ public class BaseExceptionHandler {
                 case AuthorizationDeniedException unauthorizedException -> {
                     attributes.put("code", ResultCode.UNAUTHORIZED.getCode());
                     attributes.put("message", ResultCode.UNAUTHORIZED.getMessage());
+                }
+                case UsernameNotFoundException serviceException -> {
+                    //业务失败的异常，如“账号或密码错误”
+                    attributes.put("code", ResultCode.UNKNOWN_ACCOUNT.getCode());
+                    attributes.put("message", ex.getMessage());
+                    logger.info(ex.getMessage());
                 }
                 case ServiceException serviceException -> {
                     //业务失败的异常，如“账号或密码错误”

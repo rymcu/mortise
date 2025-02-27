@@ -9,6 +9,7 @@ import com.rymcu.mortise.core.constant.ProjectConstant;
 import com.rymcu.mortise.core.exception.AccountExistsException;
 import com.rymcu.mortise.core.exception.BusinessException;
 import com.rymcu.mortise.core.exception.CaptchaException;
+import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.entity.Menu;
 import com.rymcu.mortise.entity.Role;
 import com.rymcu.mortise.entity.User;
@@ -30,12 +31,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.security.auth.login.AccountNotFoundException;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -141,7 +142,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public TokenUser login(@NotBlank String account, @NotBlank String password) throws AccountNotFoundException {
+    public TokenUser login(@NotBlank String account, @NotBlank String password) {
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(account, password));
         if (authentication.isAuthenticated()) {
             SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -159,11 +160,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 return tokenUser;
             }
         }
-        throw new AccountNotFoundException("未知账号");
+        throw new UsernameNotFoundException(ResultCode.UNKNOWN_ACCOUNT.getMessage());
     }
 
     @Override
-    public TokenUser refreshToken(String refreshToken) throws AccountNotFoundException {
+    public TokenUser refreshToken(String refreshToken) {
         String account = stringRedisTemplate.boundValueOps(refreshToken).get();
         if (StringUtils.isNotBlank(account)) {
             User user = baseMapper.selectByAccount(account);
@@ -174,11 +175,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 stringRedisTemplate.boundValueOps(tokenUser.getRefreshToken()).set(account, JwtConstants.REFRESH_TOKEN_EXPIRES_HOUR, TimeUnit.HOURS);
                 stringRedisTemplate.delete(refreshToken);
                 return tokenUser;
-            } else {
-                throw new AccountNotFoundException();
             }
         }
-        throw new AccountNotFoundException();
+        throw new UsernameNotFoundException(ResultCode.UNKNOWN_ACCOUNT.getMessage());
     }
 
     @Override
