@@ -14,6 +14,8 @@
         <result column="last_login_time" property="lastLoginTime"/>
         <result column="last_online_time" property="lastOnlineTime"/>
         <result column="created_time" property="createdTime"/>
+        <result column="provider" property="provider"/>
+        <result column="open_id" property="openId"/>
     </resultMap>
     <resultMap id="UserInfoMap" type="com.rymcu.mortise.model.UserInfo">
         <id column="id" property="idUser"/>
@@ -120,7 +122,7 @@
         from mortise_user
         where id = #{idUser}
     </select>
-    <select id="selectByOpenId" resultType="com.rymcu.mortise.entity.User">
+    <select id="selectByOpenId" resultMap="BaseResultMap">
         select * from mortise_user where provider = #{provider} and open_id = #{openId}
     </select>
     <select id="selectUserRolePermissionsByIdUser" resultType="java.lang.String">

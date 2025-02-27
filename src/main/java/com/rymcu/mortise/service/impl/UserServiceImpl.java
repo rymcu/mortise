@@ -348,7 +348,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user = new User();
             user.setNickname(checkNickname(nickname));
             user.setEmail(email);
-            user.setAvatar(picture);
+            user.setAvatar(StringUtils.isNotBlank(picture) ? picture : DEFAULT_AVATAR);
             user.setOpenId(openId);
             user.setProvider(registrationId);
             String code = UlidCreator.getUlid().toString();
@@ -363,8 +363,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         } else {
             user.setNickname(checkNickname(nickname));
             user.setEmail(email);
-            user.setAvatar(picture);
-            baseMapper.updateById(user);
+            user.setAvatar(StringUtils.isNotBlank(picture) ? picture : user.getAvatar());
+            baseMapper.insertOrUpdate(user);
         }
         TokenUser tokenUser = new TokenUser();
         tokenUser.setToken(tokenManager.createToken(user.getAccount()));
