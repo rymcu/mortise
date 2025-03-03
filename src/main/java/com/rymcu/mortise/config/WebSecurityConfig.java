@@ -56,6 +56,8 @@ public class WebSecurityConfig {
     private StringRedisTemplate stringRedisTemplate;
     @Resource
     private ObjectMapper objectMapper;
+    @Resource
+    private JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public JwtDecoderFactory<ClientRegistration> idTokenDecoderFactory() {
@@ -92,7 +94,7 @@ public class WebSecurityConfig {
         http.exceptionHandling(exception -> exception
                 .authenticationEntryPoint(new JwtAuthenticationEntryPoint()).accessDeniedHandler(new RewriteAccessDenyFilter()));
 
-        http.addFilterBefore(new JwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

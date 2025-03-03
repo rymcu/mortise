@@ -34,10 +34,10 @@
         insert into mortise_user_role (id_mortise_user, id_mortise_role) VALUES (#{idUser}, #{idRole})
     </insert>
     <update id="updateLastOnlineTimeByAccount">
-        update mortise_user set last_online_time = sysdate() where account = #{account}
+        update mortise_user set last_online_time = now() where account = #{account}
     </update>
     <update id="updateLastLoginTime">
-        update mortise_user set last_login_time = sysdate() where account = #{account}
+        update mortise_user set last_login_time = now() where account = #{account}
     </update>
     <update id="updatePasswordByEmail">
         update mortise_user set password = #{password} where email = #{email}
