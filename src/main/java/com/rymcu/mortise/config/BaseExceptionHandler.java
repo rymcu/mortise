@@ -40,8 +40,8 @@ public class BaseExceptionHandler {
         if (isAjax(request)) {
             GlobalResult<ResultCode> result = new GlobalResult<>();
             if (ex instanceof BadCredentialsException) {
-                result = new GlobalResult<>(ResultCode.UNAUTHENTICATED);
-                logger.info("签名错误");
+                result = new GlobalResult<>(ResultCode.INCORRECT_ACCOUNT_OR_PASSWORD);
+                logger.info("账号或密码错误");
             } else if (ex instanceof AuthorizationDeniedException) {
                 result = new GlobalResult<>(ResultCode.UNAUTHORIZED);
                 logger.info("用户无权限");
@@ -83,8 +83,8 @@ public class BaseExceptionHandler {
             Map<String, Object> attributes = new HashMap<>(2);
             switch (ex) {
                 case BadCredentialsException unauthenticatedException -> {
-                    attributes.put("code", ResultCode.UNAUTHENTICATED.getCode());
-                    attributes.put("message", ResultCode.UNAUTHENTICATED.getMessage());
+                    attributes.put("code", ResultCode.INCORRECT_ACCOUNT_OR_PASSWORD.getCode());
+                    attributes.put("message", ResultCode.INCORRECT_ACCOUNT_OR_PASSWORD.getMessage());
                 }
                 case AuthorizationDeniedException unauthorizedException -> {
                     attributes.put("code", ResultCode.UNAUTHORIZED.getCode());
