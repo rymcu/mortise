@@ -1,5 +1,6 @@
 package com.rymcu.mortise.auth;
 
+import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.util.SpringContextHolder;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
@@ -49,7 +50,7 @@ public class JwtUtils {
                 }
             }
         }
-        throw new BadCredentialsException("");
+        throw new BadCredentialsException(ResultCode.INCORRECT_ACCOUNT_OR_PASSWORD.getMessage());
     }
 
     public static String generateToken(OidcUser oidcUser) {

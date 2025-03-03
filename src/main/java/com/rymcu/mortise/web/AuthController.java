@@ -61,7 +61,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public GlobalResult logout() {
+    public GlobalResult<?> logout() {
         User user = UserUtils.getCurrentUserByToken();
         if (Objects.nonNull(user)) {
             tokenManager.deleteToken(user.getAccount());
@@ -69,7 +69,7 @@ public class AuthController {
         return GlobalResultGenerator.genSuccessResult();
     }
 
-    @GetMapping("/user")
+    @GetMapping("/me")
     public GlobalResult<JSONObject> user() {
         User user = UserUtils.getCurrentUserByToken();
         AuthInfo authInfo = new AuthInfo();
