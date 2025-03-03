@@ -1,141 +1,98 @@
-version: 25
+version: 38
 jobs:
-  - name: maven cli
-    jobExecutor: internal
-    steps:
-      - !CheckoutStep
-        name: Checkout Code
-        cloneCredential: !DefaultCredential {}
-        withLfs: false
-        withSubmodules: false
-        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-      - !CommandStep
-        name: delete build version
-        runInContainer: true
-        image: '@script:builtin:maven:determine-docker-image@'
-        interpreter: !DefaultInterpreter
-          commands:
-            - echo "Detecting project version (may require some time while downloading maven dependencies)..."
-            - echo $(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -q -DforceStdout) > buildVersion
-        useTTY: false
-        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-      - !SetBuildVersionStep
-        name: set build version
-        buildVersion: '@file:buildVersion@'
-        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-      - !CommandStep
-        name: run unit tests
-        runInContainer: true
-        image: '@script:builtin:maven:determine-docker-image@'
-        interpreter: !DefaultInterpreter
-          commands:
-            - export ENCRYPTION_KEY=@secret:encryption_key@
-            - export OPENAI_API_KEY=@secret:openai_api_key@
-            - export OPENAI_BASE_URL=@secret:openai_base_url@
-            - mvn test -P dev
-        useTTY: false
-        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-    triggers:
-      - !BranchUpdateTrigger {}
-    retryCondition: never
-    maxRetries: 3
-    retryDelay: 30
-    timeout: 3600
-  - name: package
-    jobExecutor: internal
-    steps:
-      - !CheckoutStep
-        name: Checkout Code
-        cloneCredential: !DefaultCredential {}
-        withLfs: false
-        withSubmodules: false
-        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-      - !CommandStep
-        name: delete build version
-        runInContainer: true
-        image: '@script:builtin:maven:determine-docker-image@'
-        interpreter: !DefaultInterpreter
-          commands:
-            - echo "Detecting project version (may require some time while downloading maven dependencies)..."
-            - echo $(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -q -DforceStdout) > buildVersion
-        useTTY: false
-        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-      - !SetBuildVersionStep
-        name: Set Build Version
-        buildVersion: '@file:buildVersion@'
-        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-      - !CommandStep
-        name: run maven package
-        runInContainer: true
-        image: '@script:builtin:maven:determine-docker-image@'
-        interpreter: !DefaultInterpreter
-          commands:
-            - export ENCRYPTION_KEY=@secret:encryption_key@
-            - export OPENAI_API_KEY=@secret:openai_api_key@
-            - export OPENAI_BASE_URL=@secret:openai_base_url@
-            - mvn package
-        useTTY: false
-        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-      - !PublishArtifactStep
-        name: Publish Artifacts
-        artifacts: '**'
-        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-    retryCondition: never
-    maxRetries: 3
-    retryDelay: 30
-    timeout: 3600
-  - name: Build Docker Image
-    jobExecutor: internal
-    steps:
-      - !SetBuildVersionStep
-        name: Set Build Version
-        buildVersion: '@file:buildVersion@'
-        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-      - !BuildImageStep
-        name: Build Docker Image
-        tags: rymcu/@project_name@:@build_version@
-        publish: true
-        removeDanglingImages: true
-        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-    jobDependencies:
-      - jobName: package
-        requireSuccessful: true
-        artifacts: '**'
-    retryCondition: never
-    maxRetries: 3
-    retryDelay: 30
-    timeout: 3600
-  - name: Pull from Github
-    jobExecutor: internal
-    steps:
-      - !PullRepository
-        name: Pull from GitHub
-        remoteUrl: https://github.com/rymcu/mortise
-        syncToChildProject: false
-        passwordSecret: access_token
-        refs: refs/heads/* refs/tags/*
-        withLfs: false
-        force: false
-        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-    triggers:
-      - !ScheduleTrigger
-        cronExpression: 0 0 1 * * ?
-    retryCondition: never
-    maxRetries: 3
-    retryDelay: 30
-    timeout: 3600
-  - name: Push from GitHub
-    jobExecutor: internal
-    steps:
-      - !PushRepository
-        name: Push to GitHub
-        remoteUrl: https://github.com/rymcu/mortise
-        passwordSecret: access_token
-        force: false
-        condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
-    triggers:
-      - !BranchUpdateTrigger {}
-    retryCondition: never
-    maxRetries: 3
-    retryDelay: 30
-    timeout: 3600
+- name: package
+  jobExecutor: internal
+  steps:
+  - !CheckoutStep
+    name: Checkout Code
+    cloneCredential: !DefaultCredential {}
+    withLfs: false
+    withSubmodules: false
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  - !CommandStep
+    name: delete build version
+    runInContainer: true
+    image: '@script:builtin:maven:determine-docker-image@'
+    interpreter: !DefaultInterpreter
+      commands: |
+        echo "Detecting project version (may require some time while downloading maven dependencies)..."
+        echo $(mvn org.apache.maven.plugins:maven-help-plugin:3.1.0:evaluate -Dexpression=project.version -q -DforceStdout) > buildVersion
+    useTTY: false
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  - !SetBuildVersionStep
+    name: Set Build Version
+    buildVersion: '@file:buildVersion@'
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  - !CommandStep
+    name: run maven package
+    runInContainer: true
+    image: '@script:builtin:maven:determine-docker-image@'
+    interpreter: !DefaultInterpreter
+      commands: |
+        export ENCRYPTION_KEY=@secret:encryption_key@
+        export OPENAI_API_KEY=@secret:openai_api_key@
+        export OPENAI_BASE_URL=@secret:openai_base_url@
+        mvn package
+    useTTY: false
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  - !PublishArtifactStep
+    name: Publish Artifacts
+    artifacts: '**'
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  retryCondition: never
+  maxRetries: 3
+  retryDelay: 30
+  timeout: 3600
+- name: Build Docker Image
+  jobExecutor: internal
+  steps:
+  - !SetBuildVersionStep
+    name: Set Build Version
+    buildVersion: '@file:buildVersion@'
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  - !BuildImageStep
+    name: Build Docker Image
+    output: !RegistryOutput
+      tags: rymcu/@project_name@:@build_version@
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  jobDependencies:
+  - jobName: package
+    requireSuccessful: true
+    artifacts: '**'
+  retryCondition: never
+  maxRetries: 3
+  retryDelay: 30
+  timeout: 3600
+- name: Pull from Github
+  jobExecutor: internal
+  steps:
+  - !PullRepository
+    name: Pull from GitHub
+    remoteUrl: https://github.com/rymcu/mortise
+    passwordSecret: access_token
+    refs: refs/heads/* refs/tags/*
+    withLfs: false
+    force: false
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  triggers:
+  - !ScheduleTrigger
+    cronExpression: 0 0 1 * * ?
+  retryCondition: never
+  maxRetries: 3
+  retryDelay: 30
+  timeout: 3600
+- name: Push from GitHub
+  jobExecutor: internal
+  steps:
+  - !PushRepository
+    name: Push to GitHub
+    remoteUrl: https://github.com/rymcu/mortise
+    passwordSecret: access_token
+    force: false
+    condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
+  triggers:
+  - !BranchUpdateTrigger {}
+  retryCondition: never
+  maxRetries: 3
+  retryDelay: 30
+  timeout: 3600
