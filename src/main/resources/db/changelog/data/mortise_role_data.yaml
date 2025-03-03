@@ -1,0 +1,35 @@
+# db/changelog/data/mortise_role_data.yaml
+databaseChangeLog:
+  - changeSet:
+      id: init-roles
+      author: ronger
+      preConditions:
+        - onFail: MARK_RAN
+        - and:
+          - not:
+              sqlCheck:
+                expectedResult: 1
+                sql: "SELECT COUNT(*) FROM mortise_role WHERE permission = 'administrator'"
+          - not:
+              sqlCheck:
+                expectedResult: 1
+                sql: "SELECT COUNT(*) FROM mortise_role WHERE permission = 'user'"
+      changes:
+        - insert:
+            tableName: mortise_role
+            columns:
+              - column:
+                  name: label
+                  value: administrator
+              - column:
+                  name: permission
+                  value: administrator
+        - insert:
+            tableName: mortise_role
+            columns:
+              - column:
+                  name: label
+                  value: user
+              - column:
+                  name: permission
+                  value: user
