@@ -36,14 +36,15 @@ Built by RYMCU
 1. Clone the repository
 2. Run `update_hosts.bat` or `update_hosts.sh` to update the hosts file
 3. Install [mkcert](https://github.com/FiloSottile/mkcert#installation) , generate a self-signed certificate for `rymcu.local` and `*.rymcu.local`
-4. Run `mkcert -key-file key.pem -cert-file cert.pem rymcu.local *.rymcu.local`
-5. Run `compose.yaml` with Docker Compose
-6. Open `http://localhost:81` in your browser, and you should see the Nginx Proxy Manager UI, default username and password are `admin@example.com` and `changeme`
-7. add `rymcu.local` and `*.rymcu.local` to the `Trusted Domains` field in the Nginx Proxy Manager UI
-8. add `npm.rymcu.local`: `app:81`
-9. add `auth.rymcu.local`: `logto:3010`
-10. add `logto.rymcu.local`: `logto:3011`
-11. add `rymcu.local`: `app:80`
+4. Run `mkcert -install && mkcert -key-file key.pem -cert-file cert.pem rymcu.local *.rymcu.local`
+5. optional: Run `mkcert -install && mkcert -key-file key.pem -cert-file cert.pem npm.rymcu.local`
+6. Run `compose.yaml` with Docker Compose
+7. Open `http://localhost:81` in your browser, and you should see the Nginx Proxy Manager UI, default username and password are `admin@example.com` and `changeme`
+8. add `rymcu.local` and `*.rymcu.local` to the `Trusted Domains` field in the Nginx Proxy Manager UI
+9. add `npm.rymcu.local`: `app:81`
+10. add `auth.rymcu.local`: `logto:3010`
+11. add `logto.rymcu.local`: `logto:3011`
+12. add `rymcu.local`: `app:80`
 
 More information about Nginx Proxy Manager can be found [here](https://nginxproxymanager.com/guide/)
 

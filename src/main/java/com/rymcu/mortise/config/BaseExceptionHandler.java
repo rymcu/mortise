@@ -1,6 +1,6 @@
 package com.rymcu.mortise.config;
 
-import com.alibaba.fastjson.support.spring.annotation.FastJsonView;
+import com.alibaba.fastjson2.support.spring6.webservlet.view.FastJsonView;
 import com.rymcu.mortise.core.exception.BusinessException;
 import com.rymcu.mortise.core.exception.CaptchaException;
 import com.rymcu.mortise.core.exception.ServiceException;
