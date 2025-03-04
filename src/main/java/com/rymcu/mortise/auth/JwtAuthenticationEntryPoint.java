@@ -1,17 +1,18 @@
 package com.rymcu.mortise.auth;
 
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.core.result.GlobalResultGenerator;
+import jakarta.annotation.Resource;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 /**
  * Created on 2025/2/24 19:51.
@@ -20,7 +21,11 @@ import java.nio.charset.StandardCharsets;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.auth
  */
+@Component
 public class JwtAuthenticationEntryPoint  implements AuthenticationEntryPoint {
+
+    @Resource
+    private ObjectMapper objectMapper;
 
     @Override
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
@@ -28,7 +33,7 @@ public class JwtAuthenticationEntryPoint  implements AuthenticationEntryPoint {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         ServletOutputStream outputStream = response.getOutputStream();
         GlobalResult<Object> result = GlobalResultGenerator.genResult(HttpServletResponse.SC_UNAUTHORIZED, null, authException.getMessage());
-        outputStream.write(JSONObject.toJSONString(result).getBytes(StandardCharsets.UTF_8));
+        outputStream.write(objectMapper.writeValueAsBytes(result));
         outputStream.flush();
         outputStream.close();
     }

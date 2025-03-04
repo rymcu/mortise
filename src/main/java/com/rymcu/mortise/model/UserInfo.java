@@ -1,9 +1,9 @@
 package com.rymcu.mortise.model;
 
-import com.alibaba.fastjson.annotation.JSONField;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * Created on 2024/4/19 9:15.
@@ -33,14 +33,13 @@ public class UserInfo {
 
     private String phone;
 
-    @JSONField(format = "yyyy-MM-dd HH:mm")
-    private Date lastLoginTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    private LocalDateTime lastLoginTime;
 
-    @JSONField(format = "yyyy-MM-dd HH:mm")
-    private Date lastOnlineTime;
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
+    private LocalDateTime lastOnlineTime;
 
-    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
-    private Date createdTime;
+    private LocalDateTime createdTime;
 
     private Integer onlineStatus;
 

@@ -1,13 +1,13 @@
 package com.rymcu.mortise.entity;
 
-import com.alibaba.fastjson.annotation.JSONField;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * Created on 2024/4/13 15:01.
@@ -21,6 +21,7 @@ import java.util.Date;
 public class User implements Serializable {
 
     @TableId(value = "id")
+    @TableField(value = "id")
     private Long idUser;
     /**
      * 登录账号
@@ -30,7 +31,7 @@ public class User implements Serializable {
     /**
      * 密码
      */
-    @JSONField(serialize = false)
+    @JsonIgnore
     private String password;
 
     /**
@@ -70,20 +71,17 @@ public class User implements Serializable {
     /**
      * 最后登录时间
      */
-    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
-    private Date lastLoginTime;
+    private LocalDateTime lastLoginTime;
 
     /**
      * 创建时间
      */
-    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
-    private Date createdTime;
+    private LocalDateTime createdTime;
 
     /**
      * 最后在线时间
      */
-    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
-    private Date lastOnlineTime;
+    private LocalDateTime lastOnlineTime;
 
     private String openId;
 

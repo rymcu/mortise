@@ -38,6 +38,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -277,7 +278,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user.setPassword(passwordEncoder.encode(code));
             user.setAvatar(Objects.isNull(userInfo.getAvatar()) ? DEFAULT_AVATAR : userInfo.getAvatar().getSrc());
             user.setAccount(nextAccount());
-            user.setCreatedTime(new Date());
+            user.setCreatedTime(LocalDateTime.now());
             boolean result = baseMapper.insertOrUpdate(user);
             if (result) {
                 // 注册成功后执行相关初始化事件
@@ -353,7 +354,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             String code = UlidCreator.getUlid().toString();
             user.setPassword(passwordEncoder.encode(code));
             user.setAccount(nextAccount());
-            user.setCreatedTime(new Date());
+            user.setCreatedTime(LocalDateTime.now());
             boolean result = baseMapper.insertOrUpdate(user);
             if (result) {
                 // 注册成功后执行相关初始化事件

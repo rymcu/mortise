@@ -1,6 +1,7 @@
 package com.rymcu.mortise.core.service.redis;
 
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.Set;
@@ -236,7 +237,7 @@ public interface RedisService {
      * @param value
      * @return 返回序列化后的字符串。若value为null，则返回 {@link RedisService#BLANK_CONTENT}
      */
-    String makeSerializedString(Object value);
+    String makeSerializedString(Object value) throws JsonProcessingException;
 
     /**
      * 写入/修改 缓存内容(无论key是否存在，均会更新key对应的值)
@@ -246,7 +247,7 @@ public interface RedisService {
      * @param value
      * @return
      */
-    String put(String cacheName, String key, Object value);
+    String put(String cacheName, String key, Object value) throws JsonProcessingException;
 
     /**
      * 写入/修改 缓存内容(无论key是否存在，均会更新key对应的值)
@@ -257,9 +258,9 @@ public interface RedisService {
      * @param expireTime 缓存 内容过期时间 （单位：秒） ，若expireTime小于0 则表示该内容不过期
      * @return
      */
-    String put(String cacheName, String key, Object value, int expireTime);
+    String put(String cacheName, String key, Object value, int expireTime) throws JsonProcessingException;
 
-    Object get(String cacheName, String key);
+    Object get(String cacheName, String key) throws JsonProcessingException;
 
 
 }

@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * Created on 2024/9/22 20:03.
@@ -21,7 +21,8 @@ public class DictType {
      * 主键
      */
     @TableId(value = "id")
-    private String id;
+    @TableField(value = "id")
+    private Long idDictType;
     /**
      * 名称
      */
@@ -45,7 +46,7 @@ public class DictType {
     /**
      * 创建时间
      */
-    private Date createdTime;
+    private LocalDateTime createdTime;
     /**
      * 更新人
      */
@@ -53,5 +54,5 @@ public class DictType {
     /**
      * 更新时间
      */
-    private Date updatedTime;
+    private LocalDateTime updatedTime;
 }

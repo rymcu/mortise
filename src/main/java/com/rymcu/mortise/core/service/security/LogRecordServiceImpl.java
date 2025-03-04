@@ -1,5 +1,7 @@
 package com.rymcu.mortise.core.service.security;
 
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.date.LocalDateTimeUtil;
 import com.github.f4b6a3.ulid.UlidCreator;
 import com.mzt.logapi.beans.CodeVariableType;
 import com.mzt.logapi.beans.LogRecord;
@@ -57,7 +59,7 @@ public class LogRecordServiceImpl implements ILogRecordService {
         operateLog.setContent(logRecord.getAction());
         operateLog.setFail(logRecord.isFail());
         operateLog.setExtra(logRecord.getExtra());
-        operateLog.setCreatedTime(logRecord.getCreateTime());
+        operateLog.setCreatedTime(DateUtil.toLocalDateTime(logRecord.getCreateTime()));
         return operateLog;
     }
 }

@@ -1,8 +1,8 @@
 package com.rymcu.mortise.core.service.redis.impl;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rymcu.mortise.config.RedisProperties;
 import com.rymcu.mortise.core.service.redis.RedisResult;
 import com.rymcu.mortise.core.service.redis.RedisService;
@@ -30,6 +30,9 @@ import java.util.*;
 @Component("redisService")
 @EnableConfigurationProperties({RedisProperties.class})
 public class RedisServiceImpl implements RedisService {
+
+    @Resource
+    private ObjectMapper objectMapper;
 
     private static final Logger logger = LoggerFactory.getLogger(RedisServiceImpl.class);
 
@@ -526,29 +529,29 @@ public class RedisServiceImpl implements RedisService {
     }
 
     @Override
-    public String makeSerializedString(Object value) {
+    public String makeSerializedString(Object value) throws JsonProcessingException {
         if (value == null) {
             return BLANK_CONTENT;
         }
 
-        if ((value instanceof Collection) && ((Collection) value).size() == 0) {
+        if ((value instanceof Collection) && ((Collection<?>) value).isEmpty()) {
             return BLANK_CONTENT;
         }
 
-        if ((value instanceof Map) && ((Map) value).size() == 0) {
+        if ((value instanceof Map) && ((Map<?, ?>) value).isEmpty()) {
             return BLANK_CONTENT;
         }
 
 
-        return JSON.toJSONString(value);
+        return objectMapper.writeValueAsString(value);
     }
 
     @Override
-    public String put(String cacheName, String key, Object value) {
+    public String put(String cacheName, String key, Object value) throws JsonProcessingException {
         String result = get(cacheName);
-        Map map = new HashMap();
+        Map<String, Object> map = new HashMap<>();
         if (StringUtils.isNotBlank(result)) {
-            map = JSON.parseObject(result, new TypeReference<Map>() {
+            map = objectMapper.readValue(result, new com.fasterxml.jackson.core.type.TypeReference<>() {
             });
         }
         map.put(key, value);
@@ -556,11 +559,11 @@ public class RedisServiceImpl implements RedisService {
     }
 
     @Override
-    public String put(String cacheName, String key, Object value, int expireTime) {
+    public String put(String cacheName, String key, Object value, int expireTime) throws JsonProcessingException {
         String result = get(cacheName);
-        Map map = new HashMap();
+        Map<String, Object> map = new HashMap<>();
         if (StringUtils.isNotBlank(result)) {
-            map = JSON.parseObject(result, new TypeReference<Map>() {
+            map = objectMapper.readValue(result, new com.fasterxml.jackson.core.type.TypeReference<>() {
             });
         }
         map.put(key, value);
@@ -568,10 +571,10 @@ public class RedisServiceImpl implements RedisService {
     }
 
     @Override
-    public Object get(String cacheName, String key) {
+    public Object get(String cacheName, String key) throws JsonProcessingException {
         String result = get(cacheName);
         if (StringUtils.isNotBlank(result)) {
-            Map map = JSON.parseObject(result, new TypeReference<Map>() {
+            Map<String, Object> map = objectMapper.readValue(result, new com.fasterxml.jackson.core.type.TypeReference<>() {
             });
             return map.get(key);
         }

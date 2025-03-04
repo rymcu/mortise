@@ -1,6 +1,7 @@
 package com.rymcu.mortise.web;
 
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.core.result.GlobalResultGenerator;
 import com.rymcu.mortise.enumerate.DelFlag;
@@ -47,9 +48,10 @@ public class UserController {
     }
 
     @PostMapping("/reset-password")
-    public GlobalResult<JSONObject> resetPassword(@RequestBody UserInfo userInfo) {
+    public GlobalResult<ObjectNode> resetPassword(@RequestBody UserInfo userInfo) {
         String password = userService.resetPassword(userInfo.getIdUser());
-        JSONObject jsonObject = new JSONObject();
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode jsonObject = objectMapper.createObjectNode();
         jsonObject.put("password", password);
         return GlobalResultGenerator.genSuccessResult(jsonObject);
     }

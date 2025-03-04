@@ -126,13 +126,6 @@
             <artifactId>mybatis-plus-jsqlparser</artifactId>
             <version>${mybatis-plus.version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.alibaba.fastjson2/fastjson2-extension-spring6 -->
-        <dependency>
-            <groupId>com.alibaba.fastjson2</groupId>
-            <artifactId>fastjson2-extension-spring6</artifactId>
-            <version>2.0.56</version>
-        </dependency>
-
         <!-- spring security 权限控制框架 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -289,8 +282,8 @@
         <!-- 华为云公有仓库 -->
         <repository>
             <id>public</id>
-            <name>huawei cloud</name>
-            <url>https://repo.huaweicloud.com/repository/maven/</url>
+            <name>huawei cloud maven</name>
+            <url>https://mirrors.huaweicloud.com/repository/maven/</url>
             <releases>
                 <enabled>true</enabled>
             </releases>

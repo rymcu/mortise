@@ -1,6 +1,7 @@
 package com.rymcu.mortise.web;
 
-import com.alibaba.fastjson2.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mzt.logapi.context.LogRecordContext;
 import com.mzt.logapi.starter.annotation.LogRecord;
 import com.rymcu.mortise.auth.TokenManager;
@@ -70,15 +71,16 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public GlobalResult<JSONObject> user() {
+    public GlobalResult<ObjectNode> user() {
         User user = UserUtils.getCurrentUserByToken();
         AuthInfo authInfo = new AuthInfo();
         BeanCopierUtil.copy(user, authInfo);
         authInfo.setScope(userService.findUserPermissionsByIdUser(user.getIdUser()));
         authInfo.setRole(userService.findUserRoleListByIdUser(user.getIdUser()));
         authInfo.setLinks(menuService.findLinksByIdUser(user.getIdUser()));
-        JSONObject object = new JSONObject();
-        object.put("user", authInfo);
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode object = objectMapper.createObjectNode();
+        object.set("user", objectMapper.valueToTree(authInfo));
         return GlobalResultGenerator.genSuccessResult(object);
     }
 

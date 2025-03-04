@@ -1,6 +1,7 @@
 package com.rymcu.mortise.handler;
 
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rymcu.mortise.handler.event.OidcUserEvent;
 import com.rymcu.mortise.service.UserService;
 import jakarta.annotation.Resource;
@@ -23,12 +24,14 @@ public class OidcUserEventHandler {
 
     @Resource
     private UserService userService;
+    @Resource
+    private ObjectMapper objectMapper;
 
     @Async
     @EventListener
-    public void processAccountLastOnlineTimeEvent(OidcUserEvent oidcUserEvent) {
+    public void processAccountLastOnlineTimeEvent(OidcUserEvent oidcUserEvent) throws JsonProcessingException {
         OidcUser user = oidcUserEvent.getUser();
-        System.out.println(JSONObject.toJSONString(user));
+        System.out.println(objectMapper.writeValueAsString(user));
     }
 
 }

@@ -10,6 +10,7 @@ import com.rymcu.mortise.service.MenuService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -70,7 +71,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
             oldMenu.setParentId(menu.getParentId());
             oldMenu.setUpdatedTime(menu.getUpdatedTime());
         }
-        menu.setCreatedTime(new Date());
+        oldMenu.setCreatedTime(LocalDateTime.now());
         return baseMapper.insertOrUpdate(menu);
     }
 

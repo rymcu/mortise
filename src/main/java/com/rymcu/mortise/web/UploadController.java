@@ -1,6 +1,7 @@
 package com.rymcu.mortise.web;
 
-import com.alibaba.fastjson2.JSONObject;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.core.result.GlobalResultGenerator;
 import com.rymcu.mortise.service.UploadService;
@@ -33,11 +34,13 @@ public class UploadController {
 
     @PostMapping("/file")
     @Transactional(rollbackFor = Exception.class)
-    public GlobalResult<JSONObject> uploadFile(@RequestParam(value = "file", required = false) MultipartFile multipartFile) throws NoSuchAlgorithmException {
+    public GlobalResult<ObjectNode> uploadFile(@RequestParam(value = "file", required = false) MultipartFile multipartFile) throws NoSuchAlgorithmException {
         if (multipartFile == null) {
             return GlobalResultGenerator.genErrorResult("请选择要上传的文件");
         }
-        JSONObject data = new JSONObject(2);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        ObjectNode data = objectMapper.createObjectNode();
 
         if (multipartFile.getSize() == 0) {
             data.put("message", "上传失败!");

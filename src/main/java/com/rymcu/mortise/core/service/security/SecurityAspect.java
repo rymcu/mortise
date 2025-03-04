@@ -1,7 +1,8 @@
 package com.rymcu.mortise.core.service.security;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rymcu.mortise.auth.JwtConstants;
 import com.rymcu.mortise.model.TokenUser;
 import com.rymcu.mortise.util.UserUtils;
@@ -50,19 +51,24 @@ public class SecurityAspect {
      * @throws Throwable 调用出错
      */
     @Before(value = "securityPointCut()")
-    public void doBefore(JoinPoint joinPoint) throws AccountNotFoundException {
+    public void doBefore(JoinPoint joinPoint) throws AccountNotFoundException, JsonProcessingException {
         logger.info("检查用户修改信息权限 start ...");
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest();
+        HttpServletRequest request = ((ServletRequestAttributes) Objects.requireNonNull(RequestContextHolder.getRequestAttributes())).getRequest();
         String idUser = "";
         if (isAjax(request)) {
             Object[] objects = joinPoint.getArgs();
-            JSONObject jsonObject;
             if (objects[0] instanceof Integer) {
                 idUser = objects[0].toString();
             } else {
-                jsonObject = JSONObject.parseObject(JSON.toJSONString(objects[0]));
-                if (Objects.nonNull(jsonObject)) {
-                    idUser = jsonObject.getString("idUser");
+                ObjectMapper objectMapper = new ObjectMapper();
+                String jsonString = objectMapper.writeValueAsString(objects[0]);
+                JsonNode jsonNode = objectMapper.readTree(jsonString);
+
+                if (Objects.nonNull(jsonNode)) {
+                    JsonNode idUserNode = jsonNode.get("idUser");
+                    if (idUserNode != null) {
+                        idUser = idUserNode.asText();
+                    }
                 }
             }
         } else {

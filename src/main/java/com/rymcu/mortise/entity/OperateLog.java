@@ -1,12 +1,11 @@
 package com.rymcu.mortise.entity;
 
-import com.alibaba.fastjson.annotation.JSONField;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * Created on 2024/2/27 14:16.
@@ -23,6 +22,7 @@ public class OperateLog {
      * 日志主键
      */
     @TableId(value = "id")
+    @TableField(value = "id")
     private Long idOperateLog;
     /**
      * 链路追踪编号
@@ -84,7 +84,6 @@ public class OperateLog {
     /**
      * 开始时间
      */
-    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
-    private Date createdTime;
+    private LocalDateTime createdTime;
 
 }

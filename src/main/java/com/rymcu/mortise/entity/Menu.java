@@ -1,12 +1,11 @@
 package com.rymcu.mortise.entity;
 
-import com.alibaba.fastjson.annotation.JSONField;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-import java.util.Date;
+import java.time.LocalDateTime;
 
 /**
  * Created on 2024/4/17 8:56.
@@ -20,6 +19,7 @@ import java.util.Date;
 public class Menu {
 
     @TableId(value = "id")
+    @TableField(value = "id")
     private Long idMenu;
 
     /**
@@ -66,12 +66,10 @@ public class Menu {
     /**
      * 创建时间
      */
-    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
-    private Date createdTime;
+    private LocalDateTime createdTime;
 
     /**
      * 更新时间
      */
-    @JSONField(format = "yyyy-MM-dd HH:mm:ss")
-    private Date updatedTime;
+    private LocalDateTime updatedTime;
 }

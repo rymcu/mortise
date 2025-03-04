@@ -19,7 +19,8 @@ import java.util.Date;
 public class FilePartDetail {
 
     @TableId(value = "id")
-    private String id;
+    @TableField(value = "id")
+    private Long idFilePartDetail;
 
     private String platform;
 

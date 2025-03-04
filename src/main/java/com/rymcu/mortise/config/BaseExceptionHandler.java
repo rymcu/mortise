@@ -1,6 +1,5 @@
 package com.rymcu.mortise.config;
 
-import com.alibaba.fastjson2.support.spring6.webservlet.view.FastJsonView;
 import com.rymcu.mortise.core.exception.BusinessException;
 import com.rymcu.mortise.core.exception.CaptchaException;
 import com.rymcu.mortise.core.exception.ServiceException;
@@ -20,6 +19,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.view.json.AbstractJackson2View;
+import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 import javax.security.auth.login.AccountException;
 import java.util.HashMap;
@@ -79,7 +80,7 @@ public class BaseExceptionHandler {
             return result;
         } else {
             ModelAndView mv = new ModelAndView();
-            FastJsonView view = new FastJsonView();
+            AbstractJackson2View view = new MappingJackson2JsonView();
             Map<String, Object> attributes = new HashMap<>(2);
             switch (ex) {
                 case BadCredentialsException unauthenticatedException -> {

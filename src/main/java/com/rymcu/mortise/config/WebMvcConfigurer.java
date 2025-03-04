@@ -1,11 +1,6 @@
 package com.rymcu.mortise.config;
 
 
-import com.alibaba.fastjson.serializer.SerializeConfig;
-import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.alibaba.fastjson.serializer.ToStringSerializer;
-import com.alibaba.fastjson.support.config.FastJsonConfig;
-import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
@@ -30,28 +25,6 @@ import java.util.List;
 public class WebMvcConfigurer extends WebMvcConfigurationSupport {
 
     private final Logger logger = LoggerFactory.getLogger(WebMvcConfigurer.class);
-
-    @Override
-    public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-        FastJsonHttpMessageConverter converter = new FastJsonHttpMessageConverter();
-        FastJsonConfig config = new FastJsonConfig();
-        // 保留空的字段
-        config.setSerializerFeatures(SerializerFeature.WriteMapNullValue,
-                //String null -> ""
-                SerializerFeature.WriteNullStringAsEmpty);
-        // SerializerFeature.WriteNullNumberAsZero);//Number null -> 0
-        //关闭循环引用
-        config.setSerializerFeatures(SerializerFeature.DisableCircularReferenceDetect);
-        // 设置 Long 类型转为 String
-        SerializeConfig serializeConfig = new SerializeConfig();
-        serializeConfig.put(Long.class, ToStringSerializer.instance);
-        serializeConfig.put(Long.TYPE, ToStringSerializer.instance);
-        config.setSerializeConfig(serializeConfig);
-        converter.setFastJsonConfig(config);
-        converter.setSupportedMediaTypes(Arrays.asList(MediaType.APPLICATION_JSON));
-        converter.setDefaultCharset(Charset.forName("UTF-8"));
-        converters.add(0, converter);
-    }
 
     /**
      * 解决跨域问题

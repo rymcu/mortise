@@ -58,6 +58,10 @@ public class WebSecurityConfig {
     private ObjectMapper objectMapper;
     @Resource
     private JwtAuthenticationFilter jwtAuthenticationFilter;
+    @Resource
+    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    @Resource
+    private RewriteAccessDenyFilter rewriteAccessDenyFilter;
 
     @Bean
     public JwtDecoderFactory<ClientRegistration> idTokenDecoderFactory() {
@@ -92,7 +96,7 @@ public class WebSecurityConfig {
                 ).httpBasic(Customizer.withDefaults());
 
         http.exceptionHandling(exception -> exception
-                .authenticationEntryPoint(new JwtAuthenticationEntryPoint()).accessDeniedHandler(new RewriteAccessDenyFilter()));
+                .authenticationEntryPoint(jwtAuthenticationEntryPoint).accessDeniedHandler(rewriteAccessDenyFilter));
 
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

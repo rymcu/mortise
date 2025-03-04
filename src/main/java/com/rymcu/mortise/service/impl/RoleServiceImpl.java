@@ -10,6 +10,7 @@ import com.rymcu.mortise.service.RoleService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -38,9 +39,9 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
             oldRole.setLabel(role.getLabel());
             oldRole.setPermission(role.getPermission());
             oldRole.setStatus(role.getStatus());
-            oldRole.setUpdatedTime(new Date());
+            oldRole.setUpdatedTime(LocalDateTime.now());
         } else {
-            role.setCreatedTime(new Date());
+            role.setCreatedTime(LocalDateTime.now());
         }
         return baseMapper.insertOrUpdate(role);
     }
