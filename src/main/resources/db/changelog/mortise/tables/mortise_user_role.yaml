@@ -2,6 +2,7 @@ databaseChangeLog:
   - changeSet:
       id: create-mortise-user-role-table
       author: ronger
+      context: mortise
       preConditions:
         - onFail: CONTINUE
         - not:

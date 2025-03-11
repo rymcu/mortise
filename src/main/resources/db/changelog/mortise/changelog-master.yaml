@@ -1,0 +1,26 @@
+databaseChangeLog:
+  - context: mortise
+  - include:
+      file: db/changelog/mortise/init/init-schema.yaml
+  - include:
+      file: db/changelog/mortise/tables/mortise_user.yaml
+  - include:
+      file: db/changelog/mortise/tables/mortise_role.yaml
+  - include:
+      file: db/changelog/mortise/tables/mortise_user_role.yaml
+  - include:
+      file: db/changelog/mortise/tables/mortise_menu.yaml
+  - include:
+      file: db/changelog/mortise/tables/mortise_role_menu.yaml
+  - include:
+      file: db/changelog/mortise/tables/mortise_dict_type.yaml
+  - include:
+      file: db/changelog/mortise/tables/mortise_dict.yaml
+  - include:
+      file: db/changelog/mortise/tables/mortise_operate_log.yaml
+  - include:
+      file: db/changelog/mortise/tables/mortise_file_detail.yaml
+  - include:
+      file: db/changelog/mortise/tables/mortise_file_part_detail.yaml
+  - include:
+      file: db/changelog/mortise/data/mortise_role_data.yaml

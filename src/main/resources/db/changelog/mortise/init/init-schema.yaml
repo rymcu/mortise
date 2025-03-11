@@ -2,6 +2,7 @@ databaseChangeLog:
   - changeSet:
       id: init-schema
       author: ronger
+      context: mortise
       changes:
         - sql:
             sql: CREATE SCHEMA IF NOT EXISTS mortise

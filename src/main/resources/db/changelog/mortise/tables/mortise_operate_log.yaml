@@ -2,6 +2,7 @@ databaseChangeLog:
   - changeSet:
       id: create-mortise-operate-log-table
       author: ronger
+      context: mortise
       preConditions:
         - onFail: CONTINUE
         - not:

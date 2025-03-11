@@ -3,6 +3,7 @@ databaseChangeLog:
   - changeSet:
       id: init-roles
       author: ronger
+      context: mortise
       preConditions:
         - onFail: MARK_RAN
         - and:
