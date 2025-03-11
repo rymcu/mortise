@@ -100,7 +100,7 @@ public class Utils {
         System.out.println(encryptJasyptPassword("XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl", System.getenv(ProjectConstant.ENCRYPTION_KEY)));
     }
 
-    public static Integer genCode() {
+    public static int genCode() {
         return (int) ((Math.random() * 9 + 1) * 100000);
     }
 }

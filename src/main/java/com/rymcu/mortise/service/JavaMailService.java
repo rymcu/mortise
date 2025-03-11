@@ -18,7 +18,7 @@ public interface JavaMailService {
      * @return 执行结果 0：失败1：成功
      * @throws MessagingException
      */
-    Integer sendEmailCode(String email) throws MessagingException;
+    int sendEmailCode(String email) throws MessagingException;
 
     /**
      * 发送找回密码邮件
@@ -27,7 +27,7 @@ public interface JavaMailService {
      * @return 执行结果 0：失败1：成功
      * @throws MessagingException
      */
-    Integer sendForgetPasswordEmail(String email) throws MessagingException;
+    int sendForgetPasswordEmail(String email) throws MessagingException;
 
     /**
      * 发送用户初始密码邮件
@@ -36,5 +36,5 @@ public interface JavaMailService {
      * @return 执行结果 0：失败1：成功
      * @throws MessagingException
      */
-    Integer sendInitialPassword(String email, String code) throws MessagingException;
+    int sendInitialPassword(String email, String code) throws MessagingException;
 }

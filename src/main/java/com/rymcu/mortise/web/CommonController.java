@@ -38,7 +38,7 @@ public class CommonController {
         if (user != null) {
             throw new AccountExistsException("该邮箱已被注册!");
         } else {
-            Integer result = javaMailService.sendEmailCode(email);
+            int result = javaMailService.sendEmailCode(email);
             if (result == 0) {
                return GlobalResultGenerator.genErrorResult(GlobalResultMessage.SEND_FAIL.getMessage());
             }
@@ -50,7 +50,7 @@ public class CommonController {
     public GlobalResult<String> getForgetPasswordEmail(@RequestParam("email") String email) throws MessagingException, ServiceException, AccountNotFoundException {
         User user = userService.findByAccount(email);
         if (user != null) {
-            Integer result = javaMailService.sendForgetPasswordEmail(email);
+            int result = javaMailService.sendForgetPasswordEmail(email);
             if (result == 0) {
                 throw new ServiceException(GlobalResultMessage.SEND_FAIL.getMessage());
             }

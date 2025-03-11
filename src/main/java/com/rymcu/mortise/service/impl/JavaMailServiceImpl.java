@@ -22,6 +22,7 @@ import org.thymeleaf.context.Context;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
@@ -60,12 +61,12 @@ public class JavaMailServiceImpl implements JavaMailService {
     private String BASE_URL;
 
     @Override
-    public Integer sendEmailCode(String email) throws MessagingException {
+    public int sendEmailCode(String email) throws MessagingException {
         return sendCode(email, 0, String.valueOf(Utils.genCode()));
     }
 
     @Override
-    public Integer sendForgetPasswordEmail(String email) throws MessagingException {
+    public int sendForgetPasswordEmail(String email) throws MessagingException {
         String code = Utils.encryptPassword(email);
         return sendCode(email, 1, code);
     }
@@ -79,11 +80,11 @@ public class JavaMailServiceImpl implements JavaMailService {
      * @throws MessagingException
      */
     @Override
-    public Integer sendInitialPassword(String email, String code) throws MessagingException {
+    public int sendInitialPassword(String email, String code) throws MessagingException {
         return sendCode(email, 2, code);
     }
 
-    private Integer sendCode(String to, Integer type, String code) throws MessagingException {
+    private int sendCode(String to, int type, String code) throws MessagingException {
         Properties props = getProps();
         mailSender.setJavaMailProperties(props);
         SimpleMailMessage simpleMailMessage = new SimpleMailMessage();
@@ -122,8 +123,8 @@ public class JavaMailServiceImpl implements JavaMailService {
     private @NotNull Properties getProps() {
         Properties props = new Properties();
         // 表示SMTP发送邮件，需要进行身份验证
-        props.put("mail.smtp.auth", true);
-        props.put("mail.smtp.ssl.enable", true);
+        props.put("mail.smtp.auth", Optional.of(true));
+        props.put("mail.smtp.ssl.enable", Optional.of(true));
         props.put("mail.smtp.host", SERVER_HOST);
         props.put("mail.smtp.port", SERVER_PORT);
         // 如果使用ssl，则去掉使用25端口的配置，进行如下配置,
@@ -192,7 +193,7 @@ public class JavaMailServiceImpl implements JavaMailService {
                     long size = file.length();
                     if (size > 1024 * 1024) {
                         String msg = String.format("邮件单个附件大小不允许超过1MB，[%s]文件大小[%s]。", attachmentFilePath,
-                                file.length());
+                                Optional.of(file.length()));
                         throw new RuntimeException(msg);
                     } else {
                         FileSystemResource fileSystemResource = new FileSystemResource(file);
