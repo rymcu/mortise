@@ -5,19 +5,23 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mzt.logapi.context.LogRecordContext;
 import com.mzt.logapi.starter.annotation.LogRecord;
 import com.rymcu.mortise.auth.TokenManager;
+import com.rymcu.mortise.core.exception.AccountExistsException;
+import com.rymcu.mortise.core.exception.ServiceException;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.core.result.GlobalResultGenerator;
+import com.rymcu.mortise.core.result.GlobalResultMessage;
 import com.rymcu.mortise.entity.User;
-import com.rymcu.mortise.model.AuthInfo;
-import com.rymcu.mortise.model.Link;
-import com.rymcu.mortise.model.TokenUser;
+import com.rymcu.mortise.model.*;
+import com.rymcu.mortise.service.JavaMailService;
 import com.rymcu.mortise.service.MenuService;
 import com.rymcu.mortise.service.UserService;
 import com.rymcu.mortise.util.BeanCopierUtil;
 import com.rymcu.mortise.util.UserUtils;
 import jakarta.annotation.Resource;
+import jakarta.mail.MessagingException;
 import org.springframework.web.bind.annotation.*;
 
+import javax.security.auth.login.AccountNotFoundException;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,6 +38,8 @@ public class AuthController {
     private UserService userService;
     @Resource
     TokenManager tokenManager;
+    @Resource
+    private JavaMailService javaMailService;
 
     @GetMapping("/menus")
     public GlobalResult<List<Link>> menus() {
@@ -53,6 +59,12 @@ public class AuthController {
         GlobalResult<TokenUser> tokenUserGlobalResult = GlobalResultGenerator.genSuccessResult(tokenUser);
         LogRecordContext.putVariable("result", tokenUserGlobalResult);
         return tokenUserGlobalResult;
+    }
+
+    @PostMapping("/register")
+    public GlobalResult<Boolean> register(@RequestBody RegisterInfo registerInfo) throws AccountExistsException {
+        boolean flag = userService.register(registerInfo.getEmail(), registerInfo.getNickname(), registerInfo.getPassword(), registerInfo.getCode());
+        return GlobalResultGenerator.genSuccessResult(flag);
     }
 
     @PostMapping("/refresh-token")
@@ -82,6 +94,40 @@ public class AuthController {
         ObjectNode object = objectMapper.createObjectNode();
         object.set("user", objectMapper.valueToTree(authInfo));
         return GlobalResultGenerator.genSuccessResult(object);
+    }
+
+    @GetMapping("/password/request")
+    public GlobalResult<String> requestPasswordReset(@RequestParam("email") String email) throws MessagingException, ServiceException, AccountNotFoundException {
+        User user = userService.findByAccount(email);
+        if (user != null) {
+            int result = javaMailService.sendForgetPasswordEmail(email);
+            if (result == 0) {
+                throw new ServiceException(GlobalResultMessage.SEND_FAIL.getMessage());
+            }
+        } else {
+            throw new AccountNotFoundException("未知账号");
+        }
+        return GlobalResultGenerator.genSuccessResult(GlobalResultMessage.SEND_SUCCESS.getMessage());
+    }
+
+    @PatchMapping("/password/reset")
+    public GlobalResult<Boolean> resetPassword(@RequestBody ForgetPasswordInfo forgetPassword) throws ServiceException {
+        boolean flag = userService.forgetPassword(forgetPassword.getCode(), forgetPassword.getPassword());
+        return GlobalResultGenerator.genSuccessResult(flag);
+    }
+
+    @GetMapping("/email/request")
+    public GlobalResult<String> requestEmailVerify(@RequestParam("email") String email) throws MessagingException, AccountExistsException {
+        User user = userService.findByAccount(email);
+        if (user != null) {
+            throw new AccountExistsException("该邮箱已被注册!");
+        } else {
+            int result = javaMailService.sendEmailCode(email);
+            if (result == 0) {
+                return GlobalResultGenerator.genErrorResult(GlobalResultMessage.SEND_FAIL.getMessage());
+            }
+        }
+        return GlobalResultGenerator.genSuccessResult(GlobalResultMessage.SEND_SUCCESS.getMessage());
     }
 
 }

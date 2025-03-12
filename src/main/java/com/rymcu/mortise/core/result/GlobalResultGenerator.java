@@ -42,7 +42,7 @@ public class GlobalResultGenerator {
      */
     public static <T> GlobalResult<T> genSuccessResult(T data) {
 
-        return genResult(200, data, null);
+        return genResult(ResultCode.SUCCESS.getCode(), data, null);
     }
 
     /**
@@ -54,7 +54,7 @@ public class GlobalResultGenerator {
      */
     public static <T> GlobalResult<T> genErrorResult(String message) {
 
-        return genResult(400, null, message);
+        return genResult(ResultCode.FAIL.getCode(), null, message);
     }
 
     /**
@@ -86,7 +86,7 @@ public class GlobalResultGenerator {
      */
     public static <T> GlobalResult<T> genSuccessResult(String message) {
 
-        return genResult(200, null, message);
+        return genResult(ResultCode.SUCCESS.getCode(), null, message);
     }
 
 }

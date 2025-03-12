@@ -75,10 +75,13 @@ public class WebSecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((authorize) -> {
-                    authorize.requestMatchers("/api/v1/common/**").permitAll();
-                    authorize.requestMatchers("/api/v1/auth/login/**").permitAll();
-                    authorize.requestMatchers("/api/v1/auth/logout/**").permitAll();
-                    authorize.requestMatchers("/api/v1/auth/refresh-token/**").permitAll();
+                    authorize.requestMatchers("/api/v1/auth/login").permitAll();
+                    authorize.requestMatchers("/api/v1/auth/register").permitAll();
+                    authorize.requestMatchers("/api/v1/auth/logout").permitAll();
+                    authorize.requestMatchers("/api/v1/auth/password/request").permitAll();
+                    authorize.requestMatchers("/api/v1/auth/password/reset").permitAll();
+                    authorize.requestMatchers("/api/v1/auth/email/request").permitAll();
+                    authorize.requestMatchers("/api/v1/auth/refresh-token").permitAll();
                     authorize.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                     authorize.anyRequest().authenticated();
                 }).oauth2Login(oauth2Login ->
