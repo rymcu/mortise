@@ -14,8 +14,8 @@ import java.time.LocalDateTime;
 @TableName(value = "mortise_role", schema = "mortise")
 public class Role implements Serializable {
 
-    @TableId(value = "id")
-    private Long idRole;
+    @TableId
+    private Long id;
 
     /**
      * 角色名称

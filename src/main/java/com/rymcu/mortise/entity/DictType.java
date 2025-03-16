@@ -1,6 +1,5 @@
 package com.rymcu.mortise.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -20,9 +19,8 @@ public class DictType {
     /**
      * 主键
      */
-    @TableId(value = "id")
-    @TableField(value = "id")
-    private Long idDictType;
+    @TableId
+    private Long id;
     /**
      * 名称
      */

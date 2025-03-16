@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @Data
 public class UserInfo {
 
-    private Long idUser;
+    private Long id;
 
     private String nickname;
 

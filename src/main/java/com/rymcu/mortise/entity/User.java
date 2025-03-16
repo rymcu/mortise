@@ -1,6 +1,5 @@
 package com.rymcu.mortise.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -20,9 +19,8 @@ import java.time.LocalDateTime;
 @TableName(value = "mortise_user", schema = "mortise")
 public class User implements Serializable {
 
-    @TableId(value = "id")
-    @TableField(value = "id")
-    private Long idUser;
+    @TableId
+    private Long id;
     /**
      * 登录账号
      */
@@ -31,7 +29,6 @@ public class User implements Serializable {
     /**
      * 密码
      */
-    @JsonIgnore
     private String password;
 
     /**

@@ -1,6 +1,5 @@
 package com.rymcu.mortise.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -18,9 +17,8 @@ import java.time.LocalDateTime;
 @TableName(value = "mortise_menu", schema = "mortise")
 public class Menu {
 
-    @TableId(value = "id")
-    @TableField(value = "id")
-    private Long idMenu;
+    @TableId
+    private Long id;
 
     /**
      * 菜单名称

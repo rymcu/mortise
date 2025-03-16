@@ -1,6 +1,5 @@
 package com.rymcu.mortise.entity;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
@@ -18,9 +17,8 @@ import java.util.Date;
 @TableName(value = "mortise_file_part_detail", schema = "mortise")
 public class FilePartDetail {
 
-    @TableId(value = "id")
-    @TableField(value = "id")
-    private Long idFilePartDetail;
+    @TableId
+    private Long id;
 
     private String platform;
 

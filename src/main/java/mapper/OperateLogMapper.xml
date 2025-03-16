@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.rymcu.mortise.mapper.OperateLogMapper">
     <resultMap type="com.rymcu.mortise.entity.OperateLog" id="OperateLogMap">
-        <result property="idOperateLog" column="ID" jdbcType="NUMERIC"/>
+        <result property="id" column="ID" jdbcType="NUMERIC"/>
         <result property="traceId" column="TRACE_ID" jdbcType="VARCHAR"/>
         <result property="bizNo" column="BIZ_NO" jdbcType="VARCHAR"/>
         <result property="tenant" column="TENANT" jdbcType="VARCHAR"/>

@@ -1,20 +1,12 @@
 package com.rymcu.mortise.config;
 
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.MediaType;
-import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
-
-import java.nio.charset.Charset;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * Spring MVC 配置
@@ -23,9 +15,6 @@ import java.util.List;
  */
 @Configuration
 public class WebMvcConfigurer extends WebMvcConfigurationSupport {
-
-    private final Logger logger = LoggerFactory.getLogger(WebMvcConfigurer.class);
-
     /**
      * 解决跨域问题
      */
@@ -42,11 +31,6 @@ public class WebMvcConfigurer extends WebMvcConfigurationSupport {
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        /**
-         * SpringBoot自动配置本身并不会把/swagger-ui.html
-         * 这个路径映射到对应的目录META-INF/resources/下面
-         * 采用WebMvcConfigurerAdapter将swagger的静态文件进行发布;
-         */
         registry.addResourceHandler("swagger-ui.html")
                 .addResourceLocations("classpath:/META-INF/resources/");
 

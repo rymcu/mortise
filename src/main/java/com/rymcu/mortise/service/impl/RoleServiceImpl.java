@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -34,7 +33,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean saveRole(Role role) {
-        Role oldRole = baseMapper.selectById(role.getIdRole());
+        Role oldRole = baseMapper.selectById(role.getId());
         if (Objects.nonNull(oldRole)) {
             oldRole.setLabel(role.getLabel());
             oldRole.setPermission(role.getPermission());

@@ -29,7 +29,7 @@ public class FilePartDetailService extends ServiceImpl<FilePartDetailMapper, Fil
     public void saveFilePart(FilePartInfo info) {
         FilePartDetail detail = toFilePartDetail(info);
         if (save(detail)) {
-            info.setId(String.valueOf(detail.getIdFilePartDetail()));
+            info.setId(String.valueOf(detail.getId()));
         }
     }
 

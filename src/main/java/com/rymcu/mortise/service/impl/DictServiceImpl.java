@@ -31,9 +31,9 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
 
     @Override
     public Boolean saveDict(Dict dict) {
-        boolean isUpdate = dict.getIdDict() != null;
+        boolean isUpdate = dict.getId() != null;
         if (isUpdate) {
-            Dict oldDict = baseMapper.selectById(dict.getIdDict());
+            Dict oldDict = baseMapper.selectById(dict.getId());
             if (oldDict == null) {
                 throw new ServiceException("数据不存在");
             }

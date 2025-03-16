@@ -44,12 +44,12 @@ public class UserController {
 
     @PostMapping("/update-status")
     public GlobalResult<Boolean> updateUserStatus(@RequestBody UserInfo userInfo) {
-        return GlobalResultGenerator.genSuccessResult(userService.updateStatus(userInfo.getIdUser(), userInfo.getStatus()));
+        return GlobalResultGenerator.genSuccessResult(userService.updateStatus(userInfo.getId(), userInfo.getStatus()));
     }
 
     @PostMapping("/reset-password")
     public GlobalResult<ObjectNode> resetPassword(@RequestBody UserInfo userInfo) {
-        String password = userService.resetPassword(userInfo.getIdUser());
+        String password = userService.resetPassword(userInfo.getId());
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode jsonObject = objectMapper.createObjectNode();
         jsonObject.put("password", password);

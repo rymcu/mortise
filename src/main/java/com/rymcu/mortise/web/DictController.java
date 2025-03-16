@@ -47,7 +47,7 @@ public class DictController {
     @PostMapping("/post")
     public GlobalResult<Boolean> addDict(@RequestBody Dict dict) throws AccountNotFoundException {
         User user = UserUtils.getCurrentUserByToken();
-        dict.setCreatedBy(user.getIdUser());
+        dict.setCreatedBy(user.getId());
         Boolean flag = dictService.saveDict(dict);
         return GlobalResultGenerator.genSuccessResult(flag);
     }
@@ -55,14 +55,14 @@ public class DictController {
     @PutMapping("/post")
     public GlobalResult<Boolean> updateDict(@RequestBody Dict dict) throws AccountNotFoundException {
         User user = UserUtils.getCurrentUserByToken();
-        dict.setUpdatedBy(user.getIdUser());
+        dict.setUpdatedBy(user.getId());
         Boolean flag = dictService.saveDict(dict);
         return GlobalResultGenerator.genSuccessResult(flag);
     }
 
     @PostMapping("/update-status")
     public GlobalResult<Boolean> updateStatus(@RequestBody Dict dict) {
-        return GlobalResultGenerator.genSuccessResult(dictService.updateStatus(dict.getIdDict(), dict.getStatus()));
+        return GlobalResultGenerator.genSuccessResult(dictService.updateStatus(dict.getId(), dict.getStatus()));
     }
 
     @DeleteMapping("/update-del-flag")

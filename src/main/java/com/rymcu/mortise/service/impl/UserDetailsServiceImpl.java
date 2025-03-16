@@ -33,7 +33,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userMapper.selectByAccount(username);
         if  (Objects.nonNull(user)) {
-            Set<String> roles = userMapper.selectUserRolePermissionsByIdUser(user.getIdUser());
+            Set<String> roles = userMapper.selectUserRolePermissionsByIdUser(user.getId());
             Set<GrantedAuthority> authorities = roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
             return new UserDetailInfo(user.getAccount(), user.getPassword(), user.getStatus(), authorities);
         }

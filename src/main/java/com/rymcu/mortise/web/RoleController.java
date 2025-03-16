@@ -43,7 +43,7 @@ public class RoleController {
 
     @PostMapping("/update-status")
     public GlobalResult<Boolean> updateRoleStatus(@RequestBody Role role) {
-        return GlobalResultGenerator.genSuccessResult(roleService.updateStatus(role.getIdRole(), role.getStatus()));
+        return GlobalResultGenerator.genSuccessResult(roleService.updateStatus(role.getId(), role.getStatus()));
     }
 
     @GetMapping("/{idRole}/menus")

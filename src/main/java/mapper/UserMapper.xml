@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.rymcu.mortise.mapper.UserMapper">
     <resultMap id="BaseResultMap" type="com.rymcu.mortise.entity.User">
-        <id column="id" property="idUser"/>
+        <id column="id" property="id"/>
         <result column="account" property="account"/>
         <result column="password" property="password"/>
         <result column="nickname" property="nickname"/>
@@ -18,7 +18,7 @@
         <result column="open_id" property="openId"/>
     </resultMap>
     <resultMap id="UserInfoMap" type="com.rymcu.mortise.model.UserInfo">
-        <id column="id" property="idUser"/>
+        <id column="id" property="id"/>
         <result column="account" property="account"/>
         <result column="nickname" property="nickname"/>
         <result column="avatar" property="avatarUrl"/>

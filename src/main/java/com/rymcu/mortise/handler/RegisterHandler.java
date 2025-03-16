@@ -32,7 +32,7 @@ public class RegisterHandler {
     @TransactionalEventListener
     public void processRegisterEvent(RegisterEvent registerEvent) {
         Role role = roleMapper.selectRoleByPermission("user");
-        userMapper.insertUserRole(registerEvent.getIdUser(), role.getIdRole());
+        userMapper.insertUserRole(registerEvent.getIdUser(), role.getId());
         try {
             javaMailService.sendInitialPassword(registerEvent.getAccount(), registerEvent.getCode());
         } catch (MessagingException e) {

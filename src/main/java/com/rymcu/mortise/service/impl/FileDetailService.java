@@ -44,12 +44,12 @@ public class FileDetailService extends ServiceImpl<FileDetailMapper, FileDetail>
         FileDetail detail = toFileDetail(info);
         FileDetail one = getOne(new QueryWrapper<FileDetail>().eq("url", detail.getUrl()));
         if (one != null) {
-            detail.setIdFileDetail(one.getIdFileDetail());
+            detail.setId(one.getId());
             return updateById(detail);
         }
         boolean b = save(detail);
         if (b) {
-            info.setId(String.valueOf(detail.getIdFileDetail()));
+            info.setId(String.valueOf(detail.getId()));
         }
         return b;
     }
@@ -64,7 +64,7 @@ public class FileDetailService extends ServiceImpl<FileDetailMapper, FileDetail>
         FileDetail detail = toFileDetail(info);
         QueryWrapper<FileDetail> qw = new QueryWrapper<FileDetail>()
                 .eq(detail.getUrl() != null, "url", detail.getUrl())
-                .eq(detail.getIdFileDetail() != null, "id", detail.getIdFileDetail());
+                .eq(detail.getId() != null, "id", detail.getId());
         update(detail, qw);
     }
 

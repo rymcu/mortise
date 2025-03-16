@@ -44,7 +44,7 @@ public class AuthController {
     @GetMapping("/menus")
     public GlobalResult<List<Link>> menus() {
         User user = UserUtils.getCurrentUserByToken();
-        List<Link> menus = menuService.findLinksByIdUser(user.getIdUser());
+        List<Link> menus = menuService.findLinksByIdUser(user.getId());
         return GlobalResultGenerator.genSuccessResult(menus);
     }
 
@@ -87,9 +87,9 @@ public class AuthController {
         User user = UserUtils.getCurrentUserByToken();
         AuthInfo authInfo = new AuthInfo();
         BeanCopierUtil.copy(user, authInfo);
-        authInfo.setScope(userService.findUserPermissionsByIdUser(user.getIdUser()));
-        authInfo.setRole(userService.findUserRoleListByIdUser(user.getIdUser()));
-        authInfo.setLinks(menuService.findLinksByIdUser(user.getIdUser()));
+        authInfo.setScope(userService.findUserPermissionsByIdUser(user.getId()));
+        authInfo.setRole(userService.findUserRoleListByIdUser(user.getId()));
+        authInfo.setLinks(menuService.findLinksByIdUser(user.getId()));
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode object = objectMapper.createObjectNode();
         object.set("user", objectMapper.valueToTree(authInfo));

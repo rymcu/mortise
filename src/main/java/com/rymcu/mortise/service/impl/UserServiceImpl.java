@@ -96,7 +96,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                     int result = baseMapper.insert(user);
                     if (result > 0) {
                         // 注册成功后执行相关初始化事件
-                        applicationEventPublisher.publishEvent(new RegisterEvent(user.getIdUser(), user.getAccount(), ""));
+                        applicationEventPublisher.publishEvent(new RegisterEvent(user.getId(), user.getAccount(), ""));
                         stringRedisTemplate.delete(validateCodeKey);
                         return true;
                     }
@@ -252,10 +252,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean saveUser(UserInfo userInfo) {
-        boolean isUpdate = userInfo.getIdUser() != null;
+        boolean isUpdate = userInfo.getId() != null;
         User user;
         if (isUpdate) {
-            user = baseMapper.selectById(userInfo.getIdUser());
+            user = baseMapper.selectById(userInfo.getId());
             if (Objects.nonNull(user)) {
                 // 用户已存在
                 user.setEmail(userInfo.getEmail());
@@ -282,7 +282,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             boolean result = baseMapper.insertOrUpdate(user);
             if (result) {
                 // 注册成功后执行相关初始化事件
-                applicationEventPublisher.publishEvent(new RegisterEvent(user.getIdUser(), user.getEmail(), code));
+                applicationEventPublisher.publishEvent(new RegisterEvent(user.getId(), user.getEmail(), code));
             }
             return result;
         }
@@ -290,7 +290,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Boolean updateUserInfo(UserInfo userInfo) {
-        User user = baseMapper.selectById(userInfo.getIdUser());
+        User user = baseMapper.selectById(userInfo.getId());
         user.setNickname(checkNickname(userInfo.getNickname()));
         user.setAvatar(userInfo.getAvatar().getSrc());
         user.setEmail(userInfo.getEmail());
@@ -358,7 +358,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             boolean result = baseMapper.insertOrUpdate(user);
             if (result) {
                 // 注册成功后执行相关初始化事件
-                applicationEventPublisher.publishEvent(new RegisterEvent(user.getIdUser(), user.getEmail(), code));
+                applicationEventPublisher.publishEvent(new RegisterEvent(user.getId(), user.getEmail(), code));
             }
         } else {
             user.setNickname(checkNickname(nickname));

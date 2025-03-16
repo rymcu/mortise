@@ -12,7 +12,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -42,14 +41,14 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         List<Link> links = new ArrayList<>();
         for (Menu menu : menus) {
             Link link = new Link();
-            link.setId(menu.getIdMenu());
+            link.setId(menu.getId());
             link.setLabel(menu.getLabel());
             link.setParentId(menu.getParentId());
             link.setIcon(menu.getIcon());
             link.setSortNo(menu.getSortNo());
             link.setStatus(menu.getStatus());
             MenuSearch menuSearch = new MenuSearch();
-            menuSearch.setParentId(menu.getIdMenu());
+            menuSearch.setParentId(menu.getId());
             link.setChildren(findMenus(menuSearch));
             links.add(link);
         }
@@ -59,7 +58,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean saveMenu(Menu menu) {
-        Menu oldMenu = baseMapper.selectById(menu.getIdMenu());
+        Menu oldMenu = baseMapper.selectById(menu.getId());
         if (Objects.nonNull(oldMenu)) {
             oldMenu.setLabel(menu.getLabel());
             oldMenu.setPermission(menu.getPermission());
@@ -106,7 +105,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         List<Link> links = new ArrayList<>();
         for (Menu menu : menus) {
             Link link = convertLink(menu);
-            link.setChildren(findLinkTreeMode(idUser, menu.getIdMenu()));
+            link.setChildren(findLinkTreeMode(idUser, menu.getId()));
             links.add(link);
         }
         return links;
@@ -114,7 +113,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
 
     private static Link convertLink(Menu menu) {
         Link link = new Link();
-        link.setId(menu.getIdMenu());
+        link.setId(menu.getId());
         link.setLabel(menu.getLabel());
         link.setParentId(menu.getParentId());
         link.setTo(menu.getHref());

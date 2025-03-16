@@ -25,7 +25,7 @@ public class MenuController {
 
     @PostMapping("/update-status")
     public GlobalResult<Boolean> updateMenuStatus(@RequestBody Menu menu) {
-        return GlobalResultGenerator.genSuccessResult(menuService.updateStatus(menu.getIdMenu(), menu.getStatus()));
+        return GlobalResultGenerator.genSuccessResult(menuService.updateStatus(menu.getId(), menu.getStatus()));
     }
 
     @GetMapping("/detail/{idMenu}")
