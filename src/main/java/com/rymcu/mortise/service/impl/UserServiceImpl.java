@@ -372,4 +372,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         stringRedisTemplate.boundValueOps(tokenUser.getRefreshToken()).set(user.getAccount(), JwtConstants.REFRESH_TOKEN_EXPIRES_HOUR, TimeUnit.HOURS);
         return tokenUser;
     }
+
+    @Override
+    public Boolean updateUserProfileInfo(UserProfileInfo userProfileInfo, User user) {
+        if (!user.getNickname().equals(userProfileInfo.getNickname())) {
+            userProfileInfo.setNickname(checkNickname(userProfileInfo.getNickname()));
+        }
+        return baseMapper.updateUserProfileInfo(user.getId(), userProfileInfo.getNickname(), userProfileInfo.getAvatar(), userProfileInfo.getBio()) > 0;
+    }
 }

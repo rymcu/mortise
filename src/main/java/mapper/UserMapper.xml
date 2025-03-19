@@ -51,6 +51,9 @@
     <update id="updatePasswordById">
         update mortise_user set password = #{password} where id = #{idUser}
     </update>
+    <update id="updateUserProfileInfo">
+        update mortise_user set nickname = #{nickname}, avatar = #{avatar} where id = #{id}
+    </update>
     <delete id="deleteUserRole">
         delete from mortise_user_role where id_mortise_user = #{idUser}
     </delete>

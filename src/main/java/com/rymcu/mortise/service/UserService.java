@@ -3,10 +3,7 @@ package com.rymcu.mortise.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rymcu.mortise.core.exception.AccountExistsException;
 import com.rymcu.mortise.entity.User;
-import com.rymcu.mortise.model.BindUserRoleInfo;
-import com.rymcu.mortise.model.TokenUser;
-import com.rymcu.mortise.model.UserInfo;
-import com.rymcu.mortise.model.UserSearch;
+import com.rymcu.mortise.model.*;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 
 import java.util.List;
@@ -104,4 +101,6 @@ public interface UserService {
     Boolean updateDelFlag(Long idUser, Integer delFlag);
 
     TokenUser oauth2Login(OidcUser oidcUser, String registrationId);
+
+    Boolean updateUserProfileInfo(UserProfileInfo userProfileInfo, User user);
 }

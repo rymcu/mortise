@@ -48,4 +48,6 @@ public interface UserMapper extends BaseMapper<User> {
     User selectByOpenId(@Param("provider") String provider, @Param("openId") String openId);
 
     Set<String> selectUserRolePermissionsByIdUser(@Param("idUser") Long idUser);
+
+    int updateUserProfileInfo(@Param("id") Long id, @Param("nickname") String nickname, @Param("avatar") String avatar, @Param("bio") String bio);
 }
