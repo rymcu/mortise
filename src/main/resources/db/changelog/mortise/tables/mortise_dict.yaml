@@ -57,7 +57,7 @@ databaseChangeLog:
               - column:
                   name: del_flag
                   type: SMALLINT
-                  defaultValueNumeric: '1'
+                  defaultValueNumeric: '0'
 
         - sql: COMMENT ON TABLE mortise_dict IS '字典数据表'
         - sql: COMMENT ON COLUMN mortise_dict.id IS '主键'

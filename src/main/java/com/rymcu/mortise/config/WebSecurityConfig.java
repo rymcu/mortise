@@ -87,7 +87,7 @@ public class WebSecurityConfig {
                 }).oauth2Login(oauth2Login ->
                         oauth2Login
                                 .authorizationEndpoint(authorization -> authorization.authorizationRequestResolver(
-                                        authorizationRequestResolver(this.clientRegistrationRepository))
+                                                authorizationRequestResolver(this.clientRegistrationRepository))
                                         .authorizationRequestRepository(new RedisAuthorizationRequestRepository(this.stringRedisTemplate, this.objectMapper)))
                                 .redirectionEndpoint(redirection -> redirection.baseUri("/api/v1/oauth2/code/*"))
                                 .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.oidcUserService(oidcUserService()))

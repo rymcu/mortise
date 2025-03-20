@@ -16,8 +16,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class JasyptEncryptionConfig {
 
-    @Bean(name ="jasyptStringEncryptor")
-    public StringEncryptor passwordEncryptor(){
+    @Bean(name = "jasyptStringEncryptor")
+    public StringEncryptor passwordEncryptor() {
         return Utils.initPasswordEncryptor(System.getenv(ProjectConstant.ENCRYPTION_KEY));
     }
 

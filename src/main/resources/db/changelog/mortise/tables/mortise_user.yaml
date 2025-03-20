@@ -64,7 +64,7 @@ databaseChangeLog:
               - column:
                   name: del_flag
                   type: SMALLINT
-                  defaultValueNumeric: '1'
+                  defaultValueNumeric: '0'
 
         - sql:
             sql: COMMENT ON TABLE mortise_user IS '用户表';

@@ -63,6 +63,6 @@ public class UserController {
 
     @DeleteMapping("/update-del-flag")
     public GlobalResult<Boolean> updateDelFlag(Long idUser) {
-        return GlobalResultGenerator.genSuccessResult(userService.updateDelFlag(idUser, DelFlag.DELETE.ordinal()));
+        return GlobalResultGenerator.genSuccessResult(userService.updateDelFlag(idUser, DelFlag.DELETED.ordinal()));
     }
 }

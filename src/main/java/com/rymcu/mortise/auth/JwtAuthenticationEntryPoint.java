@@ -22,7 +22,7 @@ import java.io.IOException;
  * @desc : com.rymcu.mortise.auth
  */
 @Component
-public class JwtAuthenticationEntryPoint  implements AuthenticationEntryPoint {
+public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     @Resource
     private ObjectMapper objectMapper;

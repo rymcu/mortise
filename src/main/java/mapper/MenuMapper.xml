@@ -23,7 +23,7 @@
     <select id="selectMenuListByIdRole" resultMap="BaseResultMap">
         select id, label, permission
         from mortise_menu tm
-        where del_flag = 1
+        where del_flag = 0
           and exists(select 1
                      from mortise_role_menu trm
                      where trm.id_mortise_menu = tm.id
@@ -32,7 +32,7 @@
     <select id="selectMenuListByIdUser" resultMap="BaseResultMap">
         select id, label, permission
         from mortise_menu tm
-        where del_flag = 1
+        where del_flag = 0
           and exists(select 1
                      from mortise_role_menu trm
                      where trm.id_mortise_menu = tm.id
@@ -44,7 +44,7 @@
     <select id="selectMenuListByIdUserAndParentId" resultMap="BaseResultMap">
         select id, label, permission, parent_id, sort_no, menu_type, icon, href
         from mortise_menu tm
-        where del_flag = 1 and menu_type = 0 and parent_id = #{parentId}
+        where del_flag = 0 and menu_type = 0 and parent_id = #{parentId}
           and exists(select 1
                      from mortise_role_menu trm
                      where trm.id_mortise_menu = tm.id

@@ -27,10 +27,12 @@
         label,
         value,
         sort_no,
+        status,
+        del_flag,
         created_time,
         updated_time
         from mortise_dict
-        where del_flag = 1
+        where del_flag = 0
         <if test="query != null and query != ''">
             and instr(label, #{query}) > 0
         </if>

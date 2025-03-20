@@ -21,7 +21,7 @@
         <id column="id" property="id"/>
         <result column="account" property="account"/>
         <result column="nickname" property="nickname"/>
-        <result column="avatar" property="avatarUrl"/>
+        <result column="avatar" property="picture"/>
         <result column="email" property="email"/>
         <result column="phone" property="phone"/>
         <result column="status" property="status"/>
@@ -68,7 +68,7 @@
                email
         from mortise_user
         where (account = #{account} or email = #{account} or phone = #{account})
-          and del_flag = 1
+          and del_flag = 0
     </select>
     <select id="selectCountByNickname" resultType="java.lang.Integer">
         select count(0) from mortise_user where nickname = #{nickname}
@@ -87,10 +87,10 @@
         last_login_time,
         last_online_time,
         created_time,
-        (select GROUP_CONCAT(label SEPARATOR ',') from mortise_role tr where exists(select 1 from mortise_user_role tur
+        (select string_agg(DISTINCT label, ',' order by label) from mortise_role tr where exists(select 1 from mortise_user_role tur
         where tur.id_mortise_role = tr.id
         and tur.id_mortise_user = tu.id)) as role_names
-        from mortise_user tu where tu.del_flag = 1
+        from mortise_user tu where tu.del_flag = 0
         <if test="account != null and account != ''">
             and account = #{account}
         </if>

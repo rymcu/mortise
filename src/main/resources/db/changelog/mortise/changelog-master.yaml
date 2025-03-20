@@ -24,3 +24,7 @@ databaseChangeLog:
       file: db/changelog/mortise/tables/mortise_file_part_detail.yaml
   - include:
       file: db/changelog/mortise/data/mortise_role_data.yaml
+  - include:
+      file: db/changelog/mortise/data/mortise_dict_type_data.yaml
+  - include:
+      file: db/changelog/mortise/data/mortise_dict_data.yaml

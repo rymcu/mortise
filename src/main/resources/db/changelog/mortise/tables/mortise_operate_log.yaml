@@ -65,11 +65,11 @@ databaseChangeLog:
               - column:
                   name: fail
                   type: SMALLINT
-                  defaultValueNumeric: 0
+                  defaultValueNumeric: '0'
               - column:
                   name: del_flag
                   type: SMALLINT
-                  defaultValueNumeric: 1
+                  defaultValueNumeric: '0'
 
         - sql: COMMENT ON TABLE mortise_operate_log IS '操作日志表'
         - sql: COMMENT ON COLUMN mortise_operate_log.id IS '主键'

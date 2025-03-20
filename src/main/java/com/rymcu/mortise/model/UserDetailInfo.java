@@ -73,7 +73,6 @@ public class UserDetailInfo implements UserDetails {
     }
 
 
-
     @JsonIgnore
     @Override
     public boolean isCredentialsNonExpired() {

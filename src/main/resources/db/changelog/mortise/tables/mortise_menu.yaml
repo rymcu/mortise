@@ -58,7 +58,7 @@ databaseChangeLog:
               - column:
                   name: del_flag
                   type: SMALLINT
-                  defaultValueNumeric: '1'
+                  defaultValueNumeric: '0'
               - column:
                   name: created_by
                   type: BIGINT

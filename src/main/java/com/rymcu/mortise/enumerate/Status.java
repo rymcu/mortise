@@ -8,6 +8,6 @@ package com.rymcu.mortise.enumerate;
  * @desc : com.rymcu.mortise.enumerate
  */
 public enum Status {
-    DISABLE,
-    ENABLE;
+    DISABLED,
+    ENABLED;
 }

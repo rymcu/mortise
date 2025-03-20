@@ -66,8 +66,8 @@ public class DictController {
     }
 
     @DeleteMapping("/update-del-flag")
-    public GlobalResult<Boolean> updateDelFlag( Long idDict) {
-        return GlobalResultGenerator.genSuccessResult(dictService.updateDelFlag(idDict, DelFlag.DELETE.ordinal()));
+    public GlobalResult<Boolean> updateDelFlag(Long idDict) {
+        return GlobalResultGenerator.genSuccessResult(dictService.updateDelFlag(idDict, DelFlag.DELETED.ordinal()));
     }
 
 }

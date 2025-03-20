@@ -23,7 +23,7 @@ public class UserInfo {
 
     private Avatar avatar;
 
-    private String avatarUrl;
+    private String picture;
 
     private Integer status;
 

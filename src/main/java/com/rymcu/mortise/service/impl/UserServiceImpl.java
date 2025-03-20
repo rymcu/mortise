@@ -224,7 +224,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         list.forEach(userInfo -> {
             Avatar avatar = new Avatar();
             avatar.setAlt(userInfo.getNickname());
-            avatar.setSrc(userInfo.getAvatarUrl());
+            avatar.setSrc(userInfo.getPicture());
             userInfo.setAvatar(avatar);
         });
         return list;

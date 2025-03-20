@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Created on 2024/4/19 9:15.
  * 全局返回结果生成器
+ *
  * @author ronger
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.core.result
@@ -16,10 +17,10 @@ public class GlobalResultGenerator {
     /**
      * normal
      *
-     * @param code   code
-     * @param data   data
+     * @param code    code
+     * @param data    data
      * @param message message
-     * @param <T>    data
+     * @param <T>     data
      * @return GlobalResult
      */
     public static <T> GlobalResult<T> genResult(Integer code, T data, String message) {

@@ -32,7 +32,7 @@ databaseChangeLog:
               - column:
                   name: status
                   type: SMALLINT
-                  defaultValueNumeric: 1
+                  defaultValueNumeric: '1'
               - column:
                   name: created_time
                   type: TIMESTAMP
@@ -44,7 +44,7 @@ databaseChangeLog:
               - column:
                   name: del_flag
                   type: SMALLINT
-                  defaultValueNumeric: 1
+                  defaultValueNumeric: '0'
 
         - sql: COMMENT ON TABLE mortise_role IS '角色表'
         - sql: COMMENT ON COLUMN mortise_role.id IS '主键'

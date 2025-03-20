@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import jakarta.annotation.Resource;
+
 import java.util.List;
 
 /**
@@ -46,7 +47,6 @@ public class LogRecordServiceImpl implements ILogRecordService {
     public List<LogRecord> queryLogByBizNo(String bizNo, String type, String subType) {
         return null;
     }
-
 
 
     private static OperateLog genOperateLog(LogRecord logRecord) {

@@ -28,7 +28,7 @@ public enum ResultCode {
     // 账号或密码错误
     INCORRECT_ACCOUNT_OR_PASSWORD(10002, "账号或密码错误"),
     // 验证码错误
-    VALIDATE(10003, "验证码错误") ;
+    VALIDATE(10003, "验证码错误");
 
     private final int code;
     private final String message;

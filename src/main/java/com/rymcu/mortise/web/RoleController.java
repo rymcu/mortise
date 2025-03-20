@@ -58,6 +58,6 @@ public class RoleController {
 
     @DeleteMapping("/update-del-flag")
     public GlobalResult<Boolean> updateDelFlag(Long idRole) {
-        return GlobalResultGenerator.genSuccessResult(roleService.updateDelFlag(idRole, DelFlag.DELETE.ordinal()));
+        return GlobalResultGenerator.genSuccessResult(roleService.updateDelFlag(idRole, DelFlag.DELETED.ordinal()));
     }
 }

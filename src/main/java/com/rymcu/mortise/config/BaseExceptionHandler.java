@@ -50,7 +50,7 @@ public class BaseExceptionHandler {
                 // 账号或密码错误
                 result = new GlobalResult<>(ResultCode.UNKNOWN_ACCOUNT);
                 logger.info(ex.getMessage());
-            }  else if (ex instanceof CaptchaException) {
+            } else if (ex instanceof CaptchaException) {
                 // 验证码错误
                 result = new GlobalResult<>(ResultCode.VALIDATE);
                 logger.info(ex.getMessage());

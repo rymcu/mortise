@@ -45,6 +45,6 @@ public class MenuController {
 
     @DeleteMapping("/update-del-flag")
     public GlobalResult<Boolean> updateDelFlag(Long idMenu) {
-        return GlobalResultGenerator.genSuccessResult(menuService.updateDelFlag(idMenu, DelFlag.DELETE.ordinal()));
+        return GlobalResultGenerator.genSuccessResult(menuService.updateDelFlag(idMenu, DelFlag.DELETED.ordinal()));
     }
 }

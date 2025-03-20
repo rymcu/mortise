@@ -24,6 +24,7 @@ public class UserUtils {
 
     /**
      * 通过token获取当前用户的信息
+     *
      * @return User
      */
     public static User getCurrentUserByToken() {

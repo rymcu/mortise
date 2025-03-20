@@ -23,6 +23,7 @@ public class FilePartDetailService extends ServiceImpl<FilePartDetailMapper, Fil
 
     /**
      * 保存文件分片信息
+     *
      * @param info 文件分片信息
      */
     @SneakyThrows
@@ -42,6 +43,7 @@ public class FilePartDetailService extends ServiceImpl<FilePartDetailMapper, Fil
 
     /**
      * 将 FilePartInfo 转成 FilePartDetail
+     *
      * @param info 文件分片信息
      */
     public FilePartDetail toFilePartDetail(FilePartInfo info) throws JsonProcessingException {
