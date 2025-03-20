@@ -22,4 +22,6 @@ public interface DictMapper extends BaseMapper<Dict> {
     int updateStatus(@Param("idDict") Long idDict, @Param("status") Integer status);
 
     int updateDelFlag(@Param("idDict") Long idDict, @Param("delFlag") Integer delFlag);
+
+    Dict selectByTypeCodeAndValue(@Param("dictTypeCode") String dictTypeCode, @Param("value") String value);
 }

@@ -2,6 +2,8 @@ package com.rymcu.mortise.entity;
 
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.rymcu.mortise.annotation.DictInterceptor;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -24,7 +26,7 @@ public class DictType {
     /**
      * 名称
      */
-    private String typeName;
+    private String label;
     /**
      * 代码
      */
@@ -36,6 +38,7 @@ public class DictType {
     /**
      * 状态
      */
+    @DictInterceptor(dictTypeCode = "Status")
     private Integer status;
     /**
      * 创建人
@@ -44,6 +47,7 @@ public class DictType {
     /**
      * 创建时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdTime;
     /**
      * 更新人
@@ -52,5 +56,6 @@ public class DictType {
     /**
      * 更新时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedTime;
 }

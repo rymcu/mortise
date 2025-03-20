@@ -8,9 +8,11 @@ import com.rymcu.mortise.entity.Dict;
 import com.rymcu.mortise.mapper.DictMapper;
 import com.rymcu.mortise.model.DictSearch;
 import com.rymcu.mortise.service.DictService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created on 2024/9/22 20:04.
@@ -60,5 +62,14 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
     @Override
     public Dict findById(Long idDict) {
         return baseMapper.selectById(idDict);
+    }
+
+    @Override
+    public String findLabelByTypeCodeAndValue(String dictTypeCode, String value) {
+        Dict dict = baseMapper.selectByTypeCodeAndValue(dictTypeCode, value);
+        if (Objects.isNull(dict) || StringUtils.isBlank(dict.getLabel())) {
+            return value;
+        }
+        return dict.getLabel();
     }
 }

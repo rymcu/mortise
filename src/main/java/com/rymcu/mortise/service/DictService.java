@@ -22,4 +22,6 @@ public interface DictService {
     Boolean updateDelFlag(Long idDict, Integer delFlag);
 
     Dict findById(Long idDict);
+
+    String findLabelByTypeCodeAndValue(String dictTypeCode, String value);
 }

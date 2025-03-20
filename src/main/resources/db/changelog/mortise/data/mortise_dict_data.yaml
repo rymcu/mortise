@@ -51,7 +51,7 @@ databaseChangeLog:
             columns:
               - column:
                   name: label
-                  value: UnDeleted
+                  value: Normal
               - column:
                   name: value
                   value: '0'

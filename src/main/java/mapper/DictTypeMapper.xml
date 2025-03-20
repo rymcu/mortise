@@ -1,49 +1,44 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.rymcu.mortise.mapper.DictMapper">
-    <resultMap id="BaseResultMap" type="com.rymcu.mortise.entity.Dict">
+<mapper namespace="com.rymcu.mortise.mapper.DictTypeMapper">
+    <resultMap id="BaseResultMap" type="com.rymcu.mortise.entity.DictType">
         <id column="id" jdbcType="NUMERIC" property="id"/>
-        <result column="dict_type_code" jdbcType="VARCHAR" property="dictTypeCode"/>
+        <result column="type_code" jdbcType="VARCHAR" property="typeCode"/>
         <result column="label" jdbcType="VARCHAR" property="label"/>
-        <result column="value" jdbcType="VARCHAR" property="value"/>
         <result column="sort_no" jdbcType="NUMERIC" property="sortNo"/>
         <result column="created_time" jdbcType="TIMESTAMP" property="createdTime"/>
         <result column="updated_time" jdbcType="TIMESTAMP" property="updatedTime"/>
     </resultMap>
     <update id="updateStatus">
-        update mortise_dict
+        update mortise_dict_type
         set status = #{status}
         where id = #{idDict}
     </update>
     <update id="updateDelFlag">
-        update mortise_dict
+        update mortise_dict_type
         set del_flag = #{delFlag}
         where id = #{idDict}
     </update>
-    <select id="selectDictList" resultMap="BaseResultMap">
+    <select id="selectDictTypeList" resultMap="BaseResultMap">
         select
         id,
-        dict_type_code,
+        type_code,
         label,
-        value,
         sort_no,
         status,
         del_flag,
         created_time,
         updated_time
-        from mortise_dict
+        from mortise_dict_type
         where del_flag = 0
         <if test="query != null and query != ''">
             and instr(label, #{query}) > 0
         </if>
-        <if test="dictTypeCode != null and dictTypeCode != ''">
-            and dict_type_code = #{dictTypeCode}
+        <if test="typeCode != null and typeCode != ''">
+            and type_code = #{typeCode}
         </if>
         <if test="status != null">
             and status = #{status}
         </if>
-    </select>
-    <select id="selectByTypeCodeAndValue" resultType="com.rymcu.mortise.entity.Dict">
-        select label from mortise_dict where dict_type_code = #{dictTypeCode} and value = #{value}
     </select>
 </mapper>
