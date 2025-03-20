@@ -1,5 +1,6 @@
 package com.rymcu.mortise.config;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -15,6 +16,9 @@ import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
+import com.rymcu.mortise.serializer.DictSerializer;
+import com.rymcu.mortise.serializer.GlobalResultSerializer;
+import jakarta.annotation.Resource;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -49,11 +53,18 @@ public class JacksonConfig {
      */
     public static final String DEFAULT_TIME_FORMAT = "HH:mm:ss";
 
+    @Resource
+    private DictSerializer dictSerializer;
+
     @Bean
     @Primary
     @ConditionalOnMissingBean(ObjectMapper.class)
     public ObjectMapper objectMapper() {
         JsonMapper.Builder builder = JsonMapper.builder();
+
+        // 启用深度序列化
+        builder.enable(DeserializationFeature.UNWRAP_ROOT_VALUE);
+        builder.enable(SerializationFeature.WRAP_ROOT_VALUE);
 
         // 配置序列化规则 - 设置为不包含null值，这会覆盖废弃的WRITE_NULL_MAP_VALUES设置
         builder.serializationInclusion(JsonInclude.Include.NON_NULL)
@@ -147,9 +158,20 @@ public class JacksonConfig {
         numberModule.addSerializer(Long.class, ToStringSerializer.instance);
         numberModule.addSerializer(Long.TYPE, ToStringSerializer.instance);
 
+        SimpleModule globalResultModule = new SimpleModule();
+        globalResultModule.addSerializer(new GlobalResultSerializer());
+
+        SimpleModule dictModule = new SimpleModule();
+        globalResultModule.addSerializer(Object.class, dictSerializer);
+
         // 注册所有模块
         jsonMapper.registerModule(javaTimeModule);
         jsonMapper.registerModule(numberModule);
+        jsonMapper.registerModule(globalResultModule);
+        jsonMapper.registerModule(dictModule);
+
+        // 添加验证代码
+        System.out.println("已注册的模块: " + jsonMapper.getRegisteredModuleIds());
 
         return jsonMapper;
     }
