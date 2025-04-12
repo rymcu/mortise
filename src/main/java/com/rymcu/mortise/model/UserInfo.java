@@ -1,6 +1,7 @@
 package com.rymcu.mortise.model;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.rymcu.mortise.annotation.DictFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -25,6 +26,7 @@ public class UserInfo {
 
     private String picture;
 
+    @DictFormat(value = "Status")
     private Integer status;
 
     private String email;

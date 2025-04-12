@@ -3,7 +3,7 @@ package com.rymcu.mortise.entity;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.rymcu.mortise.annotation.Dict;
+import com.rymcu.mortise.annotation.DictFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -38,8 +38,13 @@ public class DictType {
     /**
      * 状态
      */
-    @Dict(value = "Status")
+    @DictFormat(value = "Status")
     private Integer status;
+    /**
+     * 删除标记
+     */
+    @DictFormat(value = "DelFlag")
+    private Integer delFlag;
     /**
      * 创建人
      */

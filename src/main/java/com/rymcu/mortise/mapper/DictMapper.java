@@ -3,6 +3,7 @@ package com.rymcu.mortise.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rymcu.mortise.entity.Dict;
+import com.rymcu.mortise.model.DictInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
@@ -24,4 +25,6 @@ public interface DictMapper extends BaseMapper<Dict> {
     int updateDelFlag(@Param("idDict") Long idDict, @Param("delFlag") Integer delFlag);
 
     Dict selectByTypeCodeAndValue(@Param("dictTypeCode") String dictTypeCode, @Param("value") String value);
+
+    DictInfo selectDictInfo(@Param("dictTypeCode") String dictTypeCode, @Param("value") String value);
 }

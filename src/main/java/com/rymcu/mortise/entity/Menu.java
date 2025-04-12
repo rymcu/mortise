@@ -3,6 +3,7 @@ package com.rymcu.mortise.entity;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.rymcu.mortise.annotation.DictFormat;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -44,10 +45,12 @@ public class Menu {
     /**
      * 状态
      */
+    @DictFormat(value = "Status")
     private Integer status;
     /**
      * 删除标记
      */
+    @DictFormat(value = "DelFlag")
     private Integer delFlag;
     /**
      * 类型

@@ -21,10 +21,12 @@ public class DictAnnotationIntrospector extends JacksonAnnotationIntrospector {
 
     @Override
     public Object findSerializer(Annotated a) {
-        Dict dict = a.getAnnotation(Dict.class);
-        if (dict != null) {
+        DictFormat dictFormat = a.getAnnotation(DictFormat.class);
+        if (dictFormat != null) {
             DictSerializer dictSerializer = new DictSerializer(dictService);
-            dictSerializer.setDictType(dict.value());
+            dictSerializer.setDictType(dictFormat.value());
+            dictSerializer.setSuffix(dictFormat.suffix());
+            dictSerializer.setCover(dictFormat.cover());
             return dictSerializer;
         }
         return super.findSerializer(a);

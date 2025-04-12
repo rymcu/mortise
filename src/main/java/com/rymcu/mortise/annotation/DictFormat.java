@@ -14,11 +14,17 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME) // 必须是 RUNTIME，AOP 才能在运行时获取到
 @Target(ElementType.FIELD)       // 作用于字段上
-public @interface Dict {
+public @interface DictFormat {
     /**
      * 字典编码 (对应 sys_dict_type 表中的 dict_code)
      */
     String value() default "";
+
+    String suffix() default "Dict";
+    /**
+     * 是否覆盖原始字段
+     */
+    boolean cover() default true;
 
     /**
      * 如果是翻译数据库表字段，指定表名

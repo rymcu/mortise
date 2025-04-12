@@ -46,4 +46,7 @@
     <select id="selectByTypeCodeAndValue" resultType="com.rymcu.mortise.entity.Dict">
         select label from mortise_dict where dict_type_code = #{dictTypeCode} and value = #{value}
     </select>
+    <select id="selectDictInfo" resultType="com.rymcu.mortise.model.DictInfo">
+        select label, value from mortise_dict where dict_type_code = #{dictTypeCode} and value = #{value}
+    </select>
 </mapper>

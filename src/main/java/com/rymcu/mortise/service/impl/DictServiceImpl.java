@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rymcu.mortise.core.exception.ServiceException;
 import com.rymcu.mortise.entity.Dict;
 import com.rymcu.mortise.mapper.DictMapper;
+import com.rymcu.mortise.model.DictInfo;
 import com.rymcu.mortise.model.DictSearch;
 import com.rymcu.mortise.service.DictService;
 import org.apache.commons.lang3.StringUtils;
@@ -71,5 +72,10 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
             return null;
         }
         return dict.getLabel();
+    }
+
+    @Override
+    public DictInfo findDictInfo(String dictTypeCode, String value) {
+        return baseMapper.selectDictInfo(dictTypeCode, value);
     }
 }
