@@ -52,8 +52,8 @@ public class AuthController {
     @LogRecord(success = "提交成功", type = "系统", subType = "账号登录", bizNo = "{\"account\": {{#user.account}}}",
             fail = "提交失败，失败原因：「{{#_errorMsg ? #_errorMsg : #result.message }}」", extra = "{\"account\": {{#user.account}}}",
             successCondition = "{{#result.code==200}}")
-    public GlobalResult<TokenUser> login(@RequestBody User user) {
-        TokenUser tokenUser = userService.login(user.getAccount(), user.getPassword());
+    public GlobalResult<TokenUser> login(@RequestBody LoginInfo loginInfo) {
+        TokenUser tokenUser = userService.login(loginInfo.getAccount(), loginInfo.getPassword());
         LogRecordContext.putVariable("idUser", tokenUser.getIdUser());
         tokenUser.setIdUser(null);
         GlobalResult<TokenUser> tokenUserGlobalResult = GlobalResultGenerator.genSuccessResult(tokenUser);

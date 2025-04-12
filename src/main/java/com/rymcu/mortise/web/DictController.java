@@ -11,7 +11,6 @@ import com.rymcu.mortise.model.DictSearch;
 import com.rymcu.mortise.service.DictService;
 import com.rymcu.mortise.util.UserUtils;
 import jakarta.annotation.Resource;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.security.auth.login.AccountNotFoundException;
@@ -25,7 +24,6 @@ import javax.security.auth.login.AccountNotFoundException;
  */
 @RestController
 @RequestMapping("/api/v1/admin/dict")
-@PreAuthorize("hasRole('admin')")
 public class DictController {
 
     @Resource

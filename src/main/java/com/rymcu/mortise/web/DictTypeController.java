@@ -4,17 +4,13 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.core.result.GlobalResultGenerator;
-import com.rymcu.mortise.entity.Dict;
 import com.rymcu.mortise.entity.DictType;
 import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.enumerate.DelFlag;
-import com.rymcu.mortise.model.DictSearch;
 import com.rymcu.mortise.model.DictTypeSearch;
-import com.rymcu.mortise.service.DictService;
 import com.rymcu.mortise.service.DictTypeService;
 import com.rymcu.mortise.util.UserUtils;
 import jakarta.annotation.Resource;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.security.auth.login.AccountNotFoundException;
@@ -28,7 +24,6 @@ import javax.security.auth.login.AccountNotFoundException;
  */
 @RestController
 @RequestMapping("/api/v1/admin/dict-type")
-@PreAuthorize("hasRole('admin')")
 public class DictTypeController {
 
     @Resource
@@ -41,7 +36,7 @@ public class DictTypeController {
         return GlobalResultGenerator.genSuccessResult(list);
     }
 
-    @GetMapping("/detail/{idDict}")
+    @GetMapping("/detail/{idDictType}")
     public GlobalResult<DictType> dictTypeDetail(@PathVariable Long idDictType) {
         DictType dictType = dictTypeService.findById(idDictType);
         return GlobalResultGenerator.genSuccessResult(dictType);

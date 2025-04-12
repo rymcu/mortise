@@ -68,7 +68,7 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
     public String findLabelByTypeCodeAndValue(String dictTypeCode, String value) {
         Dict dict = baseMapper.selectByTypeCodeAndValue(dictTypeCode, value);
         if (Objects.isNull(dict) || StringUtils.isBlank(dict.getLabel())) {
-            return value;
+            return null;
         }
         return dict.getLabel();
     }

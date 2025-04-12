@@ -3,7 +3,7 @@ package com.rymcu.mortise.entity;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.rymcu.mortise.annotation.DictInterceptor;
+import com.rymcu.mortise.annotation.Dict;
 import lombok.Data;
 
 import java.time.LocalDateTime;
@@ -38,7 +38,7 @@ public class DictType {
     /**
      * 状态
      */
-    @DictInterceptor(dictTypeCode = "Status")
+    @Dict(value = "Status")
     private Integer status;
     /**
      * 创建人
