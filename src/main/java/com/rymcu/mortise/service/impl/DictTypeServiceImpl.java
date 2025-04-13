@@ -62,4 +62,9 @@ public class DictTypeServiceImpl extends ServiceImpl<DictTypeMapper, DictType> i
     public DictType findById(Long idDictType) {
         return baseMapper.selectById(idDictType);
     }
+
+    @Override
+    public Boolean batchUpdateDelFlag(List<Long> idDictTypes, Integer delFlag) {
+        return baseMapper.batchUpdateDelFlag(idDictTypes, delFlag) > 0;
+    }
 }

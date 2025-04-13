@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rymcu.mortise.entity.DictType;
 import com.rymcu.mortise.model.DictTypeSearch;
 
+import java.util.List;
+
 /**
  * Created on 2024/9/22 20:04.
  *
@@ -22,4 +24,6 @@ public interface DictTypeService {
     Boolean updateDelFlag(Long idDictType, Integer delFlag);
 
     DictType findById(Long idDictType);
+
+    Boolean batchUpdateDelFlag(List<Long> idDictTypes, Integer delFlag);
 }

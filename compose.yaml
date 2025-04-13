@@ -41,7 +41,7 @@ services:
     environment:
       TZ: Asia/Shanghai
   logto:
-    image: svhd/logto
+    image: svhd/logto:1.24.1
     container_name: mortise-logto
     restart: unless-stopped
     ports:

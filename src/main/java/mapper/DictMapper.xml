@@ -20,6 +20,14 @@
         set del_flag = #{delFlag}
         where id = #{idDict}
     </update>
+    <update id="batchUpdateDelFlag">
+        update mortise_dict
+        set del_flag = #{delFlag}
+        where id in
+        <foreach collection="idDictList" item="idDict" open="(" separator="," close=")">
+            #{idDict}
+        </foreach>
+    </update>
     <select id="selectDictList" resultMap="BaseResultMap">
         select
         id,
@@ -48,5 +56,8 @@
     </select>
     <select id="selectDictInfo" resultType="com.rymcu.mortise.model.DictInfo">
         select label, value from mortise_dict where dict_type_code = #{dictTypeCode} and value = #{value}
+    </select>
+    <select id="selectDictOptions" resultType="com.rymcu.mortise.model.BaseOption">
+        select label, value from mortise_dict where dict_type_code = #{dictTypeCode} and del_flag = 0 order by sort_no
     </select>
 </mapper>

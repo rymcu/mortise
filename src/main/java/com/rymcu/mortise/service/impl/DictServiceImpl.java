@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.rymcu.mortise.core.exception.ServiceException;
 import com.rymcu.mortise.entity.Dict;
 import com.rymcu.mortise.mapper.DictMapper;
+import com.rymcu.mortise.model.BaseOption;
 import com.rymcu.mortise.model.DictInfo;
 import com.rymcu.mortise.model.DictSearch;
 import com.rymcu.mortise.service.DictService;
@@ -77,5 +78,15 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
     @Override
     public DictInfo findDictInfo(String dictTypeCode, String value) {
         return baseMapper.selectDictInfo(dictTypeCode, value);
+    }
+
+    @Override
+    public List<BaseOption> queryDictOptions(String dictTypeCode) {
+        return baseMapper.selectDictOptions(dictTypeCode);
+    }
+
+    @Override
+    public Boolean batchUpdateDelFlag(List<Long> idDictList, Integer delFlag) {
+        return baseMapper.batchUpdateDelFlag(idDictList, delFlag) > 0;
     }
 }

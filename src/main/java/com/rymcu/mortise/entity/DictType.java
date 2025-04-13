@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.entity
  */
-@TableName(value = "mortise_dict", schema = "mortise")
+@TableName(value = "mortise_dict_type", schema = "mortise")
 @Data
 public class DictType {
     /**

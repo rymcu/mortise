@@ -19,6 +19,14 @@
         set del_flag = #{delFlag}
         where id = #{idDict}
     </update>
+    <update id="batchUpdateDelFlag">
+        update mortise_dict_type
+        set del_flag = #{delFlag}
+        where id in
+        <foreach collection="idDictTypes" item="idDictType" open="(" separator="," close=")">
+            #{idDictType}
+        </foreach>
+    </update>
     <select id="selectDictTypeList" resultMap="BaseResultMap">
         select
         id,

@@ -23,4 +23,6 @@ public interface DictTypeMapper extends BaseMapper<DictType> {
     int updateStatus(@Param("idDictType") Long idDictType, @Param("status") Integer status);
 
     int updateDelFlag(@Param("idDictType") Long idDictType, @Param("delFlag") Integer delFlag);
+
+    int batchUpdateDelFlag(@Param("idDictTypes") List<Long> idDictTypes, @Param("delFlag") Integer delFlag);
 }
