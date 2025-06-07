@@ -32,6 +32,10 @@ public class DictType {
      */
     private String typeCode;
     /**
+     * 描述
+     */
+    private String description;
+    /**
      * 排序
      */
     private Integer sortNo;

@@ -23,4 +23,14 @@ public class DictInfo {
      * 颜色
      */
     private String color;
+
+    /**
+     * 图标
+     */
+    private String icon;
+
+    /**
+     * 图片
+     */
+    private String image;
 }

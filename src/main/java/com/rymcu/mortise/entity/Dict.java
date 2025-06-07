@@ -69,4 +69,18 @@ public class Dict {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedTime;
 
+    /**
+     * 图标
+     */
+    private String icon;
+
+    /**
+     * 图片
+     */
+    private String image;
+    /**
+     * chip 颜色
+     */
+    private String color;
+
 }
