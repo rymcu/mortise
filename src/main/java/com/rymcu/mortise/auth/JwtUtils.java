@@ -50,7 +50,7 @@ public class JwtUtils {
                 }
             }
         }
-        throw new BadCredentialsException(ResultCode.INCORRECT_ACCOUNT_OR_PASSWORD.getMessage());
+        throw new BadCredentialsException(ResultCode.UNAUTHENTICATED.getMessage());
     }
 
     public static String generateToken(OidcUser oidcUser) {
