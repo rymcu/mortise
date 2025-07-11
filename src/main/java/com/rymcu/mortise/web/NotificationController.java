@@ -1,8 +1,5 @@
 package com.rymcu.mortise.web;
 
-import com.rymcu.mortise.core.result.GlobalResult;
-import com.rymcu.mortise.core.result.GlobalResultGenerator;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,10 +13,5 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/notification")
 public class NotificationController {
-
-    @GetMapping("/all")
-    public GlobalResult all() {
-        return GlobalResultGenerator.genSuccessResult();
-    }
 
 }

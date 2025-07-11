@@ -2,14 +2,13 @@ package com.rymcu.mortise.config;
 
 import com.rymcu.mortise.auth.JwtConstants;
 import com.rymcu.mortise.service.UserService;
+import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.listener.KeyExpirationEventMessageListener;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.stereotype.Component;
-
-import jakarta.annotation.Resource;
 
 
 /**

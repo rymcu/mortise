@@ -17,6 +17,7 @@ import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
 import com.rymcu.mortise.annotation.DictAnnotationIntrospector;
 import com.rymcu.mortise.service.DictService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +36,7 @@ import java.time.format.DateTimeFormatter;
  *
  * @author ronger
  */
+@Slf4j
 @Configuration
 public class JacksonConfig {
 
@@ -160,7 +162,7 @@ public class JacksonConfig {
         jsonMapper.setAnnotationIntrospector(new DictAnnotationIntrospector(dictService));
 
         // 添加验证代码
-        System.out.println("已注册的模块: " + jsonMapper.getRegisteredModuleIds());
+        log.info("已注册的模块: {}", jsonMapper.getRegisteredModuleIds());
 
         return jsonMapper;
     }

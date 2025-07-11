@@ -1,7 +1,6 @@
 package com.rymcu.mortise.web;
 
 import com.rymcu.mortise.core.result.GlobalResult;
-import com.rymcu.mortise.core.result.GlobalResultGenerator;
 import com.rymcu.mortise.entity.Role;
 import com.rymcu.mortise.enumerate.DelFlag;
 import com.rymcu.mortise.model.BindRoleMenuInfo;
@@ -28,36 +27,36 @@ public class RoleController {
 
     @GetMapping("/detail/{idRole}")
     public GlobalResult<Role> role(@PathVariable Long idRole) {
-        return GlobalResultGenerator.genSuccessResult(roleService.findById(idRole));
+        return GlobalResult.success(roleService.findById(idRole));
     }
 
     @PostMapping("/post")
     public GlobalResult<Boolean> addRole(@RequestBody Role role) {
-        return GlobalResultGenerator.genSuccessResult(roleService.saveRole(role));
+        return GlobalResult.success(roleService.saveRole(role));
     }
 
     @PutMapping("/post")
     public GlobalResult<Boolean> updateRole(@RequestBody Role role) {
-        return GlobalResultGenerator.genSuccessResult(roleService.saveRole(role));
+        return GlobalResult.success(roleService.saveRole(role));
     }
 
     @PostMapping("/update-status")
     public GlobalResult<Boolean> updateRoleStatus(@RequestBody Role role) {
-        return GlobalResultGenerator.genSuccessResult(roleService.updateStatus(role.getId(), role.getStatus()));
+        return GlobalResult.success(roleService.updateStatus(role.getId(), role.getStatus()));
     }
 
     @GetMapping("/{idRole}/menus")
     public GlobalResult<Set<Long>> menus(@PathVariable Long idRole) {
-        return GlobalResultGenerator.genSuccessResult(roleService.findRoleMenus(idRole));
+        return GlobalResult.success(roleService.findRoleMenus(idRole));
     }
 
     @PostMapping("/bind-menu")
     public GlobalResult<Boolean> bindRoleMenu(@RequestBody BindRoleMenuInfo bindRoleMenuInfo) {
-        return GlobalResultGenerator.genSuccessResult(roleService.bindRoleMenu(bindRoleMenuInfo));
+        return GlobalResult.success(roleService.bindRoleMenu(bindRoleMenuInfo));
     }
 
     @DeleteMapping("/update-del-flag")
     public GlobalResult<Boolean> updateDelFlag(Long idRole) {
-        return GlobalResultGenerator.genSuccessResult(roleService.updateDelFlag(idRole, DelFlag.DELETED.ordinal()));
+        return GlobalResult.success(roleService.updateDelFlag(idRole, DelFlag.DELETED.ordinal()));
     }
 }

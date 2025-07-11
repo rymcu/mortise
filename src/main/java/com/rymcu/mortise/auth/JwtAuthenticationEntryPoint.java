@@ -2,7 +2,6 @@ package com.rymcu.mortise.auth;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rymcu.mortise.core.result.GlobalResult;
-import com.rymcu.mortise.core.result.GlobalResultGenerator;
 import jakarta.annotation.Resource;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletOutputStream;
@@ -32,7 +31,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         ServletOutputStream outputStream = response.getOutputStream();
-        GlobalResult<Object> result = GlobalResultGenerator.genResult(HttpServletResponse.SC_UNAUTHORIZED, null, authException.getMessage());
+        GlobalResult<Object> result = GlobalResult.error(HttpServletResponse.SC_UNAUTHORIZED, authException.getMessage());
         outputStream.write(objectMapper.writeValueAsBytes(result));
         outputStream.flush();
         outputStream.close();

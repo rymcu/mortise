@@ -3,7 +3,6 @@ package com.rymcu.mortise.web;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.rymcu.mortise.core.result.GlobalResult;
-import com.rymcu.mortise.core.result.GlobalResultGenerator;
 import com.rymcu.mortise.enumerate.DelFlag;
 import com.rymcu.mortise.model.BindUserRoleInfo;
 import com.rymcu.mortise.model.UserInfo;
@@ -29,22 +28,22 @@ public class UserController {
 
     @GetMapping("/detail/{idUser}")
     public GlobalResult<UserInfo> user(@PathVariable Long idUser) {
-        return GlobalResultGenerator.genSuccessResult(userService.findUserInfoById(idUser));
+        return GlobalResult.success(userService.findUserInfoById(idUser));
     }
 
     @PostMapping("/post")
     public GlobalResult<Boolean> addUser(@RequestBody UserInfo userInfo) {
-        return GlobalResultGenerator.genSuccessResult(userService.saveUser(userInfo));
+        return GlobalResult.success(userService.saveUser(userInfo));
     }
 
     @PutMapping("/post")
     public GlobalResult<Boolean> updateUser(@RequestBody UserInfo userInfo) {
-        return GlobalResultGenerator.genSuccessResult(userService.saveUser(userInfo));
+        return GlobalResult.success(userService.saveUser(userInfo));
     }
 
     @PostMapping("/update-status")
     public GlobalResult<Boolean> updateUserStatus(@RequestBody UserInfo userInfo) {
-        return GlobalResultGenerator.genSuccessResult(userService.updateStatus(userInfo.getId(), userInfo.getStatus()));
+        return GlobalResult.success(userService.updateStatus(userInfo.getId(), userInfo.getStatus()));
     }
 
     @PostMapping("/reset-password")
@@ -53,16 +52,16 @@ public class UserController {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode jsonObject = objectMapper.createObjectNode();
         jsonObject.put("password", password);
-        return GlobalResultGenerator.genSuccessResult(jsonObject);
+        return GlobalResult.success(jsonObject);
     }
 
     @PostMapping("/bind-role")
     public GlobalResult<Boolean> bindUserRole(@RequestBody BindUserRoleInfo bindUserRoleInfo) {
-        return GlobalResultGenerator.genSuccessResult(userService.bindUserRole(bindUserRoleInfo));
+        return GlobalResult.success(userService.bindUserRole(bindUserRoleInfo));
     }
 
     @DeleteMapping("/update-del-flag")
     public GlobalResult<Boolean> updateDelFlag(Long idUser) {
-        return GlobalResultGenerator.genSuccessResult(userService.updateDelFlag(idUser, DelFlag.DELETED.ordinal()));
+        return GlobalResult.success(userService.updateDelFlag(idUser, DelFlag.DELETED.ordinal()));
     }
 }

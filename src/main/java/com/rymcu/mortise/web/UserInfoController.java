@@ -1,7 +1,6 @@
 package com.rymcu.mortise.web;
 
 import com.rymcu.mortise.core.result.GlobalResult;
-import com.rymcu.mortise.core.result.GlobalResultGenerator;
 import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.model.UserProfileInfo;
 import com.rymcu.mortise.service.UserService;
@@ -29,6 +28,6 @@ public class UserInfoController {
     @PutMapping("/profile")
     public GlobalResult<Boolean> updateUserProfileInfo(@RequestBody UserProfileInfo userProfileInfo) {
         User user = UserUtils.getCurrentUserByToken();
-        return GlobalResultGenerator.genSuccessResult(userService.updateUserProfileInfo(userProfileInfo, user));
+        return GlobalResult.success(userService.updateUserProfileInfo(userProfileInfo, user));
     }
 }

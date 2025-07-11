@@ -3,7 +3,6 @@ package com.rymcu.mortise.web;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rymcu.mortise.core.result.GlobalResult;
-import com.rymcu.mortise.core.result.GlobalResultGenerator;
 import com.rymcu.mortise.entity.Role;
 import com.rymcu.mortise.model.*;
 import com.rymcu.mortise.service.MenuService;
@@ -39,7 +38,7 @@ public class AdminController {
         Page<UserInfo> page = new Page<>(search.getPageNum(), search.getPageSize());
         List<UserInfo> list = userService.findUsers(page, search);
         page.setRecords(list);
-        return GlobalResultGenerator.genSuccessResult(page);
+        return GlobalResult.success(page);
     }
 
     @GetMapping("/roles")
@@ -47,13 +46,13 @@ public class AdminController {
         Page<Role> page = new Page<>(search.getPageNum(), search.getPageSize());
         List<Role> list = roleService.findRoles(page, search);
         page.setRecords(list);
-        return GlobalResultGenerator.genSuccessResult(page);
+        return GlobalResult.success(page);
     }
 
     @GetMapping("/menus")
     public GlobalResult<List<Link>> menus(MenuSearch search) {
         List<Link> list = menuService.findMenus(search);
-        return GlobalResultGenerator.genSuccessResult(list);
+        return GlobalResult.success(list);
     }
 
     @GetMapping("/children-menus")
@@ -61,7 +60,7 @@ public class AdminController {
         Page<Link> page = new Page<>(search.getPageNum(), search.getPageSize());
         List<Link> list = menuService.findChildrenMenus(page, search);
         page.setRecords(list);
-        return GlobalResultGenerator.genSuccessResult(page);
+        return GlobalResult.success(page);
     }
 
 }

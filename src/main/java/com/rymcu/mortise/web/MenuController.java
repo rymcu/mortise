@@ -1,7 +1,6 @@
 package com.rymcu.mortise.web;
 
 import com.rymcu.mortise.core.result.GlobalResult;
-import com.rymcu.mortise.core.result.GlobalResultGenerator;
 import com.rymcu.mortise.entity.Menu;
 import com.rymcu.mortise.enumerate.DelFlag;
 import com.rymcu.mortise.service.MenuService;
@@ -25,26 +24,26 @@ public class MenuController {
 
     @PostMapping("/update-status")
     public GlobalResult<Boolean> updateMenuStatus(@RequestBody Menu menu) {
-        return GlobalResultGenerator.genSuccessResult(menuService.updateStatus(menu.getId(), menu.getStatus()));
+        return GlobalResult.success(menuService.updateStatus(menu.getId(), menu.getStatus()));
     }
 
     @GetMapping("/detail/{idMenu}")
     public GlobalResult<Menu> menu(@PathVariable Long idMenu) {
-        return GlobalResultGenerator.genSuccessResult(menuService.findById(idMenu));
+        return GlobalResult.success(menuService.findById(idMenu));
     }
 
     @PostMapping("/menu/post")
     public GlobalResult<Boolean> addMenu(@RequestBody Menu menu) {
-        return GlobalResultGenerator.genSuccessResult(menuService.saveMenu(menu));
+        return GlobalResult.success(menuService.saveMenu(menu));
     }
 
     @PutMapping("/menu/post")
     public GlobalResult<Boolean> updateMenu(@RequestBody Menu menu) {
-        return GlobalResultGenerator.genSuccessResult(menuService.saveMenu(menu));
+        return GlobalResult.success(menuService.saveMenu(menu));
     }
 
     @DeleteMapping("/update-del-flag")
     public GlobalResult<Boolean> updateDelFlag(Long idMenu) {
-        return GlobalResultGenerator.genSuccessResult(menuService.updateDelFlag(idMenu, DelFlag.DELETED.ordinal()));
+        return GlobalResult.success(menuService.updateDelFlag(idMenu, DelFlag.DELETED.ordinal()));
     }
 }

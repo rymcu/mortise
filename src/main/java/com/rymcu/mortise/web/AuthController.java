@@ -8,8 +8,7 @@ import com.rymcu.mortise.auth.TokenManager;
 import com.rymcu.mortise.core.exception.AccountExistsException;
 import com.rymcu.mortise.core.exception.ServiceException;
 import com.rymcu.mortise.core.result.GlobalResult;
-import com.rymcu.mortise.core.result.GlobalResultGenerator;
-import com.rymcu.mortise.core.result.GlobalResultMessage;
+import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.model.*;
 import com.rymcu.mortise.service.JavaMailService;
@@ -45,7 +44,7 @@ public class AuthController {
     public GlobalResult<List<Link>> menus() {
         User user = UserUtils.getCurrentUserByToken();
         List<Link> menus = menuService.findLinksByIdUser(user.getId());
-        return GlobalResultGenerator.genSuccessResult(menus);
+        return GlobalResult.success(menus);
     }
 
     @PostMapping("/login")
@@ -56,7 +55,7 @@ public class AuthController {
         TokenUser tokenUser = userService.login(loginInfo.getAccount(), loginInfo.getPassword());
         LogRecordContext.putVariable("idUser", tokenUser.getIdUser());
         tokenUser.setIdUser(null);
-        GlobalResult<TokenUser> tokenUserGlobalResult = GlobalResultGenerator.genSuccessResult(tokenUser);
+        GlobalResult<TokenUser> tokenUserGlobalResult = GlobalResult.success(tokenUser);
         LogRecordContext.putVariable("result", tokenUserGlobalResult);
         return tokenUserGlobalResult;
     }
@@ -64,13 +63,13 @@ public class AuthController {
     @PostMapping("/register")
     public GlobalResult<Boolean> register(@RequestBody RegisterInfo registerInfo) throws AccountExistsException {
         boolean flag = userService.register(registerInfo.getEmail(), registerInfo.getNickname(), registerInfo.getPassword(), registerInfo.getCode());
-        return GlobalResultGenerator.genSuccessResult(flag);
+        return GlobalResult.success(flag);
     }
 
     @PostMapping("/refresh-token")
     public GlobalResult<TokenUser> refreshToken(@RequestBody TokenUser tokenUser) {
         tokenUser = userService.refreshToken(tokenUser.getRefreshToken());
-        return GlobalResultGenerator.genSuccessResult(tokenUser);
+        return GlobalResult.success(tokenUser);
     }
 
     @PostMapping("/logout")
@@ -79,7 +78,7 @@ public class AuthController {
         if (Objects.nonNull(user)) {
             tokenManager.deleteToken(user.getAccount());
         }
-        return GlobalResultGenerator.genSuccessResult();
+        return GlobalResult.success();
     }
 
     @GetMapping("/me")
@@ -93,7 +92,7 @@ public class AuthController {
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode object = objectMapper.createObjectNode();
         object.set("user", objectMapper.valueToTree(authInfo));
-        return GlobalResultGenerator.genSuccessResult(object);
+        return GlobalResult.success(object);
     }
 
     @GetMapping("/password/request")
@@ -102,18 +101,18 @@ public class AuthController {
         if (user != null) {
             int result = javaMailService.sendForgetPasswordEmail(email);
             if (result == 0) {
-                throw new ServiceException(GlobalResultMessage.SEND_FAIL.getMessage());
+                throw new ServiceException(ResultCode.SEND_EMAIL_FAIL.getMessage());
             }
         } else {
             throw new AccountNotFoundException("未知账号");
         }
-        return GlobalResultGenerator.genSuccessResult(GlobalResultMessage.SEND_SUCCESS.getMessage());
+        return GlobalResult.success(ResultCode.SUCCESS.getMessage());
     }
 
     @PatchMapping("/password/reset")
     public GlobalResult<Boolean> resetPassword(@RequestBody ForgetPasswordInfo forgetPassword) throws ServiceException {
         boolean flag = userService.forgetPassword(forgetPassword.getCode(), forgetPassword.getPassword());
-        return GlobalResultGenerator.genSuccessResult(flag);
+        return GlobalResult.success(flag);
     }
 
     @GetMapping("/email/request")
@@ -124,10 +123,10 @@ public class AuthController {
         } else {
             int result = javaMailService.sendEmailCode(email);
             if (result == 0) {
-                return GlobalResultGenerator.genErrorResult(GlobalResultMessage.SEND_FAIL.getMessage());
+                return GlobalResult.error(ResultCode.SEND_EMAIL_FAIL.getMessage());
             }
         }
-        return GlobalResultGenerator.genSuccessResult(GlobalResultMessage.SEND_SUCCESS.getMessage());
+        return GlobalResult.success(ResultCode.SUCCESS.getMessage());
     }
 
 }

@@ -3,7 +3,6 @@ package com.rymcu.mortise.entity;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.rymcu.mortise.annotation.DictFormat;
 import lombok.Data;
 

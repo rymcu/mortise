@@ -5,26 +5,20 @@ import com.rymcu.mortise.core.exception.CaptchaException;
 import com.rymcu.mortise.core.exception.ServiceException;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.core.result.ResultCode;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.HandlerMethod;
-import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.NoHandlerFoundException;
-import org.springframework.web.servlet.view.json.AbstractJackson2View;
-import org.springframework.web.servlet.view.json.MappingJackson2JsonView;
 
 import javax.security.auth.login.AccountException;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 全局异常处理器
@@ -36,122 +30,104 @@ public class BaseExceptionHandler {
 
     private final Logger logger = LoggerFactory.getLogger(BaseExceptionHandler.class);
 
+    /**
+     * 处理业务逻辑异常 (ServiceException)
+     * 这类异常由业务代码主动抛出，代表一个已知的业务错误。
+     * HTTP 状态码通常为 400 (Bad Request) 或其他 4xx。
+     */
+    @ExceptionHandler(ServiceException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public GlobalResult<Void> handleServiceException(ServiceException ex) {
+        logger.warn("业务逻辑异常: {}", ex.getMessage());
+        return GlobalResult.error(ex.getCode(), ex.getMessage());
+    }
+
+    /**
+     * 处理认证和授权相关异常
+     * 包括凭证错误、账户不存在、权限不足等。
+     * 为避免账户枚举攻击，对客户端返回统一的模糊提示。
+     * HTTP 状态码为 401 (Unauthorized)。
+     */
+    @ExceptionHandler({AccountException.class, BadCredentialsException.class, UsernameNotFoundException.class, CaptchaException.class})
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public GlobalResult<Void> handleAuthenticationException(Exception ex) {
+        // 对于安全类异常，只记录警告信息，但对客户端返回统一的错误提示，防止泄露过多信息
+        logger.warn("认证失败: {}", ex.getMessage());
+        if(ex instanceof CaptchaException) {
+            return GlobalResult.error(ResultCode.INVALID_VERIFICATION_CODE);
+        }
+        return GlobalResult.error(ResultCode.INCORRECT_ACCOUNT_OR_PASSWORD);
+    }
+
+    /**
+     * 处理用户权限不足异常 (Spring Security)
+     * HTTP 状态码为 403 (Forbidden)
+     */
+    @ExceptionHandler(AuthorizationDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public GlobalResult<Void> handleAuthorizationDeniedException(AuthorizationDeniedException ex, HttpServletRequest request) {
+        logger.warn("权限不足: 用户尝试访问受限资源 [{}], {}", request.getRequestURI(), ex.getMessage());
+        return GlobalResult.error(ResultCode.UNAUTHORIZED);
+    }
+
+    /**
+     * 处理参数校验相关的异常
+     * 如 BusinessException 或 IllegalArgumentException，通常表示客户端传递了非法参数。
+     * HTTP 状态码为 400 (Bad Request)。
+     */
+    @ExceptionHandler({BusinessException.class, IllegalArgumentException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public GlobalResult<Void> handleValidationException(Exception ex) {
+        logger.warn("参数校验失败: {}", ex.getMessage());
+        return GlobalResult.error(ResultCode.INVALID_PARAM.getCode(), ex.getMessage());
+    }
+
+    /**
+     * 处理资源未找到异常
+     * HTTP 状态码为 404 (Not Found)。
+     */
+    @ExceptionHandler(NoHandlerFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public GlobalResult<Void> handleNoHandlerFoundException(NoHandlerFoundException ex, HttpServletRequest request) {
+        logger.warn("资源未找到: 无法为请求 [{}] 找到处理器", request.getRequestURI());
+        return GlobalResult.error(ResultCode.NOT_FOUND);
+    }
+
+    /**
+     * 兜底异常处理器：处理所有未被上述处理器捕获的异常
+     * 这是最后的防线，应记录为ERROR级别，并对客户端返回统一的“服务器内部错误”信息。
+     * HTTP 状态码为 500 (Internal Server Error)。
+     */
     @ExceptionHandler(Exception.class)
-    public Object errorHandler(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
-        if (isAjax(request)) {
-            GlobalResult<ResultCode> result = new GlobalResult<>();
-            if (ex instanceof BadCredentialsException) {
-                result = new GlobalResult<>(ResultCode.INCORRECT_ACCOUNT_OR_PASSWORD);
-                logger.info("账号或密码错误");
-            } else if (ex instanceof AuthorizationDeniedException) {
-                result = new GlobalResult<>(ResultCode.UNAUTHORIZED);
-                logger.info("用户无权限");
-            } else if (ex instanceof UsernameNotFoundException) {
-                // 账号或密码错误
-                result = new GlobalResult<>(ResultCode.UNKNOWN_ACCOUNT);
-                logger.info(ex.getMessage());
-            } else if (ex instanceof CaptchaException) {
-                // 验证码错误
-                result = new GlobalResult<>(ResultCode.VALIDATE);
-                logger.info(ex.getMessage());
-            } else if (ex instanceof AccountException) {
-                // 账号或密码错误
-                result = new GlobalResult<>(ResultCode.INCORRECT_ACCOUNT_OR_PASSWORD);
-                logger.info(ex.getMessage());
-            } else if (ex instanceof ServiceException) {
-                //业务失败的异常，如“账号或密码错误”
-                result.setCode(((ServiceException) ex).getCode());
-                result.setMessage(ex.getMessage());
-                logger.info(ex.getMessage());
-            } else if (ex instanceof NoHandlerFoundException) {
-                result.setCode(ResultCode.NOT_FOUND.getCode());
-                result.setMessage(ResultCode.NOT_FOUND.getMessage());
-            } else if (ex instanceof ServletException) {
-                result.setCode(ResultCode.FAIL.getCode());
-                result.setMessage(ex.getMessage());
-            } else if (ex instanceof BusinessException || ex instanceof IllegalArgumentException) {
-                result.setCode(ResultCode.INVALID_PARAM.getCode());
-                result.setMessage(ex.getMessage());
-            } else {
-                //系统内部异常,不返回给客户端,内部记录错误日志
-                result = new GlobalResult<>(ResultCode.INTERNAL_SERVER_ERROR);
-                printExceptionMessage(request, handler, ex);
-            }
-            return result;
-        } else {
-            ModelAndView mv = new ModelAndView();
-            AbstractJackson2View view = new MappingJackson2JsonView();
-            Map<String, Object> attributes = new HashMap<>(2);
-            switch (ex) {
-                case BadCredentialsException unauthenticatedException -> {
-                    attributes.put("code", ResultCode.INCORRECT_ACCOUNT_OR_PASSWORD.getCode());
-                    attributes.put("message", ResultCode.INCORRECT_ACCOUNT_OR_PASSWORD.getMessage());
-                }
-                case AuthorizationDeniedException unauthorizedException -> {
-                    attributes.put("code", ResultCode.UNAUTHORIZED.getCode());
-                    attributes.put("message", ResultCode.UNAUTHORIZED.getMessage());
-                }
-                case UsernameNotFoundException serviceException -> {
-                    //业务失败的异常，如“账号或密码错误”
-                    attributes.put("code", ResultCode.UNKNOWN_ACCOUNT.getCode());
-                    attributes.put("message", ex.getMessage());
-                    logger.info(ex.getMessage());
-                }
-                case ServiceException serviceException -> {
-                    //业务失败的异常，如“账号或密码错误”
-                    attributes.put("code", serviceException.getCode());
-                    attributes.put("message", ex.getMessage());
-                    logger.info(ex.getMessage());
-                }
-                case NoHandlerFoundException noHandlerFoundException -> {
-                    attributes.put("code", ResultCode.NOT_FOUND.getCode());
-                    attributes.put("message", ResultCode.NOT_FOUND.getMessage());
-                }
-                case ServletException servletException -> {
-                    attributes.put("code", ResultCode.FAIL.getCode());
-                    attributes.put("message", ex.getMessage());
-                }
-                case BusinessException businessException -> {
-                    attributes.put("code", ResultCode.INVALID_PARAM.getCode());
-                    attributes.put("message", ex.getMessage());
-                }
-                case CaptchaException captchaException -> {
-                    attributes.put("code", ResultCode.VALIDATE.getCode());
-                    attributes.put("message", ex.getMessage());
-                }
-                case null, default -> {
-                    //系统内部异常,不返回给客户端,内部记录错误日志
-                    attributes.put("code", ResultCode.INTERNAL_SERVER_ERROR.getCode());
-                    attributes.put("message", ResultCode.INTERNAL_SERVER_ERROR.getMessage());
-                    printExceptionMessage(request, handler, ex);
-                }
-            }
-            view.setAttributesMap(attributes);
-            mv.setView(view);
-            return mv;
-        }
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public GlobalResult<Void> handleUncaughtException(Exception ex, HttpServletRequest request, Object handler) {
+        // 记录详细的错误日志，包括请求信息和异常堆栈
+        logError(ex, request, handler);
+        // 对客户端屏蔽内部细节，返回统一的错误信息
+        return GlobalResult.error(ResultCode.INTERNAL_SERVER_ERROR);
     }
 
-    private void printExceptionMessage(HttpServletRequest request, Object handler, Exception ex) {
-        String message;
+    /**
+     * 记录详细的错误日志
+     * @param ex 异常对象
+     * @param request HTTP请求
+     * @param handler 处理器 (可能为null)
+     */
+    private void logError(Exception ex, HttpServletRequest request, Object handler) {
+        String requestUri = request.getRequestURI();
+        String method = request.getMethod();
+
+        String logMessage;
         if (handler instanceof HandlerMethod handlerMethod) {
-            message = String.format("接口 [%s] 出现异常，方法：%s.%s，异常摘要：%s",
-                    request.getRequestURI(),
-                    handlerMethod.getBean().getClass().getName(),
-                    handlerMethod.getMethod().getName(),
-                    ex.getMessage());
+            String controller = handlerMethod.getBean().getClass().getName();
+            String controllerMethod = handlerMethod.getMethod().getName();
+            logMessage = String.format("未捕获异常: 请求 [%s %s] 在 [%s#%s] 中发生错误.",
+                    method, requestUri, controller, controllerMethod);
         } else {
-            message = ex.getMessage();
+            logMessage = String.format("未捕获异常: 请求 [%s %s] 发生未知位置的错误.", method, requestUri);
         }
-        logger.error(message, ex);
+        // 使用ERROR级别记录，并附带完整的异常堆栈
+        logger.error(logMessage, ex);
     }
 
-    private boolean isAjax(HttpServletRequest request) {
-        String requestedWith = request.getHeader("x-requested-with");
-        if ("XMLHttpRequest".equalsIgnoreCase(requestedWith)) {
-            return true;
-        }
-        String contentType = request.getContentType();
-        return StringUtils.isNotBlank(contentType) && contentType.contains("application/json");
-    }
 }

@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rymcu.mortise.auth.JwtConstants;
 import com.rymcu.mortise.model.TokenUser;
 import com.rymcu.mortise.util.UserUtils;
+import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
@@ -19,8 +20,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.servlet.HandlerMapping;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.util.Enumeration;

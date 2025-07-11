@@ -3,7 +3,6 @@ package com.rymcu.mortise.web;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.rymcu.mortise.core.result.GlobalResult;
-import com.rymcu.mortise.core.result.GlobalResultGenerator;
 import com.rymcu.mortise.entity.Dict;
 import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.enumerate.DelFlag;
@@ -35,13 +34,13 @@ public class DictController {
     public GlobalResult<IPage<Dict>> dictList(DictSearch search) {
         Page<Dict> page = new Page<>(search.getPageNum(), search.getPageSize());
         IPage<Dict> list = dictService.findDictList(page, search);
-        return GlobalResultGenerator.genSuccessResult(list);
+        return GlobalResult.success(list);
     }
 
     @GetMapping("/detail/{idDict}")
     public GlobalResult<Dict> dictDetail(@PathVariable Long idDict) {
         Dict dict = dictService.findById(idDict);
-        return GlobalResultGenerator.genSuccessResult(dict);
+        return GlobalResult.success(dict);
     }
 
     @PostMapping("/post")
@@ -49,7 +48,7 @@ public class DictController {
         User user = UserUtils.getCurrentUserByToken();
         dict.setCreatedBy(user.getId());
         Boolean flag = dictService.saveDict(dict);
-        return GlobalResultGenerator.genSuccessResult(flag);
+        return GlobalResult.success(flag);
     }
 
     @PutMapping("/post")
@@ -57,27 +56,27 @@ public class DictController {
         User user = UserUtils.getCurrentUserByToken();
         dict.setUpdatedBy(user.getId());
         Boolean flag = dictService.saveDict(dict);
-        return GlobalResultGenerator.genSuccessResult(flag);
+        return GlobalResult.success(flag);
     }
 
     @PatchMapping("/update-status")
     public GlobalResult<Boolean> updateStatus(@RequestBody Dict dict) {
-        return GlobalResultGenerator.genSuccessResult(dictService.updateStatus(dict.getId(), dict.getStatus()));
+        return GlobalResult.success(dictService.updateStatus(dict.getId(), dict.getStatus()));
     }
 
     @PatchMapping("/update-del-flag")
     public GlobalResult<Boolean> updateDelFlag(Long idDict) {
-        return GlobalResultGenerator.genSuccessResult(dictService.updateDelFlag(idDict, DelFlag.DELETED.ordinal()));
+        return GlobalResult.success(dictService.updateDelFlag(idDict, DelFlag.DELETED.ordinal()));
     }
 
     @GetMapping("/options")
     public GlobalResult<List<BaseOption>> queryDictOptions(@RequestParam("code") String dictTypeCode) {
-        return GlobalResultGenerator.genSuccessResult(dictService.queryDictOptions(dictTypeCode));
+        return GlobalResult.success(dictService.queryDictOptions(dictTypeCode));
     }
 
     @PatchMapping("/batch-update-del-flag")
     public GlobalResult<Boolean> batchUpdateDelFlag(@RequestBody BatchUpdateInfo batchUpdateInfo) {
-        return GlobalResultGenerator.genSuccessResult(dictService.batchUpdateDelFlag(batchUpdateInfo.getIds(), DelFlag.DELETED.ordinal()));
+        return GlobalResult.success(dictService.batchUpdateDelFlag(batchUpdateInfo.getIds(), DelFlag.DELETED.ordinal()));
     }
 
 }

@@ -62,10 +62,10 @@ spring:
             authorization-uri: https://auth.rymcu.local/oidc/auth
             jwk-set-uri: https://auth.rymcu.local/oidc/jwks
             user-info-uri: https://auth.rymcu.local/oidc/me
-  liquibase:
-    change-log: classpath:db/changelog/mortise/changelog-master.yaml
-    default-schema: mortise
-    liquibase-schema: public
+#  liquibase:
+#    change-log: classpath:db/changelog/mortise/changelog-master.yaml
+#    default-schema: mortise
+#    liquibase-schema: public
 logging:
   file:
     path: /logs/mortise
@@ -93,3 +93,11 @@ dromara:
         base-path: local-plus/ # 基础路径
         path-patterns: /file/** # 访问路径
         storage-path: /opt/mortise/storage/ # 存储路径
+executor:
+  thread:
+    async:
+      corePoolSize: 10
+      maxPoolSize: 200
+      queueCapacity: 25
+      name:
+        prefix: mortise-executor-

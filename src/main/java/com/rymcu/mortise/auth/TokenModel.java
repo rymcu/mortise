@@ -1,5 +1,6 @@
 package com.rymcu.mortise.auth;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,14 +12,10 @@ import lombok.Setter;
  */
 @Setter
 @Getter
+@AllArgsConstructor
 public class TokenModel {
 
     private String username;
 
     private String token;
-
-    public TokenModel(String username, String token) {
-        this.username = username;
-        this.token = token;
-    }
 }
