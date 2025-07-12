@@ -8,8 +8,6 @@ package com.rymcu.mortise.core.exception;
  */
 public class NicknameOccupyException extends BusinessException {
 
-    private static final long serialVersionUID = 3206744387536223284L;
-
     public NicknameOccupyException() {
     }
 

@@ -4,7 +4,6 @@ package com.rymcu.mortise.core.exception;
  * @author KKould
  */
 public class ContentNotExistException extends BusinessException {
-    private static final long serialVersionUID = 3206734387536223284L;
 
     public ContentNotExistException() {
     }

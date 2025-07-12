@@ -5,8 +5,6 @@ package com.rymcu.mortise.core.exception;
  */
 public class UltraViresException extends BusinessException {
 
-    private static final long serialVersionUID = 3206744387536228284L;
-
     public UltraViresException() {
         super();
     }

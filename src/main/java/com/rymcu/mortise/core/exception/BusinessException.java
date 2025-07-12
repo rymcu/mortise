@@ -5,8 +5,6 @@ package com.rymcu.mortise.core.exception;
  */
 public class BusinessException extends RuntimeException {
 
-    private static final long serialVersionUID = 3206744387536223284L;
-
     public BusinessException() {
     }
 
