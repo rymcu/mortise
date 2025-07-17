@@ -1,7 +1,7 @@
 package com.rymcu.mortise.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mybatisflex.core.BaseMapper;
+import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.entity.Menu;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -27,7 +27,4 @@ public interface MenuMapper extends BaseMapper<Menu> {
 
     List<Menu> selectMenuListByLabelAndParentId(@Param("page") Page<Menu> page, @Param("label") String label, @Param("parentId") Long parentId);
 
-    int updateStatusByIdMenu(@Param("idMenu") Long idMenu, @Param("status") Integer status);
-
-    int updateDelFlag(@Param("idMenu") Long idMenu, @Param("delFlag") Integer delFlag);
 }

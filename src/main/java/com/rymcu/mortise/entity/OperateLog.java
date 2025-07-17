@@ -1,9 +1,10 @@
 package com.rymcu.mortise.entity;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -14,13 +15,13 @@ import java.time.LocalDateTime;
  * @desc : com.rymcu.mortise.entity
  */
 @Data
-@TableName(value = "mortise_operate_log", schema = "mortise")
-public class OperateLog {
+@Table(value = "mortise_operate_log", schema = "mortise")
+public class OperateLog implements Serializable {
 
     /**
      * 日志主键
      */
-    @TableId
+    @Id
     private Long id;
     /**
      * 链路追踪编号

@@ -1,7 +1,6 @@
 package com.rymcu.mortise.web;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.entity.Dict;
 import com.rymcu.mortise.entity.User;
@@ -31,9 +30,9 @@ public class DictController {
     private DictService dictService;
 
     @GetMapping("/list")
-    public GlobalResult<IPage<Dict>> dictList(DictSearch search) {
+    public GlobalResult<Page<Dict>> dictList(DictSearch search) {
         Page<Dict> page = new Page<>(search.getPageNum(), search.getPageSize());
-        IPage<Dict> list = dictService.findDictList(page, search);
+        Page<Dict> list = dictService.findDictList(page, search);
         return GlobalResult.success(list);
     }
 

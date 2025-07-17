@@ -3,11 +3,11 @@ package com.rymcu.mortise.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.lang.Dict;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mybatisflex.core.query.QueryWrapper;
+import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.entity.FileDetail;
 import com.rymcu.mortise.mapper.FileDetailMapper;
 import jakarta.annotation.Resource;
@@ -42,7 +42,7 @@ public class FileDetailService extends ServiceImpl<FileDetailMapper, FileDetail>
     @Override
     public boolean save(FileInfo info) {
         FileDetail detail = toFileDetail(info);
-        FileDetail one = getOne(new QueryWrapper<FileDetail>().eq("url", detail.getUrl()));
+        FileDetail one = getOne(new QueryWrapper().eq("url", detail.getUrl()));
         if (one != null) {
             detail.setId(one.getId());
             return updateById(detail);
@@ -62,9 +62,9 @@ public class FileDetailService extends ServiceImpl<FileDetailMapper, FileDetail>
     @Override
     public void update(FileInfo info) {
         FileDetail detail = toFileDetail(info);
-        QueryWrapper<FileDetail> qw = new QueryWrapper<FileDetail>()
-                .eq(detail.getUrl() != null, "url", detail.getUrl())
-                .eq(detail.getId() != null, "id", detail.getId());
+        QueryWrapper qw = new QueryWrapper()
+                .eq("url", detail.getUrl(), detail.getUrl() != null)
+                .eq("id", detail.getId(), detail.getId() != null);
         update(detail, qw);
     }
 
@@ -74,7 +74,7 @@ public class FileDetailService extends ServiceImpl<FileDetailMapper, FileDetail>
     @SneakyThrows
     @Override
     public FileInfo getByUrl(String url) {
-        return toFileInfo(getOne(new QueryWrapper<FileDetail>().eq("url", url)));
+        return toFileInfo(getOne(new QueryWrapper().eq("url", url)));
     }
 
     /**
@@ -82,7 +82,7 @@ public class FileDetailService extends ServiceImpl<FileDetailMapper, FileDetail>
      */
     @Override
     public boolean delete(String url) {
-        remove(new QueryWrapper<FileDetail>().eq("url", url));
+        remove(new QueryWrapper().eq("url", url));
         return true;
     }
 

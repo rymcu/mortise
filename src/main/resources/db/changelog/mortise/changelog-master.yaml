@@ -28,3 +28,5 @@ databaseChangeLog:
       file: db/changelog/mortise/data/mortise_dict_type_data.yaml
   - include:
       file: db/changelog/mortise/data/mortise_dict_data.yaml
+  - includeAll:
+      path: db/changelog/mortise/changes

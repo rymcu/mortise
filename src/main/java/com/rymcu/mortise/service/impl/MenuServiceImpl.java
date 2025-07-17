@@ -1,7 +1,8 @@
 package com.rymcu.mortise.service.impl;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.util.UpdateEntity;
+import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.entity.Menu;
 import com.rymcu.mortise.mapper.MenuMapper;
 import com.rymcu.mortise.model.Link;
@@ -10,7 +11,6 @@ import com.rymcu.mortise.service.MenuService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -27,7 +27,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
 
     @Override
     public List<Menu> findMenusByIdRole(Long idRole) {
-        return baseMapper.selectMenuListByIdRole(idRole);
+        return mapper.selectMenuListByIdRole(idRole);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
 
     @Override
     public List<Link> findMenus(MenuSearch search) {
-        List<Menu> menus = baseMapper.selectMenuListByLabelAndParentId(null, search.getQuery(), search.getParentId());
+        List<Menu> menus = mapper.selectMenuListByLabelAndParentId(null, search.getQuery(), search.getParentId());
         List<Link> links = new ArrayList<>();
         for (Menu menu : menus) {
             Link link = new Link();
@@ -58,7 +58,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean saveMenu(Menu menu) {
-        Menu oldMenu = baseMapper.selectById(menu.getId());
+        Menu oldMenu = mapper.selectOneById(menu.getId());
         if (Objects.nonNull(oldMenu)) {
             oldMenu.setLabel(menu.getLabel());
             oldMenu.setPermission(menu.getPermission());
@@ -69,15 +69,15 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
             oldMenu.setSortNo(menu.getSortNo());
             oldMenu.setParentId(menu.getParentId());
             oldMenu.setUpdatedTime(menu.getUpdatedTime());
+            return mapper.update(menu) > 0;
         }
-        oldMenu.setCreatedTime(LocalDateTime.now());
-        return baseMapper.insertOrUpdate(menu);
+        return mapper.insert(menu) > 0;
     }
 
     @Override
     public List<Link> findChildrenMenus(Page<Link> page, MenuSearch search) {
         Page<Menu> menuPage = new Page<>(search.getPageNum(), search.getPageSize());
-        List<Menu> menus = baseMapper.selectMenuListByLabelAndParentId(menuPage, search.getQuery(), search.getParentId());
+        List<Menu> menus = mapper.selectMenuListByLabelAndParentId(menuPage, search.getQuery(), search.getParentId());
         List<Link> links = new ArrayList<>();
         for (Menu menu : menus) {
             links.add(convertLink(menu));
@@ -87,21 +87,23 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
 
     @Override
     public Boolean updateStatus(Long idMenu, Integer status) {
-        return baseMapper.updateStatusByIdMenu(idMenu, status) > 0;
+        Menu menu = UpdateEntity.of(Menu.class, idMenu);
+        menu.setStatus(status);
+        return mapper.update(menu) > 0;
     }
 
     @Override
     public Boolean updateDelFlag(Long idMenu, Integer delFlag) {
-        return baseMapper.updateDelFlag(idMenu, delFlag) > 0;
+        return mapper.deleteById(idMenu) > 0;
     }
 
     @Override
     public Menu findById(Long idMenu) {
-        return baseMapper.selectById(idMenu);
+        return mapper.selectOneById(idMenu);
     }
 
     private List<Link> findLinkTreeMode(Long idUser, long parentId) {
-        List<Menu> menus = baseMapper.selectMenuListByIdUserAndParentId(idUser, parentId);
+        List<Menu> menus = mapper.selectMenuListByIdUserAndParentId(idUser, parentId);
         List<Link> links = new ArrayList<>();
         for (Menu menu : menus) {
             Link link = convertLink(menu);

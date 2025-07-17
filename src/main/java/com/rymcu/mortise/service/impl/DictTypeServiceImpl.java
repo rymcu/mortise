@@ -1,16 +1,19 @@
 package com.rymcu.mortise.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.query.QueryWrapper;
+import com.mybatisflex.core.util.UpdateEntity;
+import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.core.exception.ServiceException;
 import com.rymcu.mortise.entity.DictType;
 import com.rymcu.mortise.mapper.DictTypeMapper;
 import com.rymcu.mortise.model.DictTypeSearch;
 import com.rymcu.mortise.service.DictTypeService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Created on 2024/9/22 20:04.
@@ -23,17 +26,20 @@ import java.util.List;
 public class DictTypeServiceImpl extends ServiceImpl<DictTypeMapper, DictType> implements DictTypeService {
 
     @Override
-    public IPage<DictType> findDictTypeList(Page<DictType> page, DictTypeSearch search) {
-        List<DictType> list = baseMapper.selectDictTypeList(page, search.getQuery(), search.getTypeCode(), search.getStatus());
-        page.setRecords(list);
-        return page;
+    public Page<DictType> findDictTypeList(Page<DictType> page, DictTypeSearch search) {
+        QueryWrapper queryWrapper = QueryWrapper.create()
+                .select()
+                .eq("label", search.getQuery(), StringUtils.isNotBlank(search.getQuery()))
+                .eq("type_code", search.getTypeCode(), StringUtils.isNotBlank(search.getTypeCode()))
+                .eq("status", search.getStatus(), Objects.nonNull(search.getStatus()));;
+        return mapper.paginate(page, queryWrapper);
     }
 
     @Override
     public Boolean saveDictType(DictType dictType) {
         boolean isUpdate = dictType.getId() != null;
         if (isUpdate) {
-            DictType oldDictType = baseMapper.selectById(dictType.getId());
+            DictType oldDictType = mapper.selectOneById(dictType.getId());
             if (oldDictType == null) {
                 throw new ServiceException("数据不存在");
             }
@@ -43,27 +49,30 @@ public class DictTypeServiceImpl extends ServiceImpl<DictTypeMapper, DictType> i
             oldDictType.setStatus(dictType.getStatus());
             oldDictType.setUpdatedBy(dictType.getUpdatedBy());
             oldDictType.setUpdatedTime(dictType.getUpdatedTime());
+            return mapper.update(oldDictType) > 0;
         }
-        return baseMapper.insertOrUpdate(dictType);
+        return mapper.insert(dictType) > 0;
     }
 
     @Override
     public Boolean updateStatus(Long idDictType, Integer status) {
-        return baseMapper.updateStatus(idDictType, status) > 0;
+        DictType dictType = UpdateEntity.of(DictType.class, idDictType);
+        dictType.setStatus(status);
+        return mapper.update(dictType) > 0;
     }
 
     @Override
     public Boolean updateDelFlag(Long idDictType, Integer delFlag) {
-        return baseMapper.updateDelFlag(idDictType, delFlag) > 0;
+        return mapper.deleteById(idDictType) > 0;
     }
 
     @Override
     public DictType findById(Long idDictType) {
-        return baseMapper.selectById(idDictType);
+        return mapper.selectOneById(idDictType);
     }
 
     @Override
     public Boolean batchUpdateDelFlag(List<Long> idDictTypes, Integer delFlag) {
-        return baseMapper.batchUpdateDelFlag(idDictTypes, delFlag) > 0;
+        return mapper.deleteBatchByIds(idDictTypes) > 0;
     }
 }

@@ -1,12 +1,15 @@
 package com.rymcu.mortise.service.impl;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.query.QueryWrapper;
+import com.mybatisflex.core.util.UpdateEntity;
+import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.entity.Role;
 import com.rymcu.mortise.mapper.RoleMapper;
 import com.rymcu.mortise.model.BindRoleMenuInfo;
 import com.rymcu.mortise.model.RoleSearch;
 import com.rymcu.mortise.service.RoleService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,27 +30,29 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
 
     @Override
     public List<Role> findRolesByIdUser(Long idUser) {
-        return baseMapper.selectRolesByIdUser(idUser);
+        return mapper.selectRolesByIdUser(idUser);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean saveRole(Role role) {
-        Role oldRole = baseMapper.selectById(role.getId());
+        Role oldRole = mapper.selectOneById(role.getId());
         if (Objects.nonNull(oldRole)) {
             oldRole.setLabel(role.getLabel());
             oldRole.setPermission(role.getPermission());
             oldRole.setStatus(role.getStatus());
             oldRole.setUpdatedTime(LocalDateTime.now());
-        } else {
-            role.setCreatedTime(LocalDateTime.now());
+            return mapper.update(oldRole) > 0;
         }
-        return baseMapper.insertOrUpdate(role);
+        return mapper.insert(role) > 0;
     }
 
     @Override
-    public List<Role> findRoles(Page<Role> page, RoleSearch search) {
-        return baseMapper.selectRoles(page, search.getLabel(), search.getStartDate(), search.getEndDate(), search.getOrder(), search.getSort());
+    public Page<Role> findRoles(Page<Role> page, RoleSearch search) {
+        QueryWrapper queryWrapper = QueryWrapper.create()
+                .select("id", "label", "permission", "status")
+                .eq("label", search.getQuery(), StringUtils.isNotBlank(search.getQuery()));
+        return mapper.paginate(page, queryWrapper);
     }
 
     @Override
@@ -55,28 +60,30 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     public Boolean bindRoleMenu(BindRoleMenuInfo bindRoleMenuInfo) {
         int num = 0;
         for (Long idMenu : bindRoleMenuInfo.getIdMenus()) {
-            num += baseMapper.insertRoleMenu(bindRoleMenuInfo.getIdRole(), idMenu);
+            num += mapper.insertRoleMenu(bindRoleMenuInfo.getIdRole(), idMenu);
         }
         return num == bindRoleMenuInfo.getIdMenus().size();
     }
 
     @Override
     public Boolean updateStatus(Long idRole, Integer status) {
-        return baseMapper.updateStatusByIdRole(idRole, status) > 0;
+        Role role = UpdateEntity.of(Role.class, idRole);
+        role.setStatus(status);
+        return mapper.update(role) > 0;
     }
 
     @Override
     public Set<Long> findRoleMenus(Long idRole) {
-        return baseMapper.selectRoleMenus(idRole);
+        return mapper.selectRoleMenus(idRole);
     }
 
     @Override
     public Boolean updateDelFlag(Long idRole, Integer delFlag) {
-        return baseMapper.updateDelFlag(idRole, delFlag) > 0;
+        return mapper.deleteById(idRole) > 0;
     }
 
     @Override
     public Role findById(Long idRole) {
-        return baseMapper.selectById(idRole);
+        return mapper.selectOneById(idRole);
     }
 }

@@ -1,6 +1,6 @@
 package com.rymcu.mortise.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.mybatisflex.core.BaseMapper;
 import com.rymcu.mortise.entity.FileDetail;
 import org.apache.ibatis.annotations.Mapper;
 

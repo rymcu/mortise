@@ -101,3 +101,12 @@ executor:
       queueCapacity: 25
       name:
         prefix: mortise-executor-
+mybatis-flex:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.rymcu.mortise.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    default-executor-type: reuse
+    cache-enabled: false
+  global-config:
+    print-banner: false

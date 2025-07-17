@@ -76,7 +76,30 @@
     <select id="selectMaxAccount" resultType="java.lang.String">
         select max(account) from mortise_user
     </select>
-    <select id="selectUsers" resultMap="UserInfoMap">
+    <select id="selectUserInfoById" resultMap="UserInfoMap">
+        select id,
+               nickname,
+               account,
+               phone,
+               status,
+               avatar,
+               email,
+               last_login_time,
+               last_online_time,
+               created_time
+        from mortise_user
+        where id = #{idUser}
+    </select>
+    <select id="selectByOpenId" resultMap="BaseResultMap">
+        select * from mortise_user where provider = #{provider} and open_id = #{openId}
+    </select>
+    <select id="selectUserRolePermissionsByIdUser" resultType="java.lang.String">
+        select distinct tr.permission
+        from mortise_user_role tur
+                 join mortise_role tr on tur.id_mortise_role = tr.id
+        where tur.id_mortise_user = #{idUser}
+    </select>
+    <select id="selectUsers" resultType="com.rymcu.mortise.model.UserInfo">
         select id,
         nickname,
         account,
@@ -110,28 +133,23 @@
                 #{order}
             </if>
         </if>
+        limit ${pageSize} offset ${pageOffset}
     </select>
-    <select id="selectUserInfoById" resultMap="UserInfoMap">
-        select id,
-               nickname,
-               account,
-               phone,
-               status,
-               avatar,
-               email,
-               last_login_time,
-               last_online_time,
-               created_time
-        from mortise_user
-        where id = #{idUser}
-    </select>
-    <select id="selectByOpenId" resultMap="BaseResultMap">
-        select * from mortise_user where provider = #{provider} and open_id = #{openId}
-    </select>
-    <select id="selectUserRolePermissionsByIdUser" resultType="java.lang.String">
-        select distinct tr.permission
-        from mortise_user_role tur
-                 join mortise_role tr on tur.id_mortise_role = tr.id
-        where tur.id_mortise_user = #{idUser}
+    <select id="selectUsers_COUNT" resultType="long">
+        select count(0)
+        from mortise_user tu where tu.del_flag = 0
+        <if test="account != null and account != ''">
+            and account = #{account}
+        </if>
+        <if test="email != null and email != ''">
+            and email = #{email}
+        </if>
+        <if test="query != null and query != ''">
+            and (instr(account, #{query}) > 0 or instr(nickname, #{query}) > 0)
+        </if>
+        <if test="startDate != null and startDate != ''">
+            and created_time between str_to_date(#{startDate}, '%Y-%m-%d') and str_to_date(#{endDate}, '%Y-%m-%d') +
+            interval 1 day
+        </if>
     </select>
 </mapper>

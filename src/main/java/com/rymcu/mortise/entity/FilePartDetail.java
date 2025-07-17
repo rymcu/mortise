@@ -1,9 +1,10 @@
 package com.rymcu.mortise.entity;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
@@ -14,10 +15,10 @@ import java.util.Date;
  * @desc : com.rymcu.mortise.entity
  */
 @Data
-@TableName(value = "mortise_file_part_detail", schema = "mortise")
-public class FilePartDetail {
+@Table(value = "mortise_file_part_detail", schema = "mortise")
+public class FilePartDetail implements Serializable {
 
-    @TableId
+    @Id
     private Long id;
 
     private String platform;

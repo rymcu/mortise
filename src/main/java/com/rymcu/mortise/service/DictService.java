@@ -1,7 +1,7 @@
 package com.rymcu.mortise.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.service.IService;
 import com.rymcu.mortise.entity.Dict;
 import com.rymcu.mortise.model.BaseOption;
 import com.rymcu.mortise.model.DictInfo;
@@ -16,8 +16,8 @@ import java.util.List;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.service
  */
-public interface DictService {
-    IPage<Dict> findDictList(Page<Dict> page, DictSearch search);
+public interface DictService extends IService<Dict> {
+    Page<Dict> findDictList(Page<Dict> page, DictSearch search);
 
     Boolean saveDict(Dict dict);
 

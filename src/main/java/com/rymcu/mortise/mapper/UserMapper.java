@@ -1,7 +1,7 @@
 package com.rymcu.mortise.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mybatisflex.core.BaseMapper;
+import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.model.UserInfo;
 import org.apache.ibatis.annotations.Mapper;
@@ -32,6 +32,8 @@ public interface UserMapper extends BaseMapper<User> {
     String selectMaxAccount();
 
     List<UserInfo> selectUsers(@Param("page") Page<UserInfo> page, @Param("account") String account, @Param("email") String email, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("order") String order, @Param("sort") String sort, @Param("query") String query);
+
+    long selectUsers_COUNT(@Param("account") String account, @Param("email") String email, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("order") String order, @Param("sort") String sort, @Param("query") String query);
 
     int updatePasswordByEmail(@Param("email") String email, @Param("password") String password);
 

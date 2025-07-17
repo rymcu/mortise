@@ -14,12 +14,6 @@
         <result property="icon" column="ICON" jdbcType="VARCHAR"/>
         <result property="href" column="HREF" jdbcType="VARCHAR"/>
     </resultMap>
-    <update id="updateStatusByIdMenu">
-        update mortise_menu set status = #{status} where id = #{idMenu}
-    </update>
-    <update id="updateDelFlag">
-        update mortise_menu set del_flag = #{delFlag} where id = #{idMenu}
-    </update>
     <select id="selectMenuListByIdRole" resultMap="BaseResultMap">
         select id, label, permission
         from mortise_menu tm

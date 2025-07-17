@@ -1,6 +1,6 @@
 package com.rymcu.mortise.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.entity.OperateLog;
 import com.rymcu.mortise.mapper.OperateLogMapper;
 import com.rymcu.mortise.model.OperateLogSearch;
@@ -21,6 +21,6 @@ public class OperateLogServiceImpl extends ServiceImpl<OperateLogMapper, Operate
 
     @Override
     public List<OperateLog> findOperateLogs(OperateLogSearch operateLogSearch) {
-        return baseMapper.selectOperateLogs(operateLogSearch.getBizNo(), operateLogSearch.getType(), operateLogSearch.getSubType(), operateLogSearch.getStartDate(), operateLogSearch.getEndDate());
+        return mapper.selectOperateLogs(operateLogSearch.getBizNo(), operateLogSearch.getType(), operateLogSearch.getSubType(), operateLogSearch.getStartDate(), operateLogSearch.getEndDate());
     }
 }

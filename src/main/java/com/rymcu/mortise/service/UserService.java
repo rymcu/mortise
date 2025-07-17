@@ -1,6 +1,6 @@
 package com.rymcu.mortise.service;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.core.exception.AccountExistsException;
 import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.model.*;
@@ -82,7 +82,7 @@ public interface UserService {
      * @param search 查询条件
      * @return 用户信息列表
      */
-    List<UserInfo> findUsers(Page<UserInfo> page, UserSearch search);
+    Page<UserInfo> findUsers(Page<UserInfo> page, UserSearch search);
 
     Boolean forgetPassword(String code, String password);
 

@@ -1,9 +1,9 @@
 package com.rymcu.mortise.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mybatisflex.core.query.QueryWrapper;
+import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.entity.FilePartDetail;
 import com.rymcu.mortise.mapper.FilePartDetailMapper;
 import lombok.SneakyThrows;
@@ -38,7 +38,7 @@ public class FilePartDetailService extends ServiceImpl<FilePartDetailMapper, Fil
      * 删除文件分片信息
      */
     public void deleteFilePartByUploadId(String uploadId) {
-        remove(new QueryWrapper<FilePartDetail>().eq("upload_id", uploadId));
+        remove(new QueryWrapper().eq("upload_id", uploadId));
     }
 
     /**

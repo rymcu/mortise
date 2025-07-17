@@ -1,8 +1,9 @@
 package com.rymcu.mortise.service.impl;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.query.QueryWrapper;
+import com.mybatisflex.core.util.UpdateEntity;
+import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.core.exception.ServiceException;
 import com.rymcu.mortise.entity.Dict;
 import com.rymcu.mortise.mapper.DictMapper;
@@ -27,17 +28,20 @@ import java.util.Objects;
 public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements DictService {
 
     @Override
-    public IPage<Dict> findDictList(Page<Dict> page, DictSearch search) {
-        List<Dict> list = baseMapper.selectDictList(page, search.getQuery(), search.getDictTypeCode(), search.getStatus());
-        page.setRecords(list);
-        return page;
+    public Page<Dict> findDictList(Page<Dict> page, DictSearch search) {
+        QueryWrapper queryWrapper = QueryWrapper.create()
+                .select()
+                .eq("label", search.getQuery(), StringUtils.isNotBlank(search.getQuery()))
+                .eq("dict_type_code", search.getDictTypeCode(), StringUtils.isNotBlank(search.getDictTypeCode()))
+                .eq("status", search.getStatus(), Objects.nonNull(search.getStatus()));
+        return mapper.paginate(page, queryWrapper);
     }
 
     @Override
     public Boolean saveDict(Dict dict) {
         boolean isUpdate = dict.getId() != null;
         if (isUpdate) {
-            Dict oldDict = baseMapper.selectById(dict.getId());
+            Dict oldDict = mapper.selectOneById(dict.getId());
             if (oldDict == null) {
                 throw new ServiceException("数据不存在");
             }
@@ -47,28 +51,31 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
             oldDict.setStatus(dict.getStatus());
             oldDict.setUpdatedBy(dict.getUpdatedBy());
             oldDict.setUpdatedTime(dict.getUpdatedTime());
+            return mapper.update(oldDict) > 0;
         }
-        return baseMapper.insertOrUpdate(dict);
+        return mapper.insert(dict) > 0;
     }
 
     @Override
     public Boolean updateStatus(Long idDict, Integer status) {
-        return baseMapper.updateStatus(idDict, status) > 0;
+        Dict dict = UpdateEntity.of(Dict.class, idDict);
+        dict.setStatus(status);
+        return mapper.update(dict) > 0;
     }
 
     @Override
     public Boolean updateDelFlag(Long idDict, Integer delFlag) {
-        return baseMapper.updateDelFlag(idDict, delFlag) > 0;
+        return mapper.deleteById(idDict) > 0;
     }
 
     @Override
     public Dict findById(Long idDict) {
-        return baseMapper.selectById(idDict);
+        return mapper.selectOneById(idDict);
     }
 
     @Override
     public String findLabelByTypeCodeAndValue(String dictTypeCode, String value) {
-        Dict dict = baseMapper.selectByTypeCodeAndValue(dictTypeCode, value);
+        Dict dict = mapper.selectByTypeCodeAndValue(dictTypeCode, value);
         if (Objects.isNull(dict) || StringUtils.isBlank(dict.getLabel())) {
             return null;
         }
@@ -77,16 +84,16 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
 
     @Override
     public DictInfo findDictInfo(String dictTypeCode, String value) {
-        return baseMapper.selectDictInfo(dictTypeCode, value);
+        return mapper.selectDictInfo(dictTypeCode, value);
     }
 
     @Override
     public List<BaseOption> queryDictOptions(String dictTypeCode) {
-        return baseMapper.selectDictOptions(dictTypeCode);
+        return mapper.selectDictOptions(dictTypeCode);
     }
 
     @Override
     public Boolean batchUpdateDelFlag(List<Long> idDictList, Integer delFlag) {
-        return baseMapper.batchUpdateDelFlag(idDictList, delFlag) > 0;
+        return mapper.deleteBatchByIds(idDictList) > 0;
     }
 }

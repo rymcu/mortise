@@ -1,7 +1,6 @@
 package com.rymcu.mortise.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.entity.DictType;
 import com.rymcu.mortise.model.DictTypeSearch;
 
@@ -15,7 +14,7 @@ import java.util.List;
  * @desc : com.rymcu.mortise.service
  */
 public interface DictTypeService {
-    IPage<DictType> findDictTypeList(Page<DictType> page, DictTypeSearch search);
+    Page<DictType> findDictTypeList(Page<DictType> page, DictTypeSearch search);
 
     Boolean saveDictType(DictType dictType);
 

@@ -1,11 +1,13 @@
 package com.rymcu.mortise.entity;
 
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.mybatisflex.annotation.Column;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.Table;
 import com.rymcu.mortise.annotation.DictFormat;
 import lombok.Data;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
@@ -15,13 +17,13 @@ import java.time.LocalDateTime;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.entity
  */
-@TableName(value = "mortise_dict_type", schema = "mortise")
+@Table(value = "mortise_dict_type", schema = "mortise")
 @Data
-public class DictType {
+public class DictType implements Serializable {
     /**
      * 主键
      */
-    @TableId
+    @Id
     private Long id;
     /**
      * 名称
@@ -48,6 +50,7 @@ public class DictType {
      * 删除标记
      */
     @DictFormat(value = "DelFlag")
+    @Column(isLogicDelete = true)
     private Integer delFlag;
     /**
      * 创建人

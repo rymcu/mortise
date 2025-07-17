@@ -10,50 +10,6 @@
         <result column="created_time" jdbcType="TIMESTAMP" property="createdTime"/>
         <result column="updated_time" jdbcType="TIMESTAMP" property="updatedTime"/>
     </resultMap>
-    <update id="updateStatus">
-        update mortise_dict
-        set status = #{status}
-        where id = #{idDict}
-    </update>
-    <update id="updateDelFlag">
-        update mortise_dict
-        set del_flag = #{delFlag}
-        where id = #{idDict}
-    </update>
-    <update id="batchUpdateDelFlag">
-        update mortise_dict
-        set del_flag = #{delFlag}
-        where id in
-        <foreach collection="idDictList" item="idDict" open="(" separator="," close=")">
-            #{idDict}
-        </foreach>
-    </update>
-    <select id="selectDictList" resultMap="BaseResultMap">
-        select
-        id,
-        dict_type_code,
-        label,
-        value,
-        icon,
-        image,
-        color,
-        sort_no,
-        status,
-        del_flag,
-        created_time,
-        updated_time
-        from mortise_dict
-        where del_flag = 0
-        <if test="query != null and query != ''">
-            and instr(label, #{query}) > 0
-        </if>
-        <if test="dictTypeCode != null and dictTypeCode != ''">
-            and dict_type_code = #{dictTypeCode}
-        </if>
-        <if test="status != null">
-            and status = #{status}
-        </if>
-    </select>
     <select id="selectByTypeCodeAndValue" resultType="com.rymcu.mortise.entity.Dict">
         select label from mortise_dict where dict_type_code = #{dictTypeCode} and value = #{value}
     </select>

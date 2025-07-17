@@ -1,6 +1,6 @@
 package com.rymcu.mortise.service;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.entity.Role;
 import com.rymcu.mortise.model.BindRoleMenuInfo;
 import com.rymcu.mortise.model.RoleSearch;
@@ -20,7 +20,7 @@ public interface RoleService {
 
     Boolean saveRole(Role role);
 
-    List<Role> findRoles(Page<Role> page, RoleSearch search);
+    Page<Role> findRoles(Page<Role> page, RoleSearch search);
 
     Boolean bindRoleMenu(BindRoleMenuInfo bindRoleMenuInfo);
 

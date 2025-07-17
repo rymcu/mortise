@@ -1,8 +1,8 @@
 package com.rymcu.mortise.service.impl;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.mybatisflex.core.paginate.Page;
 import com.github.f4b6a3.ulid.UlidCreator;
+import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.auth.JwtConstants;
 import com.rymcu.mortise.auth.TokenManager;
 import com.rymcu.mortise.core.constant.ProjectConstant;
@@ -39,10 +39,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -76,7 +73,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public int updateLastOnlineTimeByAccount(String account) {
-        return baseMapper.updateLastOnlineTimeByAccount(account);
+        return mapper.updateLastOnlineTimeByAccount(account);
     }
 
     @Override
@@ -86,7 +83,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String validateCode = stringRedisTemplate.boundValueOps(validateCodeKey).get();
         if (StringUtils.isNotBlank(validateCode)) {
             if (validateCode.equals(code)) {
-                User user = baseMapper.selectByAccount(email);
+                User user = mapper.selectByAccount(email);
                 if (user != null) {
                     throw new AccountExistsException("该邮箱已被注册！");
                 } else {
@@ -96,7 +93,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                     user.setEmail(email);
                     user.setPassword(passwordEncoder.encode(password));
                     user.setAvatar(DEFAULT_AVATAR);
-                    int result = baseMapper.insert(user);
+                    int result = mapper.insert(user);
                     if (result > 0) {
                         // 注册成功后执行相关初始化事件
                         applicationEventPublisher.publishEvent(new RegisterEvent(user.getId(), user.getAccount(), ""));
@@ -113,7 +110,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     private String checkNickname(String nickname) {
         nickname = formatNickname(nickname);
-        int result = baseMapper.selectCountByNickname(nickname);
+        int result = mapper.selectCountByNickname(nickname);
         if (result > 0) {
             StringBuilder stringBuilder = new StringBuilder(nickname);
             return checkNickname(stringBuilder.append("_").append(System.currentTimeMillis()).toString());
@@ -133,7 +130,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             account = BigDecimal.valueOf(Long.parseLong(currentAccount));
         } else {
             // 查询数据库
-            currentAccount = baseMapper.selectMaxAccount();
+            currentAccount = mapper.selectMaxAccount();
             if (StringUtils.isNotBlank(currentAccount)) {
                 account = BigDecimal.valueOf(Long.parseLong(currentAccount));
             } else {
@@ -153,8 +150,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             // 认证成功，可以获取用户信息
             UserDetails user = (UserDetails) authentication.getPrincipal();
             if (Objects.nonNull(user)) {
-                baseMapper.updateLastLoginTime(user.getUsername());
-                baseMapper.updateLastOnlineTimeByAccount(user.getUsername());
+                mapper.updateLastLoginTime(user.getUsername());
+                mapper.updateLastOnlineTimeByAccount(user.getUsername());
                 TokenUser tokenUser = new TokenUser();
                 tokenUser.setToken(tokenManager.createToken(user.getUsername()));
                 tokenUser.setRefreshToken(UlidCreator.getUlid().toString());
@@ -171,7 +168,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public TokenUser refreshToken(String refreshToken) {
         String account = stringRedisTemplate.boundValueOps(refreshToken).get();
         if (StringUtils.isNotBlank(account)) {
-            User user = baseMapper.selectByAccount(account);
+            User user = mapper.selectByAccount(account);
             if (user != null) {
                 TokenUser tokenUser = new TokenUser();
                 tokenUser.setToken(tokenManager.createToken(user.getAccount()));
@@ -212,7 +209,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public User findByAccount(String account) {
-        return baseMapper.selectByAccount(account);
+        return mapper.selectByAccount(account);
     }
 
     /**
@@ -222,15 +219,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @return 用户信息列表
      */
     @Override
-    public List<UserInfo> findUsers(Page<UserInfo> page, UserSearch search) {
-        List<UserInfo> list = baseMapper.selectUsers(page, search.getAccount(), search.getEmail(), search.getStartDate(), search.getEndDate(), search.getOrder(), search.getSort(), search.getQuery());
-        list.forEach(userInfo -> {
+    public Page<UserInfo> findUsers(Page<UserInfo> page, UserSearch search) {
+        Map<String, Object> queryParams = new HashMap<>();
+        queryParams.put("account", search.getAccount());
+        queryParams.put("email", search.getEmail());
+        queryParams.put("startDate", search.getStartDate());
+        queryParams.put("endDate", search.getEndDate());
+        queryParams.put("order", search.getOrder());
+        queryParams.put("sort", search.getSort());
+        queryParams.put("query", search.getQuery());
+        Page<UserInfo> results = mapper.xmlPaginate("com.rymcu.mortise.mapper.UserMapper.selectUsers", page, queryParams);
+        results.getRecords().forEach(userInfo -> {
             Avatar avatar = new Avatar();
             avatar.setAlt(userInfo.getNickname());
             avatar.setSrc(userInfo.getPicture());
             userInfo.setAvatar(avatar);
         });
-        return list;
+        return results;
     }
 
     @Override
@@ -239,7 +244,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (StringUtils.isBlank(email)) {
             throw new CaptchaException();
         } else {
-            int result = baseMapper.updatePasswordByEmail(email, passwordEncoder.encode(password));
+            int result = mapper.updatePasswordByEmail(email, passwordEncoder.encode(password));
             if (result == 0) {
                 throw new BusinessException("密码修改失败!");
             }
@@ -249,7 +254,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public UserInfo findUserInfoById(Long idUser) {
-        return baseMapper.selectUserInfoById(idUser);
+        return mapper.selectUserInfoById(idUser);
     }
 
     @Override
@@ -258,7 +263,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         boolean isUpdate = userInfo.getId() != null;
         User user;
         if (isUpdate) {
-            user = baseMapper.selectById(userInfo.getId());
+            user = mapper.selectOneById(userInfo.getId());
             if (Objects.nonNull(user)) {
                 // 用户已存在
                 user.setEmail(userInfo.getEmail());
@@ -266,7 +271,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 user.setNickname(checkNickname(userInfo.getNickname()));
                 user.setStatus(userInfo.getStatus());
                 user.setAvatar(userInfo.getAvatar().getSrc());
-                return baseMapper.updateById(user) > 0;
+                return mapper.update(user) > 0;
             }
             throw new BusinessException("用户不存在");
         } else {
@@ -281,8 +286,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user.setPassword(passwordEncoder.encode(code));
             user.setAvatar(Objects.isNull(userInfo.getAvatar()) ? DEFAULT_AVATAR : userInfo.getAvatar().getSrc());
             user.setAccount(nextAccount());
-            user.setCreatedTime(LocalDateTime.now());
-            boolean result = baseMapper.insertOrUpdate(user);
+            boolean result = mapper.insert(user) > 0;
             if (result) {
                 // 注册成功后执行相关初始化事件
                 applicationEventPublisher.publishEvent(new RegisterEvent(user.getId(), user.getEmail(), code));
@@ -293,38 +297,38 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Boolean updateUserInfo(UserInfo userInfo) {
-        User user = baseMapper.selectById(userInfo.getId());
+        User user = mapper.selectOneById(userInfo.getId());
         user.setNickname(checkNickname(userInfo.getNickname()));
         user.setAvatar(userInfo.getAvatar().getSrc());
         user.setEmail(userInfo.getEmail());
         user.setPhone(userInfo.getPhone());
-        return baseMapper.updateById(user) > 0;
+        return mapper.update(user) > 0;
     }
 
     @Override
     public Boolean bindUserRole(BindUserRoleInfo bindUserRoleInfo) {
         int num = 0;
         // 先删除原有关系
-        baseMapper.deleteUserRole(bindUserRoleInfo.getIdUser());
+        mapper.deleteUserRole(bindUserRoleInfo.getIdUser());
         for (Long idRole : bindUserRoleInfo.getIdRoles()) {
-            num += baseMapper.insertUserRole(bindUserRoleInfo.getIdUser(), idRole);
+            num += mapper.insertUserRole(bindUserRoleInfo.getIdUser(), idRole);
         }
         return num == bindUserRoleInfo.getIdRoles().size();
     }
 
     @Override
     public Boolean updateStatus(Long idUser, Integer status) {
-        return baseMapper.updateStatus(idUser, status) > 0;
+        return mapper.updateStatus(idUser, status) > 0;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String resetPassword(Long idUser) {
-        User user = baseMapper.selectById(idUser);
+        User user = mapper.selectOneById(idUser);
         if (Objects.nonNull(user)) {
             String code = String.valueOf(Utils.genCode());
             String password = passwordEncoder.encode(code);
-            int result = baseMapper.updatePasswordById(idUser, password);
+            int result = mapper.updatePasswordById(idUser, password);
             if (result > 0) {
                 applicationEventPublisher.publishEvent(new ResetPasswordEvent(user.getEmail(), code));
             }
@@ -335,7 +339,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Boolean updateDelFlag(Long idUser, Integer delFlag) {
-        return baseMapper.updateDelFlag(idUser, delFlag) > 0;
+        return mapper.updateDelFlag(idUser, delFlag) > 0;
     }
 
     @Override
@@ -346,7 +350,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String openId = oidcUser.getSubject();  // 唯一标识
         String nickname = oidcUser.getName();
         String picture = oidcUser.getPicture();
-        User user = baseMapper.selectByOpenId(registrationId, openId);
+        User user = mapper.selectByOpenId(registrationId, openId);
         if (Objects.isNull(user)) {
             user = new User();
             user.setNickname(checkNickname(nickname));
@@ -358,7 +362,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user.setPassword(passwordEncoder.encode(code));
             user.setAccount(nextAccount());
             user.setCreatedTime(LocalDateTime.now());
-            boolean result = baseMapper.insertOrUpdate(user);
+            boolean result = mapper.insertOrUpdate(user) > 0;
             if (result) {
                 // 注册成功后执行相关初始化事件
                 applicationEventPublisher.publishEvent(new RegisterEvent(user.getId(), user.getEmail(), code));
@@ -367,7 +371,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user.setNickname(checkNickname(nickname));
             user.setEmail(email);
             user.setAvatar(StringUtils.isNotBlank(picture) ? picture : user.getAvatar());
-            baseMapper.insertOrUpdate(user);
+            mapper.insertOrUpdate(user);
         }
         TokenUser tokenUser = new TokenUser();
         tokenUser.setToken(tokenManager.createToken(user.getAccount()));
@@ -381,6 +385,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (!user.getNickname().equals(userProfileInfo.getNickname())) {
             userProfileInfo.setNickname(checkNickname(userProfileInfo.getNickname()));
         }
-        return baseMapper.updateUserProfileInfo(user.getId(), userProfileInfo.getNickname(), userProfileInfo.getAvatar(), userProfileInfo.getBio()) > 0;
+        return mapper.updateUserProfileInfo(user.getId(), userProfileInfo.getNickname(), userProfileInfo.getAvatar(), userProfileInfo.getBio()) > 0;
     }
 }
