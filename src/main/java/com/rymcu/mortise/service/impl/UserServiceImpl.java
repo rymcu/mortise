@@ -2,6 +2,7 @@ package com.rymcu.mortise.service.impl;
 
 import com.mybatisflex.core.paginate.Page;
 import com.github.f4b6a3.ulid.UlidCreator;
+import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.auth.JwtConstants;
 import com.rymcu.mortise.auth.TokenManager;
@@ -41,6 +42,8 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+
+import static com.rymcu.mortise.entity.table.UserTableDef.USER;
 
 /**
  * Created on 2024/4/13 21:25.
@@ -168,7 +171,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public TokenUser refreshToken(String refreshToken) {
         String account = stringRedisTemplate.boundValueOps(refreshToken).get();
         if (StringUtils.isNotBlank(account)) {
-            User user = mapper.selectByAccount(account);
+            User user = mapper.selectOneByQuery(QueryWrapper.create().where(USER.ACCOUNT.eq(account)).or(USER.EMAIL.eq(account)).or(USER.PHONE.eq(account)));
             if (user != null) {
                 TokenUser tokenUser = new TokenUser();
                 tokenUser.setToken(tokenManager.createToken(user.getAccount()));
