@@ -3,6 +3,8 @@ package com.rymcu.mortise.service.impl;
 import com.mybatisflex.core.paginate.Page;
 import com.github.f4b6a3.ulid.UlidCreator;
 import com.mybatisflex.core.query.QueryWrapper;
+import com.mybatisflex.core.update.UpdateChain;
+import com.mybatisflex.core.util.UpdateEntity;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.auth.JwtConstants;
 import com.rymcu.mortise.auth.TokenManager;
@@ -16,6 +18,7 @@ import com.rymcu.mortise.entity.Role;
 import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.handler.event.RegisterEvent;
 import com.rymcu.mortise.handler.event.ResetPasswordEvent;
+import com.rymcu.mortise.handler.event.UserLoginEvent;
 import com.rymcu.mortise.mapper.MenuMapper;
 import com.rymcu.mortise.mapper.RoleMapper;
 import com.rymcu.mortise.mapper.UserMapper;
@@ -43,6 +46,7 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static com.mybatisflex.core.query.QueryMethods.max;
 import static com.rymcu.mortise.entity.table.UserTableDef.USER;
 
 /**
@@ -75,8 +79,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final static String CURRENT_ACCOUNT_KEY = "current:account";
 
     @Override
-    public int updateLastOnlineTimeByAccount(String account) {
-        return mapper.updateLastOnlineTimeByAccount(account);
+    public boolean updateLastOnlineTimeByAccount(String account) {
+        return UpdateChain.of(User.class)
+                .set(User::getLastOnlineTime, LocalDateTime.now())
+                .where(User::getAccount).eq(account)
+                .update();
     }
 
     @Override
@@ -113,7 +120,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     private String checkNickname(String nickname) {
         nickname = formatNickname(nickname);
-        int result = mapper.selectCountByNickname(nickname);
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.where(USER.NICKNAME.eq(nickname));
+        long result = mapper.selectCountByQuery(queryWrapper);
         if (result > 0) {
             StringBuilder stringBuilder = new StringBuilder(nickname);
             return checkNickname(stringBuilder.append("_").append(System.currentTimeMillis()).toString());
@@ -132,8 +141,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (StringUtils.isNotBlank(currentAccount)) {
             account = BigDecimal.valueOf(Long.parseLong(currentAccount));
         } else {
-            // 查询数据库
-            currentAccount = mapper.selectMaxAccount();
+            // 查询最大账号
+            QueryWrapper query = new QueryWrapper()
+                    .select(max(USER.ACCOUNT)).from(USER);
+            currentAccount = mapper.selectObjectByQueryAs(query, String.class);
             if (StringUtils.isNotBlank(currentAccount)) {
                 account = BigDecimal.valueOf(Long.parseLong(currentAccount));
             } else {
@@ -153,14 +164,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             // 认证成功，可以获取用户信息
             UserDetails user = (UserDetails) authentication.getPrincipal();
             if (Objects.nonNull(user)) {
-                mapper.updateLastLoginTime(user.getUsername());
-                mapper.updateLastOnlineTimeByAccount(user.getUsername());
                 TokenUser tokenUser = new TokenUser();
                 tokenUser.setToken(tokenManager.createToken(user.getUsername()));
                 tokenUser.setRefreshToken(UlidCreator.getUlid().toString());
                 stringRedisTemplate.boundValueOps(tokenUser.getRefreshToken()).set(user.getUsername(), JwtConstants.REFRESH_TOKEN_EXPIRES_HOUR, TimeUnit.HOURS);
-                // 保存登录日志
-                //                loginRecordService.saveLoginRecord(user.getIdUser());
+                // 用户登陆事件
+                applicationEventPublisher.publishEvent(new UserLoginEvent(user.getUsername()));
                 return tokenUser;
             }
         }
@@ -212,7 +221,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public User findByAccount(String account) {
-        return mapper.selectByAccount(account);
+        if (StringUtils.isBlank(account)) {
+            throw new UsernameNotFoundException(ResultCode.UNKNOWN_ACCOUNT.getMessage());
+        }
+        return mapper.selectOneByQuery(QueryWrapper.create().where(USER.ACCOUNT.eq(account)).or(USER.EMAIL.eq(account)).or(USER.PHONE.eq(account)));
     }
 
     /**
@@ -247,8 +259,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (StringUtils.isBlank(email)) {
             throw new CaptchaException();
         } else {
-            int result = mapper.updatePasswordByEmail(email, passwordEncoder.encode(password));
-            if (result == 0) {
+            boolean result = UpdateChain.of(User.class)
+                    .set(User::getPassword, passwordEncoder.encode(password))
+                    .where(User::getEmail).eq(email)
+                    .update();
+            if (!result) {
                 throw new BusinessException("密码修改失败!");
             }
             return true;
@@ -321,7 +336,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Boolean updateStatus(Long idUser, Integer status) {
-        return mapper.updateStatus(idUser, status) > 0;
+        User user = UpdateEntity.of(User.class, idUser);
+        user.setStatus(status);
+        return mapper.update(user) > 0;
     }
 
     @Override
@@ -331,18 +348,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (Objects.nonNull(user)) {
             String code = String.valueOf(Utils.genCode());
             String password = passwordEncoder.encode(code);
-            int result = mapper.updatePasswordById(idUser, password);
+            User u = UpdateEntity.of(User.class, idUser);
+            u.setPassword(password);
+            int result = mapper.update(u);
             if (result > 0) {
                 applicationEventPublisher.publishEvent(new ResetPasswordEvent(user.getEmail(), code));
+                return code;
             }
-            return code;
+            throw new BusinessException("更新失败");
         }
         throw new BusinessException("用户不存在");
     }
 
     @Override
     public Boolean updateDelFlag(Long idUser, Integer delFlag) {
-        return mapper.updateDelFlag(idUser, delFlag) > 0;
+        return mapper.deleteById(idUser) > 0;
     }
 
     @Override
@@ -353,7 +373,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String openId = oidcUser.getSubject();  // 唯一标识
         String nickname = oidcUser.getName();
         String picture = oidcUser.getPicture();
-        User user = mapper.selectByOpenId(registrationId, openId);
+        // 查询是否已创建用户
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.where(USER.PROVIDER.eq(registrationId)).and(USER.OPEN_ID.eq(openId));
+        User user = mapper.selectOneByQuery(queryWrapper);
         if (Objects.isNull(user)) {
             user = new User();
             user.setNickname(checkNickname(nickname));
@@ -365,16 +388,17 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user.setPassword(passwordEncoder.encode(code));
             user.setAccount(nextAccount());
             user.setCreatedTime(LocalDateTime.now());
-            boolean result = mapper.insertOrUpdate(user) > 0;
-            if (result) {
+            int result = mapper.update(user);
+            if (result > 0) {
                 // 注册成功后执行相关初始化事件
                 applicationEventPublisher.publishEvent(new RegisterEvent(user.getId(), user.getEmail(), code));
             }
         } else {
-            user.setNickname(checkNickname(nickname));
-            user.setEmail(email);
-            user.setAvatar(StringUtils.isNotBlank(picture) ? picture : user.getAvatar());
-            mapper.insertOrUpdate(user);
+            User u = UpdateEntity.of(User.class, user.getId());
+            u.setNickname(checkNickname(nickname));
+            u.setEmail(email);
+            u.setAvatar(StringUtils.isNotBlank(picture) ? picture : user.getAvatar());
+            mapper.update(u);
         }
         TokenUser tokenUser = new TokenUser();
         tokenUser.setToken(tokenManager.createToken(user.getAccount()));
@@ -385,9 +409,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Boolean updateUserProfileInfo(UserProfileInfo userProfileInfo, User user) {
+        User u = UpdateEntity.of(User.class, user.getId());
         if (!user.getNickname().equals(userProfileInfo.getNickname())) {
-            userProfileInfo.setNickname(checkNickname(userProfileInfo.getNickname()));
+            u.setNickname(checkNickname(userProfileInfo.getNickname()));
         }
-        return mapper.updateUserProfileInfo(user.getId(), userProfileInfo.getNickname(), userProfileInfo.getAvatar(), userProfileInfo.getBio()) > 0;
+        u.setAvatar(userProfileInfo.getAvatar());
+        return mapper.update(u) > 0;
+    }
+
+    @Override
+    public void updateLastLoginTimeByAccount(String account) {
+        UpdateChain.of(User.class)
+                .set(User::getLastLoginTime, LocalDateTime.now())
+                .set(User::getLastOnlineTime, LocalDateTime.now())
+                .where(User::getAccount).eq(account)
+                .update();
     }
 }

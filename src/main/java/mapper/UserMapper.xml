@@ -33,27 +33,6 @@
     <insert id="insertUserRole">
         insert into mortise_user_role (id_mortise_user, id_mortise_role) VALUES (#{idUser}, #{idRole})
     </insert>
-    <update id="updateLastOnlineTimeByAccount">
-        update mortise_user set last_online_time = now() where account = #{account}
-    </update>
-    <update id="updateLastLoginTime">
-        update mortise_user set last_login_time = now() where account = #{account}
-    </update>
-    <update id="updatePasswordByEmail">
-        update mortise_user set password = #{password} where email = #{email}
-    </update>
-    <update id="updateStatus">
-        update mortise_user set status = #{status} where id = #{idUser}
-    </update>
-    <update id="updateDelFlag">
-        update mortise_user set del_flag = #{delFlag} where id = #{idUser}
-    </update>
-    <update id="updatePasswordById">
-        update mortise_user set password = #{password} where id = #{idUser}
-    </update>
-    <update id="updateUserProfileInfo">
-        update mortise_user set nickname = #{nickname}, avatar = #{avatar} where id = #{id}
-    </update>
     <delete id="deleteUserRole">
         delete from mortise_user_role where id_mortise_user = #{idUser}
     </delete>
@@ -70,12 +49,6 @@
         where (account = #{account} or email = #{account} or phone = #{account})
           and del_flag = 0
     </select>
-    <select id="selectCountByNickname" resultType="java.lang.Integer">
-        select count(0) from mortise_user where nickname = #{nickname}
-    </select>
-    <select id="selectMaxAccount" resultType="java.lang.String">
-        select max(account) from mortise_user
-    </select>
     <select id="selectUserInfoById" resultMap="UserInfoMap">
         select id,
                nickname,
@@ -89,9 +62,6 @@
                created_time
         from mortise_user
         where id = #{idUser}
-    </select>
-    <select id="selectByOpenId" resultMap="BaseResultMap">
-        select * from mortise_user where provider = #{provider} and open_id = #{openId}
     </select>
     <select id="selectUserRolePermissionsByIdUser" resultType="java.lang.String">
         select distinct tr.permission

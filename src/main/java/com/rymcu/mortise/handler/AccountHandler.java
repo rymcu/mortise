@@ -1,7 +1,7 @@
 package com.rymcu.mortise.handler;
 
 import com.rymcu.mortise.handler.event.AccountEvent;
-import com.rymcu.mortise.mapper.UserMapper;
+import com.rymcu.mortise.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -20,12 +20,12 @@ import org.springframework.stereotype.Component;
 public class AccountHandler {
 
     @Resource
-    private UserMapper userMapper;
+    private UserService userService;
 
     @Async
     @EventListener
     public void processAccountLastOnlineTimeEvent(AccountEvent accountEvent) {
-        userMapper.updateLastOnlineTimeByAccount(accountEvent.getAccount());
+        userService.updateLastOnlineTimeByAccount(accountEvent.getAccount());
     }
 
 }

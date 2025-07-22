@@ -22,7 +22,7 @@ public interface UserService {
      * @param account 用户账号
      * @return 更新成功数量
      */
-    int updateLastOnlineTimeByAccount(String account);
+    boolean updateLastOnlineTimeByAccount(String account);
 
     /**
      * 注册接口
@@ -103,4 +103,6 @@ public interface UserService {
     TokenUser oauth2Login(OidcUser oidcUser, String registrationId);
 
     Boolean updateUserProfileInfo(UserProfileInfo userProfileInfo, User user);
+
+    void updateLastLoginTimeByAccount(String account);
 }

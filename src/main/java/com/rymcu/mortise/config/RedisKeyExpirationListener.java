@@ -44,7 +44,7 @@ public class RedisKeyExpirationListener extends KeyExpirationEventMessageListene
             String account = expiredKey.replace(JwtConstants.LAST_ONLINE, "");
             log.info("拿到过期的数据：{}", expiredKey);
             log.info("处理后的数据：{}", account);
-            boolean flag = userService.updateLastOnlineTimeByAccount(account) > 0;
+            boolean flag = userService.updateLastOnlineTimeByAccount(account);
             log.info("更新数据是否成功：{}", flag);
         }
         super.onMessage(message, pattern);
