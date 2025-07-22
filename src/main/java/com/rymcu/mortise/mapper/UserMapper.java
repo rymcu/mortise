@@ -1,13 +1,10 @@
 package com.rymcu.mortise.mapper;
 
 import com.mybatisflex.core.BaseMapper;
-import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.entity.User;
-import com.rymcu.mortise.model.UserInfo;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -21,10 +18,6 @@ import java.util.Set;
 public interface UserMapper extends BaseMapper<User> {
 
     int insertUserRole(@Param("idUser") Long idUser, @Param("idRole") Long idRole);
-
-    List<UserInfo> selectUsers(@Param("page") Page<UserInfo> page, @Param("account") String account, @Param("email") String email, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("order") String order, @Param("sort") String sort, @Param("query") String query);
-
-    long selectUsers_COUNT(@Param("account") String account, @Param("email") String email, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("order") String order, @Param("sort") String sort, @Param("query") String query);
 
     int deleteUserRole(@Param("idUser") Long idUser);
 

@@ -6,7 +6,6 @@ import com.mybatisflex.core.update.UpdateChain;
 import com.mybatisflex.core.util.UpdateEntity;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.core.exception.BusinessException;
-import com.rymcu.mortise.core.exception.CaptchaException;
 import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.entity.Menu;
 import com.rymcu.mortise.entity.Role;
@@ -29,9 +28,16 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Objects;
+import java.util.Set;
 
+import static com.mybatisflex.core.query.QueryMethods.instr;
 import static com.mybatisflex.core.query.QueryMethods.max;
 import static com.rymcu.mortise.entity.table.UserTableDef.USER;
 
@@ -148,15 +154,23 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      */
     @Override
     public Page<UserInfo> findUsers(Page<UserInfo> page, UserSearch search) {
-        Map<String, Object> queryParams = new HashMap<>();
-        queryParams.put("account", search.getAccount());
-        queryParams.put("email", search.getEmail());
-        queryParams.put("startDate", search.getStartDate());
-        queryParams.put("endDate", search.getEndDate());
-        queryParams.put("order", search.getOrder());
-        queryParams.put("sort", search.getSort());
-        queryParams.put("query", search.getQuery());
-        Page<UserInfo> results = mapper.xmlPaginate("com.rymcu.mortise.mapper.UserMapper.selectUsers", page, queryParams);
+        LocalDateTime startDate = LocalDate.now().atTime(LocalTime.MIN);
+        if (StringUtils.isNotBlank(search.getStartDate())) {
+            startDate = LocalDate.parse(search.getStartDate()).atTime(LocalTime.MIN);
+        }
+        LocalDateTime endDate = LocalDate.now().atTime(LocalTime.MAX);
+        if (StringUtils.isNotBlank(search.getEndDate())) {
+            endDate = LocalDate.parse(search.getEndDate()).atTime(LocalTime.MAX);
+        }
+        QueryWrapper queryWrapper = QueryWrapper.create()
+                .select(USER.ID, USER.NICKNAME, USER.ACCOUNT, USER.STATUS, USER.AVATAR, USER.EMAIL, USER.PHONE, USER.LAST_LOGIN_TIME, USER.LAST_ONLINE_TIME, USER.CREATED_TIME)
+                .where(USER.ACCOUNT.eq(search.getAccount(), StringUtils::isNotBlank))
+                .and(USER.EMAIL.eq(search.getEmail(), StringUtils::isNotBlank))
+                .and(USER.ACCOUNT.like(search.getQuery(), StringUtils::isNotBlank)
+                        .or(USER.NICKNAME.like(search.getQuery(), StringUtils::isNotBlank)))
+                .and(USER.CREATED_TIME.between(startDate, endDate, StringUtils.isNotBlank(search.getStartDate())))
+                .from(USER);
+        Page<UserInfo> results = mapper.paginateAs(page, queryWrapper, UserInfo.class);
         results.getRecords().forEach(userInfo -> {
             Avatar avatar = new Avatar();
             avatar.setAlt(userInfo.getNickname());
