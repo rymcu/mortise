@@ -17,6 +17,8 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.Objects;
 
+import static com.rymcu.mortise.entity.table.DictTableDef.DICT;
+
 /**
  * Created on 2024/9/22 20:04.
  *
@@ -75,21 +77,25 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
 
     @Override
     public String findLabelByTypeCodeAndValue(String dictTypeCode, String value) {
-        Dict dict = mapper.selectByTypeCodeAndValue(dictTypeCode, value);
-        if (Objects.isNull(dict) || StringUtils.isBlank(dict.getLabel())) {
-            return null;
-        }
-        return dict.getLabel();
+        return mapper.selectOneByQueryAs(QueryWrapper.create()
+                .select(DICT.LABEL)
+                .where(DICT.DICT_TYPE_CODE.eq(dictTypeCode)
+                        .and(DICT.VALUE.eq(value))), String.class);
     }
 
     @Override
     public DictInfo findDictInfo(String dictTypeCode, String value) {
-        return mapper.selectDictInfo(dictTypeCode, value);
+        return mapper.selectOneByQueryAs(QueryWrapper.create()
+                .select(DICT.LABEL, DICT.VALUE, DICT.ICON, DICT.IMAGE, DICT.COLOR)
+                .where(DICT.DICT_TYPE_CODE.eq(dictTypeCode)
+                        .and(DICT.VALUE.eq(value))), DictInfo.class);
     }
 
     @Override
     public List<BaseOption> queryDictOptions(String dictTypeCode) {
-        return mapper.selectDictOptions(dictTypeCode);
+        return mapper.selectListByQueryAs(QueryWrapper.create()
+                .select(DICT.LABEL, DICT.VALUE)
+                .where(DICT.DICT_TYPE_CODE.eq(dictTypeCode)), BaseOption.class);
     }
 
     @Override

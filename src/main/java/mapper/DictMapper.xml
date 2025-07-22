@@ -10,13 +10,4 @@
         <result column="created_time" jdbcType="TIMESTAMP" property="createdTime"/>
         <result column="updated_time" jdbcType="TIMESTAMP" property="updatedTime"/>
     </resultMap>
-    <select id="selectByTypeCodeAndValue" resultType="com.rymcu.mortise.entity.Dict">
-        select label from mortise_dict where dict_type_code = #{dictTypeCode} and value = #{value}
-    </select>
-    <select id="selectDictInfo" resultType="com.rymcu.mortise.model.DictInfo">
-        select label, value, icon, image, color from mortise_dict where dict_type_code = #{dictTypeCode} and value = #{value}
-    </select>
-    <select id="selectDictOptions" resultType="com.rymcu.mortise.model.BaseOption">
-        select label, value from mortise_dict where dict_type_code = #{dictTypeCode} and del_flag = 0 order by sort_no
-    </select>
 </mapper>
