@@ -44,7 +44,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
             oldRole.setUpdatedTime(LocalDateTime.now());
             return mapper.update(oldRole) > 0;
         }
-        return mapper.insert(role) > 0;
+        return mapper.insertSelective(role) > 0;
     }
 
     @Override

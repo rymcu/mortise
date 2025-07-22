@@ -3,6 +3,7 @@ package com.rymcu.mortise.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
 import com.rymcu.mortise.annotation.DictFormat;
 import lombok.Data;
@@ -24,7 +25,7 @@ public class Dict implements Serializable {
     /**
      * 主键
      */
-    @Id
+    @Id(keyType = KeyType.Auto)
     private Long id;
     /**
      * 代码

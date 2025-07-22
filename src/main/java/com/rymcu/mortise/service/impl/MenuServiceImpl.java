@@ -71,7 +71,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
             oldMenu.setUpdatedTime(menu.getUpdatedTime());
             return mapper.update(menu) > 0;
         }
-        return mapper.insert(menu) > 0;
+        return mapper.insertSelective(menu) > 0;
     }
 
     @Override

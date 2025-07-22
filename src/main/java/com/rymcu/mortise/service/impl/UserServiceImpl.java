@@ -207,7 +207,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user.setPassword(passwordEncoder.encode(code));
             user.setAvatar(Objects.isNull(userInfo.getAvatar()) ? DEFAULT_AVATAR : userInfo.getAvatar().getSrc());
             user.setAccount(nextAccount());
-            boolean result = mapper.insert(user) > 0;
+            boolean result = mapper.insertSelective(user) > 0;
             if (result) {
                 // 注册成功后执行相关初始化事件
                 applicationEventPublisher.publishEvent(new RegisterEvent(user.getId(), user.getEmail(), code));

@@ -13,6 +13,7 @@ import com.rymcu.mortise.model.DictSearch;
 import com.rymcu.mortise.service.DictService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
@@ -40,6 +41,7 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean saveDict(Dict dict) {
         boolean isUpdate = dict.getId() != null;
         if (isUpdate) {
@@ -55,7 +57,7 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
             oldDict.setUpdatedTime(dict.getUpdatedTime());
             return mapper.update(oldDict) > 0;
         }
-        return mapper.insert(dict) > 0;
+        return mapper.insertSelective(dict) > 0;
     }
 
     @Override

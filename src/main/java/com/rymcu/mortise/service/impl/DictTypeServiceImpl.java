@@ -51,7 +51,7 @@ public class DictTypeServiceImpl extends ServiceImpl<DictTypeMapper, DictType> i
             oldDictType.setUpdatedTime(dictType.getUpdatedTime());
             return mapper.update(oldDictType) > 0;
         }
-        return mapper.insert(dictType) > 0;
+        return mapper.insertSelective(dictType) > 0;
     }
 
     @Override

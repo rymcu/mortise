@@ -3,6 +3,7 @@ package com.rymcu.mortise.entity;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
 import com.rymcu.mortise.annotation.DictFormat;
 import lombok.Data;
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 @Table(value = "mortise_role", schema = "mortise")
 public class Role implements Serializable {
 
-    @Id
+    @Id(keyType = KeyType.Auto)
     private Long id;
 
     /**
