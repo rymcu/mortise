@@ -36,19 +36,6 @@
     <delete id="deleteUserRole">
         delete from mortise_user_role where id_mortise_user = #{idUser}
     </delete>
-    <select id="selectByAccount" resultMap="BaseResultMap">
-        select id,
-               nickname,
-               account,
-               password,
-               status,
-               avatar,
-               phone,
-               email
-        from mortise_user
-        where (account = #{account} or email = #{account} or phone = #{account})
-          and del_flag = 0
-    </select>
     <select id="selectUserRolePermissionsByIdUser" resultType="java.lang.String">
         select distinct tr.permission
         from mortise_user_role tur

@@ -20,8 +20,6 @@ import java.util.Set;
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
 
-    User selectByAccount(@Param("account") String account);
-
     int insertUserRole(@Param("idUser") Long idUser, @Param("idRole") Long idRole);
 
     List<UserInfo> selectUsers(@Param("page") Page<UserInfo> page, @Param("account") String account, @Param("email") String email, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("order") String order, @Param("sort") String sort, @Param("query") String query);
