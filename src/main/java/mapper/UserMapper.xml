@@ -49,20 +49,6 @@
         where (account = #{account} or email = #{account} or phone = #{account})
           and del_flag = 0
     </select>
-    <select id="selectUserInfoById" resultMap="UserInfoMap">
-        select id,
-               nickname,
-               account,
-               phone,
-               status,
-               avatar,
-               email,
-               last_login_time,
-               last_online_time,
-               created_time
-        from mortise_user
-        where id = #{idUser}
-    </select>
     <select id="selectUserRolePermissionsByIdUser" resultType="java.lang.String">
         select distinct tr.permission
         from mortise_user_role tur

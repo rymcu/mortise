@@ -28,8 +28,6 @@ public interface UserMapper extends BaseMapper<User> {
 
     long selectUsers_COUNT(@Param("account") String account, @Param("email") String email, @Param("startDate") String startDate, @Param("endDate") String endDate, @Param("order") String order, @Param("sort") String sort, @Param("query") String query);
 
-    UserInfo selectUserInfoById(@Param("idUser") Long idUser);
-
     int deleteUserRole(@Param("idUser") Long idUser);
 
     Set<String> selectUserRolePermissionsByIdUser(@Param("idUser") Long idUser);

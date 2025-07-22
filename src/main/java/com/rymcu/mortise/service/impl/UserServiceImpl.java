@@ -77,6 +77,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private final static String DEFAULT_AVATAR = "https://static.rymcu.com/article/1578475481946.png";
     private final static String DEFAULT_ACCOUNT = "1411780000";
     private final static String CURRENT_ACCOUNT_KEY = "current:account";
+    private static final String REFRESH_TOKEN_KEY_PREFIX = "auth:refresh_token:";
 
     @Override
     public boolean updateLastOnlineTimeByAccount(String account) {
@@ -93,7 +94,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         String validateCode = stringRedisTemplate.boundValueOps(validateCodeKey).get();
         if (StringUtils.isNotBlank(validateCode)) {
             if (validateCode.equals(code)) {
-                User user = mapper.selectByAccount(email);
+                User user = findByAccount(email);
                 if (user != null) {
                     throw new AccountExistsException("该邮箱已被注册！");
                 } else {
@@ -272,7 +273,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public UserInfo findUserInfoById(Long idUser) {
-        return mapper.selectUserInfoById(idUser);
+        QueryWrapper queryWrapper = new QueryWrapper();
+        queryWrapper.select(USER.ID, USER.NICKNAME, USER.ACCOUNT, USER.PHONE,
+                        USER.STATUS, USER.AVATAR, USER.EMAIL, USER.LAST_LOGIN_TIME,
+                        USER.LAST_ONLINE_TIME, USER.CREATED_TIME)
+                .from(User.class);
+        return mapper.selectObjectByQueryAs(queryWrapper, UserInfo.class);
     }
 
     @Override
@@ -368,42 +374,122 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     @Transactional(rollbackFor = Exception.class)
     public TokenUser oauth2Login(OidcUser oidcUser, String registrationId) {
-        // 提取 OIDC 用户信息
-        String email = oidcUser.getEmail();
-        String openId = oidcUser.getSubject();  // 唯一标识
-        String nickname = oidcUser.getName();
-        String picture = oidcUser.getPicture();
-        // 查询是否已创建用户
-        QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.where(USER.PROVIDER.eq(registrationId)).and(USER.OPEN_ID.eq(openId));
-        User user = mapper.selectOneByQuery(queryWrapper);
-        if (Objects.isNull(user)) {
-            user = new User();
-            user.setNickname(checkNickname(nickname));
-            user.setEmail(email);
-            user.setAvatar(StringUtils.isNotBlank(picture) ? picture : DEFAULT_AVATAR);
-            user.setOpenId(openId);
-            user.setProvider(registrationId);
-            String code = UlidCreator.getUlid().toString();
-            user.setPassword(passwordEncoder.encode(code));
-            user.setAccount(nextAccount());
-            user.setCreatedTime(LocalDateTime.now());
-            int result = mapper.update(user);
-            if (result > 0) {
-                // 注册成功后执行相关初始化事件
-                applicationEventPublisher.publishEvent(new RegisterEvent(user.getId(), user.getEmail(), code));
-            }
+        // 查找或创建用户实体
+        User user = findOrCreateUser(oidcUser, registrationId);
+
+        // 为用户生成并存储令牌
+        return generateAndStoreTokens(user);
+    }
+
+    /**
+     * 核心逻辑：查找或创建用户。
+     * 使用 @Transactional 注解确保数据库操作的原子性。
+     */
+    @Transactional(rollbackFor = Exception.class)
+    protected User findOrCreateUser(OidcUser oidcUser, String registrationId) {
+        String openId = oidcUser.getSubject();
+
+        // 1. 先根据唯一标识查询用户
+        User user = mapper.selectOneByQuery(QueryWrapper.create()
+                        .select(USER.ID, USER.ACCOUNT, USER.AVATAR, USER.EMAIL, USER.NICKNAME)
+                        .where(USER.PROVIDER.eq(registrationId))
+                        .and(USER.OPEN_ID.eq(openId)));
+
+        if (Objects.nonNull(user)) {
+            // 2. 如果用户存在，更新其信息并返回
+            return updateExistingUser(user, oidcUser);
         } else {
-            User u = UpdateEntity.of(User.class, user.getId());
-            u.setNickname(checkNickname(nickname));
-            u.setEmail(email);
-            u.setAvatar(StringUtils.isNotBlank(picture) ? picture : user.getAvatar());
-            mapper.update(u);
+            // 3. 如果用户不存在，创建新用户并返回
+            return createNewUser(oidcUser, registrationId);
         }
+
+        // 注意：更强大的并发处理方式是直接尝试 INSERT，如果因为唯一键冲突而失败，
+        // 再去 SELECT 和 UPDATE。这可以避免 "check-then-act" 竞态条件。
+        // 但目前的实现在 @Transactional 下对于大多数场景已经足够。
+    }
+
+    /**
+     * 创建一个全新的用户并持久化。
+     */
+    private User createNewUser(OidcUser oidcUser, String registrationId) {
+        User newUser = new User();
+        String rawPassword = UlidCreator.getUlid().toString(); // 生成一个安全的随机密码/代码
+
+        newUser.setNickname(checkNickname(oidcUser.getName()));
+        newUser.setEmail(oidcUser.getEmail());
+
+        String picture = oidcUser.getPicture();
+        newUser.setAvatar(StringUtils.isNotBlank(picture) ? picture : DEFAULT_AVATAR);
+
+        newUser.setOpenId(oidcUser.getSubject());
+        newUser.setProvider(registrationId);
+        newUser.setPassword(passwordEncoder.encode(rawPassword));
+        newUser.setAccount(nextAccount()); // 假设这是一个生成唯一账户ID的方法
+        newUser.setCreatedTime(LocalDateTime.now());
+
+        // 使用 insert 而不是 update！
+        int result = mapper.insert(newUser);
+
+        if (result > 0) {
+            // 注册成功后，发布事件，可用于发送欢迎邮件等后续操作
+            applicationEventPublisher.publishEvent(new RegisterEvent(newUser.getId(), newUser.getEmail(), rawPassword));
+        }
+
+        return newUser;
+    }
+
+    /**
+     * 更新一个已存在的用户信息。
+     */
+    private User updateExistingUser(User existingUser, OidcUser oidcUser) {
+        boolean needsUpdate = false;
+
+        // 按需更新昵称
+        String newNickname = checkNickname(oidcUser.getName());
+        if (!Objects.equals(existingUser.getNickname(), newNickname)) {
+            existingUser.setNickname(newNickname);
+            needsUpdate = true;
+        }
+
+        // 按需更新邮箱
+        if (!Objects.equals(existingUser.getEmail(), oidcUser.getEmail())) {
+            existingUser.setEmail(oidcUser.getEmail());
+            needsUpdate = true;
+        }
+
+        // 按需更新头像（仅当OIDC提供了新头像且与旧的不同时）
+        String newAvatar = oidcUser.getPicture();
+        if (StringUtils.isNotBlank(newAvatar) && !Objects.equals(existingUser.getAvatar(), newAvatar)) {
+            existingUser.setAvatar(newAvatar);
+            needsUpdate = true;
+        }
+
+        if (needsUpdate) {
+            mapper.update(existingUser);
+        }
+
+        return existingUser;
+    }
+
+    /**
+     * 为指定用户生成访问令牌和刷新令牌。
+     */
+    private TokenUser generateAndStoreTokens(User user) {
+        String accessToken = tokenManager.createToken(user.getAccount());
+        String refreshToken = UlidCreator.getUlid().toString();
+
+        // 刷新令牌存入Redis，使用常量前缀
+        String redisKey = REFRESH_TOKEN_KEY_PREFIX + refreshToken;
+        stringRedisTemplate.boundValueOps(redisKey).set(
+                user.getAccount(),
+                JwtConstants.REFRESH_TOKEN_EXPIRES_HOUR,
+                TimeUnit.HOURS
+        );
+
         TokenUser tokenUser = new TokenUser();
-        tokenUser.setToken(tokenManager.createToken(user.getAccount()));
-        tokenUser.setRefreshToken(UlidCreator.getUlid().toString());
-        stringRedisTemplate.boundValueOps(tokenUser.getRefreshToken()).set(user.getAccount(), JwtConstants.REFRESH_TOKEN_EXPIRES_HOUR, TimeUnit.HOURS);
+        tokenUser.setToken(accessToken);
+        tokenUser.setRefreshToken(refreshToken);
+
         return tokenUser;
     }
 

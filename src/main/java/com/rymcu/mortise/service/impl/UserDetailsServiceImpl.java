@@ -2,8 +2,8 @@ package com.rymcu.mortise.service.impl;
 
 import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.entity.User;
-import com.rymcu.mortise.mapper.UserMapper;
 import com.rymcu.mortise.model.UserDetailInfo;
+import com.rymcu.mortise.service.UserService;
 import jakarta.annotation.Resource;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -27,13 +27,13 @@ import java.util.stream.Collectors;
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Resource
-    private UserMapper userMapper;
+    private UserService userService;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userMapper.selectByAccount(username);
+        User user = userService.findByAccount(username);
         if (Objects.nonNull(user)) {
-            Set<String> roles = userMapper.selectUserRolePermissionsByIdUser(user.getId());
+            Set<String> roles = userService.findUserRoleListByIdUser(user.getId());
             Set<GrantedAuthority> authorities = roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
             return new UserDetailInfo(user.getAccount(), user.getPassword(), user.getStatus(), authorities);
         }
