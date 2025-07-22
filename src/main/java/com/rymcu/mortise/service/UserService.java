@@ -1,6 +1,7 @@
 package com.rymcu.mortise.service;
 
 import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.service.IService;
 import com.rymcu.mortise.core.exception.AccountExistsException;
 import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.model.*;
@@ -16,41 +17,13 @@ import java.util.Set;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.service
  */
-public interface UserService {
+public interface UserService extends IService<User> {
 
     /**
      * @param account 用户账号
      * @return 更新成功数量
      */
     boolean updateLastOnlineTimeByAccount(String account);
-
-    /**
-     * 注册接口
-     *
-     * @param email    邮箱
-     * @param nickname 昵称
-     * @param password 密码
-     * @param code     验证码
-     * @return Boolean 注册成功标志
-     */
-    Boolean register(String email, String nickname, String password, String code) throws AccountExistsException;
-
-    /**
-     * 登录接口
-     *
-     * @param account  邮箱
-     * @param password 密码
-     * @return TokenUser
-     */
-    TokenUser login(String account, String password);
-
-    /**
-     * 刷新 token 接口
-     *
-     * @param refreshToken 刷新 token
-     * @return TokenUser
-     */
-    TokenUser refreshToken(String refreshToken);
 
     /**
      * 查询用户菜单权限
@@ -99,8 +72,6 @@ public interface UserService {
     String resetPassword(Long idUser);
 
     Boolean updateDelFlag(Long idUser, Integer delFlag);
-
-    TokenUser oauth2Login(OidcUser oidcUser, String registrationId);
 
     Boolean updateUserProfileInfo(UserProfileInfo userProfileInfo, User user);
 

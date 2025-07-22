@@ -1,7 +1,7 @@
 package com.rymcu.mortise.auth;
 
 import com.rymcu.mortise.model.TokenUser;
-import com.rymcu.mortise.service.UserService;
+import com.rymcu.mortise.service.AuthService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -24,7 +24,7 @@ import java.io.IOException;
 public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     @Resource
-    private UserService userService;
+    private AuthService authService;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
@@ -33,7 +33,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         if (authentication instanceof OAuth2AuthenticationToken oauth2Auth) {
             String registrationId = oauth2Auth.getAuthorizedClientRegistrationId();
             if (authentication.getPrincipal() instanceof OidcUser oidcUser) {
-                TokenUser tokenUser = userService.oauth2Login(oidcUser, registrationId);
+                TokenUser tokenUser = authService.oauth2Login(oidcUser, registrationId);
                 response.sendRedirect("/auth/callback?token=" + tokenUser.getToken() + "&refreshToken=" + tokenUser.getRefreshToken());
             }
         }

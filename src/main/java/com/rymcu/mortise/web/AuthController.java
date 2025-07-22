@@ -11,6 +11,7 @@ import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.model.*;
+import com.rymcu.mortise.service.AuthService;
 import com.rymcu.mortise.service.JavaMailService;
 import com.rymcu.mortise.service.MenuService;
 import com.rymcu.mortise.service.UserService;
@@ -36,6 +37,8 @@ public class AuthController {
     @Resource
     private UserService userService;
     @Resource
+    private AuthService authService;
+    @Resource
     TokenManager tokenManager;
     @Resource
     private JavaMailService javaMailService;
@@ -52,7 +55,7 @@ public class AuthController {
             fail = "提交失败，失败原因：「{{#_errorMsg ? #_errorMsg : #result.message }}」", extra = "{\"account\": {{#user.account}}}",
             successCondition = "{{#result.code==200}}")
     public GlobalResult<TokenUser> login(@RequestBody LoginInfo loginInfo) {
-        TokenUser tokenUser = userService.login(loginInfo.getAccount(), loginInfo.getPassword());
+        TokenUser tokenUser = authService.login(loginInfo.getAccount(), loginInfo.getPassword());
         LogRecordContext.putVariable("idUser", tokenUser.getIdUser());
         tokenUser.setIdUser(null);
         GlobalResult<TokenUser> tokenUserGlobalResult = GlobalResult.success(tokenUser);
@@ -62,13 +65,13 @@ public class AuthController {
 
     @PostMapping("/register")
     public GlobalResult<Boolean> register(@RequestBody RegisterInfo registerInfo) throws AccountExistsException {
-        boolean flag = userService.register(registerInfo.getEmail(), registerInfo.getNickname(), registerInfo.getPassword(), registerInfo.getCode());
+        boolean flag = authService.register(registerInfo.getEmail(), registerInfo.getNickname(), registerInfo.getPassword(), registerInfo.getCode());
         return GlobalResult.success(flag);
     }
 
     @PostMapping("/refresh-token")
     public GlobalResult<TokenUser> refreshToken(@RequestBody TokenUser tokenUser) {
-        tokenUser = userService.refreshToken(tokenUser.getRefreshToken());
+        tokenUser = authService.refreshToken(tokenUser.getRefreshToken());
         return GlobalResult.success(tokenUser);
     }
 

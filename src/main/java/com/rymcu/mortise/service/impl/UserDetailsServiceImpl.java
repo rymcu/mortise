@@ -1,9 +1,10 @@
 package com.rymcu.mortise.service.impl;
 
+import com.mybatisflex.core.query.QueryWrapper;
 import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.entity.User;
+import com.rymcu.mortise.mapper.UserMapper;
 import com.rymcu.mortise.model.UserDetailInfo;
-import com.rymcu.mortise.service.UserService;
 import jakarta.annotation.Resource;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -16,6 +17,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import static com.rymcu.mortise.entity.table.UserTableDef.USER;
+
 /**
  * Created on 2025/2/24 21:39.
  *
@@ -27,13 +30,16 @@ import java.util.stream.Collectors;
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Resource
-    private UserService userService;
+    private UserMapper userMapper;
 
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        User user = userService.findByAccount(username);
+        User user = userMapper.selectOneByQuery(QueryWrapper.create()
+                .where(USER.ACCOUNT.eq(username))
+                .or(USER.EMAIL.eq(username))
+                .or(USER.PHONE.eq(username)));;
         if (Objects.nonNull(user)) {
-            Set<String> roles = userService.findUserRoleListByIdUser(user.getId());
+            Set<String> roles = userMapper.selectUserRolePermissionsByIdUser(user.getId());
             Set<GrantedAuthority> authorities = roles.stream().map(SimpleGrantedAuthority::new).collect(Collectors.toSet());
             return new UserDetailInfo(user.getAccount(), user.getPassword(), user.getStatus(), authorities);
         }
