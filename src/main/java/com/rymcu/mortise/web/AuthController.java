@@ -12,10 +12,6 @@ import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.model.*;
 import com.rymcu.mortise.service.AuthService;
-import com.rymcu.mortise.service.JavaMailService;
-import com.rymcu.mortise.service.MenuService;
-import com.rymcu.mortise.service.UserService;
-import com.rymcu.mortise.util.BeanCopierUtil;
 import com.rymcu.mortise.util.UserUtils;
 import jakarta.annotation.Resource;
 import jakarta.mail.MessagingException;
@@ -31,24 +27,10 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
-
-    @Resource
-    private MenuService menuService;
-    @Resource
-    private UserService userService;
     @Resource
     private AuthService authService;
     @Resource
     TokenManager tokenManager;
-    @Resource
-    private JavaMailService javaMailService;
-
-    @GetMapping("/menus")
-    public GlobalResult<List<Link>> menus() {
-        User user = UserUtils.getCurrentUserByToken();
-        List<Link> menus = menuService.findLinksByIdUser(user.getId());
-        return GlobalResult.success(menus);
-    }
 
     @PostMapping("/login")
     @LogRecord(success = "提交成功", type = "系统", subType = "账号登录", bizNo = "{\"account\": {{#user.account}}}",
@@ -85,13 +67,9 @@ public class AuthController {
     }
 
     @GetMapping("/me")
-    public GlobalResult<ObjectNode> user() {
+    public GlobalResult<ObjectNode> userSession() {
         User user = UserUtils.getCurrentUserByToken();
-        AuthInfo authInfo = new AuthInfo();
-        BeanCopierUtil.copy(user, authInfo);
-        authInfo.setScope(userService.findUserPermissionsByIdUser(user.getId()));
-        authInfo.setRole(userService.findUserRoleListByIdUser(user.getId()));
-        authInfo.setLinks(menuService.findLinksByIdUser(user.getId()));
+        AuthInfo authInfo = authService.userSession(user);
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode object = objectMapper.createObjectNode();
         object.set("user", objectMapper.valueToTree(authInfo));
@@ -100,36 +78,27 @@ public class AuthController {
 
     @GetMapping("/password/request")
     public GlobalResult<String> requestPasswordReset(@RequestParam("email") String email) throws MessagingException, ServiceException, AccountNotFoundException {
-        User user = userService.findByAccount(email);
-        if (user != null) {
-            int result = javaMailService.sendForgetPasswordEmail(email);
-            if (result == 0) {
-                throw new ServiceException(ResultCode.SEND_EMAIL_FAIL.getMessage());
-            }
-        } else {
-            throw new AccountNotFoundException("未知账号");
-        }
+        authService.requestPasswordReset(email);
         return GlobalResult.success(ResultCode.SUCCESS.getMessage());
     }
 
     @PatchMapping("/password/reset")
     public GlobalResult<Boolean> resetPassword(@RequestBody ForgetPasswordInfo forgetPassword) throws ServiceException {
-        boolean flag = userService.forgetPassword(forgetPassword.getCode(), forgetPassword.getPassword());
+        boolean flag = authService.forgetPassword(forgetPassword.getCode(), forgetPassword.getPassword());
         return GlobalResult.success(flag);
     }
 
     @GetMapping("/email/request")
     public GlobalResult<String> requestEmailVerify(@RequestParam("email") String email) throws MessagingException, AccountExistsException {
-        User user = userService.findByAccount(email);
-        if (user != null) {
-            throw new AccountExistsException("该邮箱已被注册!");
-        } else {
-            int result = javaMailService.sendEmailCode(email);
-            if (result == 0) {
-                return GlobalResult.error(ResultCode.SEND_EMAIL_FAIL.getMessage());
-            }
-        }
+        authService.requestEmailVerify(email);
         return GlobalResult.success(ResultCode.SUCCESS.getMessage());
+    }
+
+    @GetMapping("/menus")
+    public GlobalResult<List<Link>> menus() {
+        User user = UserUtils.getCurrentUserByToken();
+        List<Link> menus = authService.userMenus(user);
+        return GlobalResult.success(menus);
     }
 
 }

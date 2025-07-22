@@ -57,8 +57,6 @@ public interface UserService extends IService<User> {
      */
     Page<UserInfo> findUsers(Page<UserInfo> page, UserSearch search);
 
-    Boolean forgetPassword(String code, String password);
-
     UserInfo findUserInfoById(Long idUser);
 
     Boolean saveUser(UserInfo userInfo);
@@ -76,4 +74,8 @@ public interface UserService extends IService<User> {
     Boolean updateUserProfileInfo(UserProfileInfo userProfileInfo, User user);
 
     void updateLastLoginTimeByAccount(String account);
+
+    String checkNickname(String nickname);
+
+    String nextAccount();
 }

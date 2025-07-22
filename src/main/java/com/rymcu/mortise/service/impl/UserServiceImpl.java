@@ -68,11 +68,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 .update();
     }
 
-    private String checkNickname(String nickname) {
+    @Override
+    public String checkNickname(String nickname) {
         nickname = formatNickname(nickname);
-        QueryWrapper queryWrapper = new QueryWrapper();
-        queryWrapper.where(USER.NICKNAME.eq(nickname));
-        long result = mapper.selectCountByQuery(queryWrapper);
+        long result = mapper.selectCountByQuery(QueryWrapper.create().where(USER.NICKNAME.eq(nickname)));
         if (result > 0) {
             StringBuilder stringBuilder = new StringBuilder(nickname);
             return checkNickname(stringBuilder.append("_").append(System.currentTimeMillis()).toString());
@@ -84,7 +83,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return nickname.replaceAll("\\.", "");
     }
 
-    private String nextAccount() {
+    @Override
+    public String nextAccount() {
         // 获取当前账号
         String currentAccount = stringRedisTemplate.boundValueOps(CURRENT_ACCOUNT_KEY).get();
         BigDecimal account;
@@ -167,23 +167,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public Boolean forgetPassword(String code, String password) {
-        String email = stringRedisTemplate.boundValueOps(code).get();
-        if (StringUtils.isBlank(email)) {
-            throw new CaptchaException();
-        } else {
-            boolean result = UpdateChain.of(User.class)
-                    .set(User::getPassword, passwordEncoder.encode(password))
-                    .where(User::getEmail).eq(email)
-                    .update();
-            if (!result) {
-                throw new BusinessException("密码修改失败!");
-            }
-            return true;
-        }
-    }
-
-    @Override
     public UserInfo findUserInfoById(Long idUser) {
         QueryWrapper queryWrapper = new QueryWrapper();
         queryWrapper.select(USER.ID, USER.NICKNAME, USER.ACCOUNT, USER.PHONE,
@@ -199,7 +182,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         boolean isUpdate = userInfo.getId() != null;
         User user;
         if (isUpdate) {
-            user = mapper.selectOneById(userInfo.getId());
+            user = mapper.selectOneByQuery(QueryWrapper.create()
+                    .select(USER.ID, USER.EMAIL, USER.PHONE, USER.NICKNAME, USER.STATUS, USER.AVATAR)
+                    .where(USER.ID.eq(userInfo.getId())));
             if (Objects.nonNull(user)) {
                 // 用户已存在
                 user.setEmail(userInfo.getEmail());
@@ -209,7 +194,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 user.setAvatar(userInfo.getAvatar().getSrc());
                 return mapper.update(user) > 0;
             }
-            throw new BusinessException("用户不存在");
+            throw new BusinessException(ResultCode.UNKNOWN_ACCOUNT.getMessage());
         } else {
             user = new User();
             user.setEmail(userInfo.getEmail());
@@ -217,7 +202,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user.setNickname(checkNickname(userInfo.getNickname()));
             String code = userInfo.getPassword();
             if (StringUtils.isBlank(code)) {
-                code = String.valueOf(Utils.genCode());
+                code = Utils.genPassword();
             }
             user.setPassword(passwordEncoder.encode(code));
             user.setAvatar(Objects.isNull(userInfo.getAvatar()) ? DEFAULT_AVATAR : userInfo.getAvatar().getSrc());
@@ -262,20 +247,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String resetPassword(Long idUser) {
-        User user = mapper.selectOneById(idUser);
+        User user = mapper.selectOneByQuery(QueryWrapper.create()
+                .select(USER.ID, USER.PASSWORD)
+                .where(USER.ID.eq(idUser)));
         if (Objects.nonNull(user)) {
             String code = String.valueOf(Utils.genCode());
             String password = passwordEncoder.encode(code);
-            User u = UpdateEntity.of(User.class, idUser);
-            u.setPassword(password);
-            int result = mapper.update(u);
+            user.setPassword(password);
+            int result = mapper.update(user);
             if (result > 0) {
                 applicationEventPublisher.publishEvent(new ResetPasswordEvent(user.getEmail(), code));
                 return code;
             }
-            throw new BusinessException("更新失败");
+            throw new BusinessException(ResultCode.FAIL.getMessage());
         }
-        throw new BusinessException("用户不存在");
+        throw new UsernameNotFoundException(ResultCode.UNKNOWN_ACCOUNT.getMessage());
     }
 
     @Override

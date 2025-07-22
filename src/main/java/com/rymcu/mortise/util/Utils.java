@@ -1,5 +1,6 @@
 package com.rymcu.mortise.util;
 
+import com.github.f4b6a3.ulid.UlidCreator;
 import com.rymcu.mortise.core.constant.ProjectConstant;
 import jakarta.servlet.http.HttpServletRequest;
 import org.jasypt.encryption.StringEncryptor;
@@ -102,5 +103,9 @@ public class Utils {
 
     public static int genCode() {
         return (int) ((Math.random() * 9 + 1) * 100000);
+    }
+
+    public static String genPassword() {
+        return UlidCreator.getUlid().toString();
     }
 }

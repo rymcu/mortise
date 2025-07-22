@@ -8,6 +8,7 @@ import com.rymcu.mortise.service.JavaMailService;
 import jakarta.annotation.Resource;
 import jakarta.mail.MessagingException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
@@ -29,6 +30,7 @@ public class RegisterHandler {
     @Resource
     private JavaMailService javaMailService;
 
+    @Async
     @TransactionalEventListener
     public void processRegisterEvent(RegisterEvent registerEvent) {
         Role role = roleMapper.selectRoleByPermission("user");

@@ -39,7 +39,10 @@ public enum ResultCode {
     UNKNOWN_ACCOUNT(10001, "未知账号"),
     INCORRECT_ACCOUNT_OR_PASSWORD(10002, "账号或密码错误"),
     INVALID_VERIFICATION_CODE(10003, "验证码错误或已失效"), // 原VALIDATE语义不清晰，改为更具体的名称
-    SEND_EMAIL_FAIL(10004, "邮件发送失败，请稍后再试"); // 从 GlobalResultMessage 合并而来
+    SEND_EMAIL_FAIL(10004, "邮件发送失败，请稍后再试"), // 从 GlobalResultMessage 合并而来
+    EMAIL_EXISTS(10005, "该邮箱已被注册！"), // 从 GlobalResultMessage 合并而来
+    REGISTER_FAIL(10006, "注册失败！"), // 从 GlobalResultMessage 合并而来
+    UPDATE_PASSWORD_FAIL(10007, "修改密码失败！");
 
     private final int code;
     private final String message;

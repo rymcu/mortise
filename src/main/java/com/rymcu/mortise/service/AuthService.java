@@ -1,8 +1,15 @@
 package com.rymcu.mortise.service;
 
 import com.rymcu.mortise.core.exception.AccountExistsException;
+import com.rymcu.mortise.entity.User;
+import com.rymcu.mortise.model.AuthInfo;
+import com.rymcu.mortise.model.Link;
 import com.rymcu.mortise.model.TokenUser;
+import jakarta.mail.MessagingException;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
+
+import javax.security.auth.login.AccountNotFoundException;
+import java.util.List;
 
 /**
  * Created on 2025/7/22 16:46.
@@ -43,4 +50,13 @@ public interface AuthService {
 
     TokenUser oauth2Login(OidcUser oidcUser, String registrationId);
 
+    void requestPasswordReset(String email) throws AccountNotFoundException, MessagingException;
+
+    void requestEmailVerify(String email) throws AccountExistsException, MessagingException;
+
+    AuthInfo userSession(User user);
+
+    List<Link> userMenus(User user);
+
+    boolean forgetPassword(String code, String password);
 }
