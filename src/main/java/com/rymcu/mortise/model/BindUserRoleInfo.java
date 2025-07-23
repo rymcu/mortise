@@ -1,5 +1,6 @@
 package com.rymcu.mortise.model;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 import java.util.Set;
@@ -12,6 +13,7 @@ import java.util.Set;
  * @desc : com.rymcu.mortise.model
  */
 @Data
+@AllArgsConstructor
 public class BindUserRoleInfo {
 
     private Long idUser;

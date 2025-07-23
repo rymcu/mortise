@@ -2,7 +2,10 @@ package com.rymcu.mortise.service.impl;
 
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
+import com.mybatisflex.core.row.Db;
+import com.mybatisflex.core.row.Row;
 import com.mybatisflex.core.update.UpdateChain;
+import com.mybatisflex.core.util.CollectionUtil;
 import com.mybatisflex.core.util.UpdateEntity;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.core.exception.BusinessException;
@@ -10,6 +13,7 @@ import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.entity.Menu;
 import com.rymcu.mortise.entity.Role;
 import com.rymcu.mortise.entity.User;
+import com.rymcu.mortise.entity.UserRole;
 import com.rymcu.mortise.handler.event.RegisterEvent;
 import com.rymcu.mortise.handler.event.ResetPasswordEvent;
 import com.rymcu.mortise.mapper.MenuMapper;
@@ -31,14 +35,13 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 
-import static com.mybatisflex.core.query.QueryMethods.instr;
 import static com.mybatisflex.core.query.QueryMethods.max;
+import static com.rymcu.mortise.entity.table.UserRoleTableDef.USER_ROLE;
 import static com.rymcu.mortise.entity.table.UserTableDef.USER;
 
 /**
@@ -244,11 +247,22 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public Boolean bindUserRole(BindUserRoleInfo bindUserRoleInfo) {
         int num = 0;
         // 先删除原有关系
-        mapper.deleteUserRole(bindUserRoleInfo.getIdUser());
-        for (Long idRole : bindUserRoleInfo.getIdRoles()) {
-            num += mapper.insertUserRole(bindUserRoleInfo.getIdUser(), idRole);
+        QueryWrapper queryWrapper = QueryWrapper.create().where(UserRole::getIdMortiseUser).eq(bindUserRoleInfo.getIdUser());
+        Db.deleteByQuery(USER_ROLE.getTableName(), queryWrapper);
+        if (CollectionUtil.isNotEmpty(bindUserRoleInfo.getIdRoles())) {
+            List<Row> userRoles = bindUserRoleInfo.getIdRoles().stream().map(roleId -> {
+                Row row = new Row();
+                row.set(USER_ROLE.ID_MORTISE_USER, bindUserRoleInfo.getIdUser());
+                row.set(USER_ROLE.ID_MORTISE_ROLE, roleId);
+                return row;
+            }).toList();
+            int[] result = Db.insertBatch(USER_ROLE.getTableName(), userRoles);
+            for (int i : result) {
+                num += i;
+            }
+            return num == bindUserRoleInfo.getIdRoles().size();
         }
-        return num == bindUserRoleInfo.getIdRoles().size();
+        return true;
     }
 
     @Override

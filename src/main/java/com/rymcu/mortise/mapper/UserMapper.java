@@ -17,10 +17,6 @@ import java.util.Set;
 @Mapper
 public interface UserMapper extends BaseMapper<User> {
 
-    int insertUserRole(@Param("idUser") Long idUser, @Param("idRole") Long idRole);
-
-    int deleteUserRole(@Param("idUser") Long idUser);
-
     Set<String> selectUserRolePermissionsByIdUser(@Param("idUser") Long idUser);
 
 }

@@ -30,12 +30,6 @@
         <result column="created_time" property="createdTime"/>
         <result column="role_names" property="roleNames"/>
     </resultMap>
-    <insert id="insertUserRole">
-        insert into mortise_user_role (id_mortise_user, id_mortise_role) VALUES (#{idUser}, #{idRole})
-    </insert>
-    <delete id="deleteUserRole">
-        delete from mortise_user_role where id_mortise_user = #{idUser}
-    </delete>
     <select id="selectUserRolePermissionsByIdUser" resultType="java.lang.String">
         select distinct tr.permission
         from mortise_user_role tur
