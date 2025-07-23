@@ -50,29 +50,13 @@ public class Utils {
     }
 
     /**
-     * 生成安全的密码，生成随机的16位salt并经过1024次 sha-1 hash
+     * 生成安全的密码
      *
      * @param plainPassword 密码
      * @return String 加密后的密码
      */
     public static String encryptPassword(String plainPassword) {
-        String plain = Encodes.unescapeHtml(plainPassword);
-        byte[] salt = Digests.generateSalt(SALT_SIZE);
-        byte[] hashPassword = Digests.sha1(plain.getBytes(), salt, HASH_ITERATIONS);
-        return Encodes.encodeHex(salt) + Encodes.encodeHex(hashPassword);
-    }
-
-    /**
-     * 一般检查工具密码比对
-     *
-     * @param password        密码
-     * @param encryptPassword 加密的密码
-     * @return Boolean 匹配状态
-     */
-    public static Boolean comparePassword(String password, String encryptPassword) {
-        byte[] salt = Encodes.decodeHex(encryptPassword.substring(0, 16));
-        byte[] hashPassword = Digests.sha1(password.getBytes(), salt, HASH_ITERATIONS);
-        return encryptPassword.equals(Encodes.encodeHex(salt) + Encodes.encodeHex(hashPassword));
+        return encryptJasyptPassword(plainPassword, System.getenv(ProjectConstant.ENCRYPTION_KEY));
     }
 
     public static StringEncryptor initPasswordEncryptor(String password) {

@@ -1,27 +1,26 @@
 package com.rymcu.mortise.util;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 /**
  * 文件操作工具类
  *
  * @author 张代浩
  */
+@Slf4j
 public class FileUtils {
-
-    private static final Logger logger = LoggerFactory.getLogger(FileUtils.class);
 
     /**
      * 获取文件扩展名,带.
      *
-     * @param filename
-     * @return
+     * @param filename 文件名
+     * @return 文件扩展名
      */
     public static String getExtend(String filename) {
         return getExtend(filename, "");
@@ -30,9 +29,9 @@ public class FileUtils {
     /**
      * 获取文件扩展名
      *
-     * @param filename
+     * @param filename 文件名
      * @param defExt   默认文件后缀名， 带.
-     * @return
+     * @return 文件扩展名
      */
     public static String getExtend(String filename, String defExt) {
         if (StringUtils.isEmpty(filename)) {
@@ -55,7 +54,7 @@ public class FileUtils {
     /**
      * 获取文件名称[不含后缀名]
      *
-     * @param
+     * @param fileName 文件名
      * @return String
      */
     public static String getFilePrefix(String fileName) {
@@ -67,7 +66,7 @@ public class FileUtils {
      * 获取文件名称[不含后缀名]
      * 不去掉文件目录的空格
      *
-     * @param
+     * @param fileName 文件名
      * @return String
      */
     public static String getFilePrefix2(String fileName) {
@@ -79,29 +78,24 @@ public class FileUtils {
      * 文件复制
      * 方法摘要：这里一句话描述方法的用途
      *
-     * @param
-     * @return void
+     * @param inputFile 输入文件
+     * @param outputFile 输出文件
      */
     public static void copyFile(String inputFile, String outputFile) throws FileNotFoundException {
         File sFile = new File(inputFile);
         File tFile = new File(outputFile);
-        FileInputStream fis = new FileInputStream(sFile);
-        FileOutputStream fos = new FileOutputStream(tFile);
         int temp = 0;
         byte[] buf = new byte[10240];
-        try {
-            while ((temp = fis.read(buf)) != -1) {
-                fos.write(buf, 0, temp);
+        try (FileInputStream fis = new FileInputStream(sFile); FileOutputStream fos = new FileOutputStream(tFile)) {
+            try {
+                while ((temp = fis.read(buf)) != -1) {
+                    fos.write(buf, 0, temp);
+                }
+            } catch (IOException e) {
+                log.error(e.getMessage());
             }
         } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            try {
-                fis.close();
-                fos.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            log.error(e.getMessage());
         }
     }
 
@@ -112,7 +106,6 @@ public class FileUtils {
      * @param filename 文件名<br>
      *                 判断具体文件类型<br>
      * @return 检查后的结果<br>
-     * @throws Exception
      */
     public static boolean isPicture(String filename) {
         // 文件名称为空的场合
@@ -122,13 +115,12 @@ public class FileUtils {
         }
         // 获得文件后缀名
         //String tmpName = getExtend(filename);
-        String tmpName = filename;
         // 声明图片后缀名数组
         String[] imageArray = {"bmp", "dib", "gif", "jfif", "jpe",
                 "jpeg", "jpg", "png", "tif", "tiff", "ico"};
         // 遍历名称数组
         for (String s : imageArray) {
-            if (s.equals(tmpName)) {
+            if (s.equals(filename)) {
                 return true;
             }
         }
@@ -142,7 +134,6 @@ public class FileUtils {
      * @param filename 文件名<br>
      *                 判断具体文件类型<br>
      * @return 检查后的结果<br>
-     * @throws Exception
      */
     public static boolean isDwg(String filename) {
         // 文件名称为空的场合
@@ -153,10 +144,7 @@ public class FileUtils {
         // 获得文件后缀名
         String tmpName = getExtend(filename);
         // 声明图片后缀名数组
-        if ("dwg".equals(tmpName)) {
-            return true;
-        }
-        return false;
+        return "dwg".equals(tmpName);
     }
 
     /**
@@ -169,7 +157,7 @@ public class FileUtils {
         File fileDelete = new File(strFileName);
 
         if (!fileDelete.exists() || !fileDelete.isFile()) {
-            logger.info("错误: " + strFileName + "不存在!");
+            log.error("错误: {} 不存在!", strFileName);
             return false;
         }
 
@@ -178,24 +166,20 @@ public class FileUtils {
     }
 
     /**
-     * @param @param  fileName
-     * @param @return 设定文件
-     * @return String    返回类型
-     * @throws
-     * @Title: encodingFileName 2015-11-26 huangzq add
-     * @Description: 防止文件名中文乱码含有空格时%20
+     * @param fileName 文件名
+     * @return 设定文件
      */
     public static String encodingFileName(String fileName) {
         String returnFileName = "";
         try {
-            returnFileName = URLEncoder.encode(fileName, "UTF-8");
-            returnFileName = StringUtils.replace(returnFileName, "+", "%20");
+            returnFileName = URLEncoder.encode(fileName, StandardCharsets.UTF_8);
+            returnFileName = returnFileName.replace("+", "%20");
             if (returnFileName.length() > 150) {
                 returnFileName = new String(fileName.getBytes("GB2312"), "ISO8859-1");
-                returnFileName = StringUtils.replace(returnFileName, " ", "%20");
+                returnFileName = returnFileName.replace(" ", "%20");
             }
         } catch (UnsupportedEncodingException e) {
-            e.printStackTrace();
+            log.error(e.getMessage());
             //LogUtil.info("Don't support this encoding ...");
         }
         return returnFileName;
@@ -236,7 +220,7 @@ public class FileUtils {
             //System.out.println(head2);
             if ("ef".equals(head1) && "bb".equals(head2)) {
                 //UTF-8
-                String contents = new String(mf.getBytes(), "UTF-8");
+                String contents = new String(mf.getBytes(), StandardCharsets.UTF_8);
                 if (StringUtils.isNotBlank(contents)) {
                     OutputStream out = new FileOutputStream(savePath);
                     out.write(contents.getBytes());
@@ -252,7 +236,7 @@ public class FileUtils {
 
             }
         } catch (Exception e) {
-            String contents = new String(mf.getBytes(), "UTF-8");
+            String contents = new String(mf.getBytes(), StandardCharsets.UTF_8);
             if (StringUtils.isNotBlank(contents)) {
                 OutputStream out = new FileOutputStream(savePath);
                 out.write(contents.getBytes());
