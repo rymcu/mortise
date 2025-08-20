@@ -3,74 +3,106 @@ package com.rymcu.mortise.util;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cglib.beans.BeanCopier;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * @author jiangjingming
+ * Created on 2025/8/20 21:16.
+ *
+ * @author ronger
+ * @email ronger-x@outlook.com
+ * @desc : com.rymcu.mortise.util
  */
 @Slf4j
 public class BeanCopierUtil {
+
     /**
-     * beanCopier缓存
-     * (A拷贝到B,确定一个beanCopier)
+     * BeanCopier 缓存
+     * Key: sourceClassName + targetClassName
      */
     private static final Map<String, BeanCopier> BEAN_COPIER_MAP = new ConcurrentHashMap<>();
 
     /**
-     * 拷贝方法
+     * 将源对象属性拷贝到目标对象
+     * (此方法为核心，供内部调用)
      *
-     * @param sourceBean 源对象
-     * @param targetBean 目标对象
-     * @param <S>        源对象类型
-     * @param <T>        目标对象类型
+     * @param source 源对象
+     * @param target 目标对象
      */
-    public static <S, T> void copy(S sourceBean, T targetBean) {
-        @SuppressWarnings("unchecked")
-        Class<S> sourceClass = (Class<S>) sourceBean.getClass();
-        @SuppressWarnings("unchecked")
-        Class<T> targetClass = (Class<T>) targetBean.getClass();
-
-        BeanCopier beanCopier = getBeanCopier(sourceClass, targetClass);
-        beanCopier.copy(sourceBean, targetBean, null);
+    public static void copy(Object source, Object target) {
+        if (source == null || target == null) {
+            return;
+        }
+        BeanCopier beanCopier = getBeanCopier(source.getClass(), target.getClass());
+        beanCopier.copy(source, target, null);
     }
 
     /**
-     * 转换方法
+     * 转换单个对象
+     * (推荐使用此方法)
      *
-     * @param sourceBean 源对象
-     * @param targetBean 目标对象
-     * @param <S>        源对象类型
-     * @param <T>        目标对象类型
-     * @return 拷贝值后的targetBean
+     * @param source      源对象
+     * @param targetClass 目标对象的Class
+     * @param <T>         目标对象的类型
+     * @return 转换后的目标对象实例
      */
-    public static <S, T> T convert(S sourceBean, T targetBean) {
+    public static <T> T convert(Object source, Class<T> targetClass) {
+        if (source == null) {
+            return null;
+        }
         try {
-            assert sourceBean != null;
-            copy(sourceBean, targetBean);
-            return targetBean;
+            T targetInstance = targetClass.getDeclaredConstructor().newInstance();
+            copy(source, targetInstance);
+            return targetInstance;
         } catch (Exception e) {
-            log.error("Transform bean error", e);
-            throw new RuntimeException(e);
+            log.error("Failed to convert bean from {} to {}", source.getClass().getName(), targetClass.getName(), e);
+            throw new RuntimeException("Bean conversion failed", e);
         }
     }
 
+    /**
+     * 转换列表对象
+     *
+     * @param sourceList  源对象列表
+     * @param targetClass 目标对象的Class
+     * @param <S>         源对象的类型
+     * @param <T>         目标对象的类型
+     * @return 转换后的目标对象列表
+     */
+    public static <S, T> List<T> convertList(List<S> sourceList, Class<T> targetClass) {
+        if (sourceList == null || sourceList.isEmpty()) {
+            return new ArrayList<>();
+        }
+        List<T> targetList = new ArrayList<>(sourceList.size());
+        try {
+            for (S sourceItem : sourceList) {
+                if (sourceItem != null) {
+                    T targetItem = targetClass.getDeclaredConstructor().newInstance();
+                    copy(sourceItem, targetItem);
+                    targetList.add(targetItem);
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed to convert bean list to class {}", targetClass.getName(), e);
+            throw new RuntimeException("Bean list conversion failed", e);
+        }
+        return targetList;
+    }
 
     /**
-     * beanCopier获取方法
+     * 获取BeanCopier实例
      * <p>
-     * 使用beanCopierMap重用BeanCopier对象
-     * <p>
-     * 线程安全
+     * 使用缓存重用BeanCopier，提升性能。
      *
      * @param sourceClass 源类型
      * @param targetClass 目标类型
-     * @param <S>         源类型
-     * @param <T>         目标类型
      * @return BeanCopier实例
      */
-    private static <S, T> BeanCopier getBeanCopier(Class<S> sourceClass, Class<T> targetClass) {
-        String classKey = sourceClass.getTypeName() + targetClass.getTypeName();
+    private static BeanCopier getBeanCopier(Class<?> sourceClass, Class<?> targetClass) {
+        String classKey = sourceClass.getName() + "#" + targetClass.getName();
+        // 使用computeIfAbsent保证线程安全且高效
         return BEAN_COPIER_MAP.computeIfAbsent(classKey, key -> BeanCopier.create(sourceClass, targetClass, false));
     }
 }
