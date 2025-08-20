@@ -1,6 +1,6 @@
 services:
   postgresql:
-    image: postgres:17-alpine
+    image: pgvector/pgvector:pg17
     container_name: mortise-postgres
     restart: unless-stopped
     environment:
@@ -53,7 +53,7 @@ services:
     environment:
       INTEGRATION_TEST: true
       TRUST_PROXY_HEADER: true
-      DB_URL: postgresql://mortise:XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl@postgresql:5432/logto
+      DB_URL: postgresql://mortise:XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl@mortise-postgres:5432/logto
       ENDPOINT: https://auth.rymcu.local
       ADMIN_ENDPOINT: https://logto.rymcu.local
       # Self-signed certificates require NODE_EXTRA_CA_CERTS to be configured
