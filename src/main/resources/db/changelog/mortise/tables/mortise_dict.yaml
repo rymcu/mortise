@@ -33,6 +33,15 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
+                  name: icon
+                  type: VARCHAR(128)
+              - column:
+                  name: image
+                  type: VARCHAR(128)
+              - column:
+                  name: color
+                  type: VARCHAR(64)
+              - column:
                   name: sort_no
                   type: SMALLINT
                   defaultValueNumeric: '50'
@@ -65,6 +74,9 @@ databaseChangeLog:
         - sql: COMMENT ON COLUMN mortise_dict.label IS '名称'
         - sql: COMMENT ON COLUMN mortise_dict.value IS '数据'
         - sql: COMMENT ON COLUMN mortise_dict.dict_type_code IS '类别代码'
+        - sql: COMMENT ON COLUMN mortise_dict.icon IS '图标'
+        - sql: COMMENT ON COLUMN mortise_dict.image IS '图片'
+        - sql: COMMENT ON COLUMN mortise_dict.color IS '颜色'
         - sql: COMMENT ON COLUMN mortise_dict.sort_no IS '排序'
         - sql: COMMENT ON COLUMN mortise_dict.status IS '状态'
         - sql: COMMENT ON COLUMN mortise_dict.created_by IS '创建人'
