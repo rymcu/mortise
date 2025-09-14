@@ -4,6 +4,7 @@ import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.util.UpdateEntity;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
+import com.rymcu.mortise.core.exception.ServiceException;
 import com.rymcu.mortise.entity.Role;
 import com.rymcu.mortise.mapper.RoleMapper;
 import com.rymcu.mortise.model.BindRoleMenuInfo;
@@ -36,8 +37,12 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean saveRole(Role role) {
-        Role oldRole = mapper.selectOneById(role.getId());
-        if (Objects.nonNull(oldRole)) {
+        boolean isUpdate = role.getId() != null;
+        if (isUpdate) {
+            Role oldRole = mapper.selectOneById(role.getId());
+            if (oldRole == null) {
+                throw new ServiceException("数据不存在");
+            }
             oldRole.setLabel(role.getLabel());
             oldRole.setPermission(role.getPermission());
             oldRole.setStatus(role.getStatus());
