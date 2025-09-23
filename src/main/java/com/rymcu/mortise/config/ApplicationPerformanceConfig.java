@@ -40,8 +40,8 @@ public class ApplicationPerformanceConfig {
     public MeterRegistryCustomizer<MeterRegistry> metricsCommonTags() {
         return registry -> registry.config().commonTags(
                 "application", "mortise",
-                "environment", "dev",
-                "version", "0.0.1"
+                "author", "ronger",
+                "domain", "https://rymcu.com"
         );
     }
 

@@ -1,14 +1,13 @@
 package com.rymcu.mortise.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.boot.context.event.ApplicationStartingEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration;
 
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -37,9 +36,6 @@ public class ApplicationStartupConfig {
 
                 // 输出运行环境信息
                 logRuntimeInfo();
-
-                // 输出应用配置信息
-                logApplicationInfo();
             }
         };
     }
@@ -98,35 +94,22 @@ public class ApplicationStartupConfig {
                 System.getProperty("os.version"),
                 System.getProperty("os.arch"));
         log.info("  CPU核心数: {}", Runtime.getRuntime().availableProcessors());
-        log.info("  内存信息:");
-        log.info("    最大内存: {}MB", maxMemory / 1024 / 1024);
-        log.info("    总内存: {}MB", totalMemory / 1024 / 1024);
-        log.info("    已用内存: {}MB", usedMemory / 1024 / 1024);
-        log.info("    可用内存: {}MB", freeMemory / 1024 / 1024);
-    }
 
-    /**
-     * 输出应用配置信息
-     */
-    private void logApplicationInfo() {
-        log.info("应用配置信息:");
-        log.info("  应用名称: Mortise");
-        log.info("  应用版本: 0.0.1");
-        log.info("  Spring Boot版本: {}", org.springframework.boot.SpringBootVersion.getVersion());
-        log.info("  Spring Framework版本: {}", org.springframework.core.SpringVersion.getVersion());
-        log.info("  配置文件: application-dev.yml");
-        log.info("  运行环境: development");
+        // 输出 JVM 启动参数
+        log.info("  JVM启动参数:");
+        java.lang.management.RuntimeMXBean runtimeBean =
+                java.lang.management.ManagementFactory.getRuntimeMXBean();
+        for (String arg : runtimeBean.getInputArguments()) {
+            if (arg.startsWith("-Xm") || arg.startsWith("-XX:") &&
+                    (arg.contains("Memory") || arg.contains("Size"))) {
+                log.info("    {}", arg);
+            }
+        }
 
-        // 输出重要特性状态
-        log.info("核心功能状态:");
-        log.info("  ✓ 数据库连接池: HikariCP");
-        log.info("  ✓ 缓存系统: Redis");
-        log.info("  ✓ 安全框架: Spring Security + JWT");
-        log.info("  ✓ 限流保护: Resilience4j");
-        log.info("  ✓ API文档: OpenAPI 3.0");
-        log.info("  ✓ 监控指标: Micrometer + Prometheus");
-        log.info("  ✓ 健康检查: Spring Actuator");
-
-        log.info("🎉 Mortise 应用已成功启动并准备就绪！");
+        log.info("  JVM内存信息 (堆内存，非系统物理内存):");
+        log.info("    最大堆内存(-Xmx): {}  MB", maxMemory / 1024 / 1024);
+        log.info("    当前分配堆内存: {} MB", totalMemory / 1024 / 1024);
+        log.info("    已使用堆内存: {} MB", usedMemory / 1024 / 1024);
+        log.info("    堆内可用内存: {} MB", freeMemory / 1024 / 1024);
     }
 }

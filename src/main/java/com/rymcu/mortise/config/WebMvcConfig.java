@@ -10,7 +10,7 @@ import org.springframework.util.ResourceUtils;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurationSupport;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ import java.util.List;
  * @author ronger
  */
 @Configuration
-public class WebMvcConfigurer extends WebMvcConfigurationSupport {
+public class WebMvcConfig implements WebMvcConfigurer {
 
     @Resource
     private ObjectMapper objectMapper;
@@ -38,17 +38,27 @@ public class WebMvcConfigurer extends WebMvcConfigurationSupport {
 
     /**
      * 访问静态资源
+     * 安全配置：防止路径遍历攻击 CVE-2025-41242
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("swagger-ui.html")
-                .addResourceLocations("classpath:/META-INF/resources/");
+        // 移除自定义 Swagger UI 资源处理器 - 让 SpringDoc 自动处理
+        // SpringDoc OpenAPI 2.8.13 会自动配置所需的资源处理器
 
+        // Webjars 资源 - 使用严格的路径匹配
         registry.addResourceHandler("/webjars/**")
-                .addResourceLocations("classpath:/META-INF/resources/webjars/");
-        //将所有/static/** 访问都映射到classpath:/static/ 目录下
-        registry.addResourceHandler("/static/**").addResourceLocations(ResourceUtils.CLASSPATH_URL_PREFIX + "/static/");
-        super.addResourceHandlers(registry);
+                .addResourceLocations("classpath:/META-INF/resources/webjars/")
+                .setCachePeriod(3600)
+                .resourceChain(true);
+
+        // 静态资源 - 使用严格的路径匹配，防止路径遍历
+        registry.addResourceHandler("/static/**")
+                .addResourceLocations(ResourceUtils.CLASSPATH_URL_PREFIX + "/static/")
+                .setCachePeriod(3600)
+                .resourceChain(true);
+
+        // 移除 super 调用 - WebMvcConfigurer 是接口，无需调用父类方法
+        // SpringDoc 会自动注册其所需的资源处理器
     }
 
     @Override

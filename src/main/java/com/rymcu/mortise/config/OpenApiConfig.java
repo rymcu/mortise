@@ -22,7 +22,7 @@ public class OpenApiConfig {
     public OpenAPI mortiseOpenAPI() {
         return new OpenAPI()
                 .info(new Info()
-                        .title("Mortise API")
+                        .title("Mortise")
                         .description("一款现代化的后台管理脚手架项目 API 文档")
                         .version("0.0.1")
                         .contact(new Contact()

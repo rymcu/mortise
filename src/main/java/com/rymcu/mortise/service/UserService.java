@@ -2,12 +2,8 @@ package com.rymcu.mortise.service;
 
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.service.IService;
-import com.rymcu.mortise.core.exception.AccountExistsException;
 import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.model.*;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-
-import java.util.List;
 import java.util.Set;
 
 /**

@@ -98,7 +98,7 @@ management:
     web:
       exposure:
         # 暴露所有监控端点，生产环境建议只暴露必要的端点
-        include: "health,ratelimiters, info"
+        include: "health,ratelimiters,info"
         # 排除敏感端点（可根据需要调整）
         exclude: shutdown
       base-path: /actuator
@@ -288,13 +288,15 @@ mybatis-flex:
 # SpringDoc OpenAPI 配置
 springdoc:
   api-docs:
-    path: /api-docs
     enabled: true
+    path: /v3/api-docs
   swagger-ui:
-    path: /swagger-ui.html
     enabled: true
+    path: /swagger-ui.html
     operations-sorter: alpha
     tags-sorter: alpha
+  show-actuator: false
+  writer-with-default-pretty-printer: true
   default-consumes-media-type: application/json
   default-produces-media-type: application/json
   group-configs:

@@ -75,6 +75,7 @@ public class WebSecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests((authorize) -> {
+                    // 认证相关API
                     authorize.requestMatchers("/api/v1/auth/login").permitAll();
                     authorize.requestMatchers("/api/v1/auth/register").permitAll();
                     authorize.requestMatchers("/api/v1/auth/logout").permitAll();
@@ -82,7 +83,18 @@ public class WebSecurityConfig {
                     authorize.requestMatchers("/api/v1/auth/password/reset").permitAll();
                     authorize.requestMatchers("/api/v1/auth/email/request").permitAll();
                     authorize.requestMatchers("/api/v1/auth/refresh-token").permitAll();
+
+                    // 静态资源访问 - 安全配置
+                    authorize.requestMatchers("/static/**").permitAll();
+                    authorize.requestMatchers("/webjars/**").permitAll();
+                    authorize.requestMatchers("/swagger-ui/**").permitAll();
+                    authorize.requestMatchers("/swagger-ui.html").permitAll();
+                    authorize.requestMatchers("/v3/api-docs/**").permitAll();
+
+                    // OPTIONS 请求
                     authorize.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
+
+                    // 其他所有请求需要认证
                     authorize.anyRequest().authenticated();
                 }).oauth2Login(oauth2Login ->
                         oauth2Login
