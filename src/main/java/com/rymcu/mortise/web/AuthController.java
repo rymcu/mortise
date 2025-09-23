@@ -13,8 +13,15 @@ import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.model.*;
 import com.rymcu.mortise.service.AuthService;
 import com.rymcu.mortise.util.UserUtils;
+import com.rymcu.mortise.annotation.Resilience4jRateLimit;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.mail.MessagingException;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import javax.security.auth.login.AccountNotFoundException;
@@ -22,8 +29,11 @@ import java.util.List;
 import java.util.Objects;
 
 /**
+ * 认证控制器
+ * 
  * @author ronger
  */
+@Tag(name = "认证管理", description = "用户认证相关接口")
 @RestController
 @RequestMapping("/api/v1/auth")
 public class AuthController {
@@ -32,11 +42,20 @@ public class AuthController {
     @Resource
     TokenManager tokenManager;
 
+    @Operation(summary = "用户登录", description = "用户通过账号密码登录系统")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "登录成功"),
+            @ApiResponse(responseCode = "401", description = "账号或密码错误"),
+            @ApiResponse(responseCode = "429", description = "请求过于频繁")
+    })
+    @Resilience4jRateLimit(limitForPeriod = 5, refreshPeriodSeconds = 300, message = "登录请求过于频繁，请5分钟后再试")
     @PostMapping("/login")
     @LogRecord(success = "提交成功", type = "系统", subType = "账号登录", bizNo = "{\"account\": {{#user.account}}}",
             fail = "提交失败，失败原因：「{{#_errorMsg ? #_errorMsg : #result.message }}」", extra = "{\"account\": {{#user.account}}}",
             successCondition = "{{#result.code==200}}")
-    public GlobalResult<TokenUser> login(@RequestBody LoginInfo loginInfo) {
+    public GlobalResult<TokenUser> login(
+            @Parameter(description = "登录信息", required = true)
+            @Valid @RequestBody LoginInfo loginInfo) {
         TokenUser tokenUser = authService.login(loginInfo.getAccount(), loginInfo.getPassword());
         LogRecordContext.putVariable("idUser", tokenUser.getIdUser());
         tokenUser.setIdUser(null);
@@ -45,8 +64,17 @@ public class AuthController {
         return tokenUserGlobalResult;
     }
 
+    @Operation(summary = "用户注册", description = "用户通过邮箱注册新账号")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "注册成功"),
+            @ApiResponse(responseCode = "400", description = "参数错误或邮箱已存在"),
+            @ApiResponse(responseCode = "429", description = "请求过于频繁")
+    })
+    @Resilience4jRateLimit(limitForPeriod = 3, refreshPeriodSeconds = 600, message = "注册请求过于频繁，请10分钟后再试")
     @PostMapping("/register")
-    public GlobalResult<Boolean> register(@RequestBody RegisterInfo registerInfo) throws AccountExistsException {
+    public GlobalResult<Boolean> register(
+            @Parameter(description = "注册信息", required = true)
+            @Valid @RequestBody RegisterInfo registerInfo) throws AccountExistsException {
         boolean flag = authService.register(registerInfo.getEmail(), registerInfo.getNickname(), registerInfo.getPassword(), registerInfo.getCode());
         return GlobalResult.success(flag);
     }

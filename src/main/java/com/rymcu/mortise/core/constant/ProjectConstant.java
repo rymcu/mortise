@@ -6,10 +6,7 @@ package com.rymcu.mortise.core.constant;
  * @author ronger
  */
 public final class ProjectConstant {
-    /**
-     * 当前环境
-     */
-    public static final String ENV = "dev";
+    
     /**
      * 项目基础包名称，根据自己公司的项目修改
      */

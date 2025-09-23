@@ -27,14 +27,33 @@ spring:
     driver-class-name: org.postgresql.Driver
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
-      connection-timeout: 30000
-      idle-timeout: 600000
-      max-lifetime: 1800000
-      maximum-pool-size: 10
-      minimum-idle: 5
+      # 连接相关配置
+      connection-timeout: 20000          # 连接超时时间(ms) - 降低到20秒
+      idle-timeout: 300000               # 空闲连接超时时间(ms) - 5分钟
+      max-lifetime: 1200000              # 连接最大生命周期(ms) - 20分钟
+      maximum-pool-size: 20              # 最大连接池大小 - 增加到20
+      minimum-idle: 8                    # 最小空闲连接数 - 增加到8
       pool-name: mortisePool
       connection-test-query: SELECT 1
       schema: mortise
+
+      # 性能和监控配置
+      register-mbeans: true              # 启用JMX监控
+      leak-detection-threshold: 30000    # 连接泄露检测阈值(ms) - 30秒
+      validation-timeout: 5000           # 连接验证超时(ms)
+
+      # PostgreSQL 特定优化
+      data-source-properties:
+        cachePrepStmts: true             # 启用预编译语句缓存
+        prepStmtCacheSize: 250           # 预编译语句缓存大小
+        prepStmtCacheSqlLimit: 2048      # 预编译语句最大长度
+        useServerPrepStmts: true         # 使用服务器端预编译语句
+        useLocalSessionState: true       # 使用本地会话状态
+        rewriteBatchedStatements: true   # 重写批量语句
+        cacheResultSetMetadata: true     # 缓存结果集元数据
+        cacheServerConfiguration: true   # 缓存服务器配置
+        elideSetAutoCommits: true        # 优化自动提交设置
+        maintainTimeStats: false         # 禁用时间统计(性能优化)
   mail:
     host: smtp.ym.163.com
     port: 465
@@ -72,6 +91,128 @@ logging:
   level:
     com:
       rymcu: info
+
+# Spring Boot Actuator 增强配置
+management:
+  endpoints:
+    web:
+      exposure:
+        # 暴露所有监控端点，生产环境建议只暴露必要的端点
+        include: "health,ratelimiters, info"
+        # 排除敏感端点（可根据需要调整）
+        exclude: shutdown
+      base-path: /actuator
+      # 跨域配置
+      cors:
+        allowed-origins: "*"
+        allowed-methods: GET,POST
+  endpoint:
+    # 健康检查详细信息
+    health:
+      show-details: always
+      show-components: always
+      # 健康检查组配置
+      group:
+        readiness:
+          include: db,redis
+        liveness:
+          include: diskSpace,ping
+    # 启用环境信息
+    env:
+      show-values: when-authorized
+    # 配置信息
+    configprops:
+      show-values: when-authorized
+  # 指标配置
+  metrics:
+    enable:
+      # JVM指标
+      jvm: true
+      # 系统指标
+      system: true
+      # Web指标
+      web: true
+      # 数据库指标
+      jdbc: true
+      # 缓存指标
+      cache: true
+    # 自定义标签
+    tags:
+      application: mortise
+      environment: dev
+      version: 0.0.1
+      team: backend
+    # Web指标配置
+    web:
+      server:
+        # 最大URI数量，防止标签爆炸
+        max-uri-tags: 100
+    # 分布追踪配置
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5,0.9,0.95,0.99
+  # 应用信息配置
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+    # Git信息（需要git-commit-id-plugin）
+    git:
+      enabled: true
+      mode: full
+    # 构建信息
+    build:
+      enabled: true
+  # 审计配置
+  auditevents:
+    enabled: true
+  # Prometheus 指标配置
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+# 应用配置
+app:
+  # 限流配置 - 仅使用Resilience4j
+  rate-limit:
+    # Resilience4j限流配置
+    resilience4j:
+      enabled: true
+      health-check-enabled: true
+      default-config:
+        limit-for-period: 10
+        refresh-period-seconds: 1
+        timeout-millis: 100
+      configs:
+        strict:
+          name: "严格限流"
+          description: "严格的限流策略"
+          limit-for-period: 5
+          refresh-period-seconds: 1
+          timeout-millis: 50
+        loose:
+          name: "宽松限流"
+          description: "宽松的限流策略"
+          limit-for-period: 50
+          refresh-period-seconds: 1
+          timeout-millis: 200
+
+# 应用信息
+info:
+  app:
+    name: Mortise
+    description: 一款现代化的后台管理脚手架项目
+    version: ${project.version:0.0.1}
+    encoding: ${project.build.sourceEncoding:UTF-8}
+    java:
+      version: ${java.version:21}
+
 server:
   port: 9999
   servlet:
@@ -82,6 +223,13 @@ server:
     min-response-size: 10240
   max-http-request-header-size: 10240
 baseUrl: https://rymcu.local
+
+# JWT 配置
+jwt:
+  secret: ${JWT_SECRET:w0gADMTuedSB1PS4f59vwJaOV7n2fYcAAAAhALwcBo1hcJ8ELdByH/qcmQ1fWKK7}
+  expiration: 3600000  # 1小时，单位毫秒
+  refresh-expiration: 7200000  # 2小时，单位毫秒
+
 dromara:
   x-file-storage: #文件存储配置
     default-platform: local-plus #默认存储平台
@@ -105,8 +253,54 @@ mybatis-flex:
   mapper-locations: classpath*:/mapper/**/*.xml
   type-aliases-package: com.rymcu.mortise.entity
   configuration:
+    # 开启驼峰命名自动映射
     map-underscore-to-camel-case: true
+    # 配置默认的执行器。SIMPLE-普通执行器；REUSE-重用预处理语句；BATCH-批量更新执行器
     default-executor-type: reuse
-    cache-enabled: false
+    # 开启二级缓存
+    cache-enabled: true
+    # 开启延迟加载
+    lazy-loading-enabled: true
+    # 延迟加载的触发方法
+    lazy-load-trigger-methods: equals,clone,hashCode,toString
+    # 当开启时，任何方法的调用都会触发延迟加载对象的完整加载
+    aggressive-lazy-loading: false
+    # 设置超时时间(秒)
+    default-statement-timeout: 30
+    # 设置获取数据的默认条数，提升批量查询性能
+    default-fetch-size: 100
+    # 允许在嵌套语句中使用分页
+    safe-row-bounds-enabled: true
+    # 允许在嵌套语句中使用结果映射
+    safe-result-handler-enabled: true
+    # 开启自动生成主键
+    use-generated-keys: true
+    # 本地缓存机制，防止循环引用和加速重复嵌套查询
+    local-cache-scope: SESSION
   global-config:
+    # 关闭 Banner 打印
     print-banner: false
+    # 逻辑删除配置
+    logic-delete-column: del_flag
+    deleted-value-of-logic-delete: 1
+    normal-value-of-logic-delete: 0
+
+# SpringDoc OpenAPI 配置
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operations-sorter: alpha
+    tags-sorter: alpha
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  group-configs:
+    - group: 'auth'
+      display-name: '认证接口'
+      paths-to-match: '/api/v1/auth/**'
+    - group: 'admin'
+      display-name: '管理接口'
+      paths-to-match: '/api/v1/admin/**'

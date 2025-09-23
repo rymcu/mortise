@@ -1,5 +1,6 @@
 package com.rymcu.mortise.auth;
 
+import com.rymcu.mortise.config.JwtProperties;
 import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.util.SpringContextHolder;
 import io.jsonwebtoken.Claims;
@@ -24,9 +25,10 @@ import java.util.Objects;
 public class JwtUtils {
 
     private static final TokenManager tokenManager = SpringContextHolder.getBean(TokenManager.class);
+    private static final JwtProperties jwtProperties = SpringContextHolder.getBean(JwtProperties.class);
 
     public static SecretKey getSecretKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(JwtConstants.JWT_SECRET);
+        byte[] keyBytes = Decoders.BASE64.decode(jwtProperties.getSecret());
         return Keys.hmacShaKeyFor(keyBytes);
     }
 

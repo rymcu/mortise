@@ -34,7 +34,9 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
             String registrationId = oauth2Auth.getAuthorizedClientRegistrationId();
             if (authentication.getPrincipal() instanceof OidcUser oidcUser) {
                 TokenUser tokenUser = authService.oauth2Login(oidcUser, registrationId);
-                response.sendRedirect("/auth/callback?token=" + tokenUser.getToken() + "&refreshToken=" + tokenUser.getRefreshToken());
+                String redirectUrl = "/auth/callback?token=" + tokenUser.getToken() + 
+                    "&refreshToken=" + tokenUser.getRefreshToken();
+                response.sendRedirect(redirectUrl);
             }
         }
     }

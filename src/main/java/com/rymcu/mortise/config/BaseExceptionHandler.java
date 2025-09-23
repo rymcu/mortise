@@ -2,9 +2,11 @@ package com.rymcu.mortise.config;
 
 import com.rymcu.mortise.core.exception.BusinessException;
 import com.rymcu.mortise.core.exception.CaptchaException;
+import com.rymcu.mortise.core.exception.RateLimitException;
 import com.rymcu.mortise.core.exception.ServiceException;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.core.result.ResultCode;
+import com.rymcu.mortise.util.Utils;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +14,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.validation.BindException;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -19,6 +24,8 @@ import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import javax.security.auth.login.AccountException;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 全局异常处理器
@@ -71,6 +78,18 @@ public class BaseExceptionHandler {
     }
 
     /**
+     * 处理限流异常 (RateLimitException)
+     * HTTP 状态码为 429 (Too Many Requests)
+     */
+    @ExceptionHandler(RateLimitException.class)
+    @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
+    public GlobalResult<Void> handleRateLimitException(RateLimitException ex, HttpServletRequest request) {
+        logger.warn("API限流触发: 客户端IP [{}] 访问 [{}] 超过限制", 
+                    Utils.getIpAddress(), request.getRequestURI());
+        return GlobalResult.error(429, ex.getMessage());
+    }
+
+    /**
      * 处理参数校验相关的异常
      * 如 BusinessException 或 IllegalArgumentException，通常表示客户端传递了非法参数。
      * HTTP 状态码为 400 (Bad Request)。
@@ -80,6 +99,40 @@ public class BaseExceptionHandler {
     public GlobalResult<Void> handleValidationException(Exception ex) {
         logger.warn("参数校验失败: {}", ex.getMessage());
         return GlobalResult.error(ResultCode.INVALID_PARAM.getCode(), ex.getMessage());
+    }
+
+    /**
+     * 处理参数校验异常 (MethodArgumentNotValidException)
+     * 通常由 @RequestBody 的参数校验失败触发
+     */
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public GlobalResult<Void> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
+        List<String> errorMessages = ex.getBindingResult().getFieldErrors()
+                .stream()
+                .map(FieldError::getDefaultMessage)
+                .collect(Collectors.toList());
+        
+        String message = String.join(", ", errorMessages);
+        logger.warn("请求参数校验失败: {}", message);
+        return GlobalResult.error(ResultCode.INVALID_PARAM.getCode(), message);
+    }
+
+    /**
+     * 处理表单参数校验异常 (BindException)
+     * 通常由表单提交的参数校验失败触发
+     */
+    @ExceptionHandler(BindException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public GlobalResult<Void> handleBindException(BindException ex) {
+        List<String> errorMessages = ex.getBindingResult().getFieldErrors()
+                .stream()
+                .map(FieldError::getDefaultMessage)
+                .collect(Collectors.toList());
+        
+        String message = String.join(", ", errorMessages);
+        logger.warn("表单参数校验失败: {}", message);
+        return GlobalResult.error(ResultCode.INVALID_PARAM.getCode(), message);
     }
 
     /**
@@ -124,10 +177,10 @@ public class BaseExceptionHandler {
             logMessage = String.format("未捕获异常: 请求 [%s %s] 在 [%s#%s] 中发生错误.",
                     method, requestUri, controller, controllerMethod);
         } else {
-            logMessage = String.format("未捕获异常: 请求 [%s %s] 发生未知位置的错误.", method, requestUri);
+            logMessage = String.format("未捕获异常: 请求 [%s %s] 发生未知位置的错误.", 
+                    method, requestUri);
         }
         // 使用ERROR级别记录，并附带完整的异常堆栈
         logger.error(logMessage, ex);
     }
-
 }

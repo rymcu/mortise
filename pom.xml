@@ -20,6 +20,17 @@
         <shiro.version>2.0.2</shiro.version>
         <jjwt.version>0.12.5</jjwt.version>
         <mockito.version>5.11.0</mockito.version>
+        <commons-lang3.version>3.18.0</commons-lang3.version>
+        <commons-io.version>2.18.0</commons-io.version>
+        <commons-codec.version>1.16.1</commons-codec.version>
+        <commons-text.version>1.13.1</commons-text.version>
+        <commons-collections4.version>4.4</commons-collections4.version>
+        <ulid-creator.version>5.2.3</ulid-creator.version>
+        <jasypt.version>3.0.5</jasypt.version>
+        <mybatis-flex.version>1.11.0</mybatis-flex.version>
+        <bizlog.version>3.0.6</bizlog.version>
+        <jedis-lock.version>1.0.0</jedis-lock.version>
+        <x-file-storage.version>2.2.1</x-file-storage.version>
     </properties>
     <dependencies>
         <dependency>
@@ -101,11 +112,21 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-aop</artifactId>
         </dependency>
+        <!-- Spring Boot Actuator 用于监控和管理应用 -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!-- Micrometer 用于指标收集 -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
+        </dependency>
         <!-- MybatisFlex 插件 -->
         <dependency>
             <groupId>com.mybatis-flex</groupId>
             <artifactId>mybatis-flex-spring-boot3-starter</artifactId>
-            <version>1.11.0</version>
+            <version>${mybatis-flex.version}</version>
         </dependency>
         <dependency>
             <groupId>com.zaxxer</groupId>
@@ -194,11 +215,11 @@
             <artifactId>jedis-lock</artifactId>
             <version>1.0.0</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.dromara.x-file-storage/x-file-storage-spring -->
+        <!-- X-File-Storage 文件存储 -->
         <dependency>
             <groupId>org.dromara.x-file-storage</groupId>
             <artifactId>x-file-storage-spring</artifactId>
-            <version>2.2.1</version>
+            <version>${x-file-storage.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.apache.commons</groupId>
@@ -210,18 +231,42 @@
                 </exclusion>
             </exclusions>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.liquibase/liquibase-core -->
+
+        <!-- OpenAPI 3.0 文档生成 -->
         <dependency>
-            <groupId>org.liquibase</groupId>
-            <artifactId>liquibase-core</artifactId>
-            <version>4.31.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-text</artifactId>
-                </exclusion>
-            </exclusions>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>2.6.0</version>
         </dependency>
+
+        <!-- Resilience4j 弹性工程库 -->
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-spring-boot3</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-ratelimiter</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-micrometer</artifactId>
+            <version>2.2.0</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.liquibase/liquibase-core -->
+<!--        <dependency>-->
+<!--            <groupId>org.liquibase</groupId>-->
+<!--            <artifactId>liquibase-core</artifactId>-->
+<!--            <version>4.31.1</version>-->
+<!--            <exclusions>-->
+<!--                <exclusion>-->
+<!--                    <groupId>org.apache.commons</groupId>-->
+<!--                    <artifactId>commons-text</artifactId>-->
+<!--                </exclusion>-->
+<!--            </exclusions>-->
+<!--        </dependency>-->
 
 
     </dependencies>
@@ -259,6 +304,16 @@
             </resource>
         </resources>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.14.0</version>
+                <configuration>
+                    <source>21</source>
+                    <target>21</target>
+                    <release>21</release>
+                </configuration>
+            </plugin>
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
