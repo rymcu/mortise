@@ -31,4 +31,6 @@ public interface MenuService extends IService<Menu> {
     Boolean updateDelFlag(Long idMenu, Integer delFlag);
 
     Menu findById(Long idMenu);
+
+    List<Link> findMenuTree(MenuSearch search);
 }

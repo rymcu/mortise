@@ -3,10 +3,14 @@ package com.rymcu.mortise.web;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.entity.Menu;
 import com.rymcu.mortise.enumerate.DelFlag;
+import com.rymcu.mortise.model.Link;
+import com.rymcu.mortise.model.MenuSearch;
 import com.rymcu.mortise.service.MenuService;
 import jakarta.annotation.Resource;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * Created on 2024/8/10 17:28.
@@ -32,12 +36,12 @@ public class MenuController {
         return GlobalResult.success(menuService.findById(idMenu));
     }
 
-    @PostMapping("/menu/post")
+    @PostMapping("/post")
     public GlobalResult<Boolean> addMenu(@RequestBody Menu menu) {
         return GlobalResult.success(menuService.saveMenu(menu));
     }
 
-    @PutMapping("/menu/post")
+    @PutMapping("/post")
     public GlobalResult<Boolean> updateMenu(@RequestBody Menu menu) {
         return GlobalResult.success(menuService.saveMenu(menu));
     }
@@ -45,5 +49,11 @@ public class MenuController {
     @DeleteMapping("/update-del-flag")
     public GlobalResult<Boolean> updateDelFlag(Long idMenu) {
         return GlobalResult.success(menuService.updateDelFlag(idMenu, DelFlag.DELETED.ordinal()));
+    }
+
+    @GetMapping("/tree")
+    public GlobalResult<List<Link>> tree(MenuSearch search) {
+        List<Link> menus = menuService.findMenuTree(search);
+        return GlobalResult.success(menus);
     }
 }

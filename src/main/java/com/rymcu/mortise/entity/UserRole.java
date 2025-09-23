@@ -3,8 +3,10 @@ package com.rymcu.mortise.entity;
 import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
+import java.io.Serializable;
+
 /**
- * Created on 2025/7/23 10:04.
+ * Created on 2025/7/22 22:33.
  *
  * @author ronger
  * @email ronger-x@outlook.com
@@ -12,7 +14,7 @@ import lombok.Data;
  */
 @Table(value = "mortise_user_role", schema = "mortise")
 @Data
-public class UserRole {
+public class UserRole implements Serializable {
 
     private Long idMortiseUser;
 

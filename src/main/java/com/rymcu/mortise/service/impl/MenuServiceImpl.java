@@ -102,6 +102,22 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         return mapper.selectOneById(idMenu);
     }
 
+    @Override
+    public List<Link> findMenuTree(MenuSearch search) {
+        return findMenuTreeMode(search.getParentId());
+    }
+
+    private List<Link> findMenuTreeMode(Long parentId) {
+        List<Menu> menus = mapper.selectMenuListByParentId(parentId);
+        List<Link> links = new ArrayList<>();
+        for (Menu menu : menus) {
+            Link link = convertLink(menu);
+            link.setChildren(findMenuTreeMode(menu.getId()));
+            links.add(link);
+        }
+        return links;
+    }
+
     private List<Link> findLinkTreeMode(Long idUser, long parentId) {
         List<Menu> menus = mapper.selectMenuListByIdUserAndParentId(idUser, parentId);
         List<Link> links = new ArrayList<>();
