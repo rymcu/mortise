@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mzt.logapi.context.LogRecordContext;
 import com.mzt.logapi.starter.annotation.LogRecord;
+import com.rymcu.mortise.annotation.Resilience4jRateLimit;
 import com.rymcu.mortise.auth.TokenManager;
 import com.rymcu.mortise.core.exception.AccountExistsException;
 import com.rymcu.mortise.core.exception.ServiceException;
@@ -13,7 +14,6 @@ import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.model.*;
 import com.rymcu.mortise.service.AuthService;
 import com.rymcu.mortise.util.UserUtils;
-import com.rymcu.mortise.annotation.Resilience4jRateLimit;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -30,7 +30,7 @@ import java.util.Objects;
 
 /**
  * 认证控制器
- * 
+ *
  * @author ronger
  */
 @Tag(name = "认证管理", description = "用户认证相关接口")

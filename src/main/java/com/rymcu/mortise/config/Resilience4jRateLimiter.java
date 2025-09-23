@@ -4,6 +4,7 @@ import com.rymcu.mortise.core.exception.RateLimitException;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -50,7 +51,7 @@ public class Resilience4jRateLimiter {
         // 尝试获取许可
         boolean permitted = rateLimiter.acquirePermission();
         if (!permitted) {
-            log.warn("Resilience4j限流触发: key={}, limitForPeriod={}, refreshPeriod={}s", 
+            log.warn("Resilience4j限流触发: key={}, limitForPeriod={}, refreshPeriod={}s",
                     key, limitForPeriod, refreshPeriod);
             throw new RateLimitException(errorMessage);
         }
@@ -69,7 +70,7 @@ public class Resilience4jRateLimiter {
      * @param errorMessage   错误消息
      * @return 执行结果
      */
-    public <T> T executeWithRateLimit(String key, int limitForPeriod, long refreshPeriod, 
+    public <T> T executeWithRateLimit(String key, int limitForPeriod, long refreshPeriod,
                                      long timeout, Supplier<T> supplier, String errorMessage) {
         RateLimiter rateLimiter = getRateLimiter(key, limitForPeriod, refreshPeriod, timeout);
 
@@ -79,7 +80,7 @@ public class Resilience4jRateLimiter {
         try {
             return decoratedSupplier.get();
         } catch (io.github.resilience4j.ratelimiter.RequestNotPermitted e) {
-            log.warn("Resilience4j限流触发: key={}, limitForPeriod={}, refreshPeriod={}s", 
+            log.warn("Resilience4j限流触发: key={}, limitForPeriod={}, refreshPeriod={}s",
                     key, limitForPeriod, refreshPeriod);
             throw new RateLimitException(errorMessage);
         }
@@ -126,7 +127,9 @@ public class Resilience4jRateLimiter {
     /**
      * 限流器状态
      */
+    @Getter
     public static class RateLimiterStatus {
+        // Getters
         private String name;
         private int availablePermissions;
         private int numberOfWaitingThreads;
@@ -134,11 +137,6 @@ public class Resilience4jRateLimiter {
         public static RateLimiterStatusBuilder builder() {
             return new RateLimiterStatusBuilder();
         }
-
-        // Getters
-        public String getName() { return name; }
-        public int getAvailablePermissions() { return availablePermissions; }
-        public int getNumberOfWaitingThreads() { return numberOfWaitingThreads; }
 
         public static class RateLimiterStatusBuilder {
             private String name;

@@ -22,21 +22,7 @@ import java.util.concurrent.ThreadPoolExecutor;
 public class ApplicationStartupConfig {
 
     /**
-     * 应用启动监听器
-     */
-    @Bean
-    public ApplicationListener<ApplicationStartingEvent> applicationStartingListener() {
-        return event -> {
-            long startTime = System.currentTimeMillis();
-            log.info("应用开始启动: {}", new java.util.Date(startTime));
-
-            // 记录启动时间到系统属性，用于后续计算启动耗时
-            System.setProperty("app.start.time", String.valueOf(startTime));
-        };
-    }
-
-    /**
-     * 应用就绪监听器
+     * 应用就绪监听器 - 这个可以正常工作，因为在容器初始化后触发
      */
     @Bean
     public ApplicationListener<ApplicationReadyEvent> applicationReadyListener() {
@@ -47,7 +33,7 @@ public class ApplicationStartupConfig {
                 long readyTime = System.currentTimeMillis();
                 long startupTime = readyTime - startTime;
 
-                log.info("应用启动完成！总耗时: {} ms ({}s)", startupTime, startupTime / 1000.0);
+                log.info("✅ 应用启动完成！总耗时: {} ms ({}s)", startupTime, startupTime / 1000.0);
 
                 // 输出运行环境信息
                 logRuntimeInfo();
@@ -75,7 +61,7 @@ public class ApplicationStartupConfig {
         executor.setCorePoolSize(corePoolSize);
         executor.setMaxPoolSize(maxPoolSize);
         executor.setQueueCapacity(queueCapacity);
-        executor.setThreadNamePrefix("mortise-async-");
+        executor.setThreadNamePrefix("mortise-async-executor");
         executor.setKeepAliveSeconds(60);
 
         // 拒绝策略：由调用线程处理该任务

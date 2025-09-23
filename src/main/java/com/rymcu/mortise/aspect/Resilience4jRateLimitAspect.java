@@ -1,6 +1,7 @@
-package com.rymcu.mortise.config;
+package com.rymcu.mortise.aspect;
 
 import com.rymcu.mortise.annotation.Resilience4jRateLimit;
+import com.rymcu.mortise.config.Resilience4jRateLimiter;
 import com.rymcu.mortise.core.exception.RateLimitException;
 import com.rymcu.mortise.util.Utils;
 import lombok.extern.slf4j.Slf4j;
