@@ -7,8 +7,8 @@
 ```powershell
 # 步骤1：登录获取Token
 $loginData = @{
-    account = "ronger@rymcu.com"
-    password = "XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl"
+    account = "your_account"
+    password = "your_password"
 } | ConvertTo-Json
 $loginResponse = Invoke-RestMethod -Uri "http://localhost:9999/mortise/api/v1/auth/login" -Method POST -ContentType "application/json" -Body $loginData
 $token = $loginResponse.data.token
@@ -18,11 +18,6 @@ $headers = @{"Authorization" = "Bearer $token"}
 Invoke-RestMethod -Uri "http://localhost:9999/mortise/actuator/health" -Method GET -Headers $headers
 Invoke-RestMethod -Uri "http://localhost:9999/mortise/actuator/info" -Method GET -Headers $headers
 Invoke-RestMethod -Uri "http://localhost:9999/mortise/actuator/metrics" -Method GET -Headers $headers
-```
-
-或者直接运行测试脚本：
-```powershell
-.\docs\test-actuator.ps1
 ```
 
 ## 概述
@@ -77,8 +72,8 @@ http://localhost:9999/mortise/actuator
 ```powershell
 # 使用实际凭据登录
 $loginData = @{
-    account = "ronger@rymcu.com"
-    password = "XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl"
+    account = "your_account"
+    password = "your_password"
 } | ConvertTo-Json
 
 $loginResponse = Invoke-RestMethod -Uri "http://localhost:9999/mortise/api/v1/auth/login" -Method POST -ContentType "application/json" -Body $loginData
@@ -101,7 +96,7 @@ if ($loginResponse.code -eq 200) {
 # 登录获取Token  
 TOKEN=$(curl -X POST http://localhost:9999/mortise/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"account":"ronger@rymcu.com","password":"XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl"}' \
+  -d '{"account":"your_account","password":"your_password"}' \
   | jq -r '.data.token')
 
 # 使用Token访问Actuator
@@ -239,7 +234,7 @@ Authorization: Bearer <your_jwt_token>
 # 先获取Token
 curl -X POST http://localhost:9999/mortise/api/v1/auth/login \
   -H "Content-Type: application/json" \
-  -d '{"username":"your_username","password":"your_password"}'
+  -d '{"account":"your_account","password":"your_password"}'
 
 # 使用Token访问Actuator
 curl -X GET http://localhost:9999/mortise/actuator/health \
@@ -254,7 +249,7 @@ curl -X GET http://localhost:9999/mortise/actuator/prometheus \
 ```powershell
 # 获取Token
 $loginData = @{
-    username = "your_username"
+    account = "your_account"
     password = "your_password"
 } | ConvertTo-Json
 
@@ -278,7 +273,7 @@ Invoke-RestMethod -Uri "http://localhost:9999/mortise/actuator/health" -Method G
 1. **获取Token**:
    - 创建POST请求: `http://localhost:9999/mortise/api/v1/auth/login`
    - Headers: `Content-Type: application/json`
-   - Body (raw JSON): `{"username":"your_username","password":"your_password"}`
+   - Body (raw JSON): `{"account":"your_account","password":"your_password"}`
    - 发送请求，复制响应中的 `access_token`
 
 2. **访问Actuator**:
