@@ -177,31 +177,40 @@ management:
       export:
         enabled: true
 
-# 应用配置
-app:
-  # 限流配置 - 仅使用Resilience4j
-  rate-limit:
-    # Resilience4j限流配置
-    resilience4j:
-      enabled: true
-      health-check-enabled: true
-      default-config:
+# Resilience4j 标准配置
+resilience4j:
+  ratelimiter:
+    configs:
+      default:
         limit-for-period: 10
-        refresh-period-seconds: 1
-        timeout-millis: 100
-      configs:
-        strict:
-          name: "严格限流"
-          description: "严格的限流策略"
-          limit-for-period: 5
-          refresh-period-seconds: 1
-          timeout-millis: 50
-        loose:
-          name: "宽松限流"
-          description: "宽松的限流策略"
-          limit-for-period: 50
-          refresh-period-seconds: 1
-          timeout-millis: 200
+        limit-refresh-period: 1s
+        timeout-duration: 100ms
+        register-health-indicator: true
+        event-consumer-buffer-size: 50
+      strict:
+        limit-for-period: 5
+        limit-refresh-period: 1s
+        timeout-duration: 50ms
+        register-health-indicator: true
+        event-consumer-buffer-size: 50
+      loose:
+        limit-for-period: 50
+        limit-refresh-period: 1s
+        timeout-duration: 200ms
+        register-health-indicator: true
+        event-consumer-buffer-size: 50
+    instances:
+      # 预定义一些限流器实例，这样 actuator 就能看到它们
+      auth-login:
+        base-config: strict
+        limit-for-period: 5
+        limit-refresh-period: 300s
+      auth-register:
+        base-config: strict
+        limit-for-period: 3
+        limit-refresh-period: 600s
+      api-default:
+        base-config: default
 
 # 应用信息
 info:

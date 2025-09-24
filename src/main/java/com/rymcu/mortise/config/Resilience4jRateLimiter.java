@@ -4,9 +4,7 @@ import com.rymcu.mortise.core.exception.RateLimitException;
 import io.github.resilience4j.ratelimiter.RateLimiter;
 import io.github.resilience4j.ratelimiter.RateLimiterConfig;
 import io.github.resilience4j.ratelimiter.RateLimiterRegistry;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
 
 import java.time.Duration;
 import java.util.Optional;
@@ -19,11 +17,16 @@ import java.util.function.Supplier;
  * @author ronger
  */
 @Slf4j
-@Component
 public class Resilience4jRateLimiter {
 
     private final RateLimiterRegistry rateLimiterRegistry;
 
+    public Resilience4jRateLimiter(RateLimiterRegistry rateLimiterRegistry) {
+        // 使用注入的 RateLimiterRegistry（Spring Boot 自动配置）
+        this.rateLimiterRegistry = rateLimiterRegistry;
+    }
+
+    // 后备构造函数（如果没有注入 RateLimiterRegistry）
     public Resilience4jRateLimiter() {
         // 默认配置
         RateLimiterConfig defaultConfig = RateLimiterConfig.custom()
@@ -51,12 +54,12 @@ public class Resilience4jRateLimiter {
         // 尝试获取许可
         boolean permitted = rateLimiter.acquirePermission();
         if (!permitted) {
-            log.warn("Resilience4j限流触发: key={}, limitForPeriod={}, refreshPeriod={}s",
+            log.warn("Resilience4j 限流触发: key={}, limitForPeriod={}, refreshPeriod={}s",
                     key, limitForPeriod, refreshPeriod);
             throw new RateLimitException(errorMessage);
         }
 
-        log.debug("Resilience4j限流检查通过: key={}", key);
+        log.debug("Resilience4j 限流检查通过: key={}", key);
     }
 
     /**
@@ -71,7 +74,7 @@ public class Resilience4jRateLimiter {
      * @return 执行结果
      */
     public <T> T executeWithRateLimit(String key, int limitForPeriod, long refreshPeriod,
-                                     long timeout, Supplier<T> supplier, String errorMessage) {
+                                      long timeout, Supplier<T> supplier, String errorMessage) {
         RateLimiter rateLimiter = getRateLimiter(key, limitForPeriod, refreshPeriod, timeout);
 
         // 使用装饰器模式
@@ -80,7 +83,7 @@ public class Resilience4jRateLimiter {
         try {
             return decoratedSupplier.get();
         } catch (io.github.resilience4j.ratelimiter.RequestNotPermitted e) {
-            log.warn("Resilience4j限流触发: key={}, limitForPeriod={}, refreshPeriod={}s",
+            log.warn("Resilience4j（装饰器模式）限流触发: key={}, limitForPeriod={}, refreshPeriod={}s",
                     key, limitForPeriod, refreshPeriod);
             throw new RateLimitException(errorMessage);
         }
@@ -109,11 +112,11 @@ public class Resilience4jRateLimiter {
         RateLimiter rateLimiter = rateLimiterOpt.get();
         RateLimiter.Metrics metrics = rateLimiter.getMetrics();
 
-        return RateLimiterStatus.builder()
-                .name(key)
-                .availablePermissions(metrics.getAvailablePermissions())
-                .numberOfWaitingThreads(metrics.getNumberOfWaitingThreads())
-                .build();
+        return new RateLimiterStatus(
+                key,
+                metrics.getAvailablePermissions(),
+                metrics.getNumberOfWaitingThreads()
+        );
     }
 
     /**
@@ -121,50 +124,20 @@ public class Resilience4jRateLimiter {
      */
     public void removeRateLimiter(String key) {
         rateLimiterRegistry.remove(key);
-        log.debug("移除Resilience4j限流器: key={}", key);
+        log.debug("移除 Resilience4j 限流器: key={}", key);
     }
 
     /**
      * 限流器状态
      */
-    @Getter
-    public static class RateLimiterStatus {
-        // Getters
-        private String name;
-        private int availablePermissions;
-        private int numberOfWaitingThreads;
+    public record RateLimiterStatus(
+            String name,
+            int availablePermissions,
+            int numberOfWaitingThreads
+    ) {
 
-        public static RateLimiterStatusBuilder builder() {
-            return new RateLimiterStatusBuilder();
-        }
-
-        public static class RateLimiterStatusBuilder {
-            private String name;
-            private int availablePermissions;
-            private int numberOfWaitingThreads;
-
-            public RateLimiterStatusBuilder name(String name) {
-                this.name = name;
-                return this;
-            }
-
-            public RateLimiterStatusBuilder availablePermissions(int availablePermissions) {
-                this.availablePermissions = availablePermissions;
-                return this;
-            }
-
-            public RateLimiterStatusBuilder numberOfWaitingThreads(int numberOfWaitingThreads) {
-                this.numberOfWaitingThreads = numberOfWaitingThreads;
-                return this;
-            }
-
-            public RateLimiterStatus build() {
-                RateLimiterStatus status = new RateLimiterStatus();
-                status.name = this.name;
-                status.availablePermissions = this.availablePermissions;
-                status.numberOfWaitingThreads = this.numberOfWaitingThreads;
-                return status;
-            }
+        public static RateLimiterStatus of(String name, int availablePermissions, int numberOfWaitingThreads) {
+            return new RateLimiterStatus(name, availablePermissions, numberOfWaitingThreads);
         }
     }
 }
