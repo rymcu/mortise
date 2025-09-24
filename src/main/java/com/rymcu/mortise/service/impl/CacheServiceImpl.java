@@ -23,8 +23,6 @@ public class CacheServiceImpl implements CacheService {
     @Resource
     private CacheManager cacheManager;
 
-    private static final String REFRESH_TOKEN_KEY_PREFIX = "auth:refresh_token:";
-
     @Override
     public void storeVerificationCode(String email, String code) {
         Cache cache = cacheManager.getCache(CacheConstant.VERIFICATION_CODE_CACHE);
@@ -65,9 +63,8 @@ public class CacheServiceImpl implements CacheService {
     public void storeRefreshToken(String refreshToken, String account) {
         Cache cache = cacheManager.getCache(CacheConstant.AUTH_REFRESH_TOKEN_CACHE);
         if (cache != null) {
-            String key = REFRESH_TOKEN_KEY_PREFIX + refreshToken;
-            cache.put(key, account);
-            log.debug("存储刷新令牌：{} -> {}", key, account);
+            cache.put(refreshToken, account);
+            log.debug("存储刷新令牌：{} -> {}", refreshToken, account);
         }
     }
 
@@ -75,15 +72,14 @@ public class CacheServiceImpl implements CacheService {
     public String getAccountByRefreshToken(String refreshToken) {
         Cache cache = cacheManager.getCache(CacheConstant.AUTH_REFRESH_TOKEN_CACHE);
         if (cache != null) {
-            String key = REFRESH_TOKEN_KEY_PREFIX + refreshToken;
-            Cache.ValueWrapper wrapper = cache.get(key);
+            Cache.ValueWrapper wrapper = cache.get(refreshToken);
             if (wrapper != null) {
                 String account = (String) wrapper.get();
-                log.debug("获取刷新令牌对应账号：{} -> {}", key, account);
+                log.debug("获取刷新令牌对应账号：{} -> {}", refreshToken, account);
                 return account;
             }
         }
-        log.debug("刷新令牌不存在或已过期：{}", REFRESH_TOKEN_KEY_PREFIX + refreshToken);
+        log.debug("刷新令牌不存在或已过期：{}", refreshToken);
         return null;
     }
 
@@ -91,9 +87,8 @@ public class CacheServiceImpl implements CacheService {
     public void removeRefreshToken(String refreshToken) {
         Cache cache = cacheManager.getCache(CacheConstant.AUTH_REFRESH_TOKEN_CACHE);
         if (cache != null) {
-            String key = REFRESH_TOKEN_KEY_PREFIX + refreshToken;
-            cache.evict(key);
-            log.debug("删除刷新令牌：{}", key);
+            cache.evict(refreshToken);
+            log.debug("删除刷新令牌：{}", refreshToken);
         }
     }
 
@@ -269,15 +264,13 @@ public class CacheServiceImpl implements CacheService {
 
     @Override
     public void storeUserOnlineStatus(String account, String lastOnlineTime) {
-        String key = "last_online:" + account;
-        putString(CacheConstant.USER_ONLINE_STATUS_CACHE, key, lastOnlineTime);
+        putString(CacheConstant.USER_ONLINE_STATUS_CACHE, account, lastOnlineTime);
         log.debug("存储用户在线状态：{} -> {}", account, lastOnlineTime);
     }
 
     @Override
     public String getUserOnlineStatus(String account) {
-        String key = "last_online:" + account;
-        String lastOnlineTime = getString(CacheConstant.USER_ONLINE_STATUS_CACHE, key);
+        String lastOnlineTime = getString(CacheConstant.USER_ONLINE_STATUS_CACHE, account);
         log.debug("获取用户在线状态：{} -> {}", account, lastOnlineTime != null ? lastOnlineTime : "不存在");
         return lastOnlineTime;
     }
