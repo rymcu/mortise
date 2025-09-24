@@ -244,11 +244,12 @@ dromara:
 executor:
   thread:
     async:
-      corePoolSize: 10
-      maxPoolSize: 200
-      queueCapacity: 25
+      corePoolSize: 4 # 可以根据 CPU 核心数来估算
+      maxPoolSize: 8 # 通常设置为 corePoolSize 的 2-3 倍
+      queueCapacity: 100 # 根据内存和业务容忍度选择
+      keepAliveSeconds: 60
       name:
-        prefix: mortise-executor-
+        prefix: mortise-async-executor
 mybatis-flex:
   mapper-locations: classpath*:/mapper/**/*.xml
   type-aliases-package: com.rymcu.mortise.entity

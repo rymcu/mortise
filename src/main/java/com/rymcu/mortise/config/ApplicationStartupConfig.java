@@ -1,15 +1,10 @@
 package com.rymcu.mortise.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.task.TaskExecutionAutoConfiguration;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-
-import java.util.concurrent.ThreadPoolExecutor;
 
 /**
  * 应用启动和异步任务优化配置
@@ -38,41 +33,6 @@ public class ApplicationStartupConfig {
                 logRuntimeInfo();
             }
         };
-    }
-
-    /**
-     * 优化的异步任务执行器
-     */
-    @Bean(TaskExecutionAutoConfiguration.APPLICATION_TASK_EXECUTOR_BEAN_NAME)
-    public TaskExecutor asyncTaskExecutor() {
-        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
-
-        // 核心线程数 = CPU核心数
-        int corePoolSize = Runtime.getRuntime().availableProcessors();
-        // 最大线程数 = CPU核心数 * 2
-        int maxPoolSize = corePoolSize * 2;
-        // 队列容量
-        int queueCapacity = 100;
-
-        executor.setCorePoolSize(corePoolSize);
-        executor.setMaxPoolSize(maxPoolSize);
-        executor.setQueueCapacity(queueCapacity);
-        executor.setThreadNamePrefix("mortise-async-executor");
-        executor.setKeepAliveSeconds(60);
-
-        // 拒绝策略：由调用线程处理该任务
-        executor.setRejectedExecutionHandler(new ThreadPoolExecutor.CallerRunsPolicy());
-
-        // 等待所有任务结束后再关闭线程池
-        executor.setWaitForTasksToCompleteOnShutdown(true);
-        executor.setAwaitTerminationSeconds(60);
-
-        executor.initialize();
-
-        log.info("异步任务执行器初始化完成 - 核心线程数: {}, 最大线程数: {}, 队列容量: {}",
-                corePoolSize, maxPoolSize, queueCapacity);
-
-        return executor;
     }
 
     /**
