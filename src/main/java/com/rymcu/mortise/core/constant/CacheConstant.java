@@ -71,6 +71,26 @@ public final class CacheConstant {
      */
     public static final String TEMP_DATA_CACHE = "tempData";
 
+    /**
+     * 认证令牌缓存名称
+     */
+    public static final String AUTH_TOKEN_CACHE = "authToken";
+
+    /**
+     * 刷新令牌缓存名称
+     */
+    public static final String AUTH_REFRESH_TOKEN_CACHE = "authRefreshToken";
+
+    /**
+     * 验证码缓存名称
+     */
+    public static final String VERIFICATION_CODE_CACHE = "verificationCode";
+
+    /**
+     * 密码重置缓存名称
+     */
+    public static final String PASSWORD_RESET_CACHE = "passwordReset";
+
     // === 缓存过期时间常量（分钟） ===
     /**
      * 默认缓存过期时间 - 30分钟
@@ -127,4 +147,63 @@ public final class CacheConstant {
      * 统计数据过期时间 - 1小时
      */
     public static final int STATISTICS_EXPIRE_HOURS = 1;
+
+    // === 认证相关缓存过期时间 ===
+    /**
+     * 刷新令牌过期时间 - 24小时
+     */
+    public static final int REFRESH_TOKEN_EXPIRE_HOURS = 24;
+
+    /**
+     * 验证码过期时间 - 5分钟
+     */
+    public static final int VERIFICATION_CODE_EXPIRE_MINUTES = 5;
+
+    /**
+     * 密码重置令牌过期时间 - 30分钟
+     */
+    public static final int PASSWORD_RESET_EXPIRE_MINUTES = 30;
+
+    // === 用户业务缓存 ===
+    /**
+     * 账号序列缓存名称
+     */
+    public static final String ACCOUNT_SEQUENCE_CACHE = "accountSequence";
+
+    /**
+     * 账号序列缓存过期时间 - 永不过期（使用系统配置的默认过期时间）
+     */
+    public static final int ACCOUNT_SEQUENCE_EXPIRE_HOURS = 24 * 365; // 1年
+
+    // === JWT Token 相关缓存 ===
+    /**
+     * JWT Token 缓存名称
+     */
+    public static final String JWT_TOKEN_CACHE = "jwtToken";
+
+    /**
+     * 用户在线状态缓存名称
+     */
+    public static final String USER_ONLINE_STATUS_CACHE = "userOnlineStatus";
+
+    /**
+     * JWT Token 过期时间 - 参考JwtConstants.TOKEN_EXPIRES_MINUTE
+     */
+    public static final int JWT_TOKEN_EXPIRE_MINUTES = 30;
+
+    /**
+     * 用户在线状态过期时间 - 参考JwtConstants.LAST_ONLINE_EXPIRES_MINUTE
+     */
+    public static final int USER_ONLINE_STATUS_EXPIRE_MINUTES = 30;
+
+    // === OAuth2 相关缓存 ===
+    /**
+     * OAuth2 授权请求缓存名称
+     */
+    public static final String OAUTH2_AUTHORIZATION_REQUEST_CACHE = "oauth2AuthRequest";
+
+    /**
+     * OAuth2 授权请求过期时间 - 10分钟
+     */
+    public static final int OAUTH2_AUTHORIZATION_REQUEST_EXPIRE_MINUTES = 10;
 }

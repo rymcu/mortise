@@ -1,6 +1,6 @@
 package com.rymcu.mortise.service.impl;
 
-import com.rymcu.mortise.core.constant.ProjectConstant;
+import com.rymcu.mortise.service.CacheService;
 import com.rymcu.mortise.service.JavaMailService;
 import com.rymcu.mortise.util.Utils;
 import jakarta.annotation.Resource;
@@ -8,10 +8,8 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import jakarta.validation.constraints.NotNull;
 import org.apache.commons.lang3.time.StopWatch;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.FileSystemResource;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -24,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created on 2024/4/17 22:58.
@@ -41,8 +38,8 @@ public class JavaMailServiceImpl implements JavaMailService {
      */
     @Resource
     private JavaMailSenderImpl mailSender;
-    @Autowired
-    private StringRedisTemplate redisTemplate;
+    @Resource
+    private CacheService cacheService;
     /**
      * thymeleaf模板引擎
      */
@@ -91,14 +88,16 @@ public class JavaMailServiceImpl implements JavaMailService {
         simpleMailMessage.setFrom(USERNAME);
         simpleMailMessage.setTo(to);
         if (type == 0) {
-            redisTemplate.boundValueOps(ProjectConstant.REDIS_REGISTER + to).set(code, 5, TimeUnit.MINUTES);
+            // 使用缓存服务存储验证码
+            cacheService.storeVerificationCode(to, code);
             simpleMailMessage.setSubject("新用户注册邮箱验证");
             simpleMailMessage.setText("【RYMCU】您的校验码是 " + code + ",有效时间 5 分钟，请不要泄露验证码给其他人。如非本人操作,请忽略！");
             mailSender.send(simpleMailMessage);
             return 1;
         } else if (type == 1) {
             String url = BASE_URL + "/forget-password?code=" + code;
-            redisTemplate.boundValueOps(code).set(ProjectConstant.REDIS_FORGET_PASSWORD + to, 5, TimeUnit.MINUTES);
+            // 使用缓存服务存储密码重置令牌
+            cacheService.storePasswordResetToken(code, to);
 
             String thymeleafTemplatePath = "mail/forgetPasswordTemplate";
             Map<String, Object> thymeleafTemplateVariable = new HashMap<String, Object>(1);

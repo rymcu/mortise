@@ -20,12 +20,12 @@ import com.rymcu.mortise.mapper.MenuMapper;
 import com.rymcu.mortise.mapper.RoleMapper;
 import com.rymcu.mortise.mapper.UserMapper;
 import com.rymcu.mortise.model.*;
+import com.rymcu.mortise.service.CacheService;
 import com.rymcu.mortise.service.UserService;
 import com.rymcu.mortise.util.Utils;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -59,7 +59,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Resource
     private MenuMapper menuMapper;
     @Resource
-    private StringRedisTemplate stringRedisTemplate;
+    private CacheService cacheService;
     @Resource
     private PasswordEncoder passwordEncoder;
     @Resource
@@ -67,7 +67,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     private final static String DEFAULT_AVATAR = "https://static.rymcu.com/article/1578475481946.png";
     private final static String DEFAULT_ACCOUNT = "1411780000";
-    private final static String CURRENT_ACCOUNT_KEY = "current:account";
 
     @Override
     public boolean updateLastOnlineTimeByAccount(String account) {
@@ -94,8 +93,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public String nextAccount() {
-        // 获取当前账号
-        String currentAccount = stringRedisTemplate.boundValueOps(CURRENT_ACCOUNT_KEY).get();
+        // 使用缓存服务获取当前账号
+        String currentAccount = cacheService.getCurrentAccount();
         BigDecimal account;
         if (StringUtils.isNotBlank(currentAccount)) {
             account = BigDecimal.valueOf(Long.parseLong(currentAccount));
@@ -111,7 +110,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             }
         }
         currentAccount = account.add(BigDecimal.ONE).toString();
-        stringRedisTemplate.boundValueOps(CURRENT_ACCOUNT_KEY).set(currentAccount);
+        // 使用缓存服务存储当前账号
+        cacheService.storeCurrentAccount(currentAccount);
         return currentAccount;
     }
 

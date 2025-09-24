@@ -1,6 +1,5 @@
 package com.rymcu.mortise.config;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rymcu.mortise.auth.*;
 import com.rymcu.mortise.handler.event.OidcUserEvent;
 import jakarta.annotation.Resource;
@@ -8,7 +7,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
@@ -53,9 +51,7 @@ public class WebSecurityConfig {
     @Resource
     private ApplicationEventPublisher applicationEventPublisher;
     @Resource
-    private StringRedisTemplate stringRedisTemplate;
-    @Resource
-    private ObjectMapper objectMapper;
+    private CacheAuthorizationRequestRepository cacheAuthorizationRequestRepository;
     @Resource
     private JwtAuthenticationFilter jwtAuthenticationFilter;
     @Resource
@@ -101,7 +97,7 @@ public class WebSecurityConfig {
                         oauth2Login
                                 .authorizationEndpoint(authorization -> authorization.authorizationRequestResolver(
                                                 authorizationRequestResolver(this.clientRegistrationRepository))
-                                        .authorizationRequestRepository(new RedisAuthorizationRequestRepository(this.stringRedisTemplate, this.objectMapper)))
+                                        .authorizationRequestRepository(this.cacheAuthorizationRequestRepository))
                                 .redirectionEndpoint(redirection -> redirection.baseUri("/api/v1/oauth2/code/*"))
                                 .userInfoEndpoint(userInfoEndpoint -> userInfoEndpoint.oidcUserService(oidcUserService()))
                                 .successHandler(oauth2LoginSuccessHandler())

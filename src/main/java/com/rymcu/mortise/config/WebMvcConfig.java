@@ -42,9 +42,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
      */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        // 移除自定义 Swagger UI 资源处理器 - 让 SpringDoc 自动处理
-        // SpringDoc OpenAPI 2.8.13 会自动配置所需的资源处理器
-
         // Webjars 资源 - 使用严格的路径匹配
         registry.addResourceHandler("/webjars/**")
                 .addResourceLocations("classpath:/META-INF/resources/webjars/")
@@ -56,9 +53,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addResourceLocations(ResourceUtils.CLASSPATH_URL_PREFIX + "/static/")
                 .setCachePeriod(3600)
                 .resourceChain(true);
-
-        // 移除 super 调用 - WebMvcConfigurer 是接口，无需调用父类方法
-        // SpringDoc 会自动注册其所需的资源处理器
     }
 
     @Override

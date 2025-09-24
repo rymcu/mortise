@@ -4,7 +4,16 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
+import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import org.springframework.security.jackson2.SecurityJackson2Modules;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
+
+import java.util.List;
 import com.rymcu.mortise.core.constant.CacheConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -93,6 +102,40 @@ public class CacheConfig {
         // 临时数据缓存 - 5 分钟，临时数据短期有效
         configurationMap.put(CacheConstant.TEMP_DATA_CACHE, defaultConfig.entryTtl(Duration.ofMinutes(CacheConstant.TEMP_DATA_EXPIRE_MINUTES)));
 
+        // === 认证相关缓存 ===
+        // 认证令牌缓存 - 30分钟，用于访问令牌
+        configurationMap.put(CacheConstant.AUTH_TOKEN_CACHE, defaultConfig.entryTtl(Duration.ofMinutes(CacheConstant.DEFAULT_EXPIRE_MINUTES)));
+
+        // 刷新令牌缓存 - 24 小时，用于令牌刷新
+        configurationMap.put(CacheConstant.AUTH_REFRESH_TOKEN_CACHE, defaultConfig.entryTtl(Duration.ofHours(CacheConstant.REFRESH_TOKEN_EXPIRE_HOURS)));
+
+        // 验证码缓存 - 5 分钟，验证码短期有效
+        configurationMap.put(CacheConstant.VERIFICATION_CODE_CACHE, defaultConfig.entryTtl(Duration.ofMinutes(CacheConstant.VERIFICATION_CODE_EXPIRE_MINUTES)));
+
+        // 密码重置缓存 - 30 分钟，密码重置链接有效期
+        configurationMap.put(CacheConstant.PASSWORD_RESET_CACHE, defaultConfig.entryTtl(Duration.ofMinutes(CacheConstant.PASSWORD_RESET_EXPIRE_MINUTES)));
+
+        // === 用户业务缓存 ===
+        // 账号序列缓存 - 1年，账号序列需要持久化
+        configurationMap.put(CacheConstant.ACCOUNT_SEQUENCE_CACHE, defaultConfig.entryTtl(Duration.ofHours(CacheConstant.ACCOUNT_SEQUENCE_EXPIRE_HOURS)));
+
+        // === JWT Token 相关缓存 ===
+        // JWT Token 缓存 - 30分钟，用于用户登录状态保持
+        configurationMap.put(CacheConstant.JWT_TOKEN_CACHE, defaultConfig.entryTtl(Duration.ofMinutes(CacheConstant.JWT_TOKEN_EXPIRE_MINUTES)));
+
+        // 用户在线状态缓存 - 30分钟，记录用户最后在线时间
+        configurationMap.put(CacheConstant.USER_ONLINE_STATUS_CACHE, defaultConfig.entryTtl(Duration.ofMinutes(CacheConstant.USER_ONLINE_STATUS_EXPIRE_MINUTES)));
+
+        // === OAuth2 相关缓存 ===
+        // OAuth2 授权请求缓存 - 10分钟，临时存储OAuth2授权流程中的请求数据
+        // 使用专门的OAuth2序列化器，对应 RedisAuthorizationRequestRepository.configureOAuth2ObjectMapper 功能
+        Jackson2JsonRedisSerializer<Object> oauth2Serializer = createOAuth2JacksonSerializer();
+        RedisCacheConfiguration oauth2Config = defaultConfig
+                .entryTtl(Duration.ofMinutes(CacheConstant.OAUTH2_AUTHORIZATION_REQUEST_EXPIRE_MINUTES))
+                .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(oauth2Serializer))
+                .disableCachingNullValues();
+        configurationMap.put(CacheConstant.OAUTH2_AUTHORIZATION_REQUEST_CACHE, oauth2Config);
+
         // 构建缓存管理器
         RedisCacheWriter cacheWriter = RedisCacheWriter.nonLockingRedisCacheWriter(connectionFactory);
 
@@ -124,6 +167,38 @@ public class CacheConfig {
 
         // 使用构造函数传递 ObjectMapper，避免过时的 setObjectMapper 方法
         return new Jackson2JsonRedisSerializer<>(objectMapper, Object.class);
+    }
+
+    /**
+     * 创建专用于OAuth2对象的Jackson序列化器
+     * 对应 RedisAuthorizationRequestRepository.configureOAuth2ObjectMapper 的功能
+     */
+    private Jackson2JsonRedisSerializer<Object> createOAuth2JacksonSerializer() {
+        // 创建多态类型验证器，确保安全反序列化
+        PolymorphicTypeValidator ptv = BasicPolymorphicTypeValidator.builder()
+                .allowIfBaseType(Object.class)
+                .allowIfSubType(OAuth2AuthorizationRequest.class)
+                .build();
+
+        // 使用JsonMapper.builder可以提供更多配置选项
+        ObjectMapper mapper = JsonMapper.builder()
+                .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL)
+                .build();
+
+        // 注册Java 8日期时间模块
+        mapper.registerModule(new JavaTimeModule());
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+
+        // 注册Spring Security的Jackson模块
+        ClassLoader loader = getClass().getClassLoader();
+        List<com.fasterxml.jackson.databind.Module> modules = SecurityJackson2Modules.getModules(loader);
+        mapper.registerModules(modules);
+
+        // 配置其他属性
+        mapper.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+        mapper.configure(com.fasterxml.jackson.databind.DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+
+        return new Jackson2JsonRedisSerializer<>(mapper, Object.class);
     }
 
     /**

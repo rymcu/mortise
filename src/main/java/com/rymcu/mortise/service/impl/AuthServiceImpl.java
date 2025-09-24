@@ -3,9 +3,7 @@ package com.rymcu.mortise.service.impl;
 import com.github.f4b6a3.ulid.UlidCreator;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.update.UpdateChain;
-import com.rymcu.mortise.auth.JwtConstants;
 import com.rymcu.mortise.auth.TokenManager;
-import com.rymcu.mortise.core.constant.ProjectConstant;
 import com.rymcu.mortise.core.exception.AccountExistsException;
 import com.rymcu.mortise.core.exception.BusinessException;
 import com.rymcu.mortise.core.exception.CaptchaException;
@@ -18,6 +16,7 @@ import com.rymcu.mortise.model.AuthInfo;
 import com.rymcu.mortise.model.Link;
 import com.rymcu.mortise.model.TokenUser;
 import com.rymcu.mortise.service.AuthService;
+import com.rymcu.mortise.service.CacheService;
 import com.rymcu.mortise.service.JavaMailService;
 import com.rymcu.mortise.service.MenuService;
 import com.rymcu.mortise.service.UserService;
@@ -30,7 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -46,7 +44,6 @@ import javax.security.auth.login.AccountNotFoundException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 import static com.rymcu.mortise.entity.table.UserTableDef.USER;
 
@@ -70,7 +67,7 @@ public class AuthServiceImpl implements AuthService {
     @Resource
     private TokenManager tokenManager;
     @Resource
-    private StringRedisTemplate stringRedisTemplate;
+    private CacheService cacheService;
     @Resource
     private AuthenticationManager authenticationManager;
     @Resource
@@ -79,17 +76,12 @@ public class AuthServiceImpl implements AuthService {
     private ApplicationEventPublisher applicationEventPublisher;
 
     private final static String DEFAULT_AVATAR = "https://static.rymcu.com/article/1578475481946.png";
-    private static final String REFRESH_TOKEN_KEY_PREFIX = "auth:refresh_token:";
-
-    private String buildRefreshTokenKey(String token) {
-        return REFRESH_TOKEN_KEY_PREFIX + token;
-    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean register(String email, String nickname, String password, String code) throws AccountExistsException {
-        String validateCodeKey = ProjectConstant.REDIS_REGISTER + email;
-        String validateCode = stringRedisTemplate.boundValueOps(validateCodeKey).get();
+        // 使用缓存服务验证验证码
+        String validateCode = cacheService.getVerificationCode(email);
         if (StringUtils.isBlank(validateCode) || !validateCode.equals(code)) {
             throw new CaptchaException();
         }
@@ -104,7 +96,8 @@ public class AuthServiceImpl implements AuthService {
             if (result) {
                 // 注册成功后执行相关初始化事件
                 applicationEventPublisher.publishEvent(new RegisterEvent(user.getId(), user.getAccount(), ""));
-                stringRedisTemplate.delete(validateCodeKey);
+                // 删除已使用的验证码
+                cacheService.removeVerificationCode(email);
                 return true;
             }
             throw new BusinessException(ResultCode.REGISTER_FAIL.getMessage());
@@ -132,13 +125,14 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public TokenUser refreshToken(String refreshToken) {
-        String redisKey = buildRefreshTokenKey(refreshToken);
-        String account = stringRedisTemplate.boundValueOps(redisKey).get();
+        // 使用缓存服务获取刷新令牌对应的账号
+        String account = cacheService.getAccountByRefreshToken(refreshToken);
         if (StringUtils.isNotBlank(account)) {
             User user = userService.findByAccount(account);
             if (Objects.nonNull(user)) {
                 TokenUser tokenUser = generateAndStoreTokens(user);
-                stringRedisTemplate.delete(redisKey);
+                // 删除旧的刷新令牌
+                cacheService.removeRefreshToken(refreshToken);
                 return tokenUser;
             }
         }
@@ -182,7 +176,8 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public boolean forgetPassword(String code, String password) {
-        String email = stringRedisTemplate.boundValueOps(code).get();
+        // 使用缓存服务获取密码重置令牌对应的邮箱
+        String email = cacheService.getEmailByResetToken(code);
         if (StringUtils.isBlank(email)) {
             throw new CaptchaException();
         } else {
@@ -191,7 +186,8 @@ public class AuthServiceImpl implements AuthService {
                     .where(User::getEmail).eq(email)
                     .update();
             if (result) {
-                stringRedisTemplate.delete(code);
+                // 删除已使用的密码重置令牌
+                cacheService.removePasswordResetToken(code);
                 return true;
             }
             throw new BusinessException(ResultCode.UPDATE_PASSWORD_FAIL.getMessage());
@@ -301,13 +297,8 @@ public class AuthServiceImpl implements AuthService {
         String accessToken = tokenManager.createToken(user.getAccount());
         String refreshToken = UlidCreator.getUlid().toString();
 
-        // 刷新令牌存入Redis，使用常量前缀
-        String redisKey = REFRESH_TOKEN_KEY_PREFIX + refreshToken;
-        stringRedisTemplate.boundValueOps(redisKey).set(
-                user.getAccount(),
-                JwtConstants.REFRESH_TOKEN_EXPIRES_HOUR,
-                TimeUnit.HOURS
-        );
+        // 使用缓存服务存储刷新令牌
+        cacheService.storeRefreshToken(refreshToken, user.getAccount());
 
         TokenUser tokenUser = new TokenUser();
         tokenUser.setToken(accessToken);
