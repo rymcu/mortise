@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.impl.LaissezFaireSubTypeValidator;
+import com.rymcu.mortise.core.constant.CacheConstant;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.cache.CacheManager;
@@ -48,49 +49,49 @@ public class CacheConfig {
 
         // 默认缓存配置 - 优化性能和存储
         RedisCacheConfiguration defaultConfig = RedisCacheConfiguration.defaultCacheConfig()
-                .entryTtl(Duration.ofMinutes(30)) // 默认 30 分钟过期
+                .entryTtl(Duration.ofMinutes(CacheConstant.DEFAULT_EXPIRE_MINUTES)) // 默认 30 分钟过期
                 .serializeKeysWith(RedisSerializationContext.SerializationPair.fromSerializer(new StringRedisSerializer()))
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(jackson2JsonRedisSerializer))
                 .disableCachingNullValues() // 不缓存 null 值，避免缓存穿透
-                .prefixCacheNameWith("mortise:cache:") // 统一缓存前缀
-                .computePrefixWith(cacheName -> "mortise:cache:" + cacheName + ":"); // 自定义键前缀
+                .prefixCacheNameWith(CacheConstant.CACHE_NAME_PREFIX) // 统一缓存前缀
+                .computePrefixWith(cacheName -> CacheConstant.CACHE_NAME_PREFIX + cacheName + ":"); // 自定义键前缀
 
         // 针对不同业务场景设置不同的缓存策略
         Map<String, RedisCacheConfiguration> configurationMap = new HashMap<>();
 
         // === 用户相关缓存 ===
         // 用户信息缓存 - 1 小时，用户信息变化不频繁
-        configurationMap.put("userInfo", defaultConfig.entryTtl(Duration.ofHours(1)));
+        configurationMap.put(CacheConstant.USER_INFO_CACHE, defaultConfig.entryTtl(Duration.ofHours(CacheConstant.USER_INFO_EXPIRE_HOURS)));
 
         // 用户会话缓存 - 2 小时，登录状态保持
-        configurationMap.put("userSession", defaultConfig.entryTtl(Duration.ofHours(2)));
+        configurationMap.put(CacheConstant.USER_SESSION_CACHE, defaultConfig.entryTtl(Duration.ofHours(CacheConstant.USER_SESSION_EXPIRE_HOURS)));
 
         // 用户权限缓存 - 30 分钟，权限变化需要及时感知
-        configurationMap.put("userPermissions", defaultConfig.entryTtl(Duration.ofMinutes(30)));
+        configurationMap.put(CacheConstant.USER_PERMISSIONS_CACHE, defaultConfig.entryTtl(Duration.ofMinutes(CacheConstant.USER_PERMISSIONS_EXPIRE_MINUTES)));
 
         // === 权限相关缓存 ===
         // 角色权限缓存 - 2 小时，角色权限相对稳定
-        configurationMap.put("rolePermission", defaultConfig.entryTtl(Duration.ofHours(2)));
+        configurationMap.put(CacheConstant.ROLE_PERMISSION_CACHE, defaultConfig.entryTtl(Duration.ofHours(CacheConstant.ROLE_PERMISSION_EXPIRE_HOURS)));
 
         // 菜单数据缓存 - 4 小时，菜单结构变化不频繁
-        configurationMap.put("menuData", defaultConfig.entryTtl(Duration.ofHours(4)));
+        configurationMap.put(CacheConstant.MENU_DATA_CACHE, defaultConfig.entryTtl(Duration.ofHours(CacheConstant.MENU_DATA_EXPIRE_HOURS)));
 
         // === 系统配置缓存 ===
         // 字典数据缓存 - 12 小时，字典数据变化很少
-        configurationMap.put("dictData", defaultConfig.entryTtl(Duration.ofHours(12)));
+        configurationMap.put(CacheConstant.DICT_DATA_CACHE, defaultConfig.entryTtl(Duration.ofHours(CacheConstant.DICT_DATA_EXPIRE_HOURS)));
 
         // 系统配置缓存 - 6 小时，系统配置相对稳定
-        configurationMap.put("systemConfig", defaultConfig.entryTtl(Duration.ofHours(6)));
+        configurationMap.put(CacheConstant.SYSTEM_CONFIG_CACHE, defaultConfig.entryTtl(Duration.ofHours(CacheConstant.SYSTEM_CONFIG_EXPIRE_HOURS)));
 
         // === 业务数据缓存 ===
         // 热点数据缓存 - 15 分钟，热点数据需要保持较新
-        configurationMap.put("hotData", defaultConfig.entryTtl(Duration.ofMinutes(15)));
+        configurationMap.put(CacheConstant.HOT_DATA_CACHE, defaultConfig.entryTtl(Duration.ofMinutes(CacheConstant.HOT_DATA_EXPIRE_MINUTES)));
 
         // 统计数据缓存 - 1 小时，统计数据可以有一定延迟
-        configurationMap.put("statistics", defaultConfig.entryTtl(Duration.ofHours(1)));
+        configurationMap.put(CacheConstant.STATISTICS_CACHE, defaultConfig.entryTtl(Duration.ofHours(CacheConstant.STATISTICS_EXPIRE_HOURS)));
 
         // 临时数据缓存 - 5 分钟，临时数据短期有效
-        configurationMap.put("tempData", defaultConfig.entryTtl(Duration.ofMinutes(5)));
+        configurationMap.put(CacheConstant.TEMP_DATA_CACHE, defaultConfig.entryTtl(Duration.ofMinutes(CacheConstant.TEMP_DATA_EXPIRE_MINUTES)));
 
         // 构建缓存管理器
         RedisCacheWriter cacheWriter = RedisCacheWriter.nonLockingRedisCacheWriter(connectionFactory);

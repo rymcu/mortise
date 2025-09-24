@@ -2,6 +2,7 @@ package com.rymcu.mortise.aspect;
 
 import com.rymcu.mortise.annotation.Resilience4jRateLimit;
 import com.rymcu.mortise.config.Resilience4jRateLimiter;
+import com.rymcu.mortise.core.constant.RateLimitConstant;
 import com.rymcu.mortise.core.exception.RateLimitException;
 import com.rymcu.mortise.util.Utils;
 import lombok.extern.slf4j.Slf4j;
@@ -43,7 +44,7 @@ public class Resilience4jRateLimitAspect {
     public Object around(ProceedingJoinPoint joinPoint, Resilience4jRateLimit resilience4jRateLimit) throws Throwable {
         String key = generateKey(joinPoint, resilience4jRateLimit);
 
-        log.debug("Resilience4j限流检查开始: key={}, limitForPeriod={}, refreshPeriod={}s",
+        log.debug("Resilience4j 限流检查开始: key={}, limitForPeriod={}, refreshPeriod={}s",
                 key, resilience4jRateLimit.limitForPeriod(), resilience4jRateLimit.refreshPeriodSeconds());
 
         try {
@@ -84,7 +85,7 @@ public class Resilience4jRateLimitAspect {
     }
 
     /**
-     * 生成限流key
+     * 生成限流 key
      */
     private String generateKey(ProceedingJoinPoint joinPoint, Resilience4jRateLimit rateLimit) {
         MethodSignature signature = (MethodSignature) joinPoint.getSignature();
@@ -116,7 +117,7 @@ public class Resilience4jRateLimitAspect {
                 if (StringUtils.hasText(rateLimit.keyExpression())) {
                     keyBuilder.append(evaluateSpelExpression(rateLimit.keyExpression(), joinPoint));
                 } else {
-                    log.warn("CUSTOM keyType指定但keyExpression为空，使用默认IP_AND_METHOD策略");
+                    log.warn(RateLimitConstant.CUSTOM_KEY_TYPE_WARNING_MESSAGE);
                     keyBuilder.append(getClientIp()).append(":").append(className).append(".").append(methodName);
                 }
                 break;
@@ -124,7 +125,7 @@ public class Resilience4jRateLimitAspect {
                 keyBuilder.append(getClientIp()).append(":").append(className).append(".").append(methodName);
         }
 
-        return "resilience4j:rate_limit:" + keyBuilder.toString();
+        return RateLimitConstant.RATE_LIMIT_KEY_PREFIX + keyBuilder;
     }
 
     /**
@@ -135,7 +136,7 @@ public class Resilience4jRateLimitAspect {
         if (attributes != null) {
             return Utils.getIpAddress();
         }
-        return "unknown";
+        return RateLimitConstant.UNKNOWN_IP;
     }
 
     /**
@@ -144,13 +145,13 @@ public class Resilience4jRateLimitAspect {
     private String getCurrentUserId() {
         try {
             var authentication = SecurityContextHolder.getContext().getAuthentication();
-            if (authentication != null && authentication.isAuthenticated() && !"anonymousUser".equals(authentication.getName())) {
+            if (authentication != null && authentication.isAuthenticated() && !RateLimitConstant.ANONYMOUS_USER_NAME.equals(authentication.getName())) {
                 return authentication.getName();
             }
         } catch (Exception e) {
-            log.debug("获取用户ID失败", e);
+            log.debug("获取用户 ID 失败", e);
         }
-        return "anonymous";
+        return RateLimitConstant.ANONYMOUS_USER_ID;
     }
 
     /**
@@ -179,8 +180,8 @@ public class Resilience4jRateLimitAspect {
 
             return parser.parseExpression(expression).getValue(context, String.class);
         } catch (Exception e) {
-            log.error("SpEL表达式执行失败: {}", expression, e);
-            return "spel_error";
+            log.error("SpEL 表达式执行失败: {}", expression, e);
+            return RateLimitConstant.SPEL_ERROR_RESULT;
         }
     }
 
@@ -203,7 +204,7 @@ public class Resilience4jRateLimitAspect {
         } catch (Exception e) {
             log.error("执行降级方法失败: {}", fallbackMethodName, e);
             // 降级失败，抛出原始异常
-            throw new RateLimitException("限流触发且降级方法执行失败", originalException);
+            throw new RateLimitException(RateLimitConstant.FALLBACK_EXECUTION_FAILED_MESSAGE, originalException);
         }
     }
 }
