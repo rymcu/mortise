@@ -83,7 +83,8 @@ public class WebSecurityConfig {
                     authorize.requestMatchers("/api/v1/auth/password/reset").permitAll();
                     authorize.requestMatchers("/api/v1/auth/email/request").permitAll();
                     authorize.requestMatchers("/api/v1/auth/refresh-token").permitAll();
-
+                    // Spring Boot Actuator
+                    authorize.requestMatchers("/actuator/**").permitAll();
                     // 静态资源访问 - 安全配置
                     authorize.requestMatchers("/static/**").permitAll();
                     authorize.requestMatchers("/webjars/**").permitAll();
