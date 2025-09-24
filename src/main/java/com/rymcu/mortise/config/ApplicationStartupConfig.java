@@ -7,7 +7,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * 应用启动和异步任务优化配置
+ * 应用启动设置
  *
  * @author ronger
  */
@@ -46,17 +46,17 @@ public class ApplicationStartupConfig {
         long usedMemory = totalMemory - freeMemory;
 
         log.info("运行环境信息:");
-        log.info("  Java版本: {}", System.getProperty("java.version"));
-        log.info("  JVM厂商: {}", System.getProperty("java.vm.vendor"));
-        log.info("  JVM版本: {}", System.getProperty("java.vm.version"));
+        log.info("  Java 版本: {}", System.getProperty("java.version"));
+        log.info("  JVM 厂商: {}", System.getProperty("java.vm.vendor"));
+        log.info("  JVM 版本: {}", System.getProperty("java.vm.version"));
         log.info("  操作系统: {} {} {}",
                 System.getProperty("os.name"),
                 System.getProperty("os.version"),
                 System.getProperty("os.arch"));
-        log.info("  CPU核心数: {}", Runtime.getRuntime().availableProcessors());
+        log.info("  CPU 核心数: {}", Runtime.getRuntime().availableProcessors());
 
         // 输出 JVM 启动参数
-        log.info("  JVM启动参数:");
+        log.info("  JVM 启动参数:");
         java.lang.management.RuntimeMXBean runtimeBean =
                 java.lang.management.ManagementFactory.getRuntimeMXBean();
         for (String arg : runtimeBean.getInputArguments()) {
@@ -66,10 +66,10 @@ public class ApplicationStartupConfig {
             }
         }
 
-        log.info("  JVM内存信息 (堆内存，非系统物理内存):");
-        log.info("    最大堆内存(-Xmx): {}  MB", maxMemory / 1024 / 1024);
-        log.info("    当前分配堆内存: {} MB", totalMemory / 1024 / 1024);
-        log.info("    已使用堆内存: {} MB", usedMemory / 1024 / 1024);
-        log.info("    堆内可用内存: {} MB", freeMemory / 1024 / 1024);
+        log.info("  JVM 内存信息 (堆内存，非系统物理内存):");
+        log.info("    最大堆内存(-Xmx): {}MB", maxMemory / 1024 / 1024);
+        log.info("    当前分配堆内存: {}MB", totalMemory / 1024 / 1024);
+        log.info("    已使用堆内存: {}MB", usedMemory / 1024 / 1024);
+        log.info("    堆内可用内存: {}MB", freeMemory / 1024 / 1024);
     }
 }
