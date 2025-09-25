@@ -53,7 +53,7 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
     public Boolean saveDict(Dict dict) {
         boolean isUpdate = dict.getId() != null;
         String dictTypeCode = dict.getDictTypeCode();
-        
+
         if (isUpdate) {
             Dict oldDict = mapper.selectOneById(dict.getId());
             if (oldDict == null) {
@@ -61,16 +61,16 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
             }
             // 如果字典类型代码发生变化，需要清除两个类型的缓存
             String oldDictTypeCode = oldDict.getDictTypeCode();
-            
+
             oldDict.setLabel(dict.getLabel());
             oldDict.setValue(dict.getValue());
             oldDict.setSortNo(dict.getSortNo());
             oldDict.setStatus(dict.getStatus());
             oldDict.setUpdatedBy(dict.getUpdatedBy());
             oldDict.setUpdatedTime(dict.getUpdatedTime());
-            
+
             boolean result = mapper.update(oldDict) > 0;
-            
+
             // 清除相关缓存
             if (result) {
                 cacheService.removeDictOptions(dictTypeCode);
@@ -78,37 +78,38 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
                     cacheService.removeDictOptions(oldDictTypeCode);
                 }
             }
-            
+
             return result;
         }
-        
+
         boolean result = mapper.insertSelective(dict) > 0;
-        
+
         // 清除相关缓存
         if (result) {
             cacheService.removeDictOptions(dictTypeCode);
         }
-        
+
         return result;
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Boolean updateStatus(Long idDict, Integer status) {
         // 获取原始记录以确定字典类型代码
         Dict originalDict = mapper.selectOneById(idDict);
         if (originalDict == null) {
             return false;
         }
-        
+
         Dict dict = UpdateEntity.of(Dict.class, idDict);
         dict.setStatus(status);
         boolean result = mapper.update(dict) > 0;
-        
+
         // 清除相关缓存
         if (result) {
             cacheService.removeDictOptions(originalDict.getDictTypeCode());
         }
-        
+
         return result;
     }
 
@@ -119,14 +120,14 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
         if (originalDict == null) {
             return false;
         }
-        
+
         boolean result = mapper.deleteById(idDict) > 0;
-        
+
         // 清除相关缓存
         if (result) {
             cacheService.removeDictOptions(originalDict.getDictTypeCode());
         }
-        
+
         return result;
     }
 
@@ -179,21 +180,21 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
         if (idDictList == null || idDictList.isEmpty()) {
             return false;
         }
-        
+
         // 获取所有受影响记录的字典类型代码
-        List<Dict> affectedDicts = mapper.selectListByIds(idDictList);
-        List<String> affectedDictTypeCodes = affectedDicts.stream()
+        List<Dict> affectedDictionaries = mapper.selectListByIds(idDictList);
+        List<String> affectedDictTypeCodes = affectedDictionaries.stream()
                 .map(Dict::getDictTypeCode)
                 .distinct()
                 .toList();
-        
+
         boolean result = mapper.deleteBatchByIds(idDictList) > 0;
-        
+
         // 清除相关缓存
         if (result && !affectedDictTypeCodes.isEmpty()) {
             cacheService.removeDictOptionsBatch(affectedDictTypeCodes);
         }
-        
+
         return result;
     }
 }

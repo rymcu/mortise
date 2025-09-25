@@ -134,7 +134,7 @@ public class DictController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @DeleteMapping("/batch")
-    public GlobalResult<Boolean> batchDeleteDicts(@Parameter(description = "批量更新信息", required = true) @Valid @RequestBody BatchUpdateInfo batchUpdateInfo) {
+    public GlobalResult<Boolean> batchDeleteDictionaries(@Parameter(description = "批量更新信息", required = true) @Valid @RequestBody BatchUpdateInfo batchUpdateInfo) {
         return GlobalResult.success(dictService.batchUpdateDelFlag(batchUpdateInfo.getIds(), DelFlag.DELETED.ordinal()));
     }
 
