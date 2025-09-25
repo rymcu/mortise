@@ -3,7 +3,7 @@ package com.rymcu.mortise.web.admin;
 import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.entity.Menu;
-import com.rymcu.mortise.enumerate.DelFlag;
+import com.rymcu.mortise.model.BatchUpdateInfo;
 import com.rymcu.mortise.model.Link;
 import com.rymcu.mortise.model.MenuSearch;
 import com.rymcu.mortise.service.MenuService;
@@ -115,7 +115,7 @@ public class MenuController {
     })
     @DeleteMapping("/{id}")
     public GlobalResult<Boolean> deleteMenu(@Parameter(description = "菜单ID", required = true) @PathVariable("id") Long idMenu) {
-        return GlobalResult.success(menuService.updateDelFlag(idMenu, DelFlag.DELETED.ordinal()));
+        return GlobalResult.success(menuService.deleteMenu(idMenu));
     }
 
     @Operation(summary = "获取菜单树", description = "查询菜单树形结构")
@@ -127,5 +127,16 @@ public class MenuController {
     public GlobalResult<List<Link>> getMenuTree(@Parameter(description = "菜单查询条件") @Valid MenuSearch search) {
         List<Link> menus = menuService.findMenuTree(search);
         return GlobalResult.success(menus);
+    }
+
+    @Operation(summary = "批量删除菜单", description = "批量软删除菜单数据")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "删除成功"),
+            @ApiResponse(responseCode = "400", description = "参数错误"),
+            @ApiResponse(responseCode = "403", description = "权限不足")
+    })
+    @DeleteMapping("/batch")
+    public GlobalResult<Boolean> batchDeleteMenus(@Parameter(description = "批量更新信息", required = true) @Valid @RequestBody BatchUpdateInfo batchUpdateInfo) {
+        return GlobalResult.success(menuService.batchDeleteMenus(batchUpdateInfo.getIds()));
     }
 }

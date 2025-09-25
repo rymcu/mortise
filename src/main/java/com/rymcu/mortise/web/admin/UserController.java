@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.core.result.GlobalResult;
-import com.rymcu.mortise.enumerate.DelFlag;
+import com.rymcu.mortise.model.BatchUpdateInfo;
 import com.rymcu.mortise.model.BindUserRoleInfo;
 import com.rymcu.mortise.model.UserInfo;
 import com.rymcu.mortise.model.UserSearch;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 /**
  * 用户管理控制器
- * 提供用户的 CRUD 操作和角色管理
+ * 提供用户的 CRUD 操作和用户管理
  *
  * @author ronger
  * @email ronger-x@outlook.com
@@ -111,7 +111,7 @@ public class UserController {
         return GlobalResult.success(jsonObject);
     }
 
-    @Operation(summary = "绑定用户角色", description = "为用户分配角色")
+    @Operation(summary = "绑定用户用户", description = "为用户分配用户")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "绑定成功"),
             @ApiResponse(responseCode = "400", description = "参数错误"),
@@ -119,7 +119,7 @@ public class UserController {
     })
     @PostMapping("/{id}/roles")
     public GlobalResult<Boolean> bindUserRoles(@Parameter(description = "用户ID", required = true) @PathVariable("id") Long idUser,
-                                              @Parameter(description = "用户角色绑定信息", required = true) @Valid @RequestBody BindUserRoleInfo bindUserRoleInfo) {
+                                              @Parameter(description = "用户用户绑定信息", required = true) @Valid @RequestBody BindUserRoleInfo bindUserRoleInfo) {
         bindUserRoleInfo.setIdUser(idUser);
         return GlobalResult.success(userService.bindUserRole(bindUserRoleInfo));
     }
@@ -132,6 +132,17 @@ public class UserController {
     })
     @DeleteMapping("/{id}")
     public GlobalResult<Boolean> deleteUser(@Parameter(description = "用户ID", required = true) @PathVariable("id") Long idUser) {
-        return GlobalResult.success(userService.updateDelFlag(idUser, DelFlag.DELETED.ordinal()));
+        return GlobalResult.success(userService.deleteUser(idUser));
+    }
+
+    @Operation(summary = "批量删除用户", description = "批量软删除用户数据")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "删除成功"),
+            @ApiResponse(responseCode = "400", description = "参数错误"),
+            @ApiResponse(responseCode = "403", description = "权限不足")
+    })
+    @DeleteMapping("/batch")
+    public GlobalResult<Boolean> batchDeleteUsers(@Parameter(description = "批量更新信息", required = true) @Valid @RequestBody BatchUpdateInfo batchUpdateInfo) {
+        return GlobalResult.success(userService.batchDeleteUsers(batchUpdateInfo.getIds()));
     }
 }

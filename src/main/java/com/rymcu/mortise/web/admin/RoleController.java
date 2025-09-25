@@ -3,7 +3,7 @@ package com.rymcu.mortise.web.admin;
 import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.entity.Role;
-import com.rymcu.mortise.enumerate.DelFlag;
+import com.rymcu.mortise.model.BatchUpdateInfo;
 import com.rymcu.mortise.model.BindRoleMenuInfo;
 import com.rymcu.mortise.model.RoleSearch;
 import com.rymcu.mortise.service.RoleService;
@@ -126,6 +126,17 @@ public class RoleController {
     })
     @DeleteMapping("/{id}")
     public GlobalResult<Boolean> deleteRole(@Parameter(description = "角色ID", required = true) @PathVariable("id") Long idRole) {
-        return GlobalResult.success(roleService.updateDelFlag(idRole, DelFlag.DELETED.ordinal()));
+        return GlobalResult.success(roleService.deleteRole(idRole));
+    }
+
+    @Operation(summary = "批量删除角色", description = "批量软删除角色数据")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "删除成功"),
+            @ApiResponse(responseCode = "400", description = "参数错误"),
+            @ApiResponse(responseCode = "403", description = "权限不足")
+    })
+    @DeleteMapping("/batch")
+    public GlobalResult<Boolean> batchDeleteRoles(@Parameter(description = "批量更新信息", required = true) @Valid @RequestBody BatchUpdateInfo batchUpdateInfo) {
+        return GlobalResult.success(roleService.batchDeleteRoles(batchUpdateInfo.getIds()));
     }
 }

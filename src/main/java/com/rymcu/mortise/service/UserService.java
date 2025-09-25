@@ -4,6 +4,7 @@ import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.service.IService;
 import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.model.*;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -65,7 +66,9 @@ public interface UserService extends IService<User> {
 
     String resetPassword(Long idUser);
 
-    Boolean updateDelFlag(Long idUser, Integer delFlag);
+    Boolean deleteUser(Long idUser);
+
+    Boolean batchDeleteUsers(List<Long> idUserList);
 
     Boolean updateUserProfileInfo(UserProfileInfo userProfileInfo, User user);
 

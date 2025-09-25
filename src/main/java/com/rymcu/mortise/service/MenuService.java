@@ -28,9 +28,11 @@ public interface MenuService extends IService<Menu> {
 
     Boolean updateStatus(Long idMenu, Integer status);
 
-    Boolean updateDelFlag(Long idMenu, Integer delFlag);
+    Boolean deleteMenu(Long idMenu);
 
     Menu findById(Long idMenu);
 
     List<Link> findMenuTree(MenuSearch search);
+
+    Boolean batchDeleteMenus(List<Long> idMenuList);
 }

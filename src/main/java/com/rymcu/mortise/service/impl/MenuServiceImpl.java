@@ -93,8 +93,16 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     }
 
     @Override
-    public Boolean updateDelFlag(Long idMenu, Integer delFlag) {
+    public Boolean deleteMenu(Long idMenu) {
         return mapper.deleteById(idMenu) > 0;
+    }
+
+    @Override
+    public Boolean batchDeleteMenus(List<Long> idMenuList) {
+        if (idMenuList == null || idMenuList.isEmpty()) {
+            return false;
+        }
+        return mapper.deleteBatchByIds(idMenuList) > 0;
     }
 
     @Override

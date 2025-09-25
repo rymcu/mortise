@@ -28,7 +28,9 @@ public interface RoleService {
 
     Set<Long> findRoleMenus(Long idRole);
 
-    Boolean updateDelFlag(Long idRole, Integer delFlag);
+    Boolean deleteRole(Long idRole);
 
     Role findById(Long idRole);
+
+    Boolean batchDeleteRoles(List<Long> idRoleList);
 }

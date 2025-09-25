@@ -97,7 +97,7 @@ public Boolean updateStatus(Long idDict, Integer status) {
 
 **删除字典项**
 ```java
-public Boolean updateDelFlag(Long idDict, Integer delFlag) {
+public Boolean deleteDict(Long idDict) {
     Dict originalDict = mapper.selectOneById(idDict);
     boolean result = mapper.deleteById(idDict) > 0;
     
@@ -112,7 +112,7 @@ public Boolean updateDelFlag(Long idDict, Integer delFlag) {
 
 **批量删除**
 ```java
-public Boolean batchUpdateDelFlag(List<Long> idDictList, Integer delFlag) {
+public Boolean batchDeleteDicts(List<Long> idDictList) {
     // 获取所有受影响记录的字典类型代码
     List<Dict> affectedDicts = mapper.selectListByIds(idDictList);
     List<String> affectedDictTypeCodes = affectedDicts.stream()
@@ -215,7 +215,7 @@ dictService.saveDict(existingDict);
 **场景3：删除字典类型**
 ```java
 // 删除字典类型时自动清除对应的字典项缓存
-dictTypeService.updateDelFlag(1L, 1);
+dictTypeService.deleteDictType(1L);
 ```
 
 ## 缓存配置

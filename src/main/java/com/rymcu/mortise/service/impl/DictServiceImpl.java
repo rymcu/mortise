@@ -114,7 +114,7 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
     }
 
     @Override
-    public Boolean updateDelFlag(Long idDict, Integer delFlag) {
+    public Boolean deleteDict(Long idDict) {
         // 获取原始记录以确定字典类型代码
         Dict originalDict = mapper.selectOneById(idDict);
         if (originalDict == null) {
@@ -176,7 +176,7 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
     }
 
     @Override
-    public Boolean batchUpdateDelFlag(List<Long> idDictList, Integer delFlag) {
+    public Boolean batchDeleteDictionaries(List<Long> idDictList) {
         if (idDictList == null || idDictList.isEmpty()) {
             return false;
         }

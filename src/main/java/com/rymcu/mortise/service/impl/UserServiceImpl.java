@@ -293,8 +293,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public Boolean updateDelFlag(Long idUser, Integer delFlag) {
+    public Boolean deleteUser(Long idUser) {
         return mapper.deleteById(idUser) > 0;
+    }
+
+    @Override
+    public Boolean batchDeleteUsers(List<Long> idUserList) {
+        if (idUserList == null || idUserList.isEmpty()) {
+            return false;
+        }
+        return mapper.deleteBatchByIds(idUserList) > 0;
     }
 
     @Override

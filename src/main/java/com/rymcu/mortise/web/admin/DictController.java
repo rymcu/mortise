@@ -4,7 +4,6 @@ import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.entity.Dict;
 import com.rymcu.mortise.entity.User;
-import com.rymcu.mortise.enumerate.DelFlag;
 import com.rymcu.mortise.model.BaseOption;
 import com.rymcu.mortise.model.BatchUpdateInfo;
 import com.rymcu.mortise.model.DictSearch;
@@ -114,7 +113,7 @@ public class DictController {
     })
     @DeleteMapping("/{id}")
     public GlobalResult<Boolean> deleteDict(@Parameter(description = "字典ID", required = true) @PathVariable("id") Long idDict) {
-        return GlobalResult.success(dictService.updateDelFlag(idDict, DelFlag.DELETED.ordinal()));
+        return GlobalResult.success(dictService.deleteDict(idDict));
     }
 
     @Operation(summary = "获取字典选项", description = "根据字典类型编码获取选项列表")
@@ -135,7 +134,7 @@ public class DictController {
     })
     @DeleteMapping("/batch")
     public GlobalResult<Boolean> batchDeleteDictionaries(@Parameter(description = "批量更新信息", required = true) @Valid @RequestBody BatchUpdateInfo batchUpdateInfo) {
-        return GlobalResult.success(dictService.batchUpdateDelFlag(batchUpdateInfo.getIds(), DelFlag.DELETED.ordinal()));
+        return GlobalResult.success(dictService.batchDeleteDictionaries(batchUpdateInfo.getIds()));
     }
 
 }

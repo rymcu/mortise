@@ -23,7 +23,7 @@ public interface DictService extends IService<Dict> {
 
     Boolean updateStatus(Long idDict, Integer status);
 
-    Boolean updateDelFlag(Long idDict, Integer delFlag);
+    Boolean deleteDict(Long idDict);
 
     Dict findById(Long idDict);
 
@@ -33,5 +33,5 @@ public interface DictService extends IService<Dict> {
 
     List<BaseOption> queryDictOptions(String dictTypeCode);
 
-    Boolean batchUpdateDelFlag(List<Long> idDictList, Integer delFlag);
+    Boolean batchDeleteDictionaries(List<Long> idDictList);
 }

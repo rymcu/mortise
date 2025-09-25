@@ -20,9 +20,9 @@ public interface DictTypeService {
 
     Boolean updateStatus(Long idDictType, Integer status);
 
-    Boolean updateDelFlag(Long idDictType, Integer delFlag);
+    Boolean deleteDictType(Long idDictType);
 
     DictType findById(Long idDictType);
 
-    Boolean batchUpdateDelFlag(List<Long> idDictTypes, Integer delFlag);
+    Boolean batchDeleteDictTypes(List<Long> idDictTypes);
 }

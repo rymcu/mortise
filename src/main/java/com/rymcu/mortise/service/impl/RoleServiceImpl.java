@@ -82,8 +82,16 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     }
 
     @Override
-    public Boolean updateDelFlag(Long idRole, Integer delFlag) {
+    public Boolean deleteRole(Long idRole) {
         return mapper.deleteById(idRole) > 0;
+    }
+
+    @Override
+    public Boolean batchDeleteRoles(List<Long> idRoleList) {
+        if (idRoleList == null || idRoleList.isEmpty()) {
+            return false;
+        }
+        return mapper.deleteBatchByIds(idRoleList) > 0;
     }
 
     @Override

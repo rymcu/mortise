@@ -103,7 +103,7 @@ public class DictTypeServiceImpl extends ServiceImpl<DictTypeMapper, DictType> i
     }
 
     @Override
-    public Boolean updateDelFlag(Long idDictType, Integer delFlag) {
+    public Boolean deleteDictType(Long idDictType) {
         // 获取原始记录以确定字典类型代码
         DictType originalDictType = mapper.selectOneById(idDictType);
         if (originalDictType == null) {
@@ -126,7 +126,7 @@ public class DictTypeServiceImpl extends ServiceImpl<DictTypeMapper, DictType> i
     }
 
     @Override
-    public Boolean batchUpdateDelFlag(List<Long> idDictTypes, Integer delFlag) {
+    public Boolean batchDeleteDictTypes(List<Long> idDictTypes) {
         if (idDictTypes == null || idDictTypes.isEmpty()) {
             return false;
         }

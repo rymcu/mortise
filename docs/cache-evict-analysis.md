@@ -10,14 +10,14 @@
 
 **简单的单键清除**，如：
 - `updateStatus()` - 只需要清除单个 typeCode 的缓存
-- `updateDelFlag()` - 只需要清除单个 typeCode 的缓存
+- `deleteDictType()` - 只需要清除单个 typeCode 的缓存
 - `findById()` - 只读操作，不需要缓存清除
 
 ### 🟡 不适合使用 @CacheEvict 的场景
 
 **复杂的缓存清除逻辑**，如：
 - `saveDictType()` - 更新时可能需要清除两个不同的键（新旧 typeCode）
-- `batchUpdateDelFlag()` - 需要批量清除多个键
+- `batchDeleteDictTypes()` - 需要批量清除多个键
 
 ## 建议的优化方案
 
