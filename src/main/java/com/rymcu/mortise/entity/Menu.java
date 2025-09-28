@@ -5,6 +5,7 @@ import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.mybatisflex.core.keygen.KeyGenerators;
 import com.rymcu.mortise.annotation.DictFormat;
 import lombok.Data;
 
@@ -22,7 +23,7 @@ import java.time.LocalDateTime;
 @Table(value = "mortise_menu", schema = "mortise")
 public class Menu implements Serializable {
 
-    @Id(keyType = KeyType.Auto)
+    @Id(keyType = KeyType.Generator, value = KeyGenerators.flexId)
     private Long id;
 
     /**

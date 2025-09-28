@@ -5,6 +5,7 @@ import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
+import com.mybatisflex.core.keygen.KeyGenerators;
 import com.rymcu.mortise.annotation.DictFormat;
 import lombok.Data;
 
@@ -25,7 +26,7 @@ public class Dict implements Serializable {
     /**
      * 主键
      */
-    @Id(keyType = KeyType.Auto)
+    @Id(keyType = KeyType.Generator, value = KeyGenerators.flexId)
     private Long id;
     /**
      * 代码
