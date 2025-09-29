@@ -34,7 +34,7 @@ import java.security.NoSuchAlgorithmException;
 @RestController
 @RequestMapping("/api/v1/files")
 @PreAuthorize("isAuthenticated()")
-public class UploadController {
+public class FileController {
 
     @Resource
     private UploadService uploadService;
@@ -96,7 +96,7 @@ public class UploadController {
     })
     @DeleteMapping
     @Transactional(rollbackFor = Exception.class)
-    public GlobalResult<ObjectNode> deleteFile(@Parameter(description = "文件URL", required = true) @RequestParam("url") @NotBlank(message = "文件URL不能为空") String url) throws NoSuchAlgorithmException {
+    public GlobalResult<ObjectNode> deleteFile(@Parameter(description = "文件URL", required = true) @RequestParam("url") @NotBlank(message = "文件URL不能为空") String url) {
         uploadService.deleteFile(url);
 
         ObjectMapper objectMapper = new ObjectMapper();

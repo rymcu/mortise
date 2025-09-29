@@ -10,17 +10,14 @@ import com.mybatisflex.core.util.UpdateEntity;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.core.exception.BusinessException;
 import com.rymcu.mortise.core.result.ResultCode;
-import com.rymcu.mortise.entity.Menu;
-import com.rymcu.mortise.entity.Role;
 import com.rymcu.mortise.entity.User;
 import com.rymcu.mortise.entity.UserRole;
 import com.rymcu.mortise.handler.event.RegisterEvent;
 import com.rymcu.mortise.handler.event.ResetPasswordEvent;
-import com.rymcu.mortise.mapper.MenuMapper;
-import com.rymcu.mortise.mapper.RoleMapper;
 import com.rymcu.mortise.mapper.UserMapper;
 import com.rymcu.mortise.model.*;
 import com.rymcu.mortise.service.CacheService;
+import com.rymcu.mortise.service.PermissionService;
 import com.rymcu.mortise.service.UserService;
 import com.rymcu.mortise.util.Utils;
 import jakarta.annotation.Resource;
@@ -35,7 +32,6 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -55,9 +51,7 @@ import static com.rymcu.mortise.entity.table.UserTableDef.USER;
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     @Resource
-    private RoleMapper roleMapper;
-    @Resource
-    private MenuMapper menuMapper;
+    private PermissionService permissionService;
     @Resource
     private CacheService cacheService;
     @Resource
@@ -117,28 +111,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Set<String> findUserPermissionsByIdUser(Long idUser) {
-        Set<String> permissions = new HashSet<>();
-        List<Menu> menus = menuMapper.selectMenuListByIdUser(idUser);
-        for (Menu menu : menus) {
-            if (StringUtils.isNotBlank(menu.getPermission())) {
-                permissions.add(menu.getPermission());
-            }
-        }
-        permissions.add("user");
-        permissions.addAll(findUserRoleListByIdUser(idUser));
-        return permissions;
+        // 委托给 PermissionService 处理所有权限逻辑
+        return permissionService.findUserPermissionsByIdUser(idUser);
     }
 
     @Override
     public Set<String> findUserRoleListByIdUser(Long idUser) {
-        List<Role> roles = roleMapper.selectRolesByIdUser(idUser);
-        Set<String> permissions = new HashSet<>();
-        for (Role role : roles) {
-            if (StringUtils.isNotBlank(role.getPermission())) {
-                permissions.add(role.getPermission());
-            }
-        }
-        return permissions;
+        // 委托给 PermissionService 处理角色权限逻辑
+        return permissionService.findUserRolePermissionsByIdUser(idUser);
     }
 
     @Override

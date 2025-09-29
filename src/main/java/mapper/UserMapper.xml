@@ -30,10 +30,5 @@
         <result column="created_time" property="createdTime"/>
         <result column="role_names" property="roleNames"/>
     </resultMap>
-    <select id="selectUserRolePermissionsByIdUser" resultType="java.lang.String">
-        select distinct tr.permission
-        from mortise_user_role tur
-                 join mortise_role tr on tur.id_mortise_role = tr.id
-        where tur.id_mortise_user = #{idUser}
-    </select>
+
 </mapper>

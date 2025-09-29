@@ -33,4 +33,6 @@ public interface RoleService {
     Role findById(Long idRole);
 
     Boolean batchDeleteRoles(List<Long> idRoleList);
+    
+    Role findRoleByPermission(String permission);
 }

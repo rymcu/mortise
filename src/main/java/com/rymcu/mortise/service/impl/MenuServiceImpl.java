@@ -1,6 +1,7 @@
 package com.rymcu.mortise.service.impl;
 
 import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.util.UpdateEntity;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.entity.Menu;
@@ -8,12 +9,15 @@ import com.rymcu.mortise.mapper.MenuMapper;
 import com.rymcu.mortise.model.Link;
 import com.rymcu.mortise.model.MenuSearch;
 import com.rymcu.mortise.service.MenuService;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import static com.rymcu.mortise.entity.table.MenuTableDef.MENU;
 
 /**
  * Created on 2024/4/17 9:49.
@@ -27,7 +31,26 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
 
     @Override
     public List<Menu> findMenusByIdRole(Long idRole) {
-        return mapper.selectMenuListByIdRole(idRole);
+        // 原 SQL: select id, label, permission from mortise_menu tm where del_flag = 0 
+        // and exists(select 1 from mortise_role_menu trm where trm.id_mortise_menu = tm.id and trm.id_mortise_role = #{idRole})
+        QueryWrapper queryWrapper = QueryWrapper.create()
+                .select(MENU.ID, MENU.LABEL, MENU.PERMISSION)
+                .where(MENU.DEL_FLAG.eq(0))
+                .and("EXISTS (SELECT 1 FROM mortise_role_menu trm WHERE trm.id_mortise_menu = mortise_menu.id AND trm.id_mortise_role = {0})", idRole);
+        return mapper.selectListByQuery(queryWrapper);
+    }
+
+    @Override
+    public List<Menu> findMenusByIdUser(Long idUser) {
+        // 原 SQL: select id, label, permission from mortise_menu tm where del_flag = 0
+        // and exists(select 1 from mortise_role_menu trm where trm.id_mortise_menu = tm.id 
+        // and exists(select 1 from mortise_user_role tur where tur.id_mortise_role = trm.id_mortise_role and tur.id_mortise_user = #{idUser}))
+        QueryWrapper queryWrapper = QueryWrapper.create()
+                .select(MENU.ID, MENU.LABEL, MENU.PERMISSION)
+                .where(MENU.DEL_FLAG.eq(0))
+                .and("EXISTS (SELECT 1 FROM mortise_role_menu trm WHERE trm.id_mortise_menu = mortise_menu.id " +
+                     "AND EXISTS (SELECT 1 FROM mortise_user_role tur WHERE tur.id_mortise_role = trm.id_mortise_role AND tur.id_mortise_user = {0}))", idUser);
+        return mapper.selectListByQuery(queryWrapper);
     }
 
     @Override
@@ -37,7 +60,12 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
 
     @Override
     public List<Link> findMenus(MenuSearch search) {
-        List<Menu> menus = mapper.selectMenuListByLabelAndParentId(null, search.getQuery(), search.getParentId());
+        QueryWrapper queryWrapper = QueryWrapper.create()
+                .select()
+                .where(MENU.LABEL.like(search.getQuery(), StringUtils.isNotBlank(search.getQuery())))
+                .and(MENU.PARENT_ID.eq(search.getParentId(), Objects.nonNull(search.getParentId())))
+                .orderBy(MENU.SORT_NO.asc());
+        List<Menu> menus = mapper.selectListByQuery(queryWrapper);
         List<Link> links = new ArrayList<>();
         for (Menu menu : menus) {
             Link link = new Link();
@@ -77,7 +105,13 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     @Override
     public List<Link> findChildrenMenus(Page<Link> page, MenuSearch search) {
         Page<Menu> menuPage = new Page<>(search.getPageNum(), search.getPageSize());
-        List<Menu> menus = mapper.selectMenuListByLabelAndParentId(menuPage, search.getQuery(), search.getParentId());
+        QueryWrapper queryWrapper = QueryWrapper.create()
+                .select()
+                .where(MENU.LABEL.like(search.getQuery(), StringUtils.isNotBlank(search.getQuery())))
+                .and(MENU.PARENT_ID.eq(search.getParentId(), Objects.nonNull(search.getParentId())))
+                .orderBy(MENU.SORT_NO.asc());
+        Page<Menu> menuPageResult = mapper.paginate(menuPage, queryWrapper);
+        List<Menu> menus = menuPageResult.getRecords();
         List<Link> links = new ArrayList<>();
         for (Menu menu : menus) {
             links.add(convertLink(menu));
@@ -116,7 +150,14 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     }
 
     private List<Link> findMenuTreeMode(Long parentId) {
-        List<Menu> menus = mapper.selectMenuListByParentId(parentId);
+        // 原 SQL: select id, label, permission, parent_id, sort_no, menu_type, icon, href, created_time, updated_time, status
+        // from mortise_menu where parent_id = #{parentId} or (parentId is null and parent_id = 0)
+        QueryWrapper queryWrapper = QueryWrapper.create()
+                .select(MENU.ID, MENU.LABEL, MENU.PERMISSION, MENU.PARENT_ID, MENU.SORT_NO, 
+                        MENU.MENU_TYPE, MENU.ICON, MENU.HREF, MENU.CREATED_TIME, MENU.UPDATED_TIME, MENU.STATUS)
+                .where(MENU.PARENT_ID.eq(parentId != null ? parentId : 0L))
+                .orderBy(MENU.SORT_NO.asc());
+        List<Menu> menus = mapper.selectListByQuery(queryWrapper);
         List<Link> links = new ArrayList<>();
         for (Menu menu : menus) {
             Link link = convertLink(menu);
@@ -127,7 +168,20 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     }
 
     private List<Link> findLinkTreeMode(Long idUser, long parentId) {
-        List<Menu> menus = mapper.selectMenuListByIdUserAndParentId(idUser, parentId);
+        // 原 SQL: select id, label, permission, parent_id, sort_no, menu_type, icon, href from mortise_menu tm
+        // where del_flag = 0 and menu_type = 0 and parent_id = #{parentId}
+        // and exists(select 1 from mortise_role_menu trm where trm.id_mortise_menu = tm.id 
+        // and exists(select 1 from mortise_user_role tur where tur.id_mortise_role = trm.id_mortise_role and tur.id_mortise_user = #{idUser}))
+        QueryWrapper queryWrapper = QueryWrapper.create()
+                .select(MENU.ID, MENU.LABEL, MENU.PERMISSION, MENU.PARENT_ID, MENU.SORT_NO, 
+                        MENU.MENU_TYPE, MENU.ICON, MENU.HREF)
+                .where(MENU.DEL_FLAG.eq(0))
+                .and(MENU.MENU_TYPE.eq(0))
+                .and(MENU.PARENT_ID.eq(parentId))
+                .and("EXISTS (SELECT 1 FROM mortise_role_menu trm WHERE trm.id_mortise_menu = mortise_menu.id " +
+                     "AND EXISTS (SELECT 1 FROM mortise_user_role tur WHERE tur.id_mortise_role = trm.id_mortise_role AND tur.id_mortise_user = {0}))", idUser)
+                .orderBy(MENU.SORT_NO.asc());
+        List<Menu> menus = mapper.selectListByQuery(queryWrapper);
         List<Link> links = new ArrayList<>();
         for (Menu menu : menus) {
             Link link = convertLink(menu);

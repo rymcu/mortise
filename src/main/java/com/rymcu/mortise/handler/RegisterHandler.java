@@ -2,9 +2,9 @@ package com.rymcu.mortise.handler;
 
 import com.rymcu.mortise.entity.Role;
 import com.rymcu.mortise.handler.event.RegisterEvent;
-import com.rymcu.mortise.mapper.RoleMapper;
 import com.rymcu.mortise.model.BindUserRoleInfo;
 import com.rymcu.mortise.service.JavaMailService;
+import com.rymcu.mortise.service.RoleService;
 import com.rymcu.mortise.service.UserService;
 import jakarta.annotation.Resource;
 import jakarta.mail.MessagingException;
@@ -30,14 +30,14 @@ public class RegisterHandler {
     @Resource
     private UserService userService;
     @Resource
-    private RoleMapper roleMapper;
+    private RoleService roleService;
     @Resource
     private JavaMailService javaMailService;
 
     @Async
     @TransactionalEventListener
     public void processRegisterEvent(RegisterEvent registerEvent) {
-        Role role = roleMapper.selectRoleByPermission("user");
+        Role role = roleService.findRoleByPermission("user");
         Set<Long> roleIds = new HashSet<>();
         roleIds.add(role.getId());
         userService.bindUserRole(new BindUserRoleInfo(registerEvent.getIdUser(), roleIds));
