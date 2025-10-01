@@ -1,0 +1,261 @@
+{
+  "name": "mortise-system 导入语句批量替换配置",
+  "description": "用于 VS Code 全局搜索替换的配置，迁移 mortise-system 模块时使用",
+  "version": "1.0.0",
+  "replacements": [
+    {
+      "step": 1,
+      "category": "实体类导入",
+      "items": [
+        {
+          "description": "替换 Entity 导入",
+          "find": "import com\\.rymcu\\.mortise\\.entity\\.",
+          "replace": "import com.rymcu.mortise.system.entity.",
+          "regex": true,
+          "caseSensitive": true,
+          "files": "**/*.java",
+          "exclude": "**/node_modules/**,**/target/**"
+        },
+        {
+          "description": "替换 Mapper 导入",
+          "find": "import com\\.rymcu\\.mortise\\.mapper\\.",
+          "replace": "import com.rymcu.mortise.system.mapper.",
+          "regex": true,
+          "caseSensitive": true,
+          "files": "**/*.java",
+          "exclude": "**/node_modules/**,**/target/**"
+        },
+        {
+          "description": "替换 Model 导入",
+          "find": "import com\\.rymcu\\.mortise\\.model\\.",
+          "replace": "import com.rymcu.mortise.system.model.",
+          "regex": true,
+          "caseSensitive": true,
+          "files": "**/*.java",
+          "exclude": "**/node_modules/**,**/target/**"
+        },
+        {
+          "description": "替换 Service 导入",
+          "find": "import com\\.rymcu\\.mortise\\.service\\.",
+          "replace": "import com.rymcu.mortise.system.service.",
+          "regex": true,
+          "caseSensitive": true,
+          "files": "**/*.java",
+          "exclude": "**/node_modules/**,**/target/**"
+        },
+        {
+          "description": "替换 Controller 导入",
+          "find": "import com\\.rymcu\\.mortise\\.controller\\.",
+          "replace": "import com.rymcu.mortise.system.controller.",
+          "regex": true,
+          "caseSensitive": true,
+          "files": "**/*.java",
+          "exclude": "**/node_modules/**,**/target/**"
+        },
+        {
+          "description": "替换 Handler 导入",
+          "find": "import com\\.rymcu\\.mortise\\.handler\\.",
+          "replace": "import com.rymcu.mortise.system.handler.",
+          "regex": true,
+          "caseSensitive": true,
+          "files": "**/*.java",
+          "exclude": "**/node_modules/**,**/target/**"
+        },
+        {
+          "description": "替换 Event 导入",
+          "find": "import com\\.rymcu\\.mortise\\.event\\.",
+          "replace": "import com.rymcu.mortise.system.handler.event.",
+          "regex": true,
+          "caseSensitive": true,
+          "files": "**/*.java",
+          "exclude": "**/node_modules/**,**/target/**"
+        },
+        {
+          "description": "替换 Serializer 导入",
+          "find": "import com\\.rymcu\\.mortise\\.serializer\\.",
+          "replace": "import com.rymcu.mortise.system.serializer.",
+          "regex": true,
+          "caseSensitive": true,
+          "files": "**/*.java",
+          "exclude": "**/node_modules/**,**/target/**"
+        }
+      ]
+    },
+    {
+      "step": 2,
+      "category": "公共类导入",
+      "items": [
+        {
+          "description": "替换 Util 导入",
+          "find": "import com\\.rymcu\\.mortise\\.util\\.",
+          "replace": "import com.rymcu.mortise.common.util.",
+          "regex": true,
+          "caseSensitive": true,
+          "files": "**/*.java",
+          "exclude": "**/node_modules/**,**/target/**"
+        },
+        {
+          "description": "替换 Constant 导入 (ProjectConstant)",
+          "find": "import com\\.rymcu\\.mortise\\.constant\\.ProjectConstant",
+          "replace": "import com.rymcu.mortise.common.constant.ProjectConstant",
+          "regex": true,
+          "caseSensitive": true,
+          "files": "**/*.java",
+          "exclude": "**/node_modules/**,**/target/**"
+        },
+        {
+          "description": "替换 Enumerate 导入",
+          "find": "import com\\.rymcu\\.mortise\\.enumerate\\.",
+          "replace": "import com.rymcu.mortise.common.enumerate.",
+          "regex": true,
+          "caseSensitive": true,
+          "files": "**/*.java",
+          "exclude": "**/node_modules/**,**/target/**"
+        },
+        {
+          "description": "替换 Exception 导入",
+          "find": "import com\\.rymcu\\.mortise\\.exception\\.",
+          "replace": "import com.rymcu.mortise.common.exception.",
+          "regex": true,
+          "caseSensitive": true,
+          "files": "**/*.java",
+          "exclude": "**/node_modules/**,**/target/**"
+        }
+      ]
+    },
+    {
+      "step": 3,
+      "category": "核心类导入",
+      "items": [
+        {
+          "description": "替换 Result 导入",
+          "find": "import com\\.rymcu\\.mortise\\.result\\.",
+          "replace": "import com.rymcu.mortise.core.result.",
+          "regex": true,
+          "caseSensitive": true,
+          "files": "**/*.java",
+          "exclude": "**/node_modules/**,**/target/**"
+        }
+      ]
+    },
+    {
+      "step": 4,
+      "category": "Mapper XML 命名空间",
+      "items": [
+        {
+          "description": "替换 Mapper XML namespace",
+          "find": "namespace=\"com\\.rymcu\\.mortise\\.mapper\\.",
+          "replace": "namespace=\"com.rymcu.mortise.system.mapper.",
+          "regex": true,
+          "caseSensitive": true,
+          "files": "**/*.xml",
+          "exclude": "**/node_modules/**,**/target/**"
+        },
+        {
+          "description": "替换 Mapper XML resultType (Entity)",
+          "find": "resultType=\"com\\.rymcu\\.mortise\\.entity\\.",
+          "replace": "resultType=\"com.rymcu.mortise.system.entity.",
+          "regex": true,
+          "caseSensitive": true,
+          "files": "**/*.xml",
+          "exclude": "**/node_modules/**,**/target/**"
+        },
+        {
+          "description": "替换 Mapper XML resultType (Model)",
+          "find": "resultType=\"com\\.rymcu\\.mortise\\.model\\.",
+          "replace": "resultType=\"com.rymcu.mortise.system.model.",
+          "regex": true,
+          "caseSensitive": true,
+          "files": "**/*.xml",
+          "exclude": "**/node_modules/**,**/target/**"
+        },
+        {
+          "description": "替换 Mapper XML parameterType (Entity)",
+          "find": "parameterType=\"com\\.rymcu\\.mortise\\.entity\\.",
+          "replace": "parameterType=\"com.rymcu.mortise.system.entity.",
+          "regex": true,
+          "caseSensitive": true,
+          "files": "**/*.xml",
+          "exclude": "**/node_modules/**,**/target/**"
+        },
+        {
+          "description": "替换 Mapper XML parameterType (Model)",
+          "find": "parameterType=\"com\\.rymcu\\.mortise\\.model\\.",
+          "replace": "parameterType=\"com.rymcu.mortise.system.model.",
+          "regex": true,
+          "caseSensitive": true,
+          "files": "**/*.xml",
+          "exclude": "**/node_modules/**,**/target/**"
+        }
+      ]
+    }
+  ],
+  "instructions": {
+    "title": "使用说明",
+    "steps": [
+      {
+        "step": 1,
+        "description": "在 VS Code 中打开 mortise-system 文件夹或整个项目"
+      },
+      {
+        "step": 2,
+        "description": "按 Ctrl+Shift+H 打开全局搜索替换面板"
+      },
+      {
+        "step": 3,
+        "description": "启用正则表达式模式 (点击 .* 按钮)"
+      },
+      {
+        "step": 4,
+        "description": "启用大小写敏感 (点击 Aa 按钮)"
+      },
+      {
+        "step": 5,
+        "description": "按照上方配置逐条进行替换"
+      },
+      {
+        "step": 6,
+        "description": "每次替换前点击 '查找' 预览匹配结果"
+      },
+      {
+        "step": 7,
+        "description": "确认无误后点击 '全部替换'"
+      }
+    ],
+    "tips": [
+      "建议按步骤顺序执行替换，避免遗漏",
+      "每完成一个步骤就保存文件",
+      "替换前建议先 Git commit，方便回滚",
+      "可以使用 'files to include' 过滤特定目录，如: mortise-system/**/*.java",
+      "替换完成后运行 mvn compile 验证"
+    ]
+  },
+  "quickReference": {
+    "common_replacements": [
+      {
+        "name": "实体导入",
+        "find": "import com\\.rymcu\\.mortise\\.entity\\.",
+        "replace": "import com.rymcu.mortise.system.entity.",
+        "regex": true
+      },
+      {
+        "name": "工具类导入",
+        "find": "import com\\.rymcu\\.mortise\\.util\\.",
+        "replace": "import com.rymcu.mortise.common.util.",
+        "regex": true
+      },
+      {
+        "name": "结果类导入",
+        "find": "import com\\.rymcu\\.mortise\\.result\\.",
+        "replace": "import com.rymcu.mortise.core.result.",
+        "regex": true
+      },
+      {
+        "name": "异常类导入",
+        "find": "import com\\.rymcu\\.mortise\\.exception\\.",
+        "replace": "import com.rymcu.mortise.common.exception.",
+        "regex": true
+      }
+    ]
+  }
+}
