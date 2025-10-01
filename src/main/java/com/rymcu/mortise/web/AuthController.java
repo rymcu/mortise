@@ -2,8 +2,6 @@ package com.rymcu.mortise.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.mzt.logapi.context.LogRecordContext;
-import com.mzt.logapi.starter.annotation.LogRecord;
 import com.rymcu.mortise.annotation.Resilience4jRateLimit;
 import com.rymcu.mortise.auth.TokenManager;
 import com.rymcu.mortise.core.exception.AccountExistsException;
@@ -50,18 +48,12 @@ public class AuthController {
     })
     @Resilience4jRateLimit(limitForPeriod = 5, refreshPeriodSeconds = 300, message = "登录请求过于频繁，请5分钟后再试")
     @PostMapping("/login")
-    @LogRecord(success = "提交成功", type = "系统", subType = "账号登录", bizNo = "{\"account\": {{#user.account}}}",
-            fail = "提交失败，失败原因：「{{#_errorMsg ? #_errorMsg : #result.message }}」", extra = "{\"account\": {{#user.account}}}",
-            successCondition = "{{#result.code==200}}")
     public GlobalResult<TokenUser> login(
             @Parameter(description = "登录信息", required = true)
             @Valid @RequestBody LoginInfo loginInfo) {
         TokenUser tokenUser = authService.login(loginInfo.getAccount(), loginInfo.getPassword());
-        LogRecordContext.putVariable("idUser", tokenUser.getIdUser());
         tokenUser.setIdUser(null);
-        GlobalResult<TokenUser> tokenUserGlobalResult = GlobalResult.success(tokenUser);
-        LogRecordContext.putVariable("result", tokenUserGlobalResult);
-        return tokenUserGlobalResult;
+        return GlobalResult.success(tokenUser);
     }
 
     @Operation(summary = "用户注册", description = "用户通过邮箱注册新账号")

@@ -9,7 +9,7 @@ spring:
     cache: false
   data:
     redis:
-      host: 127.0.0.1
+      host: 192.168.21.238
       port: 6379
       password: ENC(8kZ8YYjALJ8QVOoArjU7xf4Jlltc2/Kcv100KUr9EQk=)
       database: 1
@@ -21,7 +21,7 @@ spring:
           max-idle: 500
           min-idle: 0
   datasource:
-    url: jdbc:postgresql://127.0.0.1:5432/postgres
+    url: jdbc:postgresql://192.168.21.238:5432/postgres
     username: mortise
     password: ENC(gqCvS0P65Xk4zQ0yxo8ycVaEctJO3CZlfl1asvo5kO/5JilBsYFyvxxSxJTMHV8D1P6hApJ28J4=)
     driver-class-name: org.postgresql.Driver
@@ -77,14 +77,10 @@ spring:
             provider: logto
         provider:
           logto:
-            issuer-uri: https://auth.rymcu.local/oidc
-            authorization-uri: https://auth.rymcu.local/oidc/auth
-            jwk-set-uri: https://auth.rymcu.local/oidc/jwks
-            user-info-uri: https://auth.rymcu.local/oidc/me
-#  liquibase:
-#    change-log: classpath:db/changelog/mortise/changelog-master.yaml
-#    default-schema: mortise
-#    liquibase-schema: public
+            issuer-uri: https://auth.atdak.com/oidc
+            authorization-uri: https://auth.atdak.com/oidc/auth
+            jwk-set-uri: https://auth.atdak.com/oidc/jwks
+            user-info-uri: https://auth.atdak.com/oidc/me
 logging:
   file:
     path: /logs/mortise
@@ -231,7 +227,7 @@ server:
     mime-types: application/json,application/xml,text/html,text/xml,text/plain
     min-response-size: 10240
   max-http-request-header-size: 10240
-baseUrl: https://rymcu.local
+baseUrl: https://atdak.com
 
 # JWT 配置
 jwt:
@@ -239,17 +235,6 @@ jwt:
   expiration: 3600000  # 1小时，单位毫秒
   refresh-expiration: 7200000  # 2小时，单位毫秒
 
-dromara:
-  x-file-storage: #文件存储配置
-    default-platform: local-plus #默认存储平台
-    local-plus:
-      - platform: local-plus-1 # 存储平台标识
-        enable-storage: true  #启用存储
-        enable-access: true #启用访问（线上请使用 Nginx 配置，效率更高）
-        domain: /mortise/file/ # 访问域名，例如：“http://127.0.0.1:8030/file/”，注意后面要和 path-patterns 保持一致，“/”结尾，本地存储建议使用相对路径，方便后期更换域名
-        base-path: local-plus/ # 基础路径
-        path-patterns: /file/** # 访问路径
-        storage-path: /opt/mortise/storage/ # 存储路径
 executor:
   thread:
     async:
