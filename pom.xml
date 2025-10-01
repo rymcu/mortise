@@ -28,9 +28,7 @@
         <ulid-creator.version>5.2.3</ulid-creator.version>
         <jasypt.version>3.0.5</jasypt.version>
         <mybatis-flex.version>1.11.0</mybatis-flex.version>
-        <bizlog.version>3.0.6</bizlog.version>
         <jedis-lock.version>1.0.0</jedis-lock.version>
-        <x-file-storage.version>2.2.1</x-file-storage.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
@@ -207,31 +205,9 @@
         </dependency>
 
         <dependency>
-            <groupId>io.github.mouzt</groupId>
-            <artifactId>bizlog-sdk</artifactId>
-            <version>3.0.6</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.github.jedis-lock</groupId>
             <artifactId>jedis-lock</artifactId>
             <version>1.0.0</version>
-        </dependency>
-        <!-- X-File-Storage 文件存储 -->
-        <dependency>
-            <groupId>org.dromara.x-file-storage</groupId>
-            <artifactId>x-file-storage-spring</artifactId>
-            <version>${x-file-storage.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.apache.commons</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>commons-io</groupId>
-                    <artifactId>commons-io</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
 
         <!-- OpenAPI 3.0 文档生成 -->
@@ -257,18 +233,6 @@
             <artifactId>resilience4j-micrometer</artifactId>
             <version>2.2.0</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.liquibase/liquibase-core -->
-<!--        <dependency>-->
-<!--            <groupId>org.liquibase</groupId>-->
-<!--            <artifactId>liquibase-core</artifactId>-->
-<!--            <version>4.31.1</version>-->
-<!--            <exclusions>-->
-<!--                <exclusion>-->
-<!--                    <groupId>org.apache.commons</groupId>-->
-<!--                    <artifactId>commons-text</artifactId>-->
-<!--                </exclusion>-->
-<!--            </exclusions>-->
-<!--        </dependency>-->
 
 
     </dependencies>
