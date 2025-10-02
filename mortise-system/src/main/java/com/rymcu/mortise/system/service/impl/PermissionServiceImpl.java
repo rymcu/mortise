@@ -42,9 +42,6 @@ public class PermissionServiceImpl implements PermissionService {
             }
         }
 
-        // 添加基础用户权限
-        permissions.add("user");
-
         // 获取角色权限
         permissions.addAll(findUserRolePermissionsByIdUser(idUser));
 
@@ -57,7 +54,8 @@ public class PermissionServiceImpl implements PermissionService {
         Set<String> permissions = new HashSet<>();
         for (Role role : roles) {
             if (StringUtils.isNotBlank(role.getPermission())) {
-                permissions.add(role.getPermission());
+                // 为角色权限添加 ROLE_ 前缀，以支持 @PreAuthorize("hasRole('admin')")
+                permissions.add("ROLE_" + role.getPermission());
             }
         }
         return permissions;
