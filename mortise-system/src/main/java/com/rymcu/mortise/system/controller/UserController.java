@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "用户管理", description = "用户管理相关接口")
 @RestController
 @RequestMapping("/api/v1/admin/users")
-@PreAuthorize("hasRole('admin')")
+@PreAuthorize("hasRole('ADMIN')")
 public class UserController {
 
     @Resource

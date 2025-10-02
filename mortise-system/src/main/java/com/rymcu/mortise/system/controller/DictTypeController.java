@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "字典类型管理", description = "字典类型管理相关接口")
 @RestController
 @RequestMapping("/api/v1/admin/dictionary-types")
-@PreAuthorize("hasRole('admin')")
+@PreAuthorize("hasRole('ADMIN')")
 public class DictTypeController {
 
     @Resource

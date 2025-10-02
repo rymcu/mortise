@@ -30,7 +30,7 @@ import java.util.Set;
 @Tag(name = "角色管理", description = "角色管理相关接口")
 @RestController
 @RequestMapping("/api/v1/admin/roles")
-@PreAuthorize("hasRole('admin')")
+@PreAuthorize("hasRole('ADMIN')")
 public class RoleController {
     @Resource
     private RoleService roleService;

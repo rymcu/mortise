@@ -33,7 +33,7 @@ import java.util.List;
 @Tag(name = "字典管理", description = "字典数据管理相关接口")
 @RestController
 @RequestMapping("/api/v1/admin/dictionaries")
-@PreAuthorize("hasRole('admin')")
+@PreAuthorize("hasRole('ADMIN')")
 public class DictController {
 
     @Resource
