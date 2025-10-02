@@ -52,9 +52,9 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping("/children")
-    public GlobalResult<Page<Link>> listChildrenMenu(@Parameter(description = "菜单查询条件") @Valid MenuSearch search) {
-        Page<Link> page = new Page<>(search.getPageNum(), search.getPageSize());
-        List<Link> list = menuService.findChildrenMenus(page, search);
+    public GlobalResult<Page<Menu>> listChildrenMenu(@Parameter(description = "菜单查询条件") @Valid MenuSearch search) {
+        Page<Menu> page = new Page<>(search.getPageNum(), search.getPageSize());
+        List<Menu> list = menuService.findChildrenMenus(page, search);
         page.setRecords(list);
         return GlobalResult.success(page);
     }

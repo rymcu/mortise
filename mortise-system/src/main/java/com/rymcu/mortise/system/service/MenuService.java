@@ -26,7 +26,7 @@ public interface MenuService extends IService<Menu> {
 
     Boolean saveMenu(Menu menu);
 
-    List<Link> findChildrenMenus(Page<Link> page, MenuSearch search);
+    List<Menu> findChildrenMenus(Page<Menu> page, MenuSearch search);
 
     Boolean updateStatus(Long idMenu, Integer status);
 

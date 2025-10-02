@@ -93,20 +93,15 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     }
 
     @Override
-    public List<Link> findChildrenMenus(Page<Link> page, MenuSearch search) {
+    public List<Menu> findChildrenMenus(Page<Menu> page, MenuSearch search) {
         Page<Menu> menuPage = new Page<>(search.getPageNum(), search.getPageSize());
         QueryWrapper queryWrapper = QueryWrapper.create()
-                .select()
+                .select(MENU.ID, MENU.LABEL, MENU.PERMISSION, MENU.HREF, MENU.MENU_TYPE, MENU.PARENT_ID, MENU.ICON, MENU.SORT_NO, MENU.STATUS, MENU.CREATED_TIME)
                 .where(MENU.LABEL.like(search.getQuery(), StringUtils.isNotBlank(search.getQuery())))
                 .and(MENU.PARENT_ID.eq(search.getParentId(), Objects.nonNull(search.getParentId())))
                 .orderBy(MENU.SORT_NO.asc());
         Page<Menu> menuPageResult = mapper.paginate(menuPage, queryWrapper);
-        List<Menu> menus = menuPageResult.getRecords();
-        List<Link> links = new ArrayList<>();
-        for (Menu menu : menus) {
-            links.add(convertLink(menu));
-        }
-        return links;
+        return menuPageResult.getRecords();
     }
 
     @Override
