@@ -136,13 +136,13 @@ public class AuthServiceImpl implements AuthService {
 
             // 生成新的 Access Token 和 Refresh Token
             TokenUser tokenUser = generateAndStoreTokens(user);
-            
+
             // 删除旧的刷新令牌（一次性使用原则）
             systemCacheService.removeRefreshToken(refreshToken);
-            
+
             log.info("令牌刷新成功: account={}", account);
             return tokenUser;
-            
+
         } catch (UsernameNotFoundException | BusinessException e) {
             throw e;
         } catch (Exception e) {
@@ -168,9 +168,9 @@ public class AuthServiceImpl implements AuthService {
             } else {
                 log.debug("Access Token 暂不需要刷新或刷新失败: account={}", account);
             }
-            
+
             return newAccessToken;
-            
+
         } catch (Exception e) {
             log.error("刷新 Access Token 时发生异常: account={}", account, e);
             return null;
@@ -193,7 +193,7 @@ public class AuthServiceImpl implements AuthService {
         if (Objects.isNull(user)) {
             throw new AccountNotFoundException(ResultCode.UNKNOWN_ACCOUNT.getMessage());
         }
-        String resetToken = UlidCreator.getUlid().toString();
+        String resetToken = Utils.genKey();
         systemCacheService.storePasswordResetToken(resetToken, email);
         boolean result = systemNotificationService.sendPasswordResetEmail(email, resetToken);
         if (result) {
@@ -260,7 +260,7 @@ public class AuthServiceImpl implements AuthService {
         User newUser = createNewUser(oidcUser, registrationId);
 
         try {
-            String code = Utils.genPassword(); // 生成一个随机密码
+            String code = Utils.genKey(); // 生成一个随机密码
             newUser.setPassword(passwordEncoder.encode(code));
             boolean saved = userService.save(newUser);
             if (saved) {

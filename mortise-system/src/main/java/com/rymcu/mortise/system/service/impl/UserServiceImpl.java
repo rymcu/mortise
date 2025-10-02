@@ -200,7 +200,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             user.setNickname(checkNickname(userInfo.getNickname()));
             String code = userInfo.getPassword();
             if (StringUtils.isBlank(code)) {
-                code = Utils.genPassword();
+                code = Utils.genKey();
             }
             user.setPassword(passwordEncoder.encode(code));
             user.setAvatar(Objects.isNull(userInfo.getAvatar()) ? DEFAULT_AVATAR : userInfo.getAvatar().getSrc());
