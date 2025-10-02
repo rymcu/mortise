@@ -6,6 +6,7 @@ import com.mybatisflex.core.util.UpdateEntity;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.common.exception.ServiceException;
 import com.rymcu.mortise.common.model.BaseOption;
+import com.rymcu.mortise.system.constant.SystemCacheConstant;
 import com.rymcu.mortise.system.entity.Dict;
 import com.rymcu.mortise.system.mapper.DictMapper;
 import com.rymcu.mortise.system.model.DictInfo;
@@ -49,7 +50,7 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(value = "dictData", key = "#dict.dictTypeCode")
+    @CacheEvict(value = SystemCacheConstant.DICT_DATA_CACHE, key = "#dict.dictTypeCode")
     public Boolean saveDict(Dict dict) {
         boolean isUpdate = dict.getId() != null;
         String dictTypeCode = dict.getDictTypeCode();
@@ -153,7 +154,7 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
     }
 
     @Override
-    @Cacheable(value = "dictData", key = "#dictTypeCode")
+    @Cacheable(value = SystemCacheConstant.DICT_DATA_CACHE, key = "#dictTypeCode")
     public List<BaseOption> queryDictOptions(String dictTypeCode) {
         // 先尝试从缓存获取
         @SuppressWarnings("unchecked")

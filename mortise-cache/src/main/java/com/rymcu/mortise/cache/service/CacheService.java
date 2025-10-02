@@ -25,9 +25,29 @@ public interface CacheService {
     void set(String key, Object value);
 
     /**
+     * 设置缓存（自动拼接 cacheName:key）
+     *
+     * @param cacheName 缓存区域名称（如 "user:info"）
+     * @param key 缓存键（如用户ID）
+     * @param value 缓存值
+     */
+    void set(String cacheName, String key, Object value);
+
+    /**
      * 设置缓存并指定过期时间
      */
     void set(String key, Object value, long timeout, TimeUnit unit);
+
+    /**
+     * 设置缓存并指定过期时间（自动拼接 cacheName:key）
+     *
+     * @param cacheName 缓存区域名称（如 "user:info"）
+     * @param key 缓存键（如用户ID）
+     * @param value 缓存值
+     * @param timeout 过期时间
+     * @param unit 时间单位
+     */
+    void set(String cacheName, String key, Object value, long timeout, TimeUnit unit);
 
     /**
      * 设置缓存并指定过期时间
@@ -35,14 +55,43 @@ public interface CacheService {
     void set(String key, Object value, Duration timeout);
 
     /**
+     * 设置缓存并指定过期时间（自动拼接 cacheName:key）
+     *
+     * @param cacheName 缓存区域名称（如 "user:info"）
+     * @param key 缓存键（如用户ID）
+     * @param value 缓存值
+     * @param timeout 过期时间
+     */
+    void set(String cacheName, String key, Object value, Duration timeout);
+
+    /**
      * 获取缓存
      */
     <T> T get(String key, Class<T> type);
 
     /**
+     * 获取缓存（自动拼接 cacheName:key）
+     *
+     * @param cacheName 缓存区域名称（如 "user:info"）
+     * @param key 缓存键（如用户ID）
+     * @param type 返回值类型
+     * @return 缓存值
+     */
+    <T> T get(String cacheName, String key, Class<T> type);
+
+    /**
      * 删除缓存
      */
     Boolean delete(String key);
+
+    /**
+     * 删除缓存（自动拼接 cacheName:key）
+     *
+     * @param cacheName 缓存区域名称（如 "user:info"）
+     * @param key 缓存键（如用户ID）
+     * @return 是否删除成功
+     */
+    Boolean delete(String cacheName, String key);
 
     /**
      * 批量删除缓存

@@ -13,6 +13,8 @@ public final class ProjectConstant {
 
     public static final String ENCRYPTION_KEY = "ENCRYPTION_KEY";
 
+    public static final String COLON = ":";
+
     /**
      * 私有构造函数，防止实例化
      */

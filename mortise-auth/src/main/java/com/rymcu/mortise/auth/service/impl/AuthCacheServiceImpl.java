@@ -26,20 +26,20 @@ public class AuthCacheServiceImpl implements AuthCacheService {
 
     @Override
     public void storeJwtToken(String account, String token) {
-        cacheService.set(AuthCacheConstant.JWT_TOKEN_CACHE + account, token, JwtConstants.TOKEN_EXPIRES_MINUTE, TimeUnit.MINUTES);
+        cacheService.set(AuthCacheConstant.JWT_TOKEN_CACHE, account, token, JwtConstants.TOKEN_EXPIRES_MINUTE, TimeUnit.MINUTES);
         log.debug("存储 JWT Token：{} -> {}", account, token);
     }
 
     @Override
     public String getJwtToken(String account) {
-        String token = cacheService.get(AuthCacheConstant.JWT_TOKEN_CACHE + account, String.class);
+        String token = cacheService.get(AuthCacheConstant.JWT_TOKEN_CACHE, account, String.class);
         log.debug("获取 JWT Token：{} -> {}", account, token != null ? "存在" : "不存在");
         return token;
     }
 
     @Override
     public Boolean removeJwtToken(String account) {
-        Boolean deleted = cacheService.delete(AuthCacheConstant.JWT_TOKEN_CACHE + account);
+        Boolean deleted = cacheService.delete(AuthCacheConstant.JWT_TOKEN_CACHE, account);
         log.debug("删除 JWT Token：{}", account);
         return deleted;
     }
@@ -48,25 +48,22 @@ public class AuthCacheServiceImpl implements AuthCacheService {
 
     @Override
     public void storeOAuth2AuthorizationRequest(String state, Object authorizationRequest) {
-        String cacheKey = AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_CACHE + ":" + state;
-        cacheService.set(cacheKey, authorizationRequest, 
-                        AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_EXPIRE_MINUTES, 
-                        TimeUnit.MINUTES);
+        cacheService.set(AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_CACHE, state, authorizationRequest,
+                AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_EXPIRE_MINUTES,
+                TimeUnit.MINUTES);
         log.debug("存储 OAuth2 授权请求：{}", state);
     }
 
     @Override
     public <T> T getOAuth2AuthorizationRequest(String state, Class<T> clazz) {
-        String cacheKey = AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_CACHE + ":" + state;
-        T request = cacheService.get(cacheKey, clazz);
+        T request = cacheService.get(AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_CACHE, state, clazz);
         log.debug("获取 OAuth2 授权请求：{} -> {}", state, request != null ? "存在" : "不存在");
         return request;
     }
 
     @Override
     public void removeOAuth2AuthorizationRequest(String state) {
-        String cacheKey = AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_CACHE + ":" + state;
-        cacheService.delete(cacheKey);
+        cacheService.delete(AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_CACHE, state);
         log.debug("删除 OAuth2 授权请求：{}", state);
     }
 

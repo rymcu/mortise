@@ -23,9 +23,30 @@ public class RedisCacheServiceImpl implements CacheService {
     @Resource
     private RedisTemplate<String, Object> redisTemplate;
 
+    /**
+     * 缓存键分隔符
+     */
+    private static final String KEY_SEPARATOR = ":";
+
+    /**
+     * 构建完整的缓存键
+     *
+     * @param cacheName 缓存区域名称
+     * @param key 缓存键
+     * @return 完整的缓存键（cacheName:key）
+     */
+    private String buildKey(String cacheName, String key) {
+        return cacheName + KEY_SEPARATOR + key;
+    }
+
     @Override
     public void set(String key, Object value) {
         redisTemplate.opsForValue().set(key, value);
+    }
+
+    @Override
+    public void set(String cacheName, String key, Object value) {
+        set(buildKey(cacheName, key), value);
     }
 
     @Override
@@ -34,8 +55,18 @@ public class RedisCacheServiceImpl implements CacheService {
     }
 
     @Override
+    public void set(String cacheName, String key, Object value, long timeout, TimeUnit unit) {
+        set(buildKey(cacheName, key), value, timeout, unit);
+    }
+
+    @Override
     public void set(String key, Object value, Duration timeout) {
         redisTemplate.opsForValue().set(key, value, timeout);
+    }
+
+    @Override
+    public void set(String cacheName, String key, Object value, Duration timeout) {
+        set(buildKey(cacheName, key), value, timeout);
     }
 
     @Override
@@ -55,8 +86,18 @@ public class RedisCacheServiceImpl implements CacheService {
     }
 
     @Override
+    public <T> T get(String cacheName, String key, Class<T> type) {
+        return get(buildKey(cacheName, key), type);
+    }
+
+    @Override
     public Boolean delete(String key) {
         return redisTemplate.delete(key);
+    }
+
+    @Override
+    public Boolean delete(String cacheName, String key) {
+        return delete(buildKey(cacheName, key));
     }
 
     @Override

@@ -126,6 +126,12 @@ public class SystemCacheConstant {
     public static final String DICT_ITEMS_CACHE = "dict:items";
     public static final long DICT_ITEMS_EXPIRE_HOURS = 12;
 
+    /**
+     * 字典选项缓存
+     */
+    public static final String DICT_OPTIONS_CACHE = "dict:options";
+    public static final long DICT_OPTIONS_EXPIRE_HOURS = 12;
+
     // ==================== 系统配置缓存 ====================
 
     /**
@@ -183,19 +189,28 @@ public class SystemCacheConstant {
     // ==================== 认证相关缓存 ====================
 
     /**
-     * 刷新令牌过期时间（天）
+     * 刷新令牌缓存
      */
+    public static final String REFRESH_TOKEN_CACHE = "auth:refresh_token";
     public static final long REFRESH_TOKEN_EXPIRE_DAYS = 7;
 
     /**
-     * 密码重置令牌过期时间（分钟）
+     * 密码重置令牌缓存
      */
+    public static final String PASSWORD_RESET_TOKEN_CACHE = "auth:reset_token";
     public static final long PASSWORD_RESET_TOKEN_EXPIRE_MINUTES = 30;
 
     /**
-     * 当前账号信息过期时间（小时）
+     * 当前账号缓存
      */
+    public static final String CURRENT_ACCOUNT_CACHE = "auth:current_account";
     public static final long CURRENT_ACCOUNT_EXPIRE_HOURS = 1;
+
+    /**
+     * 验证码缓存
+     */
+    public static final String VERIFICATION_CODE_CACHE = "verification:code";
+    public static final long VERIFICATION_CODE_EXPIRE_MINUTES = 5;
 
     // ==================== 通用业务数据缓存 ====================
 
