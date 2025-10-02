@@ -2,10 +2,11 @@ package com.rymcu.mortise.system.service.impl;
 
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
-import com.mybatisflex.core.util.UpdateEntity;
-import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.mybatisflex.core.row.Db;
 import com.mybatisflex.core.row.Row;
+import com.mybatisflex.core.util.UpdateEntity;
+import com.mybatisflex.spring.service.impl.ServiceImpl;
+import com.rymcu.mortise.common.enumerate.DefaultFlag;
 import com.rymcu.mortise.common.exception.ServiceException;
 import com.rymcu.mortise.system.entity.Role;
 import com.rymcu.mortise.system.mapper.RoleMapper;
@@ -37,8 +38,6 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
 
     @Override
     public List<Role> findRolesByIdUser(Long idUser) {
-        // 原 SQL: select tr.id, tr.label, tr.permission from mortise_user_role tur
-        // left join mortise_role tr on tur.id_mortise_role = tr.id where tur.id_mortise_user = #{idUser}
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .select(ROLE.ID, ROLE.LABEL, ROLE.PERMISSION)
                 .from(ROLE.as("tr"))
@@ -59,6 +58,10 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
             oldRole.setLabel(role.getLabel());
             oldRole.setPermission(role.getPermission());
             oldRole.setStatus(role.getStatus());
+            // 更新默认角色标识
+            if (role.getIsDefault() != null) {
+                oldRole.setIsDefault(role.getIsDefault());
+            }
             oldRole.setUpdatedTime(LocalDateTime.now());
             return mapper.update(oldRole) > 0;
         }
@@ -68,8 +71,8 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     @Override
     public Page<Role> findRoles(Page<Role> page, RoleSearch search) {
         QueryWrapper queryWrapper = QueryWrapper.create()
-                .select("id", "label", "permission", "status", "created_time")
-                .eq("label", search.getQuery(), StringUtils.isNotBlank(search.getQuery()));
+                .select(ROLE.ID, ROLE.LABEL, ROLE.PERMISSION, ROLE.STATUS, ROLE.IS_DEFAULT, ROLE.CREATED_TIME)
+                .and(ROLE.LABEL.eq(search.getQuery(), StringUtils.isNotBlank(search.getQuery())));
         return mapper.paginate(page, queryWrapper);
     }
 
@@ -108,7 +111,6 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
 
     @Override
     public Set<Long> findRoleMenus(Long idRole) {
-        // 原 SQL: select id_mortise_menu from mortise_role_menu where id_mortise_role = #{idRole}
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .select(ROLE_MENU.ID_MORTISE_MENU)
                 .from(ROLE_MENU)
@@ -146,5 +148,18 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
                 .select(ROLE.ID, ROLE.LABEL, ROLE.PERMISSION)
                 .where(ROLE.PERMISSION.eq(permission));
         return mapper.selectOneByQuery(queryWrapper);
+    }
+
+    /**
+     * 查找默认角色（用于新用户注册）
+     *
+     * @return 默认角色
+     */
+    @Override
+    public List<Role> findDefaultRole() {
+        QueryWrapper queryWrapper = QueryWrapper.create()
+                .select(ROLE.ID, ROLE.LABEL, ROLE.PERMISSION)
+                .where(ROLE.IS_DEFAULT.eq(DefaultFlag.YES.getValue()));
+        return mapper.selectListByQuery(queryWrapper);
     }
 }

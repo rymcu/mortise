@@ -139,8 +139,6 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     }
 
     private List<Link> findMenuTreeMode(Long parentId) {
-        // 原 SQL: select id, label, permission, parent_id, sort_no, menu_type, icon, href, created_time, updated_time, status
-        // from mortise_menu where parent_id = #{parentId} or (parentId is null and parent_id = 0)
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .select(MENU.ID, MENU.LABEL, MENU.PERMISSION, MENU.PARENT_ID, MENU.SORT_NO,
                         MENU.MENU_TYPE, MENU.ICON, MENU.HREF, MENU.CREATED_TIME, MENU.UPDATED_TIME, MENU.STATUS)

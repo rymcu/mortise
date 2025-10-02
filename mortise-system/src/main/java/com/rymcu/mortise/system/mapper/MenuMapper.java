@@ -52,7 +52,7 @@ public interface MenuMapper extends BaseMapper<Menu> {
     @Select("SELECT id, label, permission, parent_id, sort_no, menu_type, icon, href " +
             "FROM mortise_menu tm " +
             "WHERE del_flag = 0 " +
-            "AND menu_type = 0 " +
+            "AND menu_type in (0, 1) " +
             "AND parent_id = #{parentId} " +
             "AND EXISTS (" +
             "  SELECT 1 FROM mortise_role_menu trm " +

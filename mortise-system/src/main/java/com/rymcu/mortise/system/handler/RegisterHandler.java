@@ -11,8 +11,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;
 
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created on 2024/4/18 8:10.
@@ -33,9 +34,13 @@ public class RegisterHandler {
     @Async
     @TransactionalEventListener
     public void processRegisterEvent(RegisterEvent registerEvent) {
-        Role role = roleService.findRoleByPermission("user");
-        Set<Long> roleIds = new HashSet<>();
-        roleIds.add(role.getId());
+        // 获取默认角色，不再使用硬编码的 "user"
+        List<Role> roles = roleService.findDefaultRole();
+        if (roles == null) {
+            log.warn("未找到默认角色，用户 {} 注册后未分配角色", registerEvent.getIdUser());
+            return;
+        }
+        Set<Long> roleIds = roles.stream().map(Role::getId).collect(Collectors.toSet());
         userService.bindUserRole(new BindUserRoleInfo(registerEvent.getIdUser(), roleIds));
     }
 

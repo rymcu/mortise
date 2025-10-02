@@ -33,6 +33,12 @@ public interface RoleService {
     Role findById(Long idRole);
 
     Boolean batchDeleteRoles(List<Long> idRoleList);
-    
+
     Role findRoleByPermission(String permission);
+
+    /**
+     * 查找默认角色（用于新用户注册）
+     * @return 默认角色
+     */
+    List<Role> findDefaultRole();
 }

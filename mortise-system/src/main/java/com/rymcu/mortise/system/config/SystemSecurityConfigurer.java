@@ -32,6 +32,8 @@ public class SystemSecurityConfigurer implements SecurityConfigurer {
     public void configureAuthorization(
             AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry
     ) {
+        // 系统初始化 API - 无需认证
+        registry.requestMatchers("/api/v1/system-init/**").permitAll();
         // 认证相关 API - 无需认证
         registry.requestMatchers("/api/v1/auth/login").permitAll();
         registry.requestMatchers("/api/v1/auth/register").permitAll();

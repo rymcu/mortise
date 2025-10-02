@@ -54,6 +54,25 @@ spring:
         cacheServerConfiguration: true   # 缓存服务器配置
         elideSetAutoCommits: true        # 优化自动提交设置
         maintainTimeStats: false         # 禁用时间统计(性能优化)
+
+  # Flyway 数据库迁移配置
+  flyway:
+    enabled: true                        # 启用 Flyway
+    baseline-on-migrate: true            # 如果数据库不是空的，首次迁移时自动创建基线
+    baseline-version: 0                  # 基线版本号
+    locations: classpath:db/migration    # SQL脚本位置
+    encoding: UTF-8                      # SQL脚本编码
+    validate-on-migrate: true            # 迁移前验证SQL脚本
+    out-of-order: false                  # 禁止乱序迁移
+    clean-disabled: true                 # 禁用clean命令（生产环境必须禁用）
+    schemas: mortise                     # 指定schema
+    create-schemas: false                # 尝试创建 schema（生产环境必须禁用）
+    table: flyway_schema_history         # 迁移历史记录表名
+    placeholder-replacement: true        # 启用占位符替换
+    sql-migration-prefix: V              # SQL迁移脚本前缀
+    sql-migration-separator: __          # SQL迁移脚本分隔符
+    sql-migration-suffixes: .sql         # SQL迁移脚本后缀
+
   mail:
     host: smtp.ym.163.com
     port: 465
@@ -270,8 +289,8 @@ mybatis-flex:
     safe-row-bounds-enabled: true
     # 允许在嵌套语句中使用结果映射
     safe-result-handler-enabled: true
-    # 开启自动生成主键
-    use-generated-keys: true
+    # 注意：不要开启 use-generated-keys，它会与 MyBatis-Flex 的 KeyGenerators 冲突
+    # use-generated-keys: true
     # 本地缓存机制，防止循环引用和加速重复嵌套查询
     local-cache-scope: SESSION
   global-config:
@@ -303,3 +322,6 @@ springdoc:
     - group: 'admin'
       display-name: '管理接口'
       paths-to-match: '/api/v1/admin/**'
+    - group: 'system-init'
+      display-name: '系统初始化接口'
+      paths-to-match: '/api/v1/system-init/**'

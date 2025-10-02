@@ -1,6 +1,6 @@
 package com.rymcu.mortise.system.handler;
 
-import com.rymcu.mortise.system.handler.event.AccountEvent;
+import com.rymcu.mortise.system.handler.event.UserLoginEvent;
 import com.rymcu.mortise.system.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -24,8 +24,8 @@ public class UserLoginEventHandler {
 
     @Async
     @EventListener
-    public void processUserLoginEvent(AccountEvent accountEvent) {
-        userService.updateLastLoginTimeByAccount(accountEvent.getAccount());
+    public void processUserLoginEvent(UserLoginEvent userLoginEvent) {
+        userService.updateLastLoginTimeByAccount(userLoginEvent.getAccount());
     }
 
 }

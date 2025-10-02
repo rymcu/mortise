@@ -14,6 +14,6 @@ import lombok.Data;
 @AllArgsConstructor
 public class UserLoginEvent {
 
-    private String username;
+    private String account;
 
 }
