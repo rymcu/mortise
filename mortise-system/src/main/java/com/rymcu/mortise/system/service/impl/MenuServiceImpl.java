@@ -4,6 +4,7 @@ import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.util.UpdateEntity;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
+import com.rymcu.mortise.common.enumerate.MenuType;
 import com.rymcu.mortise.system.entity.Menu;
 import com.rymcu.mortise.system.mapper.MenuMapper;
 import com.rymcu.mortise.common.model.Link;
@@ -143,6 +144,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
                 .select(MENU.ID, MENU.LABEL, MENU.PERMISSION, MENU.PARENT_ID, MENU.SORT_NO,
                         MENU.MENU_TYPE, MENU.ICON, MENU.HREF, MENU.CREATED_TIME, MENU.UPDATED_TIME, MENU.STATUS)
                 .where(MENU.PARENT_ID.eq(parentId != null ? parentId : 0L))
+                .and(MENU.MENU_TYPE.ne(MenuType.BUTTON.ordinal()))
                 .orderBy(MENU.SORT_NO.asc());
         List<Menu> menus = mapper.selectListByQuery(queryWrapper);
         List<Link> links = new ArrayList<>();
