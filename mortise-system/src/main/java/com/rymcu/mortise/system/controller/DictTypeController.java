@@ -1,13 +1,13 @@
 package com.rymcu.mortise.system.controller;
 
 import com.mybatisflex.core.paginate.Page;
+import com.rymcu.mortise.common.model.BatchUpdateInfo;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.system.entity.DictType;
 import com.rymcu.mortise.system.entity.User;
-import com.rymcu.mortise.common.model.BatchUpdateInfo;
 import com.rymcu.mortise.system.model.DictTypeSearch;
+import com.rymcu.mortise.system.model.auth.UserDetailInfo;
 import com.rymcu.mortise.system.service.DictTypeService;
-import com.rymcu.mortise.system.util.UserUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -16,6 +16,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -65,8 +66,9 @@ public class DictTypeController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PostMapping
-    public GlobalResult<Boolean> createDictType(@Parameter(description = "字典类型信息", required = true) @Valid @RequestBody DictType dictType) {
-        User user = UserUtils.getCurrentUserByToken();
+    public GlobalResult<Boolean> createDictType(@Parameter(description = "字典类型信息", required = true) @Valid @RequestBody DictType dictType,
+                                                @AuthenticationPrincipal UserDetailInfo userDetails) {
+        User user = userDetails.getUser();
         dictType.setCreatedBy(user.getId());
         Boolean result = dictTypeService.saveDictType(dictType);
         return GlobalResult.success(result);
@@ -81,8 +83,9 @@ public class DictTypeController {
     })
     @PutMapping("/{id}")
     public GlobalResult<Boolean> updateDictType(@Parameter(description = "字典类型ID", required = true) @PathVariable("id") Long idDictType,
-                                               @Parameter(description = "字典类型信息", required = true) @Valid @RequestBody DictType dictType) {
-        User user = UserUtils.getCurrentUserByToken();
+                                                @Parameter(description = "字典类型信息", required = true) @Valid @RequestBody DictType dictType,
+                                                @AuthenticationPrincipal UserDetailInfo userDetails) {
+        User user = userDetails.getUser();
         dictType.setId(idDictType);
         dictType.setUpdatedBy(user.getId());
         Boolean result = dictTypeService.saveDictType(dictType);
@@ -97,7 +100,7 @@ public class DictTypeController {
     })
     @PatchMapping("/{id}/status")
     public GlobalResult<Boolean> updateDictTypeStatus(@Parameter(description = "字典类型ID", required = true) @PathVariable("id") Long idDictType,
-                                                     @Parameter(description = "字典类型状态信息", required = true) @Valid @RequestBody DictType dictType) {
+                                                      @Parameter(description = "字典类型状态信息", required = true) @Valid @RequestBody DictType dictType) {
         return GlobalResult.success(dictTypeService.updateStatus(idDictType, dictType.getStatus()));
     }
 

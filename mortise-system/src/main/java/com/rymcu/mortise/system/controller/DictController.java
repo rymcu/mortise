@@ -1,14 +1,14 @@
 package com.rymcu.mortise.system.controller;
 
 import com.mybatisflex.core.paginate.Page;
+import com.rymcu.mortise.common.model.BaseOption;
+import com.rymcu.mortise.common.model.BatchUpdateInfo;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.system.entity.Dict;
 import com.rymcu.mortise.system.entity.User;
-import com.rymcu.mortise.common.model.BaseOption;
-import com.rymcu.mortise.common.model.BatchUpdateInfo;
 import com.rymcu.mortise.system.model.DictSearch;
+import com.rymcu.mortise.system.model.auth.UserDetailInfo;
 import com.rymcu.mortise.system.service.DictService;
-import com.rymcu.mortise.system.util.UserUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -17,6 +17,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -69,8 +70,9 @@ public class DictController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PostMapping
-    public GlobalResult<Boolean> createDict(@Parameter(description = "字典信息", required = true) @Valid @RequestBody Dict dict) {
-        User user = UserUtils.getCurrentUserByToken();
+    public GlobalResult<Boolean> createDict(@Parameter(description = "字典信息", required = true) @Valid @RequestBody Dict dict,
+                                            @AuthenticationPrincipal UserDetailInfo userDetails) {
+        User user = userDetails.getUser();
         dict.setCreatedBy(user.getId());
         Boolean result = dictService.saveDict(dict);
         return GlobalResult.success(result);
@@ -85,8 +87,9 @@ public class DictController {
     })
     @PutMapping("/{id}")
     public GlobalResult<Boolean> updateDict(@Parameter(description = "字典ID", required = true) @PathVariable("id") Long idDict,
-                                           @Parameter(description = "字典信息", required = true) @Valid @RequestBody Dict dict) {
-        User user = UserUtils.getCurrentUserByToken();
+                                            @Parameter(description = "字典信息", required = true) @Valid @RequestBody Dict dict,
+                                            @AuthenticationPrincipal UserDetailInfo userDetails) {
+        User user = userDetails.getUser();
         dict.setId(idDict);
         dict.setUpdatedBy(user.getId());
         Boolean result = dictService.saveDict(dict);

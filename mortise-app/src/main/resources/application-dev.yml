@@ -235,6 +235,7 @@ jwt:
   expiration: 3600000  # 1小时，单位毫秒
   header: Authorization  # Token 请求头名称
   token-prefix: "Bearer "  # Token 前缀（注意有空格）
+  refresh-window: 300000   # 5 分钟
 
 executor:
   thread:

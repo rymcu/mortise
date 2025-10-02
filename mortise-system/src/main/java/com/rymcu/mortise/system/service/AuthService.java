@@ -41,12 +41,23 @@ public interface AuthService {
 
     /**
      * 刷新 token 接口
+     * 使用 Refresh Token 获取新的 Access Token 和 Refresh Token
      *
      * @param refreshToken 刷新 token
-     * @return TokenUser
+     * @return TokenUser 包含新的 Access Token 和 Refresh Token
      */
     TokenUser refreshToken(String refreshToken);
 
+    /**
+     * 刷新 Access Token（可选功能）
+     * 在 Access Token 即将过期时，使用旧的 Access Token 直接刷新
+     * 适用场景：用户正在活跃使用系统，避免频繁使用 Refresh Token
+     *
+     * @param accessToken 当前的 Access Token
+     * @param account 用户账号
+     * @return 新的 Access Token，如果刷新失败或未到刷新窗口期返回 null
+     */
+    String refreshAccessToken(String accessToken, String account);
 
     TokenUser oauth2Login(OidcUser oidcUser, String registrationId);
 

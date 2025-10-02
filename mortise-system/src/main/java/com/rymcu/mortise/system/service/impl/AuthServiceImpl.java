@@ -119,18 +119,62 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public TokenUser refreshToken(String refreshToken) {
-        // 使用缓存服务获取刷新令牌对应的账号
-        String account = systemCacheService.getAccountByRefreshToken(refreshToken);
-        if (StringUtils.isNotBlank(account)) {
-            User user = userService.findByAccount(account);
-            if (Objects.nonNull(user)) {
-                TokenUser tokenUser = generateAndStoreTokens(user);
-                // 删除旧的刷新令牌
-                systemCacheService.removeRefreshToken(refreshToken);
-                return tokenUser;
+        try {
+            // 使用缓存服务获取刷新令牌对应的账号
+            String account = systemCacheService.getAccountByRefreshToken(refreshToken);
+            if (StringUtils.isBlank(account)) {
+                log.warn("无效的刷新令牌");
+                throw new BusinessException("刷新令牌无效或已过期");
             }
+
+            // 查询用户信息
+            User user = userService.findByAccount(account);
+            if (Objects.isNull(user)) {
+                log.warn("刷新令牌关联的用户不存在: account={}", account);
+                throw new UsernameNotFoundException(ResultCode.UNKNOWN_ACCOUNT.getMessage());
+            }
+
+            // 生成新的 Access Token 和 Refresh Token
+            TokenUser tokenUser = generateAndStoreTokens(user);
+            
+            // 删除旧的刷新令牌（一次性使用原则）
+            systemCacheService.removeRefreshToken(refreshToken);
+            
+            log.info("令牌刷新成功: account={}", account);
+            return tokenUser;
+            
+        } catch (UsernameNotFoundException | BusinessException e) {
+            throw e;
+        } catch (Exception e) {
+            log.error("刷新令牌时发生异常", e);
+            throw new BusinessException("刷新令牌失败");
         }
-        throw new UsernameNotFoundException(ResultCode.UNKNOWN_ACCOUNT.getMessage());
+    }
+
+    @Override
+    public String refreshAccessToken(String accessToken, String account) {
+        try {
+            // 验证用户是否存在
+            User user = userService.findByAccount(account);
+            if (Objects.isNull(user)) {
+                log.warn("用户不存在: account={}", account);
+                return null;
+            }
+
+            // 使用 TokenManager 刷新 Access Token
+            String newAccessToken = tokenManager.refreshAccessToken(accessToken, account);
+            if (newAccessToken != null) {
+                log.info("Access Token 刷新成功: account={}", account);
+            } else {
+                log.debug("Access Token 暂不需要刷新或刷新失败: account={}", account);
+            }
+            
+            return newAccessToken;
+            
+        } catch (Exception e) {
+            log.error("刷新 Access Token 时发生异常: account={}", account, e);
+            return null;
+        }
     }
 
     @Override

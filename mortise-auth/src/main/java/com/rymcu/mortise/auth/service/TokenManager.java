@@ -42,5 +42,15 @@ public interface TokenManager {
      */
     void deleteToken(String account);
 
+    /**
+     * 刷新 Access Token
+     * 使用 JWT 自带的刷新机制，验证旧 Token 并生成新 Token
+     *
+     * @param oldToken 旧的 Access Token
+     * @param account 用户账号（用于验证）
+     * @return 新的 Access Token，如果刷新失败返回 null
+     */
+    String refreshAccessToken(String oldToken, String account);
+
 }
 

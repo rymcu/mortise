@@ -9,12 +9,14 @@ import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.PostConstruct;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -42,9 +44,22 @@ public class JwtTokenUtil {
     @Value("${jwt.expiration:1800000}") // 默认 30 分钟
     private long expiration;
 
+    @Value("${jwt.refresh-window:300000}") // 默认过期前 5 分钟才能刷新
+    private long refreshWindow;
+
+    /**
+     * -- GETTER --
+     *  获取 Token 请求头名称
+     */
+    @Getter
     @Value("${jwt.header:Authorization}")
     private String tokenHeader;
 
+    /**
+     * -- GETTER --
+     *  获取 Token 前缀
+     */
+    @Getter
     @Value("${jwt.token-prefix:Bearer }")
     private String tokenPrefix;
 
@@ -149,14 +164,12 @@ public class JwtTokenUtil {
      * 使用缓存的 SecretKey 提高性能
      */
     private String doGenerateToken(Map<String, Object> claims, String subject) {
-        final Date createdDate = new Date();
-        final Date expirationDate = calculateExpirationDate(createdDate);
-
+        Instant now = Instant.now();
         return Jwts.builder()
                 .claims(claims)
                 .subject(subject)
-                .issuedAt(createdDate)
-                .expiration(expirationDate)
+                .issuedAt(Date.from(now))
+                .expiration(Date.from(now.plusMillis(expiration)))
                 .signWith(secretKey)
                 .compact();
     }
@@ -174,21 +187,62 @@ public class JwtTokenUtil {
 
     /**
      * 刷新 Token
-     * 保持原始声明, 只更新签发和过期时间
+     * <p>
+     * 安全策略:
+     * 1. 只允许在 Token 即将过期但尚未过期时刷新
+     * 2. 设置刷新窗口期（默认过期前 5 分钟内才能刷新）
+     * 3. 保留必要的自定义 Claims，但重新生成时间相关的标准 Claims
+     *
+     * @param token 待刷新的 Token
+     * @return 新的 Token，如果刷新失败则返回 null
      */
     public String refreshToken(String token) {
         try {
-            final Claims claims = getAllClaimsFromToken(token);
-            if (claims == null) {
+            // 1. 验证 Token 是否已过期
+            if (isTokenExpired(token)) {
+                log.warn("无法刷新已过期的 Token");
                 return null;
             }
-            // JJWT 0.12+ Claims 是不可变的, 需要基于它重新创建
-            return Jwts.builder()
-                    .claims(claims)
-                    .issuedAt(new Date())
-                    .expiration(new Date(System.currentTimeMillis() + expiration))
-                    .signWith(secretKey)
-                    .compact();
+
+            // 2. 检查是否在刷新窗口期内
+            Date expirationDate = getExpirationDateFromToken(token);
+            if (expirationDate != null) {
+                long timeUntilExpiration = expirationDate.getTime() - System.currentTimeMillis();
+                if (timeUntilExpiration > refreshWindow) {
+                    log.debug("Token 尚未进入刷新窗口期，剩余有效时间: {} ms", timeUntilExpiration);
+                    // 如果还没到刷新窗口期，返回 null 表示暂时不需要刷新
+                    // 调用方可以继续使用原 Token
+                    return null;
+                }
+            }
+
+            // 3. 解析 Token 获取 Claims
+            final Claims claims = getAllClaimsFromToken(token);
+            if (claims == null) {
+                log.warn("无法从 Token 中解析 Claims");
+                return null;
+            }
+
+            // 4. 提取用户名
+            String username = claims.getSubject();
+            if (username == null || username.trim().isEmpty()) {
+                log.warn("Token 中缺少有效的 subject");
+                return null;
+            }
+
+            // 5. 提取自定义 Claims（排除 JWT 标准 Claims）
+            Map<String, Object> customClaims = new HashMap<>();
+            claims.forEach((key, value) -> {
+                if (!isStandardClaim(key)) {
+                    customClaims.put(key, value);
+                }
+            });
+
+            // 6. 生成新的 Token（会自动设置新的 iat 和 exp）
+            String newToken = generateToken(username, customClaims);
+            log.info("Token 刷新成功，用户: {}", username);
+            return newToken;
+
         } catch (Exception e) {
             log.error("Token 刷新失败", e);
             return null;
@@ -196,23 +250,21 @@ public class JwtTokenUtil {
     }
 
     /**
-     * 计算过期时间
+     * 判断是否为 JWT 标准 Claim
+     * <p>
+     * 标准 Claims 包括: iss, sub, aud, exp, nbf, iat, jti
+     *
+     * @param claimName Claim 名称
+     * @return true: 标准 Claim, false: 自定义 Claim
      */
-    private Date calculateExpirationDate(Date createdDate) {
-        return new Date(createdDate.getTime() + expiration);
+    private boolean isStandardClaim(String claimName) {
+        return Claims.ISSUER.equals(claimName)
+                || Claims.SUBJECT.equals(claimName)
+                || Claims.AUDIENCE.equals(claimName)
+                || Claims.EXPIRATION.equals(claimName)
+                || Claims.NOT_BEFORE.equals(claimName)
+                || Claims.ISSUED_AT.equals(claimName)
+                || Claims.ID.equals(claimName);
     }
 
-    /**
-     * 获取 Token 请求头名称
-     */
-    public String getTokenHeader() {
-        return tokenHeader;
-    }
-
-    /**
-     * 获取 Token 前缀
-     */
-    public String getTokenPrefix() {
-        return tokenPrefix;
-    }
 }
