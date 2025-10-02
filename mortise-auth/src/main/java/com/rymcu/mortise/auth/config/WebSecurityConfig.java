@@ -81,14 +81,14 @@ public class WebSecurityConfig {
         this.securityConfigurers = configurersOptional.orElse(null);
         this.clientRegistrationRepository = clientRegistrationRepositoryOptional.orElse(null);
         this.cacheAuthorizationRequestRepository = cacheAuthorizationRequestRepositoryOptional.orElse(null);
-        
+
         log.info("==========================================================");
         log.info("WebSecurityConfig 构造函数被调用");
-        log.info("发现 {} 个 SecurityConfigurer 扩展", 
+        log.info("发现 {} 个 SecurityConfigurer 扩展",
                  this.securityConfigurers == null ? 0 : this.securityConfigurers.size());
-        log.info("OAuth2 客户端注册仓库: {}", 
+        log.info("OAuth2 客户端注册仓库: {}",
                  this.clientRegistrationRepository != null ? "已配置" : "未配置");
-        log.info("OAuth2 授权请求仓库: {}", 
+        log.info("OAuth2 授权请求仓库: {}",
                  this.cacheAuthorizationRequestRepository != null ? "已配置" : "未配置");
         log.info("==========================================================");
     }
@@ -138,7 +138,7 @@ public class WebSecurityConfig {
         return request -> {
             // 获取用户信息
             OidcUser user = delegate.loadUser(request);
-            
+
             // 发布事件，业务层可以监听此事件进行后续处理
             // 注意：通过反射避免直接依赖 system 模块，防止循环依赖
             try {
@@ -149,7 +149,7 @@ public class WebSecurityConfig {
             } catch (Exception e) {
                 log.warn("发布 OidcUserEvent 失败（可能 system 模块未加载）: {}", e.getMessage());
             }
-            
+
             return user;
         };
     }
@@ -161,10 +161,10 @@ public class WebSecurityConfig {
         if (clientRegistrationRepository == null) {
             return null;
         }
-        
-        DefaultOAuth2AuthorizationRequestResolver resolver = 
+
+        DefaultOAuth2AuthorizationRequestResolver resolver =
                 new DefaultOAuth2AuthorizationRequestResolver(
-                        clientRegistrationRepository, 
+                        clientRegistrationRepository,
                         "/api/v1/oauth2/authorization");
         resolver.setAuthorizationRequestCustomizer(authorizationRequestCustomizer());
         return resolver;
@@ -181,7 +181,7 @@ public class WebSecurityConfig {
 
     /**
      * 认证管理器
-     * 
+     *
      * @param configuration 认证配置
      * @return AuthenticationManager
      * @throws Exception 异常
@@ -200,36 +200,10 @@ public class WebSecurityConfig {
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(authorize -> {
-                    // ========== 核心端点配置 ==========
-                    
-                    // OpenAPI 文档 - 无需认证
-                    authorize.requestMatchers("/v3/api-docs/**").permitAll();
-                    authorize.requestMatchers("/swagger-ui/**").permitAll();
-                    authorize.requestMatchers("/swagger-ui.html").permitAll();
-                    
-                    // 静态资源 - 无需认证
-                    authorize.requestMatchers("/static/**").permitAll();
-                    authorize.requestMatchers("/webjars/**").permitAll();
-                    
-                    // OPTIONS 请求 - 无需认证（CORS 预检）
-                    authorize.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
-                    
-                    // 认证相关 API - 无需认证
-                    authorize.requestMatchers("/api/v1/auth/login").permitAll();
-                    authorize.requestMatchers("/api/v1/auth/register").permitAll();
-                    authorize.requestMatchers("/api/v1/auth/logout").permitAll();
-                    authorize.requestMatchers("/api/v1/auth/refresh-token").permitAll();
-                    authorize.requestMatchers("/api/v1/auth/password/request").permitAll();
-                    authorize.requestMatchers("/api/v1/auth/password/reset").permitAll();
-                    authorize.requestMatchers("/api/v1/auth/email/request").permitAll();
-                    
-                    // Spring Boot Actuator - 无需认证
-                    authorize.requestMatchers("/actuator/**").permitAll();
-                    
                     // ========== 应用 SPI 扩展配置 ==========
                     // 注意：必须在 anyRequest() 之前调用
                     applySecurityConfigurers(authorize);
-                    
+
                     // 其他所有请求需要认证
                     authorize.anyRequest().authenticated();
                 })
@@ -248,18 +222,18 @@ public class WebSecurityConfig {
                             authorization.authorizationRequestRepository(cacheAuthorizationRequestRepository);
                         }
                     })
-                    .redirectionEndpoint(redirection -> 
+                    .redirectionEndpoint(redirection ->
                         redirection.baseUri("/api/v1/oauth2/code/*"))
-                    .userInfoEndpoint(userInfoEndpoint -> 
+                    .userInfoEndpoint(userInfoEndpoint ->
                         userInfoEndpoint.oidcUserService(oidcUserService()))
                     .successHandler(oauth2LoginSuccessHandler())
             );
-            
+
             // 配置登出
-            http.logout(logout -> 
+            http.logout(logout ->
                 logout.logoutSuccessHandler(oauth2LogoutSuccessHandler())
             );
-            
+
             log.info("OAuth2 登录配置已启用");
         } else {
             log.info("未检测到 OAuth2 客户端配置，跳过 OAuth2 登录配置");
@@ -281,7 +255,7 @@ public class WebSecurityConfig {
 
     /**
      * 应用所有 SecurityConfigurer SPI 扩展
-     * 
+     *
      * @param registry 授权请求匹配器注册表
      */
     private void applySecurityConfigurers(
@@ -291,8 +265,6 @@ public class WebSecurityConfig {
             log.info("未发现 SecurityConfigurer 扩展");
             return;
         }
-
-        log.info("发现 {} 个 SecurityConfigurer 扩展", securityConfigurers.size());
 
         // 按优先级排序并应用
         securityConfigurers.stream()

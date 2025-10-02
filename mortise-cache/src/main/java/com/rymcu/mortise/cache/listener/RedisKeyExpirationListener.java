@@ -17,14 +17,14 @@ import java.util.Optional;
 /**
  * Redis 键过期事件监听器
  * 基于 SPI 机制处理缓存失效事件
- * 
+ *
  * <p>使用方式：</p>
  * <ol>
  *     <li>业务模块实现 {@link CacheExpirationHandler} 接口</li>
  *     <li>注册为 Spring Bean (@Component)</li>
  *     <li>监听器会自动发现并调用相应的处理器</li>
  * </ol>
- * 
+ *
  * @author ronger
  */
 @Slf4j
@@ -41,25 +41,25 @@ public class RedisKeyExpirationListener extends KeyExpirationEventMessageListene
                                     Optional<List<CacheExpirationHandler>> handlersOptional) {
         super(listenerContainer);
         this.expirationHandlers = handlersOptional.orElse(List.of());
-        log.info("Redis键过期监听器初始化完成，发现 {} 个缓存失效处理器", expirationHandlers.size());
-        
+        log.info("Redis 键过期监听器初始化完成，发现 {} 个缓存失效处理器", expirationHandlers.size());
+
         // 打印所有注册的处理器信息
-        expirationHandlers.forEach(handler -> 
-            log.info("注册缓存失效处理器: {} (优先级: {}, 启用: {})", 
+        expirationHandlers.forEach(handler ->
+            log.info("注册缓存失效处理器: {} (优先级: {}, 启用: {})",
                 handler.getName(), handler.getOrder(), handler.isEnabled()));
     }
 
     /**
      * 处理 Redis 键过期事件
      * 按优先级顺序调用所有支持的处理器
-     * 
+     *
      * @param message Redis 过期事件消息
      * @param pattern 匹配模式
      */
     @Override
     public void onMessage(@NonNull Message message, @Nullable byte[] pattern) {
         String expiredKey = message.toString();
-        log.debug("检测到Redis键过期事件：{}", expiredKey);
+        log.debug("检测到 Redis 键过期事件：{}", expiredKey);
 
         try {
             // 查找支持处理该键的处理器
@@ -87,7 +87,7 @@ public class RedisKeyExpirationListener extends KeyExpirationEventMessageListene
             }
 
         } catch (Exception e) {
-            log.error("处理Redis键过期事件时发生异常：{}", expiredKey, e);
+            log.error("处理 Redis 键过期事件时发生异常：{}", expiredKey, e);
         }
 
         // 调用父类方法，确保框架默认行为正常执行
