@@ -1,11 +1,12 @@
 package com.rymcu.mortise.system.controller;
 
 import com.mybatisflex.core.paginate.Page;
-import com.rymcu.mortise.core.result.GlobalResult;
-import com.rymcu.mortise.system.entity.Menu;
 import com.rymcu.mortise.common.model.BatchUpdateInfo;
 import com.rymcu.mortise.common.model.Link;
+import com.rymcu.mortise.core.result.GlobalResult;
+import com.rymcu.mortise.system.entity.Menu;
 import com.rymcu.mortise.system.model.MenuSearch;
+import com.rymcu.mortise.system.model.MenuTreeInfo;
 import com.rymcu.mortise.system.service.MenuService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -41,20 +42,9 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping
-    public GlobalResult<List<Link>> listMenu(@Parameter(description = "菜单查询条件") @Valid MenuSearch search) {
-        List<Link> list = menuService.findMenus(search);
-        return GlobalResult.success(list);
-    }
-
-    @Operation(summary = "获取子菜单列表", description = "分页查询子菜单信息")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "查询成功"),
-            @ApiResponse(responseCode = "403", description = "权限不足")
-    })
-    @GetMapping("/children")
-    public GlobalResult<Page<Menu>> listChildrenMenu(@Parameter(description = "菜单查询条件") @Valid MenuSearch search) {
+    public GlobalResult<Page<Menu>> listMenu(@Parameter(description = "菜单查询条件") @Valid MenuSearch search) {
         Page<Menu> page = new Page<>(search.getPageNum(), search.getPageSize());
-        List<Menu> list = menuService.findChildrenMenus(page, search);
+        List<Menu> list = menuService.findMenus(page, search);
         page.setRecords(list);
         return GlobalResult.success(page);
     }
@@ -67,7 +57,7 @@ public class MenuController {
     })
     @GetMapping("/{id}")
     public GlobalResult<Menu> getMenuById(@Parameter(description = "菜单ID", required = true) @PathVariable("id") Long idMenu) {
-        return GlobalResult.success(menuService.findById(idMenu));
+        return GlobalResult.success(menuService.getById(idMenu));
     }
 
     @Operation(summary = "创建菜单", description = "新增菜单数据")
@@ -124,8 +114,8 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping("/tree")
-    public GlobalResult<List<Link>> getMenuTree(@Parameter(description = "菜单查询条件") @Valid MenuSearch search) {
-        List<Link> menus = menuService.findMenuTree(search);
+    public GlobalResult<List<MenuTreeInfo>> getMenuTree(@Parameter(description = "菜单查询条件") @Valid MenuSearch search) {
+        List<MenuTreeInfo> menus = menuService.findMenuTree(search);
         return GlobalResult.success(menus);
     }
 

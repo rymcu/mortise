@@ -60,6 +60,7 @@ public class Menu implements Serializable {
     /**
      * 菜单类型: 0-目录, 1-菜单, 2-按钮
      */
+    @DictFormat(value = "MenuType")
     private Integer menuType;
     /**
      * 排序

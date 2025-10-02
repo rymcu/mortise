@@ -5,12 +5,14 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.util.UpdateEntity;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.common.enumerate.MenuType;
+import com.rymcu.mortise.common.model.Link;
 import com.rymcu.mortise.system.entity.Menu;
 import com.rymcu.mortise.system.mapper.MenuMapper;
-import com.rymcu.mortise.common.model.Link;
 import com.rymcu.mortise.system.model.MenuSearch;
+import com.rymcu.mortise.system.model.MenuTreeInfo;
 import com.rymcu.mortise.system.service.MenuService;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -49,31 +51,6 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     }
 
     @Override
-    public List<Link> findMenus(MenuSearch search) {
-        QueryWrapper queryWrapper = QueryWrapper.create()
-                .select()
-                .where(MENU.LABEL.like(search.getQuery(), StringUtils.isNotBlank(search.getQuery())))
-                .and(MENU.PARENT_ID.eq(search.getParentId(), Objects.nonNull(search.getParentId())))
-                .orderBy(MENU.SORT_NO.asc());
-        List<Menu> menus = mapper.selectListByQuery(queryWrapper);
-        List<Link> links = new ArrayList<>();
-        for (Menu menu : menus) {
-            Link link = new Link();
-            link.setId(menu.getId());
-            link.setLabel(menu.getLabel());
-            link.setParentId(menu.getParentId());
-            link.setIcon(menu.getIcon());
-            link.setSortNo(menu.getSortNo());
-            link.setStatus(menu.getStatus());
-            MenuSearch menuSearch = new MenuSearch();
-            menuSearch.setParentId(menu.getId());
-            link.setChildren(findMenus(menuSearch));
-            links.add(link);
-        }
-        return links;
-    }
-
-    @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean saveMenu(Menu menu) {
         Menu oldMenu = mapper.selectOneById(menu.getId());
@@ -93,7 +70,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     }
 
     @Override
-    public List<Menu> findChildrenMenus(Page<Menu> page, MenuSearch search) {
+    public List<Menu> findMenus(Page<Menu> page, MenuSearch search) {
         Page<Menu> menuPage = new Page<>(search.getPageNum(), search.getPageSize());
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .select(MENU.ID, MENU.LABEL, MENU.PERMISSION, MENU.HREF, MENU.MENU_TYPE, MENU.PARENT_ID, MENU.ICON, MENU.SORT_NO, MENU.STATUS, MENU.CREATED_TIME)
@@ -125,16 +102,11 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     }
 
     @Override
-    public Menu findById(Long idMenu) {
-        return mapper.selectOneById(idMenu);
-    }
-
-    @Override
-    public List<Link> findMenuTree(MenuSearch search) {
+    public List<MenuTreeInfo> findMenuTree(MenuSearch search) {
         return findMenuTreeMode(search.getParentId());
     }
 
-    private List<Link> findMenuTreeMode(Long parentId) {
+    private List<MenuTreeInfo> findMenuTreeMode(Long parentId) {
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .select(MENU.ID, MENU.LABEL, MENU.PERMISSION, MENU.PARENT_ID, MENU.SORT_NO,
                         MENU.MENU_TYPE, MENU.ICON, MENU.HREF, MENU.CREATED_TIME, MENU.UPDATED_TIME, MENU.STATUS)
@@ -142,13 +114,14 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
                 .and(MENU.MENU_TYPE.ne(MenuType.BUTTON.ordinal()))
                 .orderBy(MENU.SORT_NO.asc());
         List<Menu> menus = mapper.selectListByQuery(queryWrapper);
-        List<Link> links = new ArrayList<>();
+        List<MenuTreeInfo> menuTreeInfos = new ArrayList<>();
         for (Menu menu : menus) {
-            Link link = convertLink(menu);
-            link.setChildren(findMenuTreeMode(menu.getId()));
-            links.add(link);
+            MenuTreeInfo menuTreeInfo = new MenuTreeInfo();
+            BeanUtils.copyProperties(menu, menuTreeInfo);
+            menuTreeInfo.setChildren(findMenuTreeMode(menu.getId()));
+            menuTreeInfos.add(menuTreeInfo);
         }
-        return links;
+        return menuTreeInfos;
     }
 
     private List<Link> findLinkTreeMode(Long idUser, long parentId) {
