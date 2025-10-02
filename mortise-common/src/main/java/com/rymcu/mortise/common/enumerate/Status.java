@@ -7,11 +7,11 @@ package com.rymcu.mortise.common.enumerate;
  */
 public enum Status {
     /**
-     * 禁用
-     */
-    DISABLED,
-    /**
      * 启用
      */
-    ENABLED
+    ENABLED,
+    /**
+     * 禁用
+     */
+    DISABLED
 }

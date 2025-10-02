@@ -40,6 +40,71 @@ public class DatabasePerformanceConfig {
     }
 
     /**
+     * 注册数据库连接池 Gauge（在 Bean 初始化后调用，避免重复注册）
+     * 由于 DataSource 可能尚未完全初始化，所以在首次使用时延迟注册
+     */
+    private volatile boolean gaugesRegistered = false;
+    
+    private void registerConnectionPoolGauges(HikariDataSource hikariDataSource) {
+        if (gaugesRegistered) {
+            return;
+        }
+        
+        synchronized (this) {
+            if (gaugesRegistered) {
+                return;
+            }
+            
+            try {
+                // 注册活跃连接数 Gauge
+                meterRegistry.gauge("hikari.connections.active", hikariDataSource, ds -> {
+                    var poolMXBean = ds.getHikariPoolMXBean();
+                    return poolMXBean != null ? poolMXBean.getActiveConnections() : 0;
+                });
+
+                // 注册空闲连接数 Gauge
+                meterRegistry.gauge("hikari.connections.idle", hikariDataSource, ds -> {
+                    var poolMXBean = ds.getHikariPoolMXBean();
+                    return poolMXBean != null ? poolMXBean.getIdleConnections() : 0;
+                });
+
+                // 注册总连接数 Gauge
+                meterRegistry.gauge("hikari.connections.total", hikariDataSource, ds -> {
+                    var poolMXBean = ds.getHikariPoolMXBean();
+                    return poolMXBean != null ? poolMXBean.getTotalConnections() : 0;
+                });
+
+                // 注册最大连接数 Gauge
+                meterRegistry.gauge("hikari.connections.max", hikariDataSource, HikariDataSource::getMaximumPoolSize);
+
+                // 注册最小空闲连接数 Gauge
+                meterRegistry.gauge("hikari.connections.min", hikariDataSource, HikariDataSource::getMinimumIdle);
+
+                // 注册等待线程数 Gauge
+                meterRegistry.gauge("hikari.threads.awaiting", hikariDataSource, ds -> {
+                    var poolMXBean = ds.getHikariPoolMXBean();
+                    return poolMXBean != null ? poolMXBean.getThreadsAwaitingConnection() : 0;
+                });
+
+                // 注册连接池使用率 Gauge
+                meterRegistry.gauge("hikari.connections.usage", hikariDataSource, ds -> {
+                    var poolMXBean = ds.getHikariPoolMXBean();
+                    if (poolMXBean == null) {
+                        return 0.0;
+                    }
+                    int maxSize = ds.getMaximumPoolSize();
+                    return maxSize > 0 ? (double) poolMXBean.getActiveConnections() / maxSize : 0.0;
+                });
+
+                gaugesRegistered = true;
+                log.debug("数据库连接池 Gauge 指标注册成功");
+            } catch (Exception e) {
+                log.error("注册数据库连接池 Gauge 失败", e);
+            }
+        }
+    }
+
+    /**
      * HikariCP 连接池健康检查指示器
      */
     @Bean
@@ -88,42 +153,40 @@ public class DatabasePerformanceConfig {
     }
 
     /**
-     * 数据库连接池性能指标定时收集
+     * 数据库连接池监控和告警
+     * 注意：Gauge 指标在首次调用时延迟注册，此方法负责告警检查
      */
-    @Scheduled(fixedRate = 30000) // 30秒收集一次
-    public void collectConnectionPoolMetrics() {
+    @Scheduled(fixedRate = 30000) // 30秒检查一次
+    public void monitorConnectionPoolAlerts() {
         if (dataSource instanceof HikariDataSource hikariDataSource) {
             try {
                 // 检查连接池是否已经启动
                 if (!hikariDataSource.isRunning()) {
-                    log.debug("HikariCP连接池尚未启动，跳过指标收集");
+                    log.debug("HikariCP连接池尚未启动，跳过监控");
                     return;
                 }
 
-                // 记录连接池指标到Micrometer
+                // 首次调用时注册 Gauge
+                if (!gaugesRegistered) {
+                    registerConnectionPoolGauges(hikariDataSource);
+                }
+
                 var poolMXBean = hikariDataSource.getHikariPoolMXBean();
                 if (poolMXBean == null) {
-                    log.debug("HikariPoolMXBean尚未可用，跳过指标收集");
+                    log.debug("HikariPoolMXBean尚未可用，跳过监控");
                     return;
                 }
 
-                meterRegistry.gauge("hikari.connections.active", poolMXBean.getActiveConnections());
-                meterRegistry.gauge("hikari.connections.idle", poolMXBean.getIdleConnections());
-                meterRegistry.gauge("hikari.connections.total", poolMXBean.getTotalConnections());
-                meterRegistry.gauge("hikari.connections.max", hikariDataSource.getMaximumPoolSize());
-                meterRegistry.gauge("hikari.connections.min", hikariDataSource.getMinimumIdle());
-                meterRegistry.gauge("hikari.threads.awaiting", poolMXBean.getThreadsAwaitingConnection());
-
                 // 连接池使用率
-                double usage = (double) poolMXBean.getActiveConnections() / hikariDataSource.getMaximumPoolSize();
-                meterRegistry.gauge("hikari.connections.usage", usage);
+                int maxSize = hikariDataSource.getMaximumPoolSize();
+                double usage = maxSize > 0 ? (double) poolMXBean.getActiveConnections() / maxSize : 0.0;
 
                 // 如果连接池使用率过高，记录警告
                 if (usage > 0.8) {
                     log.warn("⚠️ 数据库连接池使用率较高: {}%, 活跃连接: {}/{}",
                             Math.round(usage * 100),
                             poolMXBean.getActiveConnections(),
-                            hikariDataSource.getMaximumPoolSize());
+                            maxSize);
                 }
 
                 // 如果有等待线程，记录警告
@@ -133,7 +196,7 @@ public class DatabasePerformanceConfig {
                 }
 
             } catch (Exception e) {
-                log.error("收集数据库连接池指标失败", e);
+                log.error("数据库连接池监控失败", e);
             }
         }
     }

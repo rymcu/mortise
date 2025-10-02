@@ -33,6 +33,29 @@ public class ApplicationPerformanceConfig {
      */
     public ApplicationPerformanceConfig(@Lazy MeterRegistry meterRegistry) {
         this.meterRegistry = meterRegistry;
+        // 注册一次性的 Gauge，使用 lambda 提供动态值
+        registerPerformanceGauges();
+    }
+
+    /**
+     * 注册性能监控 Gauge（只注册一次，避免重复注册警告）
+     */
+    private void registerPerformanceGauges() {
+        MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
+        ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
+
+        // 注册堆内存使用率 Gauge
+        meterRegistry.gauge("application.memory.heap.usage.percent", memoryBean, bean -> {
+            var heapMemory = bean.getHeapMemoryUsage();
+            long heapMax = heapMemory.getMax();
+            return heapMax <= 0 ? 0.0 : (double) heapMemory.getUsed() / heapMax * 100;
+        });
+
+        // 注册当前线程数 Gauge
+        meterRegistry.gauge("application.threads.current", threadBean, ThreadMXBean::getThreadCount);
+
+        // 注册峰值线程数 Gauge
+        meterRegistry.gauge("application.threads.peak", threadBean, ThreadMXBean::getPeakThreadCount);
     }
 
     /**
@@ -73,21 +96,18 @@ public class ApplicationPerformanceConfig {
     }
 
     /**
-     * 应用性能指标定时收集
+     * 应用性能监控和告警
+     * 注意：Gauge 指标已在构造函数中注册，此方法只负责告警检查
      */
-    @Scheduled(fixedRate = 60000) // 每分钟收集一次
-    public void collectPerformanceMetrics() {
+    @Scheduled(fixedRate = 60000) // 每分钟检查一次
+    public void monitorPerformanceAlerts() {
         try {
             MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
             ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
 
             var heapMemory = memoryBean.getHeapMemoryUsage();
-            double heapUsage = (double) heapMemory.getUsed() / heapMemory.getMax();
-
-            // 记录自定义指标
-            meterRegistry.gauge("application.memory.heap.usage.percent", heapUsage * 100);
-            meterRegistry.gauge("application.threads.current", threadBean.getThreadCount());
-            meterRegistry.gauge("application.threads.peak", threadBean.getPeakThreadCount());
+            long heapMax = heapMemory.getMax();
+            double heapUsage = heapMax <= 0 ? 0.0 : (double) heapMemory.getUsed() / heapMax;
 
             // 性能告警
             if (heapUsage > 0.8) {
@@ -103,7 +123,7 @@ public class ApplicationPerformanceConfig {
                         threadBean.getPeakThreadCount());
             }
         } catch (Exception e) {
-            log.error("收集应用性能指标失败", e);
+            log.error("应用性能告警检查失败", e);
         }
     }
 
