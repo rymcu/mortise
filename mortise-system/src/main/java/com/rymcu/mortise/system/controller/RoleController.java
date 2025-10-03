@@ -5,8 +5,8 @@ import com.rymcu.mortise.common.model.BatchUpdateInfo;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.system.entity.Menu;
 import com.rymcu.mortise.system.entity.Role;
-import com.rymcu.mortise.system.model.BindRoleMenuInfo;
-import com.rymcu.mortise.system.model.RoleSearch;
+import com.rymcu.mortise.system.entity.User;
+import com.rymcu.mortise.system.model.*;
 import com.rymcu.mortise.system.service.RoleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -95,7 +95,31 @@ public class RoleController {
         return GlobalResult.success(roleService.updateStatus(idRole, role.getStatus()));
     }
 
-    @Operation(summary = "获取角色菜单权限", description = "获取角色关联的菜单ID列表")
+    @Operation(summary = "获取角色-用户", description = "获取角色关联的用户列表")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "查询成功"),
+            @ApiResponse(responseCode = "404", description = "角色不存在"),
+            @ApiResponse(responseCode = "403", description = "权限不足")
+    })
+    @GetMapping("/{id}/users")
+    public GlobalResult<List<User>> getRoleUsers(@Parameter(description = "角色ID", required = true) @PathVariable("id") Long idRole) {
+        return GlobalResult.success(roleService.findUsersByIdRole(idRole));
+    }
+
+    @Operation(summary = "绑定角色-用户", description = "分配角色给用户")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "绑定成功"),
+            @ApiResponse(responseCode = "400", description = "参数错误"),
+            @ApiResponse(responseCode = "403", description = "权限不足")
+    })
+    @PutMapping("/{id}/users")
+    public GlobalResult<Boolean> bindRoleUsers(@Parameter(description = "角色ID", required = true) @PathVariable("id") Long idRole,
+                                               @Parameter(description = "角色用户绑定信息", required = true) @Valid @RequestBody BindRoleUserInfo bindRoleUserInfo) {
+        bindRoleUserInfo.setIdRole(idRole);
+        return GlobalResult.success(roleService.bindRoleUser(bindRoleUserInfo));
+    }
+
+    @Operation(summary = "获取角色菜单权限", description = "获取角色关联的菜单列表")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "查询成功"),
             @ApiResponse(responseCode = "404", description = "角色不存在"),

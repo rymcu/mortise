@@ -5,6 +5,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.common.model.BatchUpdateInfo;
+import com.rymcu.mortise.system.entity.Role;
+import com.rymcu.mortise.system.entity.User;
+import com.rymcu.mortise.system.model.BindRoleUserInfo;
 import com.rymcu.mortise.system.model.BindUserRoleInfo;
 import com.rymcu.mortise.system.model.UserInfo;
 import com.rymcu.mortise.system.model.UserSearch;
@@ -18,6 +21,8 @@ import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 用户管理控制器
@@ -144,5 +149,29 @@ public class UserController {
     @DeleteMapping("/batch")
     public GlobalResult<Boolean> batchDeleteUsers(@Parameter(description = "批量更新信息", required = true) @Valid @RequestBody BatchUpdateInfo batchUpdateInfo) {
         return GlobalResult.success(userService.batchDeleteUsers(batchUpdateInfo.getIds()));
+    }
+
+    @Operation(summary = "获取用户-角色", description = "获取用户关联的角色列表")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "查询成功"),
+            @ApiResponse(responseCode = "404", description = "角色不存在"),
+            @ApiResponse(responseCode = "403", description = "权限不足")
+    })
+    @GetMapping("/{id}/roles")
+    public GlobalResult<List<Role>> getRoleUsers(@Parameter(description = "用户ID", required = true) @PathVariable("id") Long idUser) {
+        return GlobalResult.success(userService.findRolesByIdUser(idUser));
+    }
+
+    @Operation(summary = "绑定用户-角色", description = "给用户分配角色")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "绑定成功"),
+            @ApiResponse(responseCode = "400", description = "参数错误"),
+            @ApiResponse(responseCode = "403", description = "权限不足")
+    })
+    @PutMapping("/{id}/roles")
+    public GlobalResult<Boolean> bindRoleUsers(@Parameter(description = "用户ID", required = true) @PathVariable("id") Long idUser,
+                                               @Parameter(description = "用户角色绑定信息", required = true) @Valid @RequestBody BindUserRoleInfo bindUserRoleInfo) {
+        bindUserRoleInfo.setIdUser(idUser);
+        return GlobalResult.success(userService.bindRoleUser(bindUserRoleInfo));
     }
 }

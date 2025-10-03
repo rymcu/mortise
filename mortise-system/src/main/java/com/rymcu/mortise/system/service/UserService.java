@@ -2,8 +2,11 @@ package com.rymcu.mortise.system.service;
 
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.service.IService;
+import com.rymcu.mortise.system.entity.Role;
 import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.model.*;
+import jakarta.validation.Valid;
+
 import java.util.List;
 import java.util.Set;
 
@@ -77,4 +80,8 @@ public interface UserService extends IService<User> {
     String checkNickname(String nickname);
 
     String nextAccount();
+
+    List<Role> findRolesByIdUser(Long idUser);
+
+    Boolean bindRoleUser(@Valid BindUserRoleInfo bindUserRoleInfo);
 }

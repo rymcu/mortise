@@ -3,8 +3,11 @@ package com.rymcu.mortise.system.service;
 import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.system.entity.Menu;
 import com.rymcu.mortise.system.entity.Role;
+import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.model.BindRoleMenuInfo;
+import com.rymcu.mortise.system.model.BindRoleUserInfo;
 import com.rymcu.mortise.system.model.RoleSearch;
+import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.Set;
@@ -42,4 +45,8 @@ public interface RoleService {
      * @return 默认角色
      */
     List<Role> findDefaultRole();
+
+    Boolean bindRoleUser(@Valid BindRoleUserInfo bindRoleUserInfo);
+
+    List<User> findUsersByIdRole(Long idRole);
 }

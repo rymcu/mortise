@@ -1,5 +1,6 @@
 package com.rymcu.mortise.system.entity;
 
+import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
@@ -16,8 +17,19 @@ import java.io.Serializable;
 @Data
 public class UserRole implements Serializable {
 
+    @Id
     private Long idMortiseUser;
 
+    @Id
     private Long idMortiseRole;
+
+    public UserRole() {
+
+    }
+
+    public UserRole(Long idMortiseUser, Long idMortiseRole) {
+        this.idMortiseUser = idMortiseUser;
+        this.idMortiseRole = idMortiseRole;
+    }
 
 }

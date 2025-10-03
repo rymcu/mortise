@@ -11,11 +11,13 @@ import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.common.exception.BusinessException;
 import com.rymcu.mortise.common.model.Avatar;
 import com.rymcu.mortise.core.result.ResultCode;
+import com.rymcu.mortise.system.entity.Role;
 import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.entity.UserRole;
 import com.rymcu.mortise.system.handler.event.RegisterEvent;
 import com.rymcu.mortise.system.handler.event.ResetPasswordEvent;
 import com.rymcu.mortise.system.mapper.UserMapper;
+import com.rymcu.mortise.system.mapper.UserRoleMapper;
 import com.rymcu.mortise.system.model.*;
 import com.rymcu.mortise.system.service.SystemCacheService;
 import com.rymcu.mortise.system.service.PermissionService;
@@ -55,6 +57,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private PermissionService permissionService;
     @Resource
     private SystemCacheService systemCacheService;
+    @Resource
+    private UserRoleMapper userRoleMapper;
     @Resource
     private PasswordEncoder passwordEncoder;
     @Resource
@@ -108,6 +112,28 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 使用缓存服务存储当前账号
         systemCacheService.storeCurrentAccount(currentAccount);
         return currentAccount;
+    }
+
+    @Override
+    public List<Role> findRolesByIdUser(Long idUser) {
+        // 使用 Mapper 方法，避免参数绑定问题
+        return userRoleMapper.findRolesByIdUser(idUser);
+    }
+
+    @Override
+    public Boolean bindRoleUser(BindUserRoleInfo bindUserRoleInfo) {
+        // 删除原有关系
+        QueryWrapper deleteWrapper = QueryWrapper.create()
+                .where(USER_ROLE.ID_MORTISE_USER.eq(bindUserRoleInfo.getIdUser()));
+        userRoleMapper.deleteByQuery(deleteWrapper);
+
+        // 批量插入新关系
+        if (bindUserRoleInfo.getIdRoles() != null && !bindUserRoleInfo.getIdRoles().isEmpty()) {
+            List<UserRole> userRoles = bindUserRoleInfo.getIdRoles().stream().map(idRole -> new UserRole(bindUserRoleInfo.getIdUser(), idRole)).toList();
+            int num = userRoleMapper.insertBatch(userRoles);
+            return num == bindUserRoleInfo.getIdRoles().size();
+        }
+        return true;
     }
 
     @Override
