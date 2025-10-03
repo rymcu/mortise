@@ -8,11 +8,15 @@ import com.mybatisflex.core.util.UpdateEntity;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.common.enumerate.DefaultFlag;
 import com.rymcu.mortise.common.exception.ServiceException;
+import com.rymcu.mortise.system.entity.Menu;
 import com.rymcu.mortise.system.entity.Role;
+import com.rymcu.mortise.system.entity.RoleMenu;
 import com.rymcu.mortise.system.mapper.RoleMapper;
+import com.rymcu.mortise.system.mapper.RoleMenuMapper;
 import com.rymcu.mortise.system.model.BindRoleMenuInfo;
 import com.rymcu.mortise.system.model.RoleSearch;
 import com.rymcu.mortise.system.service.RoleService;
+import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +39,9 @@ import static com.rymcu.mortise.system.entity.table.UserRoleTableDef.USER_ROLE;
  */
 @Service
 public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements RoleService {
+
+    @Resource
+    private RoleMenuMapper roleMenuMapper;
 
     @Override
     public List<Role> findRolesByIdUser(Long idUser) {
@@ -83,20 +90,12 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         // 先删除原有关系
         QueryWrapper deleteWrapper = QueryWrapper.create()
                 .where(ROLE_MENU.ID_MORTISE_ROLE.eq(bindRoleMenuInfo.getIdRole()));
-        Db.deleteByQuery(ROLE_MENU.getTableName(), deleteWrapper);
+        roleMenuMapper.deleteByQuery(deleteWrapper);
 
         // 批量插入新关系
         if (bindRoleMenuInfo.getIdMenus() != null && !bindRoleMenuInfo.getIdMenus().isEmpty()) {
-            List<Row> roleMenus = bindRoleMenuInfo.getIdMenus().stream().map(idMenu -> {
-                Row row = new Row();
-                row.set(ROLE_MENU.ID_MORTISE_ROLE, bindRoleMenuInfo.getIdRole());
-                row.set(ROLE_MENU.ID_MORTISE_MENU, idMenu);
-                return row;
-            }).toList();
-            int[] result = Db.insertBatch(ROLE_MENU.getTableName(), roleMenus);
-            for (int i : result) {
-                num += i;
-            }
+            List<RoleMenu> roleMenus = bindRoleMenuInfo.getIdMenus().stream().map(idMenu -> new RoleMenu(bindRoleMenuInfo.getIdRole(), idMenu)).toList();
+            num = roleMenuMapper.insertBatch(roleMenus);
             return num == bindRoleMenuInfo.getIdMenus().size();
         }
         return true;
@@ -110,15 +109,9 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     }
 
     @Override
-    public Set<Long> findRoleMenus(Long idRole) {
-        QueryWrapper queryWrapper = QueryWrapper.create()
-                .select(ROLE_MENU.ID_MORTISE_MENU)
-                .from(ROLE_MENU)
-                .where(ROLE_MENU.ID_MORTISE_ROLE.eq(idRole));
-        List<Row> rows = Db.selectListByQuery(queryWrapper);
-        return rows.stream()
-                .map(row -> row.getLong(ROLE_MENU.ID_MORTISE_MENU.getName()))
-                .collect(Collectors.toSet());
+    public List<Menu> findMenusByIdRole(Long idRole) {
+        // 使用 Mapper 方法，避免参数绑定问题
+        return roleMenuMapper.findMenusByIdRole(idRole);
     }
 
     @Override

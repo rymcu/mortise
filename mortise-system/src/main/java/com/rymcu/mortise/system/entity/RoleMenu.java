@@ -1,5 +1,6 @@
 package com.rymcu.mortise.system.entity;
 
+import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
@@ -7,7 +8,7 @@ import java.io.Serializable;
 
 /**
  * 角色菜单关联实体
- * 
+ *
  * @author ronger
  * @email ronger-x@outlook.com
  * @since 2025/9/29
@@ -19,11 +20,13 @@ public class RoleMenu implements Serializable {
     /**
      * 角色ID
      */
+    @Id
     private Long idMortiseRole;
 
     /**
      * 菜单ID
      */
+    @Id
     private Long idMortiseMenu;
 
     /**
@@ -34,7 +37,7 @@ public class RoleMenu implements Serializable {
 
     /**
      * 带参构造函数
-     * 
+     *
      * @param idMortiseRole 角色ID
      * @param idMortiseMenu 菜单ID
      */

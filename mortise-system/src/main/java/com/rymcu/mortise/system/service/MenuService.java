@@ -17,8 +17,6 @@ import java.util.List;
  * @desc : com.rymcu.mortise.service
  */
 public interface MenuService extends IService<Menu> {
-    List<Menu> findMenusByIdRole(Long idRole);
-
     List<Menu> findMenusByIdUser(Long idUser);
 
     List<Link> findLinksByIdUser(Long idUser);

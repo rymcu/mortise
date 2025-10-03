@@ -1,6 +1,7 @@
 package com.rymcu.mortise.system.service;
 
 import com.mybatisflex.core.paginate.Page;
+import com.rymcu.mortise.system.entity.Menu;
 import com.rymcu.mortise.system.entity.Role;
 import com.rymcu.mortise.system.model.BindRoleMenuInfo;
 import com.rymcu.mortise.system.model.RoleSearch;
@@ -26,7 +27,7 @@ public interface RoleService {
 
     Boolean updateStatus(Long idRole, Integer status);
 
-    Set<Long> findRoleMenus(Long idRole);
+    List<Menu> findMenusByIdRole(Long idRole);
 
     Boolean deleteRole(Long idRole);
 

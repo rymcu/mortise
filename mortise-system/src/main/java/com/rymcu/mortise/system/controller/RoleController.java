@@ -1,9 +1,10 @@
 package com.rymcu.mortise.system.controller;
 
 import com.mybatisflex.core.paginate.Page;
-import com.rymcu.mortise.core.result.GlobalResult;
-import com.rymcu.mortise.system.entity.Role;
 import com.rymcu.mortise.common.model.BatchUpdateInfo;
+import com.rymcu.mortise.core.result.GlobalResult;
+import com.rymcu.mortise.system.entity.Menu;
+import com.rymcu.mortise.system.entity.Role;
 import com.rymcu.mortise.system.model.BindRoleMenuInfo;
 import com.rymcu.mortise.system.model.RoleSearch;
 import com.rymcu.mortise.system.service.RoleService;
@@ -17,7 +18,7 @@ import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * 角色管理控制器
@@ -101,8 +102,8 @@ public class RoleController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping("/{id}/menus")
-    public GlobalResult<Set<Long>> getRoleMenus(@Parameter(description = "角色ID", required = true) @PathVariable("id") Long idRole) {
-        return GlobalResult.success(roleService.findRoleMenus(idRole));
+    public GlobalResult<List<Menu>> getRoleMenus(@Parameter(description = "角色ID", required = true) @PathVariable("id") Long idRole) {
+        return GlobalResult.success(roleService.findMenusByIdRole(idRole));
     }
 
     @Operation(summary = "绑定角色菜单权限", description = "为角色分配菜单权限")
@@ -111,7 +112,7 @@ public class RoleController {
             @ApiResponse(responseCode = "400", description = "参数错误"),
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
-    @PostMapping("/{id}/menus")
+    @PutMapping("/{id}/menus")
     public GlobalResult<Boolean> bindRoleMenus(@Parameter(description = "角色ID", required = true) @PathVariable("id") Long idRole,
                                               @Parameter(description = "角色菜单绑定信息", required = true) @Valid @RequestBody BindRoleMenuInfo bindRoleMenuInfo) {
         bindRoleMenuInfo.setIdRole(idRole);

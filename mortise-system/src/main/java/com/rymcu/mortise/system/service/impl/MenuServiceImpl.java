@@ -34,12 +34,6 @@ import static com.rymcu.mortise.system.entity.table.MenuTableDef.MENU;
 public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements MenuService {
 
     @Override
-    public List<Menu> findMenusByIdRole(Long idRole) {
-        // 使用 Mapper 方法，避免参数绑定问题
-        return mapper.findMenusByIdRole(idRole);
-    }
-
-    @Override
     public List<Menu> findMenusByIdUser(Long idUser) {
         // 使用 Mapper 方法，避免参数绑定问题
         return mapper.findMenusByIdUser(idUser);

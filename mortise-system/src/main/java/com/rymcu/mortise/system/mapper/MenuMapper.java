@@ -19,18 +19,6 @@ import java.util.List;
 public interface MenuMapper extends BaseMapper<Menu> {
 
     /**
-     * 根据角色ID查询菜单列表
-     */
-    @Select("SELECT id, label, permission FROM mortise_menu tm " +
-            "WHERE del_flag = 0 " +
-            "AND EXISTS (" +
-            "  SELECT 1 FROM mortise_role_menu trm " +
-            "  WHERE trm.id_mortise_menu = tm.id " +
-            "  AND trm.id_mortise_role = #{idRole}" +
-            ")")
-    List<Menu> findMenusByIdRole(@Param("idRole") Long idRole);
-
-    /**
      * 根据用户ID查询菜单列表（通过用户角色关联）
      */
     @Select("SELECT id, label, permission FROM mortise_menu tm " +
