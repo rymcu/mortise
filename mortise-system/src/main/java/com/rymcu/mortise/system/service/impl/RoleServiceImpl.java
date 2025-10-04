@@ -124,22 +124,6 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         return mapper.deleteBatchByIds(idRoleList) > 0;
     }
 
-    @Override
-    public Role findById(Long idRole) {
-        return mapper.selectOneById(idRole);
-    }
-
-    /**
-     * 根据权限查找角色
-     * 使用 QueryWrapper 替代 Mapper 方法
-     */
-    public Role findRoleByPermission(String permission) {
-        QueryWrapper queryWrapper = QueryWrapper.create()
-                .select(ROLE.ID, ROLE.LABEL, ROLE.PERMISSION)
-                .where(ROLE.PERMISSION.eq(permission));
-        return mapper.selectOneByQuery(queryWrapper);
-    }
-
     /**
      * 查找默认角色（用于新用户注册）
      *

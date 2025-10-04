@@ -47,4 +47,6 @@ public class Link {
     private Tooltip tooltip;
 
     private List<Link> children;
+
+    private Boolean defaultOpen = true;
 }

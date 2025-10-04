@@ -242,7 +242,7 @@ public class AuthServiceImpl implements AuthService {
         BeanCopierUtil.copy(user, authInfo);
         authInfo.setScope(userService.findUserPermissionsByIdUser(user.getId()));
         authInfo.setRole(userService.findUserRoleListByIdUser(user.getId()));
-        authInfo.setLinks(menuService.findLinksByIdUser(user.getId()));
+        authInfo.setLinks(userMenus(user));
         return authInfo;
     }
 

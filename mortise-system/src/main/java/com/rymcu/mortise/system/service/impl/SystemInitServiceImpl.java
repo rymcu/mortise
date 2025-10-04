@@ -176,7 +176,7 @@ public class SystemInitServiceImpl implements SystemInitService {
         // 第一层：创建一级菜单（目录）
         Menu homeMenu = createMenu("首页", "home", "i-lucide-house", "/", MenuType.MENU.ordinal(), 1, 0L);
         Menu inboxMenu = createMenu("收件箱", "inbox", "i-lucide-inbox", "/inbox", MenuType.MENU.ordinal(), 2, 0L);
-        Menu systemMenu = createMenu("系统管理", "system", "i-lucide-settings-2", "/systems", MenuType.FOLDER.ordinal(), 10, 0L);
+        Menu systemMenu = createMenu("系统", "system", "i-lucide-settings-2", "/systems", MenuType.FOLDER.ordinal(), 10, 0L);
         Menu settingMenu = createMenu("设置", "settings", "i-lucide-settings", "/settings", MenuType.FOLDER.ordinal(), 1000, 0L);
 
         firstLevelMenus.add(homeMenu);
@@ -188,13 +188,13 @@ public class SystemInitServiceImpl implements SystemInitService {
 
         // 第二层：创建二级菜单（功能模块）
         List<Menu> secondLevelMenus = new ArrayList<>(7);
-        Menu userMenu = createMenu("用户管理", "system:user", "i-lucide-users", "/systems/users", MenuType.MENU.ordinal(), 1, systemMenu.getId());
-        Menu roleMenu = createMenu("角色管理", "system:role", "i-lucide-shield-user", "/systems/roles", MenuType.MENU.ordinal(), 2, systemMenu.getId());
-        Menu menuMenu = createMenu("菜单管理", "system:menu", "i-lucide-menu", "/systems/menus", MenuType.MENU.ordinal(), 3, systemMenu.getId());
-        Menu dictMenu = createMenu("字典管理", "system:dict", "i-lucide-book", "/systems/dictionaries", MenuType.MENU.ordinal(), 4, systemMenu.getId());
-        Menu profileMenu = createMenu("资料设置", "settings:profile", "i-lucide-user", "/settings", MenuType.MENU.ordinal(), 1, settingMenu.getId());
-        Menu notificationMenu = createMenu("消息设置", "settings:notifications", "i-lucide-bell-ring", "/settings/notifications", MenuType.MENU.ordinal(), 2, settingMenu.getId());
-        Menu securityMenu = createMenu("安全设置", "settings:security", "i-lucide-shield", "/settings/security", MenuType.MENU.ordinal(), 3, settingMenu.getId());
+        Menu userMenu = createMenu("用户", "system:user", "i-lucide-users", "/systems/users", MenuType.MENU.ordinal(), 1, systemMenu.getId());
+        Menu roleMenu = createMenu("角色", "system:role", "i-lucide-shield-user", "/systems/roles", MenuType.MENU.ordinal(), 2, systemMenu.getId());
+        Menu menuMenu = createMenu("菜单", "system:menu", "i-lucide-menu", "/systems/menus", MenuType.MENU.ordinal(), 3, systemMenu.getId());
+        Menu dictMenu = createMenu("字典", "system:dict", "i-lucide-book", "/systems/dictionaries", MenuType.MENU.ordinal(), 4, systemMenu.getId());
+        Menu profileMenu = createMenu("资料", "settings:profile", "i-lucide-user", "/settings", MenuType.MENU.ordinal(), 1, settingMenu.getId());
+        Menu notificationMenu = createMenu("消息", "settings:notifications", "i-lucide-bell-ring", "/settings/notifications", MenuType.MENU.ordinal(), 2, settingMenu.getId());
+        Menu securityMenu = createMenu("安全", "settings:security", "i-lucide-shield", "/settings/security", MenuType.MENU.ordinal(), 3, settingMenu.getId());
 
         secondLevelMenus.add(userMenu);
         secondLevelMenus.add(roleMenu);

@@ -1,6 +1,7 @@
 package com.rymcu.mortise.system.service;
 
 import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.service.IService;
 import com.rymcu.mortise.system.entity.Menu;
 import com.rymcu.mortise.system.entity.Role;
 import com.rymcu.mortise.system.entity.User;
@@ -19,7 +20,7 @@ import java.util.Set;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.service
  */
-public interface RoleService {
+public interface RoleService extends IService<Role> {
     List<Role> findRolesByIdUser(Long idUser);
 
     Boolean saveRole(Role role);
@@ -34,11 +35,7 @@ public interface RoleService {
 
     Boolean deleteRole(Long idRole);
 
-    Role findById(Long idRole);
-
     Boolean batchDeleteRoles(List<Long> idRoleList);
-
-    Role findRoleByPermission(String permission);
 
     /**
      * 查找默认角色（用于新用户注册）

@@ -55,7 +55,7 @@ public class RoleController {
     })
     @GetMapping("/{id}")
     public GlobalResult<Role> getRoleById(@Parameter(description = "角色ID", required = true) @PathVariable("id") Long idRole) {
-        return GlobalResult.success(roleService.findById(idRole));
+        return GlobalResult.success(roleService.getById(idRole));
     }
 
     @Operation(summary = "创建角色", description = "新增角色数据")
