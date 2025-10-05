@@ -30,8 +30,6 @@ jobs:
     interpreter: !DefaultInterpreter
       commands: |
         export ENCRYPTION_KEY=@secret:encryption_key@
-        export OPENAI_API_KEY=@secret:openai_api_key@
-        export OPENAI_BASE_URL=@secret:openai_base_url@
         mvn package
     useTTY: false
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
