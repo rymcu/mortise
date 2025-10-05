@@ -30,7 +30,7 @@ jobs:
     interpreter: !DefaultInterpreter
       commands: |
         export ENCRYPTION_KEY=@secret:encryption_key@
-        mvn package
+        mvn package -P prod -DskipTest
     useTTY: false
     condition: ALL_PREVIOUS_STEPS_WERE_SUCCESSFUL
   - !PublishArtifactStep
