@@ -76,30 +76,30 @@ spring:
   mail:
     host: smtp.ym.163.com
     port: 465
-    username: service@rymcu.com
-    password: ENC(wYjMDevKQeoMzDmkks4Spe4tvNB1f5iSv6qEaA6VFys=)
+#    username: service@rymcu.com
+#    password: ENC(wYjMDevKQeoMzDmkks4Spe4tvNB1f5iSv6qEaA6VFys=)
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 20MB
-  security:
-    oauth2:
-      client:
-        registration:
-          logto:
-            client-name: ATDAK
-            client-id: ${LOGTO_CLIENT_ID}
-            client-secret: ${LOGTO_CLIENT_SECRET}
-            redirect-uri: ${baseUrl}/api/oauth2/code/logto
-            authorization-grant-type: authorization_code
-            scope: openid,profile,offline_access,email
-            provider: logto
-        provider:
-          logto:
-            issuer-uri: https://auth.atdak.com/oidc
-            authorization-uri: https://auth.atdak.com/oidc/auth
-            jwk-set-uri: https://auth.atdak.com/oidc/jwks
-            user-info-uri: https://auth.atdak.com/oidc/me
+#  security:
+#    oauth2:
+#      client:
+#        registration:
+#          logto:
+#            client-name: ATDAK
+#            client-id: ${LOGTO_CLIENT_ID}
+#            client-secret: ${LOGTO_CLIENT_SECRET}
+#            redirect-uri: ${baseUrl}/api/oauth2/code/logto
+#            authorization-grant-type: authorization_code
+#            scope: openid,profile,offline_access,email
+#            provider: logto
+#        provider:
+#          logto:
+#            issuer-uri: https://auth.atdak.com/oidc
+#            authorization-uri: https://auth.atdak.com/oidc/auth
+#            jwk-set-uri: https://auth.atdak.com/oidc/jwks
+#            user-info-uri: https://auth.atdak.com/oidc/me
 logging:
   file:
     path: /logs/mortise
@@ -308,7 +308,7 @@ springdoc:
     path: /v3/api-docs
   swagger-ui:
     enabled: true
-    path: /swagger-ui.html
+    path: /index.html
     operations-sorter: alpha
     tags-sorter: alpha
   show-actuator: false
