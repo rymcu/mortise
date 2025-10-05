@@ -12,7 +12,7 @@
     </parent>
 
     <artifactId>mortise-app</artifactId>
-    <packaging>war</packaging>
+    <packaging>jar</packaging>
     <name>mortise-app</name>
     <description>Mortise App - 主应用模块</description>
 
