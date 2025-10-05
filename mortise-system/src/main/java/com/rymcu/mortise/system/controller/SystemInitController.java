@@ -19,7 +19,7 @@ import java.util.Map;
 
 /**
  * 系统初始化控制器
- * 
+ *
  * @author ronger
  * @since 2025-10-02
  */
@@ -127,7 +127,7 @@ public class SystemInitController {
 
         // 执行初始化
         boolean success = systemInitService.initializeSystem(initInfo);
-        
+
         Map<String, Object> result = new HashMap<>();
         result.put("success", success);
         result.put("message", success ? "系统初始化成功" : "系统初始化失败");

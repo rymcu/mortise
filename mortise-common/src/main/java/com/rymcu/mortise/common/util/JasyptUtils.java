@@ -25,6 +25,18 @@ public class JasyptUtils {
         return encryptJasyptPassword(plainPassword, System.getenv(ProjectConstant.ENCRYPTION_KEY));
     }
 
+    
+
+    /**
+     * 解密密码（使用环境变量中的密钥）
+     *
+     * @param encryptedPassword 加密的密码
+     * @return String 解密后的字符串
+     */
+    public static String decryptPassword(String encryptedPassword) {
+        return decryptJasyptPassword(encryptedPassword, System.getenv(ProjectConstant.ENCRYPTION_KEY));
+    }
+
     /**
      * 初始化 Jasypt 密码加密器
      *

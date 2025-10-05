@@ -1,5 +1,6 @@
 package com.rymcu.mortise.system.service;
 
+import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
 import com.rymcu.mortise.system.exception.AccountExistsException;
 import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.model.auth.AuthInfo;
@@ -59,7 +60,31 @@ public interface AuthService {
      */
     String refreshAccessToken(String accessToken, String account);
 
+    /**
+     * OAuth2 登录（旧方法，兼容保留）
+     * 
+     * @deprecated 使用 {@link #findOrCreateUserFromOAuth2(StandardOAuth2UserInfo)} 代替
+     */
+    @Deprecated
     TokenUser oauth2Login(OidcUser oidcUser, String registrationId);
+
+    /**
+     * 从 OAuth2 用户信息查找或创建系统用户
+     * <p>
+     * 简化版本：registrationId 已经包含在 userInfo.provider 中，无需额外上下文参数
+     * 
+     * @param userInfo 标准化的 OAuth2 用户信息（包含 provider/registrationId）
+     * @return 系统用户
+     */
+    User findOrCreateUserFromOAuth2(StandardOAuth2UserInfo userInfo);
+
+    /**
+     * 为用户生成访问令牌
+     * 
+     * @param user 用户实体
+     * @return Token 信息
+     */
+    TokenUser generateTokens(User user);
 
     void requestPasswordReset(String email) throws AccountNotFoundException, MessagingException;
 

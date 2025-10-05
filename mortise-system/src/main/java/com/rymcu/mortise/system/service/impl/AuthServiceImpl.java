@@ -1,21 +1,22 @@
 package com.rymcu.mortise.system.service.impl;
 
 import com.github.f4b6a3.ulid.UlidCreator;
-import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.update.UpdateChain;
-import com.rymcu.mortise.system.exception.AccountExistsException;
 import com.rymcu.mortise.auth.service.TokenManager;
-import com.rymcu.mortise.common.util.BeanCopierUtil;
-import com.rymcu.mortise.common.util.Utils;
-import com.rymcu.mortise.core.result.ResultCode;
+import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
 import com.rymcu.mortise.common.exception.BusinessException;
 import com.rymcu.mortise.common.exception.CaptchaException;
 import com.rymcu.mortise.common.exception.ServiceException;
+import com.rymcu.mortise.common.model.Link;
+import com.rymcu.mortise.common.util.BeanCopierUtil;
+import com.rymcu.mortise.common.util.Utils;
+import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.system.entity.User;
+import com.rymcu.mortise.system.entity.UserOAuth2Binding;
+import com.rymcu.mortise.system.exception.AccountExistsException;
 import com.rymcu.mortise.system.handler.event.RegisterEvent;
 import com.rymcu.mortise.system.handler.event.UserLoginEvent;
 import com.rymcu.mortise.system.model.auth.AuthInfo;
-import com.rymcu.mortise.common.model.Link;
 import com.rymcu.mortise.system.model.auth.TokenUser;
 import com.rymcu.mortise.system.service.*;
 import jakarta.annotation.Resource;
@@ -68,6 +69,8 @@ public class AuthServiceImpl implements AuthService {
     private PasswordEncoder passwordEncoder;
     @Resource
     private ApplicationEventPublisher applicationEventPublisher;
+    @Resource
+    private UserOAuth2BindingService userOAuth2BindingService;
 
     private final static String DEFAULT_AVATAR = "https://static.rymcu.com/article/1578475481946.png";
 
@@ -179,13 +182,219 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    @Deprecated
     public TokenUser oauth2Login(OidcUser oidcUser, String registrationId) {
-        // 查找或创建用户实体
-        User user = findOrCreateUser(oidcUser, registrationId);
+        // 兼容旧方法，转换为新方法调用
+        StandardOAuth2UserInfo userInfo = StandardOAuth2UserInfo.builder()
+                .provider(registrationId)
+                .openId(oidcUser.getSubject())
+                .nickname(oidcUser.getName())
+                .email(oidcUser.getEmail())
+                .avatar(oidcUser.getPicture())
+                .build();
+        
+        User user = findOrCreateUserFromOAuth2(userInfo);
+        return generateTokens(user);
+    }
 
-        // 为用户生成并存储令牌
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public User findOrCreateUserFromOAuth2(StandardOAuth2UserInfo userInfo) {
+        log.info("从 OAuth2 查找或创建用户: provider={}, openId={}, unionId={}, email={}", 
+            userInfo.getProvider(), userInfo.getOpenId(), userInfo.getUnionId(), userInfo.getEmail());
+
+        // 1. 查找已存在的 OAuth2 绑定关系
+        UserOAuth2Binding existingBinding = findExistingBinding(userInfo);
+
+        if (existingBinding != null) {
+            // 找到绑定关系，获取用户信息
+            User existingUser = userService.getById(existingBinding.getUserId());
+            if (existingUser != null) {
+                log.info("找到已存在的用户: userId={}, account={}", 
+                    existingUser.getId(), existingUser.getAccount());
+                
+                // 更新绑定信息
+                updateOAuth2Binding(existingBinding, userInfo);
+                return existingUser;
+            }
+        }
+
+        // 2. 尝试通过邮箱匹配现有用户（可选功能）
+        User existingUser = null;
+        if (StringUtils.isNotBlank(userInfo.getEmail())) {
+            existingUser = userService.findByAccount(userInfo.getEmail());
+            if (existingUser != null) {
+                log.info("通过邮箱匹配到现有用户: userId={}, email={}", 
+                    existingUser.getId(), userInfo.getEmail());
+                
+                // 创建 OAuth2 绑定关系
+                createOAuth2Binding(existingUser.getId(), userInfo);
+                return existingUser;
+            }
+        }
+
+        // 3. 创建新用户和绑定关系
+        User newUser = createNewUserFromOAuth2(userInfo);
+        
+        try {
+            String randomPassword = Utils.genKey();
+            newUser.setPassword(passwordEncoder.encode(randomPassword));
+            boolean saved = userService.save(newUser);
+            
+            if (saved) {
+                log.info("创建新用户成功: userId={}, account={}", newUser.getId(), newUser.getAccount());
+                
+                // 创建 OAuth2 绑定关系
+                createOAuth2Binding(newUser.getId(), userInfo);
+                
+                // 发布注册事件
+                applicationEventPublisher.publishEvent(
+                    new RegisterEvent(newUser.getId(), newUser.getAccount(), randomPassword)
+                );
+                
+                return newUser;
+            }
+        } catch (DataIntegrityViolationException e) {
+            log.warn("用户创建冲突，重新查询: {}", e.getMessage());
+            
+            // 并发创建冲突，重新查询绑定关系
+            UserOAuth2Binding retryBinding = userOAuth2BindingService.findByProviderAndOpenId(
+                userInfo.getProvider(), userInfo.getOpenId()
+            );
+            
+            if (retryBinding != null) {
+                User retryUser = userService.getById(retryBinding.getUserId());
+                if (retryUser != null) {
+                    return retryUser;
+                }
+            }
+        }
+
+        throw new BusinessException(ResultCode.REGISTER_FAIL.getMessage());
+    }    @Override
+    public TokenUser generateTokens(User user) {
         return generateAndStoreTokens(user);
     }
+
+    /**
+     * 从 OAuth2 用户信息创建新用户
+     */
+    private User createNewUserFromOAuth2(StandardOAuth2UserInfo userInfo) {
+        User newUser = new User();
+        newUser.setNickname(userService.checkNickname(userInfo.getNickname()));
+        newUser.setAccount(userService.nextAccount());
+        newUser.setEmail(userInfo.getEmail());
+
+        String avatar = userInfo.getAvatar();
+        newUser.setAvatar(StringUtils.isNotBlank(avatar) ? avatar : DEFAULT_AVATAR);
+
+        newUser.setCreatedTime(LocalDateTime.now());
+
+        return newUser;
+    }
+
+    /**
+     * 创建 OAuth2 绑定关系
+     */
+    private void createOAuth2Binding(Long userId, StandardOAuth2UserInfo userInfo) {
+        UserOAuth2Binding binding = new UserOAuth2Binding();
+        binding.setUserId(userId);
+        binding.setProvider(userInfo.getProvider());
+        binding.setOpenId(userInfo.getOpenId());
+        binding.setUnionId(userInfo.getUnionId()); // 微信 UnionID
+        binding.setNickname(userInfo.getNickname());
+        binding.setAvatar(userInfo.getAvatar());
+        binding.setEmail(userInfo.getEmail());
+        binding.setCreatedTime(LocalDateTime.now());
+        binding.setUpdatedTime(LocalDateTime.now());
+        
+        userOAuth2BindingService.save(binding);
+        log.debug("创建 OAuth2 绑定: userId={}, provider={}, openId={}, unionId={}", 
+            userId, userInfo.getProvider(), userInfo.getOpenId(), userInfo.getUnionId());
+    }
+
+    /**
+     * 更新 OAuth2 绑定信息
+     */
+    private void updateOAuth2Binding(UserOAuth2Binding binding, StandardOAuth2UserInfo userInfo) {
+        boolean needsUpdate = false;
+
+        // 按需更新 UnionID（仅微信）
+        if (StringUtils.isNotBlank(userInfo.getUnionId())
+                && !Objects.equals(binding.getUnionId(), userInfo.getUnionId())) {
+            binding.setUnionId(userInfo.getUnionId());
+            needsUpdate = true;
+        }
+
+        // 按需更新昵称
+        if (StringUtils.isNotBlank(userInfo.getNickname())
+                && !Objects.equals(binding.getNickname(), userInfo.getNickname())) {
+            binding.setNickname(userInfo.getNickname());
+            needsUpdate = true;
+        }
+
+        // 按需更新邮箱
+        if (StringUtils.isNotBlank(userInfo.getEmail())
+                && !Objects.equals(binding.getEmail(), userInfo.getEmail())) {
+            binding.setEmail(userInfo.getEmail());
+            needsUpdate = true;
+        }
+
+        // 按需更新头像
+        if (StringUtils.isNotBlank(userInfo.getAvatar())
+                && !Objects.equals(binding.getAvatar(), userInfo.getAvatar())) {
+            binding.setAvatar(userInfo.getAvatar());
+            needsUpdate = true;
+        }
+
+        if (needsUpdate) {
+            binding.setUpdatedTime(LocalDateTime.now());
+            userOAuth2BindingService.updateById(binding);
+            log.debug("更新 OAuth2 绑定信息: bindingId={}", binding.getId());
+        }
+    }
+
+    /**
+     * 查找已存在的绑定关系
+     * 优先通过 openId 查找，如果是微信且有 unionId，也尝试通过 unionId 查找
+     */
+    private UserOAuth2Binding findExistingBinding(StandardOAuth2UserInfo userInfo) {
+        // 1. 首先通过 provider + openId 查找（标准查找方式）
+        UserOAuth2Binding binding = userOAuth2BindingService.findByProviderAndOpenId(
+            userInfo.getProvider(), userInfo.getOpenId()
+        );
+        
+        if (binding != null) {
+            return binding;
+        }
+        
+        // 2. 如果是微信且有 unionId，尝试通过 unionId 查找
+        // 这可以解决同一微信用户在不同应用（公众号、小程序）的账号关联问题
+        if ("wechat".equalsIgnoreCase(userInfo.getProvider()) 
+                && StringUtils.isNotBlank(userInfo.getUnionId())) {
+            binding = userOAuth2BindingService.findByProviderAndUnionId(
+                userInfo.getProvider(), userInfo.getUnionId()
+            );
+            
+            if (binding != null) {
+                log.info("通过 unionId 找到已存在的微信绑定: unionId={}, userId={}", 
+                    userInfo.getUnionId(), binding.getUserId());
+                
+                // 更新 openId（可能是从公众号切换到小程序，或反之）
+                if (!Objects.equals(binding.getOpenId(), userInfo.getOpenId())) {
+                    binding.setOpenId(userInfo.getOpenId());
+                    binding.setUpdatedTime(LocalDateTime.now());
+                    userOAuth2BindingService.updateById(binding);
+                    log.debug("更新微信绑定的 openId: bindingId={}, newOpenId={}", 
+                        binding.getId(), userInfo.getOpenId());
+                }
+            }
+        }
+        
+        return binding;
+    }
+
+
 
     @Override
     public void requestPasswordReset(String email) throws AccountNotFoundException {
@@ -249,87 +458,6 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public List<Link> userMenus(User user) {
         return menuService.findLinksByIdUser(user.getId());
-    }
-
-    /**
-     * 核心逻辑：查找或创建用户。
-     * 使用 @Transactional 注解确保数据库操作的原子性。
-     */
-    @Transactional(rollbackFor = Exception.class)
-    protected User findOrCreateUser(OidcUser oidcUser, String registrationId) {
-        User newUser = createNewUser(oidcUser, registrationId);
-
-        try {
-            String code = Utils.genKey(); // 生成一个随机密码
-            newUser.setPassword(passwordEncoder.encode(code));
-            boolean saved = userService.save(newUser);
-            if (saved) {
-                // 注册成功后，发布事件，可用于发送欢迎邮件等后续操作
-                applicationEventPublisher.publishEvent(new RegisterEvent(newUser.getId(), newUser.getEmail(), code));
-                return newUser;
-            }
-        } catch (DataIntegrityViolationException e) {
-            // 插入失败，意味着用户已存在。现在去查询并更新。
-            User existingUser = userService.getMapper().selectOneByQuery(
-                    QueryWrapper.create()
-                            .where(User::getProvider).eq(registrationId)
-                            .and(User::getOpenId).eq(oidcUser.getSubject())
-            );
-            if (existingUser != null) {
-                return updateExistingUser(existingUser, oidcUser);
-            }
-        }
-
-        throw new BusinessException(ResultCode.REGISTER_FAIL.getMessage());
-    }
-
-    /**
-     * 创建一个全新的用户并持久化。
-     */
-    private User createNewUser(OidcUser oidcUser, String registrationId) {
-        User newUser = new User();
-        newUser.setNickname(userService.checkNickname(oidcUser.getName()));
-        newUser.setEmail(oidcUser.getEmail());
-        String picture = oidcUser.getPicture();
-        newUser.setAvatar(StringUtils.isNotBlank(picture) ? picture : DEFAULT_AVATAR);
-        newUser.setOpenId(oidcUser.getSubject());
-        newUser.setProvider(registrationId);
-        newUser.setAccount(userService.nextAccount());
-        newUser.setCreatedTime(LocalDateTime.now());
-        return newUser;
-    }
-
-    /**
-     * 更新一个已存在的用户信息。
-     */
-    private User updateExistingUser(User existingUser, OidcUser oidcUser) {
-        boolean needsUpdate = false;
-
-        // 按需更新昵称
-        String newNickname = userService.checkNickname(oidcUser.getName());
-        if (!Objects.equals(existingUser.getNickname(), newNickname)) {
-            existingUser.setNickname(newNickname);
-            needsUpdate = true;
-        }
-
-        // 按需更新邮箱
-        if (!Objects.equals(existingUser.getEmail(), oidcUser.getEmail())) {
-            existingUser.setEmail(oidcUser.getEmail());
-            needsUpdate = true;
-        }
-
-        // 按需更新头像（仅当OIDC提供了新头像且与旧的不同时）
-        String newAvatar = oidcUser.getPicture();
-        if (StringUtils.isNotBlank(newAvatar) && !Objects.equals(existingUser.getAvatar(), newAvatar)) {
-            existingUser.setAvatar(newAvatar);
-            needsUpdate = true;
-        }
-
-        if (needsUpdate) {
-            userService.updateById(existingUser);
-        }
-
-        return existingUser;
     }
 
     /**

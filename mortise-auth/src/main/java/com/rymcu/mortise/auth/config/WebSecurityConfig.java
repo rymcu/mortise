@@ -9,6 +9,7 @@ import com.rymcu.mortise.auth.repository.CacheAuthorizationRequestRepository;
 import com.rymcu.mortise.auth.spi.SecurityConfigurer;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.ApplicationEventPublisher;
@@ -39,6 +40,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -67,24 +69,28 @@ public class WebSecurityConfig {
     @Resource
     private ApplicationEventPublisher applicationEventPublisher;
 
+    private final ObjectProvider<OAuth2LoginSuccessHandler> oauth2LoginSuccessHandlerProvider;
     private final List<SecurityConfigurer> securityConfigurers;
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final CacheAuthorizationRequestRepository cacheAuthorizationRequestRepository;
 
     /**
-     * 构造函数注入（使用 Optional 处理可选依赖）
+     * 构造函数注入（使用 Optional 和 ObjectProvider 处理可选依赖）
      */
     @Autowired
     public WebSecurityConfig(
+            ObjectProvider<OAuth2LoginSuccessHandler> oauth2LoginSuccessHandlerProvider,
             Optional<List<SecurityConfigurer>> configurersOptional,
             Optional<ClientRegistrationRepository> clientRegistrationRepositoryOptional,
             Optional<CacheAuthorizationRequestRepository> cacheAuthorizationRequestRepositoryOptional) {
+        this.oauth2LoginSuccessHandlerProvider = oauth2LoginSuccessHandlerProvider;
         this.securityConfigurers = configurersOptional.orElse(null);
         this.clientRegistrationRepository = clientRegistrationRepositoryOptional.orElse(null);
         this.cacheAuthorizationRequestRepository = cacheAuthorizationRequestRepositoryOptional.orElse(null);
 
         log.info("==========================================================");
         log.info("WebSecurityConfig 构造函数被调用");
+        log.info("OAuth2LoginSuccessHandler Provider: 已注入");
         log.info("发现 {} 个 SecurityConfigurer 扩展",
                  this.securityConfigurers == null ? 0 : this.securityConfigurers.size());
         log.info("OAuth2 客户端注册仓库: {}",
@@ -113,14 +119,6 @@ public class WebSecurityConfig {
     }
 
     /**
-     * OAuth2 登录成功处理器
-     */
-    @Bean
-    public OAuth2LoginSuccessHandler oauth2LoginSuccessHandler() {
-        return new OAuth2LoginSuccessHandler();
-    }
-
-    /**
      * OAuth2 登出成功处理器
      */
     @Bean
@@ -130,29 +128,13 @@ public class WebSecurityConfig {
 
     /**
      * OIDC 用户服务
-     * 用于从 OIDC 提供者获取用户信息，并发布 OidcUserEvent 事件
-     * 业务层可以通过 @EventListener 监听此事件进行后续处理（如保存用户到数据库）
+     * 仅负责从 OIDC 提供者加载用户信息，不处理业务逻辑
+     * 业务逻辑（如创建/更新用户）由 SuccessHandler 处理
      */
     @Bean
     public OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
-        final OidcUserService delegate = new OidcUserService();
-        return request -> {
-            // 获取用户信息
-            OidcUser user = delegate.loadUser(request);
-
-            // 发布事件，业务层可以监听此事件进行后续处理
-            // 注意：通过反射避免直接依赖 system 模块，防止循环依赖
-            try {
-                Class<?> eventClass = Class.forName("com.rymcu.mortise.system.handler.event.OidcUserEvent");
-                Object event = eventClass.getConstructor(OidcUser.class).newInstance(user);
-                applicationEventPublisher.publishEvent(event);
-                log.info("OIDC 用户信息已加载，发布 OidcUserEvent 事件: {}", user.getEmail());
-            } catch (Exception e) {
-                log.warn("发布 OidcUserEvent 失败（可能 system 模块未加载）: {}", e.getMessage());
-            }
-
-            return user;
-        };
+        // 使用默认的 OidcUserService 即可
+        return new OidcUserService();
     }
 
     /**
@@ -163,12 +145,19 @@ public class WebSecurityConfig {
             return null;
         }
 
-        DefaultOAuth2AuthorizationRequestResolver resolver =
-                new DefaultOAuth2AuthorizationRequestResolver(
-                        clientRegistrationRepository,
-                        "/api/v1/oauth2/authorization");
-        resolver.setAuthorizationRequestCustomizer(authorizationRequestCustomizer());
-        return resolver;
+    DefaultOAuth2AuthorizationRequestResolver legacyResolver =
+        new DefaultOAuth2AuthorizationRequestResolver(
+            clientRegistrationRepository,
+            "/api/v1/oauth2/authorization");
+    legacyResolver.setAuthorizationRequestCustomizer(authorizationRequestCustomizer());
+
+    DefaultOAuth2AuthorizationRequestResolver springDefaultResolver =
+        new DefaultOAuth2AuthorizationRequestResolver(
+            clientRegistrationRepository,
+            "/oauth2/authorization");
+    springDefaultResolver.setAuthorizationRequestCustomizer(authorizationRequestCustomizer());
+
+    return new CompoundAuthorizationRequestResolver(springDefaultResolver, legacyResolver);
     }
 
     /**
@@ -203,10 +192,15 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(authorize -> {
                     // ========== 应用 SPI 扩展配置 ==========
                     // 注意：必须在 anyRequest() 之前调用
-                    applySecurityConfigurers(authorize);
+            applySecurityConfigurers(authorize);
 
-                    // 其他所有请求需要认证
-                    authorize.anyRequest().authenticated();
+            authorize
+                .requestMatchers(
+                    "/oauth2/authorization/**",
+                    "/login/oauth2/**",
+                    "/api/v1/oauth2/**")
+                .permitAll()
+                .anyRequest().authenticated();
                 })
                 .httpBasic(Customizer.withDefaults());
 
@@ -224,10 +218,10 @@ public class WebSecurityConfig {
                         }
                     })
                     .redirectionEndpoint(redirection ->
-                        redirection.baseUri("/api/v1/oauth2/code/*"))
+                        redirection.baseUri("/login/oauth2/code/*"))
                     .userInfoEndpoint(userInfoEndpoint ->
                         userInfoEndpoint.oidcUserService(oidcUserService()))
-                    .successHandler(oauth2LoginSuccessHandler())
+                    .successHandler(oauth2LoginSuccessHandlerProvider.getObject())  // 延迟获取 Handler
             );
 
             // 配置登出
@@ -280,4 +274,35 @@ public class WebSecurityConfig {
                     }
                 });
     }
+
+        private static class CompoundAuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
+
+            private final OAuth2AuthorizationRequestResolver[] delegates;
+
+            private CompoundAuthorizationRequestResolver(OAuth2AuthorizationRequestResolver... delegates) {
+                this.delegates = delegates;
+            }
+
+            @Override
+            public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
+                for (OAuth2AuthorizationRequestResolver delegate : delegates) {
+                    OAuth2AuthorizationRequest requestResult = delegate.resolve(request);
+                    if (requestResult != null) {
+                        return requestResult;
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            public OAuth2AuthorizationRequest resolve(HttpServletRequest request, String clientRegistrationId) {
+                for (OAuth2AuthorizationRequestResolver delegate : delegates) {
+                    OAuth2AuthorizationRequest requestResult = delegate.resolve(request, clientRegistrationId);
+                    if (requestResult != null) {
+                        return requestResult;
+                    }
+                }
+                return null;
+            }
+        }
 }
