@@ -12,7 +12,7 @@ jobs:
   - !CommandStep
     name: delete build version
     runInContainer: true
-    image: '@script:builtin:maven:determine-docker-image@'
+    image: 'maven:3.9-openjdk-21'
     interpreter: !DefaultInterpreter
       commands: |
         echo "Detecting project version (may require some time while downloading maven dependencies)..."
@@ -26,7 +26,7 @@ jobs:
   - !CommandStep
     name: run maven package
     runInContainer: true
-    image: '@script:builtin:maven:determine-docker-image@'
+    image: 'maven:3.9-openjdk-21'
     interpreter: !DefaultInterpreter
       commands: |
         export ENCRYPTION_KEY=@secret:encryption_key@
