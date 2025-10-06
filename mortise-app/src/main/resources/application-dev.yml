@@ -2,7 +2,7 @@ spring:
   thymeleaf:
     prefix: classpath:/templates/
     suffix: .html
-    mode: LEGACYHTML5
+    mode: HTML5
     encoding: UTF-8
     servlet:
       content-type: text/html
@@ -298,8 +298,6 @@ mybatis-flex:
     print-banner: false
     # 逻辑删除配置
     logic-delete-column: del_flag
-    deleted-value-of-logic-delete: 1
-    normal-value-of-logic-delete: 0
 
 # SpringDoc OpenAPI 配置
 springdoc:
@@ -325,3 +323,12 @@ springdoc:
     - group: 'system-init'
       display-name: '系统初始化接口'
       paths-to-match: '/api/v1/system-init/**'
+
+# 微信配置
+wechat:
+  # 微信公众号配置
+  mp:
+    enabled: true
+  # 微信开放平台配置
+  open:
+    enabled: true

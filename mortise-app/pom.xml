@@ -63,6 +63,11 @@
             <artifactId>mortise-system</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-wechat</artifactId>
+        </dependency>
+
         <!-- Spring Boot JDBC (包含 HikariCP) - 运行时必需 -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -80,11 +85,10 @@
         </dependency>
 
 
-        <!-- Spring Boot Tomcat (provided for WAR) -->
+        <!-- Spring Boot Tomcat (embedded for JAR) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-tomcat</artifactId>
-            <scope>provided</scope>
         </dependency>
 
         <!-- Spring Boot Test -->

@@ -26,6 +26,7 @@
         <module>mortise-cache</module>
         <module>mortise-notification</module>
         <module>mortise-auth</module>
+        <module>mortise-wechat</module>
         <module>mortise-web</module>
         <module>mortise-system</module>
         <module>mortise-monitor</module>
@@ -103,6 +104,11 @@
             <dependency>
                 <groupId>com.rymcu</groupId>
                 <artifactId>mortise-monitor</artifactId>
+                <version>${mortise.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-wechat</artifactId>
                 <version>${mortise.version}</version>
             </dependency>
 
