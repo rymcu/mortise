@@ -1,7 +1,5 @@
-package com.rymcu.mortise.auth.support;
+package com.rymcu.mortise.auth.spi;
 
-import com.rymcu.mortise.auth.spi.OAuth2ProviderStrategy;
-import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.core.user.OAuth2User;
