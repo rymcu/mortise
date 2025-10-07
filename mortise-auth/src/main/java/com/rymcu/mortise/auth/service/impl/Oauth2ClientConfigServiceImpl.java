@@ -1,12 +1,16 @@
 package com.rymcu.mortise.auth.service.impl;
 
+import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
+import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.auth.entity.Oauth2ClientConfig;
 import com.rymcu.mortise.auth.mapper.Oauth2ClientConfigMapper;
+import com.rymcu.mortise.auth.model.OAuth2ClientConfigSearch;
 import com.rymcu.mortise.auth.service.Oauth2ClientConfigService;
 import com.rymcu.mortise.common.enumerate.EnabledFlag;
-import lombok.RequiredArgsConstructor;
+import com.rymcu.mortise.common.exception.ServiceException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,10 +28,7 @@ import static com.rymcu.mortise.auth.entity.table.Oauth2ClientConfigTableDef.OAU
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
-public class Oauth2ClientConfigServiceImpl implements Oauth2ClientConfigService {
-
-    private final Oauth2ClientConfigMapper oauth2ClientConfigMapper;
+public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfigMapper, Oauth2ClientConfig> implements Oauth2ClientConfigService {
 
     @Override
     public Optional<Oauth2ClientConfig> findByRegistrationId(String registrationId) {
@@ -37,7 +38,7 @@ public class Oauth2ClientConfigServiceImpl implements Oauth2ClientConfigService 
                 .where(OAUTH2_CLIENT_CONFIG.REGISTRATION_ID.eq(registrationId))
                 .and(OAUTH2_CLIENT_CONFIG.IS_ENABLED.eq(EnabledFlag.YES.ordinal()));
 
-        Oauth2ClientConfig config = oauth2ClientConfigMapper.selectOneByQuery(queryWrapper);
+        Oauth2ClientConfig config = mapper.selectOneByQuery(queryWrapper);
         return Optional.ofNullable(config);
     }
 
@@ -49,43 +50,62 @@ public class Oauth2ClientConfigServiceImpl implements Oauth2ClientConfigService 
                 .where(OAUTH2_CLIENT_CONFIG.IS_ENABLED.eq(EnabledFlag.YES.ordinal()))
                 .orderBy(OAUTH2_CLIENT_CONFIG.CREATED_TIME.desc());
 
-        return oauth2ClientConfigMapper.selectListByQuery(queryWrapper);
+        return mapper.selectListByQuery(queryWrapper);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Oauth2ClientConfig save(Oauth2ClientConfig config) {
+    public Boolean saveOauth2ClientConfig(Oauth2ClientConfig config) {
         log.info("保存客户端配置: registrationId={}", config.getRegistrationId());
-
-        if (config.getId() == null) {
-            // 新建
-            config.setCreatedTime(LocalDateTime.now());
-            config.setUpdatedTime(LocalDateTime.now());
-            oauth2ClientConfigMapper.insertSelective(config);
-        } else {
+        boolean isUpdate = config.getId() != null;
+        if (isUpdate) {
             // 更新
-            config.setUpdatedTime(LocalDateTime.now());
-            oauth2ClientConfigMapper.insertOrUpdateSelective(config);
+            Oauth2ClientConfig oldOauth2ClientConfig = mapper.selectOneById(config.getId());
+            if (oldOauth2ClientConfig == null) {
+                throw new ServiceException("数据不存在");
+            }
+            BeanUtils.copyProperties(config, oldOauth2ClientConfig);
+            oldOauth2ClientConfig.setUpdatedTime(LocalDateTime.now());
+            return mapper.insertOrUpdateSelective(oldOauth2ClientConfig) > 0;
         }
-
-        return config;
+        // 新建
+        config.setCreatedTime(LocalDateTime.now());
+        config.setUpdatedTime(LocalDateTime.now());
+        return mapper.insertSelective(config) > 0;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteById(Long id) {
+    public Boolean deleteById(Long id) {
         log.info("删除客户端配置: id={}", id);
-        oauth2ClientConfigMapper.deleteById(id);
+        return mapper.deleteById(id) > 0;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void deleteByRegistrationId(String registrationId) {
+    public Boolean deleteByRegistrationId(String registrationId) {
         log.info("删除客户端配置: registrationId={}", registrationId);
 
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .where(OAUTH2_CLIENT_CONFIG.REGISTRATION_ID.eq(registrationId));
 
-        oauth2ClientConfigMapper.deleteByQuery(queryWrapper);
+        return mapper.deleteByQuery(queryWrapper) > 0;
+    }
+
+    @Override
+    public Page<Oauth2ClientConfig> findOauth2ClientConfigs(Page<Oauth2ClientConfig> page, OAuth2ClientConfigSearch search) {
+        QueryWrapper queryWrapper = QueryWrapper.create()
+                .select()
+                .where(OAUTH2_CLIENT_CONFIG.REGISTRATION_ID.eq(search.getRegistrationId(), String::isEmpty))
+                .and(OAUTH2_CLIENT_CONFIG.CLIENT_ID.eq(search.getClientId(), String::isEmpty));
+        return mapper.paginate(page, queryWrapper);
+    }
+
+    @Override
+    public Boolean batchDeleteOAuth2ClientConfig(List<Long> idOAuth2ClientConfigs) {
+        if (idOAuth2ClientConfigs == null || idOAuth2ClientConfigs.isEmpty()) {
+            return false;
+        }
+        return mapper.deleteBatchByIds(idOAuth2ClientConfigs) > 0;
     }
 }

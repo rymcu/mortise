@@ -1,6 +1,9 @@
 package com.rymcu.mortise.auth.service;
 
+import com.mybatisflex.core.paginate.Page;
+import com.mybatisflex.core.service.IService;
 import com.rymcu.mortise.auth.entity.Oauth2ClientConfig;
+import com.rymcu.mortise.auth.model.OAuth2ClientConfigSearch;
 
 import java.util.List;
 import java.util.Optional;
@@ -11,7 +14,7 @@ import java.util.Optional;
  * @author ronger
  * @since 1.0.0
  */
-public interface Oauth2ClientConfigService {
+public interface Oauth2ClientConfigService extends IService<Oauth2ClientConfig> {
 
     /**
      * 根据 registrationId 查找客户端配置
@@ -34,19 +37,23 @@ public interface Oauth2ClientConfigService {
      * @param config 客户端配置
      * @return 保存后的配置
      */
-    Oauth2ClientConfig save(Oauth2ClientConfig config);
+    Boolean saveOauth2ClientConfig(Oauth2ClientConfig config);
 
     /**
      * 删除客户端配置
      *
      * @param id 配置ID
      */
-    void deleteById(Long id);
+    Boolean deleteById(Long id);
 
     /**
      * 根据 registrationId 删除客户端配置
      *
      * @param registrationId 客户端注册ID
      */
-    void deleteByRegistrationId(String registrationId);
+    Boolean deleteByRegistrationId(String registrationId);
+
+    Page<Oauth2ClientConfig> findOauth2ClientConfigs(Page<Oauth2ClientConfig> page, OAuth2ClientConfigSearch search);
+
+    Boolean batchDeleteOAuth2ClientConfig(List<Long> idOAuth2ClientConfigs);
 }
