@@ -1,5 +1,6 @@
 package com.rymcu.mortise.system.service.impl;
 
+import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
 import com.rymcu.mortise.cache.service.CacheService;
 import com.rymcu.mortise.system.constant.SystemCacheConstant;
 import com.rymcu.mortise.system.service.SystemCacheService;
@@ -27,7 +28,7 @@ public class SystemCacheServiceImpl implements SystemCacheService {
 
     @Override
     public void cacheUserInfo(Long userId, Object userInfo) {
-        cacheService.set(SystemCacheConstant.USER_INFO_CACHE, String.valueOf(userId), userInfo, 
+        cacheService.set(SystemCacheConstant.USER_INFO_CACHE, String.valueOf(userId), userInfo,
                 Duration.ofHours(SystemCacheConstant.USER_INFO_EXPIRE_HOURS));
         log.debug("缓存用户信息: userId={}", userId);
     }
@@ -161,6 +162,11 @@ public class SystemCacheServiceImpl implements SystemCacheService {
     @Override
     public Boolean hasCache(String key) {
         return cacheService.hasKey(key);
+    }
+
+    @Override
+    public void storeStandardOAuth2UserInfo(String key, StandardOAuth2UserInfo userInfo) {
+        cacheService.set(SystemCacheConstant.STANDARD_OAUTH2_USER_INFO, key, userInfo, Duration.ofMinutes(SystemCacheConstant.STANDARD_OAUTH2_USER_INFO_EXPIRE_MINUTES));
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.rymcu.mortise.system.controller;
 
+import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.system.model.SystemInitInfo;
 import com.rymcu.mortise.system.service.SystemInitService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -11,8 +12,10 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -52,10 +55,10 @@ public class SystemInitController {
         )
     })
     @GetMapping("/status")
-    public ResponseEntity<Map<String, Object>> checkInitStatus() {
+    public GlobalResult<Map<String, Object>> checkInitStatus() {
         Map<String, Object> result = new HashMap<>();
         result.put("initialized", systemInitService.isSystemInitialized());
-        return ResponseEntity.ok(result);
+        return GlobalResult.success(result);
     }
 
     /**
@@ -104,34 +107,31 @@ public class SystemInitController {
             schema = @Schema(implementation = SystemInitInfo.class),
             examples = @ExampleObject(
                 name = "初始化配置示例",
-                value = "{\n" +
-                        "  \"adminAccount\": \"admin\",\n" +
-                        "  \"adminPassword\": \"Admin@123456\",\n" +
-                        "  \"adminNickname\": \"系统管理员\",\n" +
-                        "  \"adminEmail\": \"admin@example.com\",\n" +
-                        "  \"systemName\": \"Mortise系统\",\n" +
-                        "  \"systemDescription\": \"企业级管理系统\"\n" +
-                        "}"
+                value = """
+                        {
+                          "adminAccount": "admin",
+                          "adminPassword": "Admin@123456",
+                          "adminNickname": "系统管理员",
+                          "adminEmail": "admin@example.com",
+                          "systemName": "Mortise系统",
+                          "systemDescription": "企业级管理系统"
+                        }"""
             )
         )
     )
     @PostMapping("/initialize")
-    public ResponseEntity<Map<String, Object>> initializeSystem(@org.springframework.web.bind.annotation.RequestBody SystemInitInfo initInfo) {
+    public GlobalResult<String> initializeSystem(@org.springframework.web.bind.annotation.RequestBody SystemInitInfo initInfo) {
         // 检查是否已初始化
         if (systemInitService.isSystemInitialized()) {
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", false);
-            result.put("message", "系统已经初始化，无法重复初始化");
-            return ResponseEntity.badRequest().body(result);
+            return GlobalResult.error("系统已经初始化，无法重复初始化");
         }
 
         // 执行初始化
         boolean success = systemInitService.initializeSystem(initInfo);
-
-        Map<String, Object> result = new HashMap<>();
-        result.put("success", success);
-        result.put("message", success ? "系统初始化成功" : "系统初始化失败");
-        return ResponseEntity.ok(result);
+        if (!success) {
+            return GlobalResult.error("系统初始化失败");
+        }
+        return GlobalResult.success("系统初始化成功");
     }
 
     /**
@@ -166,9 +166,9 @@ public class SystemInitController {
         )
     })
     @GetMapping("/progress")
-    public ResponseEntity<Map<String, Object>> getInitProgress() {
+    public GlobalResult<Map<String, Object>> getInitProgress() {
         Map<String, Object> result = new HashMap<>();
         result.put("progress", systemInitService.getInitializationProgress());
-        return ResponseEntity.ok(result);
+        return GlobalResult.success(result);
     }
 }

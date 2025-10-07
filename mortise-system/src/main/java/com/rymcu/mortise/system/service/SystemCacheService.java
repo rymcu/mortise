@@ -1,5 +1,7 @@
 package com.rymcu.mortise.system.service;
 
+import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
+
 import java.time.Duration;
 import java.util.Map;
 import java.util.Set;
@@ -7,7 +9,7 @@ import java.util.Set;
 /**
  * 系统缓存服务接口
  * 业务层封装 - 封装基础设施层的 CacheService
- * 
+ *
  * 设计原则：
  * - 业务模块不直接调用 CacheService
  * - 通过 SystemCacheService 提供业务语义化的缓存操作
@@ -348,4 +350,6 @@ public interface SystemCacheService {
      * @return 是否存在
      */
     Boolean hasCache(String key);
+
+    void storeStandardOAuth2UserInfo(String key, StandardOAuth2UserInfo userInfo);
 }

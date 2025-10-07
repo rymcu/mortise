@@ -224,6 +224,11 @@ public class SystemCacheConstant {
      */
     public static final String STATISTICS_CACHE = "statistics:data";
     public static final long STATISTICS_EXPIRE_HOURS = 6;
+    /**
+     * OAuth2 临时用户信息
+     */
+    public static final String STANDARD_OAUTH2_USER_INFO = "auth:standard:userinfo";
+    public static final long STANDARD_OAUTH2_USER_INFO_EXPIRE_MINUTES = 30;
 
     private SystemCacheConstant() {
         // 工具类禁止实例化
