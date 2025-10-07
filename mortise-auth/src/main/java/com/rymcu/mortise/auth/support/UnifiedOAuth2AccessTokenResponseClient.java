@@ -8,10 +8,12 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.endpoint.DefaultMapOAuth2AccessTokenResponseConverter;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationExchange;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -23,6 +25,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,7 +47,7 @@ import java.util.Map;
  */
 @Slf4j
 @Component
-public class UnifiedOAuth2AccessTokenResponseClient 
+public class UnifiedOAuth2AccessTokenResponseClient
         implements OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> {
 
     private static final ParameterizedTypeReference<Map<String, Object>> RESPONSE_TYPE =
@@ -60,18 +63,18 @@ public class UnifiedOAuth2AccessTokenResponseClient
         this.weChatClient = new WeChatAccessTokenResponseClient();
         this.restOperations = createStandardRestTemplate();
         this.responseConverter = new DefaultMapOAuth2AccessTokenResponseConverter();
-        
+
         log.info("初始化统一 OAuth2 AccessToken 响应客户端");
     }
 
     @Override
     public OAuth2AccessTokenResponse getTokenResponse(
             OAuth2AuthorizationCodeGrantRequest authorizationCodeGrantRequest) {
-        
+
         String registrationId = authorizationCodeGrantRequest
                 .getClientRegistration()
                 .getRegistrationId();
-        
+
         log.debug("处理 OAuth2 Token 请求: registrationId={}", registrationId);
 
         // 根据 registrationId 判断使用哪个客户端
@@ -87,39 +90,24 @@ public class UnifiedOAuth2AccessTokenResponseClient
 
     /**
      * 标准的 OAuth2 Token 获取逻辑
-     * 
+     *
      * @param grantRequest 授权请求
      * @return Token 响应
      */
     private OAuth2AccessTokenResponse getStandardTokenResponse(
             OAuth2AuthorizationCodeGrantRequest grantRequest) {
-        
+
         try {
             // 构建标准的 Token 请求
             RequestEntity<?> request = buildStandardTokenRequest(grantRequest);
-            
+
             // 发送请求
-            ResponseEntity<Map<String, Object>> responseEntity = 
-                this.restOperations.exchange(request, RESPONSE_TYPE);
-            
-            Map<String, Object> responseMap = responseEntity.getBody();
-            
-            if (responseMap == null) {
-                throw new OAuth2AuthenticationException(
-                    new OAuth2Error("invalid_token_response", "Empty response body", null)
-                );
-            }
+
+            Map<String, Object> responseMap = exchangeResponseEntity(request, this.restOperations, RESPONSE_TYPE);
 
             // 转换为标准的 OAuth2AccessTokenResponse
-            OAuth2AccessTokenResponse tokenResponse = this.responseConverter.convert(responseMap);
-            
-            if (tokenResponse == null) {
-                throw new OAuth2AuthenticationException(
-                    new OAuth2Error("invalid_token_response", "Failed to convert token response", null)
-                );
-            }
 
-            return tokenResponse;
+            return this.responseConverter.convert(responseMap);
 
         } catch (OAuth2AuthenticationException ex) {
             throw ex;
@@ -135,18 +123,32 @@ public class UnifiedOAuth2AccessTokenResponseClient
         }
     }
 
+    static Map<String, Object> exchangeResponseEntity(RequestEntity<?> request, RestOperations restOperations, ParameterizedTypeReference<Map<String, Object>> responseType) {
+        ResponseEntity<Map<String, Object>> responseEntity =
+            restOperations.exchange(request, responseType);
+
+        Map<String, Object> responseMap = responseEntity.getBody();
+
+        if (responseMap == null) {
+            throw new OAuth2AuthenticationException(
+                new OAuth2Error("invalid_token_response", "Empty response body", null)
+            );
+        }
+        return responseMap;
+    }
+
     /**
      * 构建标准的 OAuth2 Token 请求
      */
     private RequestEntity<?> buildStandardTokenRequest(OAuth2AuthorizationCodeGrantRequest grantRequest) {
-        var clientRegistration = grantRequest.getClientRegistration();
-        var authorizationExchange = grantRequest.getAuthorizationExchange();
+        ClientRegistration clientRegistration = grantRequest.getClientRegistration();
+        OAuth2AuthorizationExchange authorizationExchange = grantRequest.getAuthorizationExchange();
 
         // 构建请求参数
         MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
         parameters.add(OAuth2ParameterNames.GRANT_TYPE, grantRequest.getGrantType().getValue());
         parameters.add(OAuth2ParameterNames.CODE, authorizationExchange.getAuthorizationResponse().getCode());
-        
+
         String redirectUri = authorizationExchange.getAuthorizationRequest().getRedirectUri();
         if (redirectUri != null) {
             parameters.add(OAuth2ParameterNames.REDIRECT_URI, redirectUri);
@@ -160,7 +162,7 @@ public class UnifiedOAuth2AccessTokenResponseClient
         // 构建请求头
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        headers.setAccept(Arrays.asList(MediaType.APPLICATION_JSON));
+        headers.setAccept(List.of(MediaType.APPLICATION_JSON));
 
         // 获取 Token URI
         URI tokenUri = UriComponentsBuilder
@@ -189,7 +191,7 @@ public class UnifiedOAuth2AccessTokenResponseClient
 
     /**
      * 判断是否是微信相关的提供商
-     * 
+     *
      * @param registrationId 客户端注册ID
      * @return 是否是微信提供商
      */
@@ -197,12 +199,12 @@ public class UnifiedOAuth2AccessTokenResponseClient
         if (registrationId == null) {
             return false;
         }
-        
+
         String lowerCaseId = registrationId.toLowerCase();
-        
+
         // 支持多种微信相关的命名模式
-        return lowerCaseId.contains("wechat") || 
-               lowerCaseId.contains("weixin") || 
+        return lowerCaseId.contains("wechat") ||
+               lowerCaseId.contains("weixin") ||
                lowerCaseId.startsWith("wx");
     }
 }

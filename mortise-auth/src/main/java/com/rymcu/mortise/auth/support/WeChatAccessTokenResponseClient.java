@@ -10,11 +10,13 @@ import org.springframework.http.converter.json.MappingJackson2HttpMessageConvert
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
 import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.OAuth2Error;
 import org.springframework.security.oauth2.core.endpoint.DefaultMapOAuth2AccessTokenResponseConverter;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AccessTokenResponse;
+import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationExchange;
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
@@ -67,7 +69,7 @@ import java.util.Map;
         havingValue = "true",
         matchIfMissing = true
 )
-public final class WeChatAccessTokenResponseClient 
+public final class WeChatAccessTokenResponseClient
         implements OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> {
 
     private static final ParameterizedTypeReference<Map<String, Object>> RESPONSE_TYPE =
@@ -82,7 +84,7 @@ public final class WeChatAccessTokenResponseClient
     public WeChatAccessTokenResponseClient() {
         this.restOperations = createWeChatRestTemplate();
         this.responseConverter = new DefaultMapOAuth2AccessTokenResponseConverter();
-        
+
         log.info("初始化 WeChatAccessTokenResponseClient，支持 text/plain 响应类型");
     }
 
@@ -96,7 +98,7 @@ public final class WeChatAccessTokenResponseClient
     @Override
     public OAuth2AccessTokenResponse getTokenResponse(
             OAuth2AuthorizationCodeGrantRequest authorizationCodeGrantRequest) {
-        
+
         Assert.notNull(authorizationCodeGrantRequest, "authorizationCodeGrantRequest cannot be null");
 
         String registrationId = authorizationCodeGrantRequest.getClientRegistration().getRegistrationId();
@@ -107,25 +109,16 @@ public final class WeChatAccessTokenResponseClient
 
         try {
             // 2. 发送 HTTP 请求获取 token
-            ResponseEntity<Map<String, Object>> responseEntity = 
-                this.restOperations.exchange(request, RESPONSE_TYPE);
-            
-            Map<String, Object> responseMap = responseEntity.getBody();
-            
-            if (responseMap == null) {
-                throw new OAuth2AuthenticationException(
-                    new OAuth2Error("invalid_token_response", "Empty response body", null)
-                );
-            }
+            Map<String, Object> responseMap = UnifiedOAuth2AccessTokenResponseClient.exchangeResponseEntity(request, this.restOperations, RESPONSE_TYPE);
 
             // 3. 检查微信特定的错误码
             if (responseMap.containsKey("errcode")) {
                 int errCode = ((Number) responseMap.get("errcode")).intValue();
                 String errMsg = (String) responseMap.getOrDefault("errmsg", "Unknown error");
                 log.error("微信 Token 请求失败 - errcode: {}, errmsg: {}", errCode, errMsg);
-                
+
                 throw new OAuth2AuthenticationException(
-                    new OAuth2Error("wechat_error", 
+                    new OAuth2Error("wechat_error",
                         String.format("WeChat API error: %d - %s", errCode, errMsg), null)
                 );
             }
@@ -138,7 +131,7 @@ public final class WeChatAccessTokenResponseClient
 
             // 5. 转换为标准的 OAuth2AccessTokenResponse
             OAuth2AccessTokenResponse tokenResponse = this.responseConverter.convert(responseMap);
-            
+
             if (tokenResponse == null) {
                 throw new OAuth2AuthenticationException(
                     new OAuth2Error("invalid_token_response", "Failed to convert token response", null)
@@ -151,7 +144,7 @@ public final class WeChatAccessTokenResponseClient
         } catch (OAuth2AuthenticationException ex) {
             // 直接抛出 OAuth2 认证异常
             throw ex;
-            
+
         } catch (RestClientException ex) {
             // 包装其他异常
             log.error("获取访问令牌时发生网络错误", ex);
@@ -162,7 +155,7 @@ public final class WeChatAccessTokenResponseClient
                 null
             );
             throw new OAuth2AuthenticationException(oauth2Error, oauth2Error.toString(), ex);
-            
+
         } catch (Exception ex) {
             // 处理未预期的异常
             log.error("获取访问令牌时发生未知错误", ex);
@@ -185,14 +178,14 @@ public final class WeChatAccessTokenResponseClient
      */
     private RequestEntity<?> buildTokenRequest(OAuth2AuthorizationCodeGrantRequest grantRequest) {
         // 获取客户端注册信息
-        var clientRegistration = grantRequest.getClientRegistration();
-        var authorizationExchange = grantRequest.getAuthorizationExchange();
+        ClientRegistration clientRegistration = grantRequest.getClientRegistration();
+        OAuth2AuthorizationExchange authorizationExchange = grantRequest.getAuthorizationExchange();
 
         // 构建请求参数
         MultiValueMap<String, String> parameters = new LinkedMultiValueMap<>();
         parameters.add(OAuth2ParameterNames.GRANT_TYPE, grantRequest.getGrantType().getValue());
         parameters.add(OAuth2ParameterNames.CODE, authorizationExchange.getAuthorizationResponse().getCode());
-        
+
         // 添加 redirect_uri（如果存在）
         String redirectUri = authorizationExchange.getAuthorizationRequest().getRedirectUri();
         if (redirectUri != null) {
@@ -201,7 +194,7 @@ public final class WeChatAccessTokenResponseClient
 
         // 添加客户端认证信息
         parameters.add(OAuth2ParameterNames.CLIENT_ID, clientRegistration.getClientId());
-        
+
         // 微信使用 client_secret_post 方式，将 secret 放在 body 中
         if (clientRegistration.getClientSecret() != null) {
             parameters.add(OAuth2ParameterNames.CLIENT_SECRET, clientRegistration.getClientSecret());

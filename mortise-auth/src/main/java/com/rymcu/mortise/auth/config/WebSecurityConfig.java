@@ -7,10 +7,11 @@ import com.rymcu.mortise.auth.handler.OAuth2LogoutSuccessHandler;
 import com.rymcu.mortise.auth.handler.RewriteAccessDeniedHandler;
 import com.rymcu.mortise.auth.repository.CacheAuthorizationRequestRepository;
 import com.rymcu.mortise.auth.repository.DynamicClientRegistrationRepository;
-import com.rymcu.mortise.auth.support.UnifiedOAuth2UserService;
 import com.rymcu.mortise.auth.spi.SecurityConfigurer;
 import com.rymcu.mortise.auth.support.UnifiedOAuth2AccessTokenResponseClient;
 import com.rymcu.mortise.auth.support.UnifiedOAuth2AuthorizationRequestResolver;
+import com.rymcu.mortise.auth.support.UnifiedOAuth2UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -28,9 +29,13 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.client.oidc.authentication.OidcIdTokenDecoderFactory;
+import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
+import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
@@ -91,6 +96,24 @@ public class WebSecurityConfig {
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
         return configuration.getAuthenticationManager();
+    }
+
+    /**
+     * JWT Decoder Factory - 支持多种签名算法
+     * <p>
+     * Logto 使用 ES384 (椭圆曲线) 或 RS256 (RSA) 签名算法
+     * Spring Security 默认只支持 RS256，需要显式配置支持其他算法
+     *
+     * @return JwtDecoderFactory
+     */
+    @Bean
+    public JwtDecoderFactory<ClientRegistration> idTokenDecoderFactory() {
+        OidcIdTokenDecoderFactory idTokenDecoderFactory = new OidcIdTokenDecoderFactory();
+        // 配置 JWT 解码器支持 ES384 签名算法（Logto 默认使用）
+        // 也会自动支持 RS256、ES256 等其他常见算法
+        idTokenDecoderFactory.setJwsAlgorithmResolver(clientRegistration -> SignatureAlgorithm.ES384);
+        log.info("配置 JWT Decoder Factory: 支持 ES384 签名算法（Logto）");
+        return idTokenDecoderFactory;
     }
 
     /**
@@ -189,7 +212,30 @@ public class WebSecurityConfig {
                     );
 
                     // 配置成功处理器（可选）
-                    oauth2LoginSuccessHandlerProvider.ifAvailable(oauth2Login::successHandler);
+                    OAuth2LoginSuccessHandler handler = oauth2LoginSuccessHandlerProvider.getIfAvailable();
+                    if (handler != null) {
+                        log.info("配置 OAuth2 登录成功处理器: {}", handler.getClass().getSimpleName());
+                        oauth2Login.successHandler(handler);
+                    } else {
+                        log.warn("未找到 OAuth2LoginSuccessHandler，将使用 Spring Security 默认行为");
+                    }
+
+                    // 配置失败处理器（用于调试）
+                    oauth2Login.failureHandler((request, response, exception) -> {
+                        log.error("===============================================");
+                        log.error("!!! OAuth2 登录失败 !!!");
+                        log.error("Request URI: {}", request.getRequestURI());
+                        log.error("异常类型: {}", exception.getClass().getName());
+                        log.error("异常消息: {}", exception.getMessage());
+                        log.error("===============================================", exception);
+
+                        response.setContentType("application/json;charset=UTF-8");
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.getWriter().write(String.format(
+                            "{\"success\":false,\"message\":\"OAuth2 登录失败: %s\"}",
+                            exception.getMessage()
+                        ));
+                    });
                 });
 
         // 配置登出成功处理器（可选）

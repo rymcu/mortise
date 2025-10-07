@@ -7,6 +7,7 @@ import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -36,7 +37,8 @@ public class LogtoProviderStrategy implements OAuth2ProviderStrategy {
 
     @Override
     public StandardOAuth2UserInfo extractUserInfo(OAuth2User oauth2User) {
-        Map<String, Object> attributes = oauth2User.getAttributes();
+        // 创建可修改的 attributes 副本，避免 UnsupportedOperationException
+        Map<String, Object> attributes = new HashMap<>(oauth2User.getAttributes());
         
         log.debug("提取 Logto 用户信息: {}", attributes);
 

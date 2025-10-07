@@ -1,9 +1,9 @@
 package com.rymcu.mortise.auth.repository;
 
 import com.rymcu.mortise.auth.service.AuthCacheService;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
@@ -21,12 +21,12 @@ import org.springframework.util.StringUtils;
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class CacheAuthorizationRequestRepository implements AuthorizationRequestRepository<OAuth2AuthorizationRequest> {
 
     private static final String STATE_PARAMETER_NAME = "state";
 
-    @Resource
-    private AuthCacheService authCacheService;
+    private final AuthCacheService authCacheService;
 
     @Override
     public OAuth2AuthorizationRequest loadAuthorizationRequest(HttpServletRequest request) {
@@ -44,7 +44,7 @@ public class CacheAuthorizationRequestRepository implements AuthorizationRequest
                                          HttpServletResponse response) {
         Assert.notNull(request, "request cannot be null");
         Assert.notNull(response, "response cannot be null");
-        
+
         if (authorizationRequest == null) {
             String state = getStateParameter(request);
             if (StringUtils.hasText(state)) {
@@ -52,12 +52,12 @@ public class CacheAuthorizationRequestRepository implements AuthorizationRequest
             }
             return;
         }
-        
+
         String state = authorizationRequest.getState();
         Assert.hasText(state, "authorizationRequest.state cannot be empty");
-        
+
         authCacheService.storeOAuth2AuthorizationRequest(state, authorizationRequest);
-        
+
         log.debug("保存 OAuth2 授权请求: state={}", state);
     }
 
@@ -69,7 +69,7 @@ public class CacheAuthorizationRequestRepository implements AuthorizationRequest
         if (!StringUtils.hasText(state)) {
             return null;
         }
-        
+
         OAuth2AuthorizationRequest authorizationRequest = getAuthorizationRequest(state);
         if (authorizationRequest != null) {
             removeAuthorizationRequest(state);

@@ -71,7 +71,7 @@ public class DynamicClientRegistrationRepository implements ClientRegistrationRe
 
         if (configOpt.isPresent()) {
             Oauth2ClientConfig config = configOpt.get();
-            log.info("从数据库中找到客户端配置: registrationId={}, clientName={}", 
+            log.info("从数据库中找到客户端配置: registrationId={}, clientName={}",
                     registrationId, config.getClientName());
 
             // 3. 将数据库实体动态构建成 ClientRegistration 对象
@@ -80,7 +80,7 @@ public class DynamicClientRegistrationRepository implements ClientRegistrationRe
             // 4. 放入缓存
             registrationCache.put(registrationId, newRegistration);
             log.debug("客户端配置已缓存: registrationId={}", registrationId);
-            
+
             return newRegistration;
         }
 
@@ -96,26 +96,56 @@ public class DynamicClientRegistrationRepository implements ClientRegistrationRe
      */
     private ClientRegistration buildClientRegistration(Oauth2ClientConfig config) {
         log.debug("构建 ClientRegistration: registrationId={}", config.getRegistrationId());
-        
+        log.debug("配置详情: clientId={}, redirectUri={}, authMethod={}, grantType={}",
+                config.getClientId(), config.getRedirectUriTemplate(),
+                config.getClientAuthenticationMethod(), config.getAuthorizationGrantType());
+
+        // 处理默认值，避免空字符串导致异常
+        String authMethod = StringUtils.hasText(config.getClientAuthenticationMethod())
+                ? config.getClientAuthenticationMethod()
+                : "client_secret_basic";
+
+        String grantType = StringUtils.hasText(config.getAuthorizationGrantType())
+                ? config.getAuthorizationGrantType()
+                : "authorization_code";
+
+        // 处理 redirectUri，确保使用正确的模板格式
+        // 注意：必须使用 {baseUrl} 占位符，Spring Security 会在运行时自动替换
+        String redirectUri = config.getRedirectUriTemplate();
+        if (!StringUtils.hasText(redirectUri)) {
+            // 如果数据库中没有配置，使用默认模板
+            redirectUri = "{baseUrl}/login/oauth2/code/{registrationId}";
+        }
+
+        log.debug("使用 redirectUri 模板: {}", redirectUri);
+
         ClientRegistration.Builder builder = ClientRegistration.withRegistrationId(config.getRegistrationId())
                 .clientId(config.getClientId())
                 .clientSecret(config.getClientSecret())
                 .clientName(config.getClientName())
                 .scope(StringUtils.commaDelimitedListToSet(config.getScopes()))
-                .redirectUri(config.getRedirectUriTemplate())
-                .clientAuthenticationMethod(new ClientAuthenticationMethod(config.getClientAuthenticationMethod()))
-                .authorizationGrantType(new AuthorizationGrantType(config.getAuthorizationGrantType()))
+                .redirectUri(redirectUri)  // 直接使用模板，Spring Security 会自动解析
+                .clientAuthenticationMethod(new ClientAuthenticationMethod(authMethod))
+                .authorizationGrantType(new AuthorizationGrantType(grantType))
                 .authorizationUri(config.getAuthorizationUri())
                 .tokenUri(config.getTokenUri())
-                .userInfoUri(config.getUserInfoUri())
-                .userNameAttributeName(config.getUserNameAttribute());
+                .userInfoUri(config.getUserInfoUri());
+
+        // 用户名属性是可选的
+        if (StringUtils.hasText(config.getUserNameAttribute())) {
+            builder.userNameAttributeName(config.getUserNameAttribute());
+        }
 
         // JWK Set URI 是可选的
         if (StringUtils.hasText(config.getJwkSetUri())) {
             builder.jwkSetUri(config.getJwkSetUri());
         }
 
-        return builder.build();
+        ClientRegistration registration = builder.build();
+        log.info("成功构建 ClientRegistration: registrationId={}, redirectUri模板={}",
+                config.getRegistrationId(), registration.getRedirectUri());
+
+        return registration;
     }
 
     /**
@@ -157,7 +187,7 @@ public class DynamicClientRegistrationRepository implements ClientRegistrationRe
      */
     public void preloadCache() {
         log.info("预加载所有启用的客户端配置到缓存");
-        
+
         clientConfigService.findAllEnabled().forEach(config -> {
             try {
                 ClientRegistration registration = buildClientRegistration(config);
@@ -167,7 +197,7 @@ public class DynamicClientRegistrationRepository implements ClientRegistrationRe
                 log.error("预加载客户端配置失败: registrationId={}", config.getRegistrationId(), e);
             }
         });
-        
+
         log.info("预加载完成，已缓存 {} 个客户端配置", registrationCache.size());
     }
 }

@@ -1,4 +1,4 @@
-package com.rymcu.mortise.auth.service;
+package com.rymcu.mortise.auth.support;
 
 import com.rymcu.mortise.auth.spi.OAuth2ProviderStrategy;
 import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
@@ -8,7 +8,9 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -29,15 +31,15 @@ public class OAuth2UserInfoExtractor {
     public OAuth2UserInfoExtractor(Optional<List<OAuth2ProviderStrategy>> strategiesOptional) {
         this.strategies = strategiesOptional.orElse(List.of());
         log.info("OAuth2UserInfoExtractor 初始化，发现 {} 个提供商策略", this.strategies.size());
-        
-        this.strategies.forEach(strategy -> 
+
+        this.strategies.forEach(strategy ->
             log.info("  - {} (优先级: {})", strategy.getProviderType(), strategy.getOrder())
         );
     }
 
     /**
      * 提取标准化的用户信息
-     * 
+     *
      * @param oauth2User Spring Security OAuth2 用户对象
      * @param registrationId 客户端注册 ID
      * @return 标准化的用户信息
@@ -59,18 +61,21 @@ public class OAuth2UserInfoExtractor {
 
         log.info("使用 {} 策略提取用户信息 (registrationId={})", strategy.getProviderType(), registrationId);
         StandardOAuth2UserInfo userInfo = strategy.extractUserInfo(oauth2User);
-        
+
         // 确保 provider 字段已设置（使用 registrationId 以区分不同配置）
         if (userInfo.getProvider() == null) {
             userInfo.setProvider(registrationId);
         }
-        
+
         // 保存原始的 registrationId 到 rawAttributes
+        // 注意: rawAttributes 可能是不可修改的 Map，需要创建新的可修改 Map
         if (userInfo.getRawAttributes() != null) {
-            userInfo.getRawAttributes().put("_registrationId", registrationId);
+            Map<String, Object> mutableAttributes = new HashMap<>(userInfo.getRawAttributes());
+            mutableAttributes.put("_registrationId", registrationId);
+            userInfo.setRawAttributes(mutableAttributes);
         }
-        
-        log.debug("用户信息提取完成: provider={}, openId={}, nickname={}", 
+
+        log.debug("用户信息提取完成: provider={}, openId={}, nickname={}",
             userInfo.getProvider(), userInfo.getOpenId(), userInfo.getNickname());
         return userInfo;
     }

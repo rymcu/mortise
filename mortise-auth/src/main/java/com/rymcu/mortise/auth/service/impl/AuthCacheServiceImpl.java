@@ -6,6 +6,8 @@ import com.rymcu.mortise.auth.service.AuthCacheService;
 import com.rymcu.mortise.cache.service.CacheService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.TimeUnit;
@@ -23,6 +25,9 @@ public class AuthCacheServiceImpl implements AuthCacheService {
 
     @Resource
     private CacheService cacheService;
+
+    @Resource
+    private CacheManager cacheManager;
 
     @Override
     public void storeJwtToken(String account, String token) {
@@ -48,23 +53,53 @@ public class AuthCacheServiceImpl implements AuthCacheService {
 
     @Override
     public void storeOAuth2AuthorizationRequest(String state, Object authorizationRequest) {
-        cacheService.set(AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_CACHE, state, authorizationRequest,
-                AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_EXPIRE_MINUTES,
-                TimeUnit.MINUTES);
-        log.debug("存储 OAuth2 授权请求：{}", state);
+        Cache cache = cacheManager.getCache(AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_CACHE);
+        if (cache != null) {
+            cache.put(state, authorizationRequest);
+            log.info("存储 OAuth2 授权请求：state={}, type={}", state,
+                    authorizationRequest != null ? authorizationRequest.getClass().getSimpleName() : "null");
+        } else {
+            log.error("未找到缓存：{}", AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_CACHE);
+        }
     }
 
     @Override
+    @SuppressWarnings("unchecked")
     public <T> T getOAuth2AuthorizationRequest(String state, Class<T> clazz) {
-        T request = cacheService.get(AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_CACHE, state, clazz);
-        log.debug("获取 OAuth2 授权请求：{} -> {}", state, request != null ? "存在" : "不存在");
-        return request;
+        Cache cache = cacheManager.getCache(AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_CACHE);
+        if (cache != null) {
+            Cache.ValueWrapper wrapper = cache.get(state);
+            if (wrapper != null) {
+                Object value = wrapper.get();
+                String className = value != null ? value.getClass().getName() : "null";
+                log.info("获取 OAuth2 授权请求：state={} -> 找到，类型={}", state,
+                        className);
+                try {
+                    return (T) value;
+                } catch (ClassCastException e) {
+                    log.error("OAuth2 授权请求类型转换失败：state={}, expectedType={}, actualType={}",
+                            state, clazz.getName(), className, e);
+                    return null;
+                }
+            } else {
+                log.warn("获取 OAuth2 授权请求：state={} -> 未找到", state);
+                return null;
+            }
+        } else {
+            log.error("未找到缓存：{}", AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_CACHE);
+            return null;
+        }
     }
 
     @Override
     public void removeOAuth2AuthorizationRequest(String state) {
-        cacheService.delete(AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_CACHE, state);
-        log.debug("删除 OAuth2 授权请求：{}", state);
+        Cache cache = cacheManager.getCache(AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_CACHE);
+        if (cache != null) {
+            cache.evict(state);
+            log.debug("删除 OAuth2 授权请求：state={}", state);
+        } else {
+            log.error("未找到缓存：{}", AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_CACHE);
+        }
     }
 
 }

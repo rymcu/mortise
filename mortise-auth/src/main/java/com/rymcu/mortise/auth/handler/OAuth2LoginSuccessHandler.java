@@ -78,7 +78,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     public void initializeRoutes() {
         log.info("==========================================================");
         log.info("OAuth2LoginSuccessHandler 初始化路由表（基于 SPI）");
-        
+
         if (providersOptional.isEmpty() || providersOptional.get().isEmpty()) {
             log.warn("未发现任何 OAuth2LoginSuccessHandlerProvider，OAuth2 登录功能可能无法正常工作");
             log.info("==========================================================");
@@ -94,44 +94,44 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
                 .forEach(provider -> {
                     AuthenticationSuccessHandler handler = provider.getHandler();
                     String[] registrationIds = provider.getSupportedRegistrationIds();
-                    
+
                     if (handler == null) {
                         log.warn("Provider {} 返回 null handler，已跳过", provider.getClass().getSimpleName());
                         return;
                     }
-                    
+
                     if (registrationIds == null || registrationIds.length == 0) {
                         log.warn("Provider {} 未声明支持的 registrationId，已跳过", provider.getClass().getSimpleName());
                         return;
                     }
-                    
+
                     // 注册到路由表
                     for (String registrationId : registrationIds) {
                         if (!handlerMap.containsKey(registrationId)) {
                             handlerMap.put(registrationId, handler);
-                            log.info("注册路由: {} → {} (优先级: {})", 
-                                registrationId, 
+                            log.info("注册路由: {} → {} (优先级: {})",
+                                registrationId,
                                 handler.getClass().getSimpleName(),
                                 provider.getOrder());
                         } else {
                             log.debug("registrationId={} 已被注册，跳过优先级较低的 Provider", registrationId);
                         }
                     }
-                    
+
                     // 设置默认 Handler
                     if (provider.isDefault() && this.defaultHandler == null) {
                         this.defaultHandler = handler;
-                        log.info("设置默认 Handler: {} (优先级: {})", 
+                        log.info("设置默认 Handler: {} (优先级: {})",
                             handler.getClass().getSimpleName(),
                             provider.getOrder());
                     }
                 });
-        
+
         log.info("OAuth2LoginSuccessHandler 路由表初始化完成:");
         log.info("  - 已注册 {} 个路由规则", handlerMap.size());
-        log.info("  - 默认 Handler: {}", 
+        log.info("  - 默认 Handler: {}",
             defaultHandler != null ? defaultHandler.getClass().getSimpleName() : "未设置");
-        handlerMap.forEach((registrationId, handler) -> 
+        handlerMap.forEach((registrationId, handler) ->
             log.debug("    {} → {}", registrationId, handler.getClass().getSimpleName())
         );
         log.info("==========================================================");
@@ -150,18 +150,19 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
 
         String registrationId = oauth2Auth.getAuthorizedClientRegistrationId();
-        
+        log.info("OAuth2 registrationId: {}", registrationId);
+
         // 根据 registrationId 查找对应的 Handler
         AuthenticationSuccessHandler handler = handlerMap.get(registrationId);
-        
+
         if (handler == null) {
             handler = defaultHandler;
-            log.warn("未找到 registrationId={} 的专用 Handler，使用默认 Handler: {}", 
-                registrationId, 
+            log.warn("未找到 registrationId={} 的专用 Handler，使用默认 Handler: {}",
+                registrationId,
                 handler != null ? handler.getClass().getSimpleName() : "null");
         } else {
-            log.info("找到 registrationId={} 的 Handler: {}", 
-                registrationId, 
+            log.info("找到 registrationId={} 的 Handler: {}",
+                registrationId,
                 handler.getClass().getSimpleName());
         }
 
@@ -172,6 +173,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         }
 
         // 委托给具体的 Handler 处理
+        log.info("委托给 {} 处理认证成功逻辑", handler.getClass().getSimpleName());
         handler.onAuthenticationSuccess(request, response, authentication);
     }
 
@@ -188,7 +190,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
      */
     public Map<String, String> getRoutes() {
         Map<String, String> routes = new HashMap<>();
-        handlerMap.forEach((registrationId, handler) -> 
+        handlerMap.forEach((registrationId, handler) ->
             routes.put(registrationId, handler.getClass().getSimpleName())
         );
         return routes;
