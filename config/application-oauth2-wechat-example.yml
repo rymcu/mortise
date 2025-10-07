@@ -1,0 +1,138 @@
+# Mortise OAuth2 微信配置示例
+# 
+# 该配置文件展示了如何配置微信 OAuth2 登录功能
+# 
+
+# ============================================================================
+# OAuth2 动态客户端配置
+# ============================================================================
+mortise:
+  oauth2:
+    # 是否启用动态 OAuth2 客户端功能（默认为 true）
+    dynamic-client-enabled: true
+    
+    # 微信专用组件配置
+    wechat:
+      # 是否启用微信专用组件（默认为 true）
+      # 包括 WeChatAccessTokenResponseClient 和 WeChatAuthorizationRequestResolver
+      custom-components-enabled: true
+      
+      # 微信 Token 获取超时配置（可选）
+      token-request-timeout: 10s
+      
+      # 是否启用微信 API 响应日志（调试用，生产环境建议关闭）
+      enable-response-logging: false
+
+# ============================================================================
+# 其他相关配置
+# ============================================================================
+
+# 日志配置
+logging:
+  level:
+    # OAuth2 相关日志
+    org.springframework.security.oauth2: INFO
+    # 微信专用组件日志
+    com.rymcu.mortise.auth.support: INFO
+    # 动态客户端仓库日志
+    com.rymcu.mortise.auth.repository.DynamicClientRegistrationRepository: INFO
+
+# 数据库配置（示例）
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/mortise
+    username: mortise
+    driver-class-name: org.postgresql.Driver
+  
+  # JPA 配置
+  jpa:
+    hibernate:
+      ddl-auto: none  # 使用 Flyway 管理数据库结构
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+# ============================================================================
+# 微信客户端配置示例（通过数据库配置，此处仅作参考）
+# ============================================================================
+
+# 微信网页授权配置示例：
+# 
+# INSERT INTO mortise_oauth2_client_config (
+#     registration_id,           -- 唯一标识符
+#     client_id,                 -- 微信 AppID
+#     client_secret,             -- 微信 AppSecret
+#     client_name,               -- 显示名称
+#     scopes,                    -- 权限范围
+#     redirect_uri_template,     -- 回调地址模板
+#     client_authentication_method, -- 客户端认证方式
+#     authorization_grant_type,  -- 授权类型
+#     authorization_uri,         -- 授权端点
+#     token_uri,                -- Token 端点
+#     user_info_uri,            -- 用户信息端点
+#     user_name_attribute,      -- 用户名属性
+#     enabled                    -- 是否启用
+# ) VALUES (
+#     'wechat_official',
+#     'your-wechat-appid',
+#     'your-wechat-secret',
+#     '微信官方账号登录',
+#     'snsapi_login',
+#     '{baseUrl}/login/oauth2/code/{registrationId}',
+#     'client_secret_post',
+#     'authorization_code',
+#     'https://open.weixin.qq.com/connect/qrconnect',
+#     'https://api.weixin.qq.com/sns/oauth2/access_token',
+#     'https://api.weixin.qq.com/sns/userinfo',
+#     'openid',
+#     TRUE
+# );
+
+# ============================================================================
+# 开发环境特殊配置
+# ============================================================================
+
+---
+spring:
+  config:
+    activate:
+      on-profile: dev
+
+# 开发环境启用详细日志
+logging:
+  level:
+    org.springframework.security.oauth2: DEBUG
+    com.rymcu.mortise.auth.support: DEBUG
+    com.rymcu.mortise.auth.repository: DEBUG
+
+# 开发环境启用微信 API 响应日志
+mortise:
+  oauth2:
+    wechat:
+      enable-response-logging: true
+
+# ============================================================================
+# 生产环境配置
+# ============================================================================
+
+---
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+# 生产环境关闭调试日志
+logging:
+  level:
+    org.springframework.security.oauth2: WARN
+    com.rymcu.mortise.auth.support: INFO
+
+# 生产环境配置
+mortise:
+  oauth2:
+    wechat:
+      # 生产环境关闭响应日志
+      enable-response-logging: false
+      # 生产环境缩短超时时间
+      token-request-timeout: 5s

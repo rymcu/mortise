@@ -6,15 +6,18 @@ import com.rymcu.mortise.auth.handler.OAuth2LoginSuccessHandler;
 import com.rymcu.mortise.auth.handler.OAuth2LogoutSuccessHandler;
 import com.rymcu.mortise.auth.handler.RewriteAccessDeniedHandler;
 import com.rymcu.mortise.auth.repository.CacheAuthorizationRequestRepository;
+import com.rymcu.mortise.auth.repository.DynamicClientRegistrationRepository;
+import com.rymcu.mortise.auth.support.UnifiedOAuth2UserService;
 import com.rymcu.mortise.auth.spi.SecurityConfigurer;
-import jakarta.annotation.Resource;
+import com.rymcu.mortise.auth.support.UnifiedOAuth2AccessTokenResponseClient;
+import com.rymcu.mortise.auth.support.UnifiedOAuth2AuthorizationRequestResolver;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
@@ -25,31 +28,20 @@ import org.springframework.security.config.annotation.web.configurers.AbstractHt
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.oauth2.client.oidc.authentication.OidcIdTokenDecoderFactory;
-import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
-import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
 import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestResolver;
-import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
-import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
-import java.util.function.Consumer;
 
 /**
  * Web 安全配置
  * <p>
  * 核心安全配置，支持通过 SecurityConfigurer SPI 扩展
+ * 支持动态 OAuth2 客户端配置，无需重启应用即可添加/修改/删除客户端
  *
  * @author ronger
  */
@@ -58,47 +50,28 @@ import java.util.function.Consumer;
 @EnableWebSecurity
 @EnableMethodSecurity(prePostEnabled = true)
 @ConditionalOnClass(HttpSecurity.class)
+@RequiredArgsConstructor
 public class WebSecurityConfig {
 
-    @Resource
-    private JwtAuthenticationFilter jwtAuthenticationFilter;
-    @Resource
-    private JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
-    @Resource
-    private RewriteAccessDeniedHandler rewriteAccessDeniedHandler;
-    @Resource
-    private ApplicationEventPublisher applicationEventPublisher;
+    // --- 必需的依赖 ---
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
+    private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+    private final RewriteAccessDeniedHandler rewriteAccessDeniedHandler;
 
+    // --- OAuth2 相关依赖（全部可选） ---
+    // 使用 ObjectProvider 使得 OAuth2 成为可选功能，当这些 Bean 不存在时应用仍可正常启动
+    private final ObjectProvider<DynamicClientRegistrationRepository> dynamicClientRegistrationRepositoryProvider;
     private final ObjectProvider<OAuth2LoginSuccessHandler> oauth2LoginSuccessHandlerProvider;
-    private final List<SecurityConfigurer> securityConfigurers;
-    private final ClientRegistrationRepository clientRegistrationRepository;
-    private final CacheAuthorizationRequestRepository cacheAuthorizationRequestRepository;
+    private final ObjectProvider<OAuth2LogoutSuccessHandler> oauth2LogoutSuccessHandlerProvider;
+    private final ObjectProvider<CacheAuthorizationRequestRepository> cacheAuthorizationRequestRepositoryProvider;
 
-    /**
-     * 构造函数注入（使用 Optional 和 ObjectProvider 处理可选依赖）
-     */
-    @Autowired
-    public WebSecurityConfig(
-            ObjectProvider<OAuth2LoginSuccessHandler> oauth2LoginSuccessHandlerProvider,
-            Optional<List<SecurityConfigurer>> configurersOptional,
-            Optional<ClientRegistrationRepository> clientRegistrationRepositoryOptional,
-            Optional<CacheAuthorizationRequestRepository> cacheAuthorizationRequestRepositoryOptional) {
-        this.oauth2LoginSuccessHandlerProvider = oauth2LoginSuccessHandlerProvider;
-        this.securityConfigurers = configurersOptional.orElse(null);
-        this.clientRegistrationRepository = clientRegistrationRepositoryOptional.orElse(null);
-        this.cacheAuthorizationRequestRepository = cacheAuthorizationRequestRepositoryOptional.orElse(null);
+    // --- 统一的 OAuth2 组件（可选） ---
+    private final ObjectProvider<UnifiedOAuth2UserService> unifiedOAuth2UserServiceProvider;
+    private final ObjectProvider<UnifiedOAuth2AccessTokenResponseClient> unifiedAccessTokenResponseClientProvider;
+    private final ObjectProvider<UnifiedOAuth2AuthorizationRequestResolver> unifiedAuthorizationRequestResolverProvider;
 
-        log.info("==========================================================");
-        log.info("WebSecurityConfig 构造函数被调用");
-        log.info("OAuth2LoginSuccessHandler Provider: 已注入");
-        log.info("发现 {} 个 SecurityConfigurer 扩展",
-                 this.securityConfigurers == null ? 0 : this.securityConfigurers.size());
-        log.info("OAuth2 客户端注册仓库: {}",
-                 this.clientRegistrationRepository != null ? "已配置" : "未配置");
-        log.info("OAuth2 授权请求仓库: {}",
-                 this.cacheAuthorizationRequestRepository != null ? "已配置" : "未配置");
-        log.info("==========================================================");
-    }
+    // --- SPI 扩展 ---
+    private final List<SecurityConfigurer> securityConfigurers; // Spring 会自动注入一个空列表，如果没有任何实现
 
     /**
      * 密码编码器
@@ -106,67 +79,6 @@ public class WebSecurityConfig {
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    /**
-     * JWT 解码器工厂（用于 OIDC ID Token）
-     */
-    @Bean
-    public JwtDecoderFactory<ClientRegistration> idTokenDecoderFactory() {
-        OidcIdTokenDecoderFactory idTokenDecoderFactory = new OidcIdTokenDecoderFactory();
-        idTokenDecoderFactory.setJwsAlgorithmResolver(clientRegistration -> SignatureAlgorithm.ES384);
-        return idTokenDecoderFactory;
-    }
-
-    /**
-     * OAuth2 登出成功处理器
-     */
-    @Bean
-    public OAuth2LogoutSuccessHandler oauth2LogoutSuccessHandler() {
-        return new OAuth2LogoutSuccessHandler();
-    }
-
-    /**
-     * OIDC 用户服务
-     * 仅负责从 OIDC 提供者加载用户信息，不处理业务逻辑
-     * 业务逻辑（如创建/更新用户）由 SuccessHandler 处理
-     */
-    @Bean
-    public OAuth2UserService<OidcUserRequest, OidcUser> oidcUserService() {
-        // 使用默认的 OidcUserService 即可
-        return new OidcUserService();
-    }
-
-    /**
-     * OAuth2 授权请求解析器
-     */
-    private OAuth2AuthorizationRequestResolver authorizationRequestResolver() {
-        if (clientRegistrationRepository == null) {
-            return null;
-        }
-
-    DefaultOAuth2AuthorizationRequestResolver legacyResolver =
-        new DefaultOAuth2AuthorizationRequestResolver(
-            clientRegistrationRepository,
-            "/api/v1/oauth2/authorization");
-    legacyResolver.setAuthorizationRequestCustomizer(authorizationRequestCustomizer());
-
-    DefaultOAuth2AuthorizationRequestResolver springDefaultResolver =
-        new DefaultOAuth2AuthorizationRequestResolver(
-            clientRegistrationRepository,
-            "/oauth2/authorization");
-    springDefaultResolver.setAuthorizationRequestCustomizer(authorizationRequestCustomizer());
-
-    return new CompoundAuthorizationRequestResolver(springDefaultResolver, legacyResolver);
-    }
-
-    /**
-     * OAuth2 授权请求自定义器
-     * 设置 prompt 参数为 consent，即每次都要求用户同意授权
-     */
-    private Consumer<OAuth2AuthorizationRequest.Builder> authorizationRequestCustomizer() {
-        return customizer -> customizer
-                .additionalParameters(params -> params.put("prompt", "consent"));
     }
 
     /**
@@ -183,69 +95,147 @@ public class WebSecurityConfig {
 
     /**
      * Security 过滤器链配置
+     * <p>
+     * 支持动态 OAuth2 客户端，配置总是启用，具体客户端可用性取决于数据库配置
      */
     @Bean
+    @Order(100)
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        // 基础配置
+        log.info("配置安全过滤器链（支持动态 OAuth2 客户端）...");
+
+        // 基础配置 (总是应用)
         http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-                .authorizeHttpRequests(authorize -> {
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint(jwtAuthenticationEntryPoint)
+                        .accessDeniedHandler(rewriteAccessDeniedHandler))
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // 授权规则配置
+        http.authorizeHttpRequests(authorize -> {
                     // ========== 应用 SPI 扩展配置 ==========
                     // 注意：必须在 anyRequest() 之前调用
-            applySecurityConfigurers(authorize);
+                    applySecurityConfigurers(authorize);
 
-            authorize
-                .requestMatchers(
-                    "/oauth2/authorization/**",
-                    "/login/oauth2/**",
-                    "/api/v1/oauth2/**")
-                .permitAll()
-                .anyRequest().authenticated();
+                    authorize
+                            .requestMatchers(
+                                    "/oauth2/authorization/**",
+                                    "/login/oauth2/**")
+                            .permitAll()
+                            .anyRequest().authenticated();
                 })
                 .httpBasic(Customizer.withDefaults());
 
-        // 配置 OAuth2 登录（如果有客户端注册仓库）
-        if (clientRegistrationRepository != null) {
-            http.oauth2Login(oauth2Login ->
-                oauth2Login
-                    .authorizationEndpoint(authorization -> {
-                        OAuth2AuthorizationRequestResolver resolver = authorizationRequestResolver();
-                        if (resolver != null) {
-                            authorization.authorizationRequestResolver(resolver);
-                        }
-                        if (cacheAuthorizationRequestRepository != null) {
-                            authorization.authorizationRequestRepository(cacheAuthorizationRequestRepository);
-                        }
-                    })
-                    .redirectionEndpoint(redirection ->
-                        redirection.baseUri("/login/oauth2/code/*"))
-                    .userInfoEndpoint(userInfoEndpoint ->
-                        userInfoEndpoint.oidcUserService(oidcUserService()))
-                    .successHandler(oauth2LoginSuccessHandlerProvider.getObject())  // 延迟获取 Handler
-            );
+        // --- 条件化配置 OAuth2 登录 ---
+        // OAuth2 是可选功能，只有当相关 Bean 存在时才配置
+        DynamicClientRegistrationRepository dynamicRepository =
+                dynamicClientRegistrationRepositoryProvider.getIfAvailable();
 
-            // 配置登出
-            http.logout(logout ->
-                logout.logoutSuccessHandler(oauth2LogoutSuccessHandler())
-            );
-
-            log.info("OAuth2 登录配置已启用");
+        if (dynamicRepository != null) {
+            // 如果动态仓库存在，则配置 OAuth2
+            log.info("检测到 DynamicClientRegistrationRepository，启用动态 OAuth2 客户端支持");
+            try {
+                configureOAuth2Login(http, dynamicRepository);
+            } catch (Exception e) {
+                log.error("配置 OAuth2 登录失败", e);
+                throw new IllegalStateException("配置 OAuth2 登录失败", e);
+            }
         } else {
-            log.info("未检测到 OAuth2 客户端配置，跳过 OAuth2 登录配置");
+            // 如果 Bean 不存在，则打印日志并跳过配置
+            log.info("未检测到 DynamicClientRegistrationRepository，跳过 OAuth2 登录配置");
         }
-
-        // 配置异常处理
-        http.exceptionHandling(exception -> exception
-            .authenticationEntryPoint(jwtAuthenticationEntryPoint)
-            .accessDeniedHandler(rewriteAccessDeniedHandler)
-        );
-
-        // 添加 JWT 认证过滤器
-        http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         log.info("WebSecurityConfig 配置完成");
 
         return http.build();
+    }
+
+    /**
+     * 配置 OAuth2 登录
+     * <p>
+     * 将 OAuth2 的配置逻辑抽离到一个单独的方法中，保持主方法的整洁
+     * 使用动态客户端注册仓库，支持运行时动态管理客户端配置
+     * 所有 OAuth2 相关的处理器都是可选的，通过 ObjectProvider 获取
+     *
+     * @param http                      HttpSecurity
+     * @param clientRegistrationRepository 客户端注册仓库（动态实现）
+     * @throws Exception 配置异常
+     */
+    private void configureOAuth2Login(HttpSecurity http,
+                                     ClientRegistrationRepository clientRegistrationRepository) throws Exception {
+        http.oauth2Login(oauth2Login -> {
+                    oauth2Login
+                            .authorizationEndpoint(authorization -> {
+                                // 使用统一的授权请求解析器（如果存在）
+                                authorization.authorizationRequestResolver(
+                                        authorizationRequestResolver(clientRegistrationRepository)
+                                );
+                                // 如果 CacheAuthorizationRequestRepository 存在，则配置它
+                                cacheAuthorizationRequestRepositoryProvider.ifAvailable(
+                                        authorization::authorizationRequestRepository
+                                );
+                            })
+                            .tokenEndpoint(token -> {
+                                // 使用统一的 Token 客户端（如果存在）
+                                unifiedAccessTokenResponseClientProvider.ifAvailable(
+                                        token::accessTokenResponseClient
+                                );
+                            })
+                            .redirectionEndpoint(redirection -> redirection.baseUri("/login/oauth2/code/*"));
+
+                    // 配置用户信息服务（可选）
+                    unifiedOAuth2UserServiceProvider.ifAvailable(service ->
+                            oauth2Login.userInfoEndpoint(userInfo -> userInfo.userService(service))
+                    );
+
+                    // 配置成功处理器（可选）
+                    oauth2LoginSuccessHandlerProvider.ifAvailable(oauth2Login::successHandler);
+                });
+
+        // 配置登出成功处理器（可选）
+        oauth2LogoutSuccessHandlerProvider.ifAvailable(handler -> {
+            try {
+                http.logout(logout -> logout.logoutSuccessHandler(handler));
+            } catch (Exception e) {
+                log.error("配置 OAuth2 登出处理器失败", e);
+            }
+        });
+    }
+
+    /**
+     * OAuth2 授权请求解析器
+     * <p>
+     * 使用动态客户端注册仓库，支持运行时查找客户端配置
+     * 优先使用统一授权请求解析器（如果存在），否则使用默认解析器
+     *
+     * @param clientRegistrationRepository 客户端注册仓库
+     * @return OAuth2AuthorizationRequestResolver
+     */
+    private OAuth2AuthorizationRequestResolver authorizationRequestResolver(
+            ClientRegistrationRepository clientRegistrationRepository) {
+
+        // 优先使用统一授权请求解析器（如果存在）
+        UnifiedOAuth2AuthorizationRequestResolver unifiedResolver =
+                unifiedAuthorizationRequestResolverProvider.getIfAvailable();
+
+        if (unifiedResolver != null) {
+            log.info("使用统一 OAuth2 授权请求解析器（支持微信等特殊处理）");
+            return unifiedResolver;
+        }
+
+        // 回退到默认解析器
+        log.info("使用默认 OAuth2 授权请求解析器");
+        DefaultOAuth2AuthorizationRequestResolver defaultResolver =
+                new DefaultOAuth2AuthorizationRequestResolver(
+                        clientRegistrationRepository,
+                        "/oauth2/authorization");
+
+        // 可以在这里自定义授权请求，例如添加额外参数
+        // defaultResolver.setAuthorizationRequestCustomizer(customizer ->
+        //     customizer.additionalParameters(params -> params.put("prompt", "consent"))
+        // );
+
+        return defaultResolver;
     }
 
     /**
@@ -274,35 +264,4 @@ public class WebSecurityConfig {
                     }
                 });
     }
-
-        private static class CompoundAuthorizationRequestResolver implements OAuth2AuthorizationRequestResolver {
-
-            private final OAuth2AuthorizationRequestResolver[] delegates;
-
-            private CompoundAuthorizationRequestResolver(OAuth2AuthorizationRequestResolver... delegates) {
-                this.delegates = delegates;
-            }
-
-            @Override
-            public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
-                for (OAuth2AuthorizationRequestResolver delegate : delegates) {
-                    OAuth2AuthorizationRequest requestResult = delegate.resolve(request);
-                    if (requestResult != null) {
-                        return requestResult;
-                    }
-                }
-                return null;
-            }
-
-            @Override
-            public OAuth2AuthorizationRequest resolve(HttpServletRequest request, String clientRegistrationId) {
-                for (OAuth2AuthorizationRequestResolver delegate : delegates) {
-                    OAuth2AuthorizationRequest requestResult = delegate.resolve(request, clientRegistrationId);
-                    if (requestResult != null) {
-                        return requestResult;
-                    }
-                }
-                return null;
-            }
-        }
 }
