@@ -192,7 +192,7 @@ public class AuthServiceImpl implements AuthService {
                 .email(oidcUser.getEmail())
                 .avatar(oidcUser.getPicture())
                 .build();
-        
+
         User user = findOrCreateUserFromOAuth2(userInfo);
         return generateTokens(user);
     }
@@ -200,8 +200,8 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public User findOrCreateUserFromOAuth2(StandardOAuth2UserInfo userInfo) {
-        log.info("从 OAuth2 查找或创建用户: provider={}, openId={}, unionId={}, email={}", 
-            userInfo.getProvider(), userInfo.getOpenId(), userInfo.getUnionId(), userInfo.getEmail());
+        log.info("从 OAuth2 查找或创建用户: provider={}, openId={}, unionId={}, email={}",
+                userInfo.getProvider(), userInfo.getOpenId(), userInfo.getUnionId(), userInfo.getEmail());
 
         // 1. 查找已存在的 OAuth2 绑定关系
         UserOAuth2Binding existingBinding = findExistingBinding(userInfo);
@@ -210,9 +210,9 @@ public class AuthServiceImpl implements AuthService {
             // 找到绑定关系，获取用户信息
             User existingUser = userService.getById(existingBinding.getUserId());
             if (existingUser != null) {
-                log.info("找到已存在的用户: userId={}, account={}", 
-                    existingUser.getId(), existingUser.getAccount());
-                
+                log.info("找到已存在的用户: userId={}, account={}",
+                        existingUser.getId(), existingUser.getAccount());
+
                 // 更新绑定信息
                 updateOAuth2Binding(existingBinding, userInfo);
                 return existingUser;
@@ -224,44 +224,53 @@ public class AuthServiceImpl implements AuthService {
         if (StringUtils.isNotBlank(userInfo.getEmail())) {
             existingUser = userService.findByAccount(userInfo.getEmail());
             if (existingUser != null) {
-                log.info("通过邮箱匹配到现有用户: userId={}, email={}", 
-                    existingUser.getId(), userInfo.getEmail());
-                
+                log.info("通过邮箱匹配到现有用户: userId={}, email={}",
+                        existingUser.getId(), userInfo.getEmail());
+
                 // 创建 OAuth2 绑定关系
                 createOAuth2Binding(existingUser.getId(), userInfo);
                 return existingUser;
             }
         }
 
+        if ("wechat".equalsIgnoreCase(userInfo.getProvider())) {
+            // TODO 微信登录需手动注册或绑定账号
+            existingUser = new User();
+            String key = Utils.genKey();
+            systemCacheService.storeStandardOAuth2UserInfo(key, userInfo);
+            existingUser.setAccount(key);
+            return existingUser;
+        }
+
         // 3. 创建新用户和绑定关系
         User newUser = createNewUserFromOAuth2(userInfo);
-        
+
         try {
             String randomPassword = Utils.genKey();
             newUser.setPassword(passwordEncoder.encode(randomPassword));
             boolean saved = userService.save(newUser);
-            
+
             if (saved) {
                 log.info("创建新用户成功: userId={}, account={}", newUser.getId(), newUser.getAccount());
-                
+
                 // 创建 OAuth2 绑定关系
                 createOAuth2Binding(newUser.getId(), userInfo);
-                
+
                 // 发布注册事件
                 applicationEventPublisher.publishEvent(
-                    new RegisterEvent(newUser.getId(), newUser.getAccount(), randomPassword)
+                        new RegisterEvent(newUser.getId(), newUser.getAccount(), randomPassword)
                 );
-                
+
                 return newUser;
             }
         } catch (DataIntegrityViolationException e) {
             log.warn("用户创建冲突，重新查询: {}", e.getMessage());
-            
+
             // 并发创建冲突，重新查询绑定关系
             UserOAuth2Binding retryBinding = userOAuth2BindingService.findByProviderAndOpenId(
-                userInfo.getProvider(), userInfo.getOpenId()
+                    userInfo.getProvider(), userInfo.getOpenId()
             );
-            
+
             if (retryBinding != null) {
                 User retryUser = userService.getById(retryBinding.getUserId());
                 if (retryUser != null) {
@@ -271,7 +280,9 @@ public class AuthServiceImpl implements AuthService {
         }
 
         throw new BusinessException(ResultCode.REGISTER_FAIL.getMessage());
-    }    @Override
+    }
+
+    @Override
     public TokenUser generateTokens(User user) {
         return generateAndStoreTokens(user);
     }
@@ -307,10 +318,10 @@ public class AuthServiceImpl implements AuthService {
         binding.setEmail(userInfo.getEmail());
         binding.setCreatedTime(LocalDateTime.now());
         binding.setUpdatedTime(LocalDateTime.now());
-        
+
         userOAuth2BindingService.save(binding);
-        log.debug("创建 OAuth2 绑定: userId={}, provider={}, openId={}, unionId={}", 
-            userId, userInfo.getProvider(), userInfo.getOpenId(), userInfo.getUnionId());
+        log.debug("创建 OAuth2 绑定: userId={}, provider={}, openId={}, unionId={}",
+                userId, userInfo.getProvider(), userInfo.getOpenId(), userInfo.getUnionId());
     }
 
     /**
@@ -361,39 +372,38 @@ public class AuthServiceImpl implements AuthService {
     private UserOAuth2Binding findExistingBinding(StandardOAuth2UserInfo userInfo) {
         // 1. 首先通过 provider + openId 查找（标准查找方式）
         UserOAuth2Binding binding = userOAuth2BindingService.findByProviderAndOpenId(
-            userInfo.getProvider(), userInfo.getOpenId()
+                userInfo.getProvider(), userInfo.getOpenId()
         );
-        
+
         if (binding != null) {
             return binding;
         }
-        
+
         // 2. 如果是微信且有 unionId，尝试通过 unionId 查找
         // 这可以解决同一微信用户在不同应用（公众号、小程序）的账号关联问题
-        if ("wechat".equalsIgnoreCase(userInfo.getProvider()) 
+        if ("wechat".equalsIgnoreCase(userInfo.getProvider())
                 && StringUtils.isNotBlank(userInfo.getUnionId())) {
             binding = userOAuth2BindingService.findByProviderAndUnionId(
-                userInfo.getProvider(), userInfo.getUnionId()
+                    userInfo.getProvider(), userInfo.getUnionId()
             );
-            
+
             if (binding != null) {
-                log.info("通过 unionId 找到已存在的微信绑定: unionId={}, userId={}", 
-                    userInfo.getUnionId(), binding.getUserId());
-                
+                log.info("通过 unionId 找到已存在的微信绑定: unionId={}, userId={}",
+                        userInfo.getUnionId(), binding.getUserId());
+
                 // 更新 openId（可能是从公众号切换到小程序，或反之）
                 if (!Objects.equals(binding.getOpenId(), userInfo.getOpenId())) {
                     binding.setOpenId(userInfo.getOpenId());
                     binding.setUpdatedTime(LocalDateTime.now());
                     userOAuth2BindingService.updateById(binding);
-                    log.debug("更新微信绑定的 openId: bindingId={}, newOpenId={}", 
-                        binding.getId(), userInfo.getOpenId());
+                    log.debug("更新微信绑定的 openId: bindingId={}, newOpenId={}",
+                            binding.getId(), userInfo.getOpenId());
                 }
             }
         }
-        
+
         return binding;
     }
-
 
 
     @Override

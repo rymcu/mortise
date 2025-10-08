@@ -1,15 +1,14 @@
 package com.rymcu.mortise.system.handler;
 
-import com.rymcu.mortise.auth.service.OAuth2UserInfoExtractor;
-import com.rymcu.mortise.auth.service.TokenManager;
+import com.rymcu.mortise.auth.spi.OAuth2UserInfoExtractor;
 import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.model.auth.TokenUser;
 import com.rymcu.mortise.system.service.AuthService;
-import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
@@ -31,25 +30,21 @@ import java.io.IOException;
  * @since 1.0.0
  */
 @Slf4j
-@Component("systemOAuth2LoginSuccessHandler")
+@Component
+@RequiredArgsConstructor
 public class SystemOAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
-    @Resource
-    private OAuth2UserInfoExtractor userInfoExtractor;
+    private final OAuth2UserInfoExtractor userInfoExtractor;
 
-    @Resource
-    private AuthService authService;
+    private final AuthService authService;
 
-    @Resource
-    private TokenManager tokenManager;
-
-    @Resource
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
                                         Authentication authentication) throws IOException {
+
         log.info("系统管理员 OAuth2 登录成功处理器被调用");
 
         if (!(authentication instanceof OAuth2AuthenticationToken oauth2Auth)) {
@@ -74,11 +69,8 @@ public class SystemOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
             // 3. 生成 JWT Token
             TokenUser tokenUser = authService.generateTokens(user);
 
-            // 4. 返回 JSON 响应
-            response.setContentType("application/json;charset=UTF-8");
-            response.getWriter().write(objectMapper.writeValueAsString(
-                GlobalResult.success(tokenUser)
-            ));
+            // 4. 根据 registrationId 决定响应方式
+            handleSuccessResponse(response, registrationId, tokenUser);
 
             log.info("系统管理员 OAuth2 登录成功: userId={}, account={}",
                 user.getId(), user.getAccount());
@@ -86,6 +78,44 @@ public class SystemOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
         } catch (Exception e) {
             log.error("系统管理员 OAuth2 登录失败: registrationId={}", registrationId, e);
             sendErrorResponse(response, e.getMessage());
+        }
+    }
+
+    /**
+     * 根据 registrationId 处理成功响应
+     */
+    private void handleSuccessResponse(HttpServletResponse response,
+                                       String registrationId,
+                                       TokenUser tokenUser) throws IOException {
+        // 根据 registrationId 决定返回方式
+        switch (registrationId) {
+            case "logto", "logto-admin" -> {
+                // 管理后台：重定向到前端页面
+                String redirectUrl = String.format(
+                    "https://wx.rymcu.com/admin/oauth-callback?token=%s&refreshToken=%s",
+                    tokenUser.getToken(),
+                    tokenUser.getRefreshToken()
+                );
+                log.info("重定向到: {}", redirectUrl);
+                response.sendRedirect(redirectUrl);
+            }
+            case "github", "google" -> {
+                // 社区登录：重定向到社区首页
+                String redirectUrl = String.format(
+                    "https://www.rymcu.com/oauth/callback?token=%s&refreshToken=%s",
+                    tokenUser.getToken(),
+                    tokenUser.getRefreshToken()
+                );
+                log.info("重定向到: {}", redirectUrl);
+                response.sendRedirect(redirectUrl);
+            }
+            default -> {
+                // 默认：返回 JSON
+                response.setContentType("application/json;charset=UTF-8");
+                response.getWriter().write(objectMapper.writeValueAsString(
+                    GlobalResult.success(tokenUser)
+                ));
+            }
         }
     }
 
