@@ -1,5 +1,7 @@
 package com.rymcu.mortise.auth.support;
 
+import jakarta.annotation.PostConstruct;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
@@ -47,24 +49,26 @@ import java.util.Map;
  */
 @Slf4j
 @Component
+@RequiredArgsConstructor
 public class UnifiedOAuth2AccessTokenResponseClient
         implements OAuth2AccessTokenResponseClient<OAuth2AuthorizationCodeGrantRequest> {
 
     private static final ParameterizedTypeReference<Map<String, Object>> RESPONSE_TYPE =
             new ParameterizedTypeReference<>() {};
 
-    // 微信专用的 Token 客户端
     private final WeChatAccessTokenResponseClient weChatClient;
-    // 标准的 RestOperations 和转换器
-    private final RestOperations restOperations;
-    private final DefaultMapOAuth2AccessTokenResponseConverter responseConverter;
 
-    public UnifiedOAuth2AccessTokenResponseClient() {
-        this.weChatClient = new WeChatAccessTokenResponseClient();
+    // 非 final 字段，在构造后初始化
+    private RestOperations restOperations;
+    private final DefaultMapOAuth2AccessTokenResponseConverter responseConverter = new DefaultMapOAuth2AccessTokenResponseConverter();
+
+    /**
+     * 使用 @PostConstruct 注解，在依赖注入完成后执行初始化逻辑
+     */
+    @PostConstruct
+    public void init() {
         this.restOperations = createStandardRestTemplate();
-        this.responseConverter = new DefaultMapOAuth2AccessTokenResponseConverter();
-
-        log.info("初始化统一 OAuth2 AccessToken 响应客户端");
+        log.info("初始化统一 OAuth2 AccessToken 响应客户端，并注入了微信专用客户端");
     }
 
     @Override
@@ -109,8 +113,6 @@ public class UnifiedOAuth2AccessTokenResponseClient
 
             return this.responseConverter.convert(responseMap);
 
-        } catch (OAuth2AuthenticationException ex) {
-            throw ex;
         } catch (RestClientException ex) {
             log.error("获取访问令牌时发生网络错误", ex);
             OAuth2Error oauth2Error = new OAuth2Error(

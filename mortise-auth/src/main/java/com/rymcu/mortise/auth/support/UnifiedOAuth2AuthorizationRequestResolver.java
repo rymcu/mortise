@@ -45,29 +45,43 @@ public class UnifiedOAuth2AuthorizationRequestResolver implements OAuth2Authoriz
     @Override
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request) {
         OAuth2AuthorizationRequest authorizationRequest = this.defaultResolver.resolve(request);
-        return customizeAuthorizationRequest(authorizationRequest);
+        return customizeAuthorizationRequest(request, authorizationRequest);
     }
 
     @Override
     public OAuth2AuthorizationRequest resolve(HttpServletRequest request, String clientRegistrationId) {
         OAuth2AuthorizationRequest authorizationRequest = this.defaultResolver.resolve(request, clientRegistrationId);
-        return customizeAuthorizationRequest(authorizationRequest);
+        return customizeAuthorizationRequest(request, authorizationRequest);
     }
 
-    private OAuth2AuthorizationRequest customizeAuthorizationRequest(OAuth2AuthorizationRequest authorizationRequest) {
+    private OAuth2AuthorizationRequest customizeAuthorizationRequest(HttpServletRequest request, OAuth2AuthorizationRequest authorizationRequest) {
         if (authorizationRequest == null) {
             return null;
         }
+
+        OAuth2AuthorizationRequest.Builder requestBuilder = OAuth2AuthorizationRequest.from(authorizationRequest);
         String registrationId = authorizationRequest.getAttribute(OAuth2ParameterNames.REGISTRATION_ID);
-        // 微信公众号
-        if (isWeChatProvider(registrationId) && hasWebAuthScope(authorizationRequest.getScopes())) {
-            log.debug("为微信登录添加 #wechat_redirect 锚点: {}", registrationId);
-            return OAuth2AuthorizationRequest.from(authorizationRequest)
-                    .authorizationRequestUri(uriBuilder -> uriBuilder.fragment("wechat_redirect").build())
-                    .build();
+        // --- 针对微信的特殊处理逻辑 ---
+        if (isWeChatProvider(registrationId)) {
+            // 1. 添加 #wechat_redirect 锚点 (如果需要)
+            if (hasWebChatAuthScope(authorizationRequest.getScopes())) {
+                log.debug("为微信登录添加 #wechat_redirect 锚点: {}", registrationId);
+                requestBuilder.authorizationRequestUri(uri -> uri.fragment("wechat_redirect").build());
+            }
+
+            // 2. 添加微信专用的 'appid' 参数
+            String clientId = authorizationRequest.getClientId();
+            requestBuilder.additionalParameters(params -> params.put("appid", clientId));
+            log.debug("为微信登录添加 'appid' 参数: {}", clientId);
+        }
+        // --- 判断 referer 是否在白名单 ---
+        String referer = request.getHeader("referer");
+        if (referer != null && !referer.isBlank()) {
+            // TODO 判断 referer 是否在白名单
+            log.info("referer: {}", referer);
         }
         // 未来可扩展：如钉钉、企业微信等
-        return authorizationRequest;
+        return requestBuilder.build();
     }
 
     private boolean isWeChatProvider(String registrationId) {
@@ -77,9 +91,9 @@ public class UnifiedOAuth2AuthorizationRequestResolver implements OAuth2Authoriz
     }
 
     /**
-     * 检查 scope 是否包含 'snsapi_login'
+     * 检查 scope 是否包含 'snsapi_base' 或者 'snsapi_userinfo'
      */
-    private boolean hasWebAuthScope(Set<String> scopes) {
-        return scopes != null && !scopes.contains("snsapi_login");
+    private boolean hasWebChatAuthScope(Set<String> scopes) {
+        return scopes != null && (scopes.contains("snsapi_base") || scopes.contains("snsapi_userinfo"));
     }
 }

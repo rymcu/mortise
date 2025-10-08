@@ -12,9 +12,9 @@ import java.util.Map;
 
 /**
  * Logto OAuth2/OIDC 提供商策略
- * 
- * <p>Logto 文档：https://docs.logto.io/
- * 
+ *
+ * <p>Logto 文档：<a href="https://docs.logto.io/">...</a>
+ *
  * @author ronger
  * @since 1.0.0
  */
@@ -39,7 +39,7 @@ public class LogtoProviderStrategy implements OAuth2ProviderStrategy {
     public StandardOAuth2UserInfo extractUserInfo(OAuth2User oauth2User) {
         // 创建可修改的 attributes 副本，避免 UnsupportedOperationException
         Map<String, Object> attributes = new HashMap<>(oauth2User.getAttributes());
-        
+
         log.debug("提取 Logto 用户信息: {}", attributes);
 
         // Logto 支持 OIDC，可能是 OidcUser

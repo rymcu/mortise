@@ -142,6 +142,7 @@ public class WebSecurityConfig {
 
                     authorize
                             .requestMatchers(
+                                    "/api/v1/oauth2/qrcode/**",
                                     "/oauth2/authorization/**",
                                     "/login/oauth2/**")
                             .permitAll()

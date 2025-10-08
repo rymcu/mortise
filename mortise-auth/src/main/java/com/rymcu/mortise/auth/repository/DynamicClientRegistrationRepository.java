@@ -13,7 +13,6 @@ import org.springframework.stereotype.Repository;
 import org.springframework.util.StringUtils;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -67,10 +66,9 @@ public class DynamicClientRegistrationRepository implements ClientRegistrationRe
         }
 
         // 2. 缓存未命中，从数据库中查找配置
-        Optional<Oauth2ClientConfig> configOpt = clientConfigService.findByRegistrationId(registrationId);
+        Oauth2ClientConfig config = clientConfigService.loadOauth2ClientConfigByRegistrationId(registrationId);
 
-        if (configOpt.isPresent()) {
-            Oauth2ClientConfig config = configOpt.get();
+        if (config != null) {
             log.info("从数据库中找到客户端配置: registrationId={}, clientName={}",
                     registrationId, config.getClientName());
 
@@ -188,7 +186,7 @@ public class DynamicClientRegistrationRepository implements ClientRegistrationRe
     public void preloadCache() {
         log.info("预加载所有启用的客户端配置到缓存");
 
-        clientConfigService.findAllEnabled().forEach(config -> {
+        clientConfigService.loadOauth2ClientConfigAllEnabled().forEach(config -> {
             try {
                 ClientRegistration registration = buildClientRegistration(config);
                 registrationCache.put(config.getRegistrationId(), registration);

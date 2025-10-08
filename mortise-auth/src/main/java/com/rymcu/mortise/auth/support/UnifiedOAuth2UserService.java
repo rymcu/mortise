@@ -1,7 +1,7 @@
 package com.rymcu.mortise.auth.support;
 
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -27,13 +27,22 @@ import java.util.Map;
  */
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class UnifiedOAuth2UserService implements OAuth2UserService<OAuth2UserRequest, OAuth2User> {
 
     private final RestTemplate restTemplate;
     // 持有 Spring 默认的两个 Service 作为委托目标
     private final OidcUserService oidcUserService = new OidcUserService();
     private final DefaultOAuth2UserService defaultOAuth2UserService = new DefaultOAuth2UserService();
+
+    /**
+     * 构造函数，注入为微信定制的 RestTemplate。
+     * Spring 会自动找到名为 "weChatRestTemplate" 的 Bean 并注入。
+     *
+     * @param weChatRestTemplate 使用 @Qualifier 指定注入
+     */
+    public UnifiedOAuth2UserService(@Qualifier("weChatRestTemplate") RestTemplate weChatRestTemplate) {
+        this.restTemplate = weChatRestTemplate;
+    }
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {

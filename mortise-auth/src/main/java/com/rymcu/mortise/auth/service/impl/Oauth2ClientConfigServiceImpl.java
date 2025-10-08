@@ -8,15 +8,15 @@ import com.rymcu.mortise.auth.mapper.Oauth2ClientConfigMapper;
 import com.rymcu.mortise.auth.model.OAuth2ClientConfigSearch;
 import com.rymcu.mortise.auth.service.Oauth2ClientConfigService;
 import com.rymcu.mortise.common.enumerate.EnabledFlag;
-import com.rymcu.mortise.common.exception.ServiceException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
+import org.jasypt.encryption.StringEncryptor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 import static com.rymcu.mortise.auth.entity.table.Oauth2ClientConfigTableDef.OAUTH2_CLIENT_CONFIG;
 
@@ -30,48 +30,38 @@ import static com.rymcu.mortise.auth.entity.table.Oauth2ClientConfigTableDef.OAU
 @Service
 public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfigMapper, Oauth2ClientConfig> implements Oauth2ClientConfigService {
 
+    private final StringEncryptor stringEncryptor;
+
+    public Oauth2ClientConfigServiceImpl(@Qualifier("jasyptStringEncryptor") StringEncryptor stringEncryptor) {
+        this.stringEncryptor = stringEncryptor;
+    }
+
     @Override
-    public Optional<Oauth2ClientConfig> findByRegistrationId(String registrationId) {
-        log.debug("查找客户端配置: registrationId={}", registrationId);
+    public Oauth2ClientConfig loadOauth2ClientConfigByRegistrationId(String registrationId) {
+        log.debug("从数据库加载 OAuth2 客户端配置: registrationId={}", registrationId);
 
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .where(OAUTH2_CLIENT_CONFIG.REGISTRATION_ID.eq(registrationId))
                 .and(OAUTH2_CLIENT_CONFIG.IS_ENABLED.eq(EnabledFlag.YES.ordinal()));
 
         Oauth2ClientConfig config = mapper.selectOneByQuery(queryWrapper);
-        return Optional.ofNullable(config);
+        if (config != null) {
+            config.setClientSecret(decryptValue(config.getClientSecret()));
+            return config;
+        }
+        return null;
     }
 
     @Override
-    public List<Oauth2ClientConfig> findAllEnabled() {
-        log.debug("查找所有启用的客户端配置");
+    public List<Oauth2ClientConfig> loadOauth2ClientConfigAllEnabled() {
+        log.debug("加载所有启用的 OAuth2 客户端配置");
 
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .where(OAUTH2_CLIENT_CONFIG.IS_ENABLED.eq(EnabledFlag.YES.ordinal()))
                 .orderBy(OAUTH2_CLIENT_CONFIG.CREATED_TIME.desc());
-
-        return mapper.selectListByQuery(queryWrapper);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean saveOauth2ClientConfig(Oauth2ClientConfig config) {
-        log.info("保存客户端配置: registrationId={}", config.getRegistrationId());
-        boolean isUpdate = config.getId() != null;
-        if (isUpdate) {
-            // 更新
-            Oauth2ClientConfig oldOauth2ClientConfig = mapper.selectOneById(config.getId());
-            if (oldOauth2ClientConfig == null) {
-                throw new ServiceException("数据不存在");
-            }
-            BeanUtils.copyProperties(config, oldOauth2ClientConfig);
-            oldOauth2ClientConfig.setUpdatedTime(LocalDateTime.now());
-            return mapper.insertOrUpdateSelective(oldOauth2ClientConfig) > 0;
-        }
-        // 新建
-        config.setCreatedTime(LocalDateTime.now());
-        config.setUpdatedTime(LocalDateTime.now());
-        return mapper.insertSelective(config) > 0;
+        List<Oauth2ClientConfig> list = mapper.selectListByQuery(queryWrapper);
+        list.forEach(config -> config.setClientSecret(decryptValue(config.getClientSecret())));
+        return list;
     }
 
     @Override
@@ -107,5 +97,79 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
             return false;
         }
         return mapper.deleteBatchByIds(idOAuth2ClientConfigs) > 0;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean createOauth2ClientConfig(Oauth2ClientConfig config) {
+        // 加密敏感信息
+        if (StringUtils.hasText(config.getClientSecret())) {
+            config.setClientSecret(encryptValue(config.getClientSecret()));
+        }
+
+        // 设置默认值
+        if (config.getIsEnabled() == null) {
+            config.setIsEnabled(EnabledFlag.YES.ordinal());
+        }
+
+        config.setCreatedTime(LocalDateTime.now());
+        int result = mapper.insertSelective(config);
+        log.info("创建 OAuth2 配置成功，id: {}, registrationId: {}, name: {}",
+                config.getId(), config.getRegistrationId(), config.getClientName());
+        return result > 0;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateOauth2ClientConfig(Oauth2ClientConfig config) {
+        Oauth2ClientConfig oldConfig = mapper.selectOneById(config.getId());
+        if (oldConfig == null) {
+            throw new IllegalArgumentException("配置不存在：" + config.getId());
+        }
+
+        // 如果更新了 AppSecret，需要加密
+        if (StringUtils.hasText(config.getClientSecret())
+                && !config.getClientSecret().equals(oldConfig.getClientSecret())) {
+            config.setClientSecret(encryptValue(config.getClientSecret()));
+        }
+        config.setUpdatedTime(LocalDateTime.now());
+        int rows = mapper.insertOrUpdateSelective(config);
+        log.info("更新微信账号成功，id: {}", config.getId());
+        return rows > 0;
+    }
+
+
+    // ==================== 私有方法 ====================
+
+    /**
+     * 解密值
+     */
+    private String decryptValue(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        try {
+            return stringEncryptor.decrypt(value);
+        } catch (Exception e) {
+            log.error("解密失败，将使用原值: {}", e.getMessage());
+            return value;
+        }
+    }
+
+    /**
+     * 加密值
+     */
+    private String encryptValue(String value) {
+        if (value == null) {
+            return null;
+        }
+
+        try {
+            return stringEncryptor.encrypt(value);
+        } catch (Exception e) {
+            log.error("加密失败，将使用原值: {}", e.getMessage());
+            return value;
+        }
     }
 }

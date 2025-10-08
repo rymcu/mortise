@@ -1,15 +1,16 @@
 package com.rymcu.mortise.auth.support;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.converter.Converter;
-import org.springframework.http.*;
-import org.springframework.http.converter.FormHttpMessageConverter;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.RequestEntity;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AccessTokenResponseClient;
 import org.springframework.security.oauth2.client.endpoint.OAuth2AuthorizationCodeGrantRequest;
-import org.springframework.security.oauth2.client.http.OAuth2ErrorResponseErrorHandler;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -81,8 +82,8 @@ public final class WeChatAccessTokenResponseClient
     /**
      * 构造函数，初始化专门用于微信的 RestTemplate 和转换器
      */
-    public WeChatAccessTokenResponseClient() {
-        this.restOperations = createWeChatRestTemplate();
+    public WeChatAccessTokenResponseClient(@Qualifier("weChatRestTemplate") RestTemplate weChatRestTemplate) {
+        this.restOperations = weChatRestTemplate;
         this.responseConverter = new DefaultMapOAuth2AccessTokenResponseConverter();
 
         log.info("初始化 WeChatAccessTokenResponseClient，支持 text/plain 响应类型");
@@ -194,10 +195,13 @@ public final class WeChatAccessTokenResponseClient
 
         // 添加客户端认证信息
         parameters.add(OAuth2ParameterNames.CLIENT_ID, clientRegistration.getClientId());
+        // 添加微信标识 appid
+        parameters.add("appid", clientRegistration.getClientId());
 
         // 微信使用 client_secret_post 方式，将 secret 放在 body 中
         if (clientRegistration.getClientSecret() != null) {
             parameters.add(OAuth2ParameterNames.CLIENT_SECRET, clientRegistration.getClientSecret());
+            parameters.add("secret", clientRegistration.getClientSecret());
         }
 
         // 构建请求头
@@ -213,43 +217,5 @@ public final class WeChatAccessTokenResponseClient
 
         // 构建并返回请求
         return new RequestEntity<>(parameters, headers, HttpMethod.POST, tokenUri);
-    }
-
-    /**
-     * 创建专门用于微信 API 的 RestTemplate
-     * <p>
-     * 配置要点：
-     * <ul>
-     *   <li>添加 JSON 消息转换器，支持 text/plain Content-Type</li>
-     *   <li>配置 OAuth2 错误响应处理器</li>
-     *   <li>保留表单消息转换器用于请求参数编码</li>
-     * </ul>
-     *
-     * @return 配置好的 RestTemplate
-     */
-    private RestTemplate createWeChatRestTemplate() {
-        RestTemplate restTemplate = new RestTemplate();
-
-        // 配置 JSON 消息转换器，支持 text/plain
-        MappingJackson2HttpMessageConverter jsonConverter = new MappingJackson2HttpMessageConverter();
-        jsonConverter.setSupportedMediaTypes(Arrays.asList(
-            MediaType.APPLICATION_JSON,
-            MediaType.TEXT_PLAIN,  // 微信返回的 Content-Type
-            new MediaType("application", "*+json")
-        ));
-
-        // 配置表单消息转换器（用于发送请求参数）
-        FormHttpMessageConverter formConverter = new FormHttpMessageConverter();
-
-        // 设置消息转换器（顺序很重要）
-        restTemplate.setMessageConverters(Arrays.asList(
-            formConverter,      // 处理请求表单
-            jsonConverter       // 处理 JSON 响应（包括 text/plain）
-        ));
-
-        // 配置 OAuth2 错误处理器
-        restTemplate.setErrorHandler(new OAuth2ErrorResponseErrorHandler());
-
-        return restTemplate;
     }
 }

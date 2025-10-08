@@ -6,7 +6,6 @@ import com.rymcu.mortise.auth.entity.Oauth2ClientConfig;
 import com.rymcu.mortise.auth.model.OAuth2ClientConfigSearch;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * OAuth2 客户端配置服务接口
@@ -22,22 +21,14 @@ public interface Oauth2ClientConfigService extends IService<Oauth2ClientConfig> 
      * @param registrationId 客户端注册ID
      * @return 客户端配置（如果存在）
      */
-    Optional<Oauth2ClientConfig> findByRegistrationId(String registrationId);
+    Oauth2ClientConfig loadOauth2ClientConfigByRegistrationId(String registrationId);
 
     /**
      * 获取所有启用的客户端配置
      *
      * @return 启用的客户端配置列表
      */
-    List<Oauth2ClientConfig> findAllEnabled();
-
-    /**
-     * 保存或更新客户端配置
-     *
-     * @param config 客户端配置
-     * @return 保存后的配置
-     */
-    Boolean saveOauth2ClientConfig(Oauth2ClientConfig config);
+    List<Oauth2ClientConfig> loadOauth2ClientConfigAllEnabled();
 
     /**
      * 删除客户端配置
@@ -56,4 +47,8 @@ public interface Oauth2ClientConfigService extends IService<Oauth2ClientConfig> 
     Page<Oauth2ClientConfig> findOauth2ClientConfigs(Page<Oauth2ClientConfig> page, OAuth2ClientConfigSearch search);
 
     Boolean batchDeleteOAuth2ClientConfig(List<Long> idOAuth2ClientConfigs);
+
+    Boolean createOauth2ClientConfig(Oauth2ClientConfig config);
+
+    Boolean updateOauth2ClientConfig(Oauth2ClientConfig config);
 }
