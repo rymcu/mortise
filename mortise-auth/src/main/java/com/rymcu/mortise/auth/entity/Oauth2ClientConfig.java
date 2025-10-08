@@ -165,4 +165,10 @@ public class Oauth2ClientConfig implements Serializable {
      */
     @Column("updated_time")
     private LocalDateTime updatedTime;
+
+    /**
+     * 重定向 URI
+     */
+    @Column("redirect_uri")
+    private String redirectUri;
 }

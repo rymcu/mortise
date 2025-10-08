@@ -123,4 +123,9 @@ public class StandardOAuth2UserInfo {
      * 是否已验证手机号
      */
     private Boolean phoneVerified;
+
+    /**
+     * 重定向地址
+     */
+    private String redirectUri;
 }
