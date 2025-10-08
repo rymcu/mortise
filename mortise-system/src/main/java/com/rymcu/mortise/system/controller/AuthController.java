@@ -9,7 +9,6 @@ import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.exception.AccountExistsException;
-import com.rymcu.mortise.system.model.auth.UserDetailInfo;
 import com.rymcu.mortise.system.model.auth.*;
 import com.rymcu.mortise.system.service.AuthService;
 import com.rymcu.mortise.web.annotation.RateLimit;
@@ -23,7 +22,6 @@ import jakarta.mail.MessagingException;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 import org.springframework.web.bind.annotation.*;
 
 import javax.security.auth.login.AccountNotFoundException;
@@ -187,19 +185,6 @@ public class AuthController {
     public GlobalResult<String> requestEmailVerify(@RequestParam("email") String email) throws MessagingException, AccountExistsException {
         authService.requestEmailVerify(email);
         return GlobalResult.success(ResultCode.SUCCESS.getMessage());
-    }
-
-    /**
-     * OAuth2 登录回调
-     */
-    @Operation(summary = "OAuth2登录回调", description = "OAuth2/OIDC 登录成功后的回调处理")
-    @GetMapping("/oauth2/callback")
-    public GlobalResult<TokenUser> oauth2Callback(
-            @AuthenticationPrincipal OidcUser oidcUser,
-            @RequestParam String registrationId) {
-        log.info("OAuth2 登录回调: {}", registrationId);
-        TokenUser tokenUser = authService.oauth2Login(oidcUser, registrationId);
-        return GlobalResult.success(tokenUser);
     }
 
 }
