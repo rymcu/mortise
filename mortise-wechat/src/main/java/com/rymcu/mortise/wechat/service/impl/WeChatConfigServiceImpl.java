@@ -171,7 +171,7 @@ public class WeChatConfigServiceImpl extends ServiceImpl<WeChatConfigMapper, WeC
 
     private Map<String, WeChatConfig> listConfigs(Long accountId) {
         QueryWrapper queryWrapper = QueryWrapper.create()
-                .select().where(WE_CHAT_CONFIG.ID.eq(accountId))
+                .select().where(WE_CHAT_CONFIG.ACCOUNT_ID.eq(accountId))
                 .and(WE_CHAT_CONFIG.STATUS.eq(Status.ENABLED.ordinal()));
         List<WeChatConfig> configs = mapper.selectListByQuery(queryWrapper);
         return configs.stream()

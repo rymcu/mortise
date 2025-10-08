@@ -45,12 +45,6 @@ public class WeChatConfig implements Serializable {
     private String configKey;
 
     /**
-     * 配置类型（如 mp、open 等）
-     */
-    @Column("config_type")
-    private String configType;
-
-    /**
      * 配置项值
      */
     @Column("config_value")

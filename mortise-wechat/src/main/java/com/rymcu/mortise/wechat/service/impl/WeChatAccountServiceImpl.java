@@ -230,7 +230,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
 
         // 查询是否已存在
         QueryWrapper queryWrapper = QueryWrapper.create().select()
-                .where(WE_CHAT_CONFIG.ID.eq(accountId))
+                .where(WE_CHAT_CONFIG.ACCOUNT_ID.eq(accountId))
                 .and(WE_CHAT_CONFIG.STATUS.eq(Status.ENABLED.ordinal()))
                 .and(WE_CHAT_CONFIG.CONFIG_KEY.eq(configKey));
         WeChatConfig existing = configMapper.selectOneByQuery(queryWrapper);
