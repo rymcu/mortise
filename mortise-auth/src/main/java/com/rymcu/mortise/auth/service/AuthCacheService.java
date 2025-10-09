@@ -64,4 +64,28 @@ public interface AuthCacheService {
      */
     void removeOAuth2AuthorizationRequest(String state);
 
+    /**
+     * 存储 OAuth2 参数
+     *
+     * @param state                OAuth2 state 参数
+     * @param parameterMap OAuth2 参数对象
+     */
+    void storeOAuth2ParameterMap(String state, Object parameterMap);
+
+    /**
+     * 获取 OAuth2 参数
+     *
+     * @param state OAuth2 state 参数
+     * @param clazz 参数对象类型
+     * @param <T>   参数对象泛型
+     * @return OAuth2 参数对象，如果不存在返回null
+     */
+    <T> T getOAuth2ParameterMap(String state, Class<T> clazz);
+
+    /**
+     * 删除 OAuth2 授权请求
+     *
+     * @param state OAuth2 state 参数
+     */
+    void removeOAuth2ParameterMap(String state);
 }

@@ -11,6 +11,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
+import java.util.Map;
+
 /**
  * 基于缓存的 OAuth2 授权请求存储
  * <p>
@@ -57,6 +59,12 @@ public class CacheAuthorizationRequestRepository implements AuthorizationRequest
         Assert.hasText(state, "authorizationRequest.state cannot be empty");
 
         authCacheService.storeOAuth2AuthorizationRequest(state, authorizationRequest);
+
+        // 缓存
+        Map<String, String[]> parameterMap = request.getParameterMap();
+        if (!parameterMap.isEmpty()) {
+            authCacheService.storeOAuth2ParameterMap(state, parameterMap);
+        }
 
         log.debug("保存 OAuth2 授权请求: state={}", state);
     }

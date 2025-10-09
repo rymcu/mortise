@@ -102,4 +102,56 @@ public class AuthCacheServiceImpl implements AuthCacheService {
         }
     }
 
+    @Override
+    public void storeOAuth2ParameterMap(String state, Object parameterMap) {
+        Cache cache = cacheManager.getCache(AuthCacheConstant.OAUTH2_PARAMETER_MAP_CACHE);
+        if (cache != null) {
+            cache.put(state, parameterMap);
+            log.info("存储 OAuth2 参数对象：state={}, type={}", state,
+                    parameterMap != null ? parameterMap.getClass().getSimpleName() : "null");
+        } else {
+            log.error("未找到缓存：{}", AuthCacheConstant.OAUTH2_PARAMETER_MAP_CACHE);
+        }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getOAuth2ParameterMap(String state, Class<T> clazz) {
+        Cache cache = cacheManager.getCache(AuthCacheConstant.OAUTH2_PARAMETER_MAP_CACHE);
+        if (cache != null) {
+            Cache.ValueWrapper wrapper = cache.get(state);
+            if (wrapper != null) {
+                Object value = wrapper.get();
+                String className = value != null ? value.getClass().getName() : "null";
+                log.info("获取 OAuth2 参数对象：state={} -> 找到，类型={}", state,
+                        className);
+                try {
+                    return (T) value;
+                } catch (ClassCastException e) {
+                    log.error("OAuth2 参数对象类型转换失败：state={}, expectedType={}, actualType={}",
+                            state, clazz.getName(), className, e);
+                    return null;
+                }
+            } else {
+                log.warn("获取 OAuth2 参数对象：state={} -> 未找到", state);
+                return null;
+            }
+        } else {
+            log.error("未找到缓存：{}", AuthCacheConstant.OAUTH2_PARAMETER_MAP_CACHE);
+            return null;
+        }
+    }
+
+    @Override
+    public void removeOAuth2ParameterMap(String state) {
+        Cache cache = cacheManager.getCache(AuthCacheConstant.OAUTH2_PARAMETER_MAP_CACHE);
+        if (cache != null) {
+            cache.evict(state);
+            log.debug("删除 OAuth2 参数对象：state={}", state);
+        } else {
+            log.error("未找到缓存：{}", AuthCacheConstant.OAUTH2_PARAMETER_MAP_CACHE);
+        }
+
+    }
+
 }

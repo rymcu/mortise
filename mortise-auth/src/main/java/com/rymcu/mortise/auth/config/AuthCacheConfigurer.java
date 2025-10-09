@@ -26,9 +26,9 @@ import java.util.Map;
 
 /**
  * 认证模块缓存配置器
- * 
+ *
  * <p>实现 CacheConfigurer SPI，为认证授权相关的缓存提供配置</p>
- * 
+ *
  * <p><strong>配置的缓存：</strong></p>
  * <ul>
  *     <li>OAuth2 授权请求缓存（使用专门的序列化器）</li>
@@ -65,6 +65,10 @@ public class AuthCacheConfigurer implements CacheConfigurer {
                 .serializeValuesWith(RedisSerializationContext.SerializationPair.fromSerializer(oauth2Serializer))
                 .disableCachingNullValues();
         configs.put(AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_CACHE, oauth2Config);
+
+        // === OAuth2 参数缓存 ===
+        configs.put(AuthCacheConstant.OAUTH2_PARAMETER_MAP_CACHE,
+                defaultConfig.entryTtl(Duration.ofMinutes(AuthCacheConstant.OAUTH2_PARAMETER_MAP_EXPIRE_MINUTES)));
 
         // === JWT Token 缓存 ===
         configs.put(AuthCacheConstant.JWT_TOKEN_CACHE,
@@ -118,7 +122,7 @@ public class AuthCacheConfigurer implements CacheConfigurer {
 
     /**
      * 创建专用于 OAuth2 对象的 Jackson 序列化器
-     * 
+     *
      * <p>为 OAuth2AuthorizationRequest 对象提供专门的序列化配置，
      * 支持多态类型处理和 Spring Security 模块</p>
      */
@@ -132,7 +136,7 @@ public class AuthCacheConfigurer implements CacheConfigurer {
         // 使用 JsonMapper.builder 提供更多配置选项
         // 使用 PROPERTY 模式（@class 属性）而不是 WRAPPER_ARRAY 模式
         ObjectMapper mapper = JsonMapper.builder()
-                .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL, 
+                .activateDefaultTyping(ptv, ObjectMapper.DefaultTyping.NON_FINAL,
                         com.fasterxml.jackson.annotation.JsonTypeInfo.As.PROPERTY)
                 .build();
 

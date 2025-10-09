@@ -2,7 +2,7 @@ package com.rymcu.mortise.auth.constant;
 
 /**
  * 认证授权模块缓存常量
- * 
+ *
  * <p>包含 JWT、OAuth2、会话管理等认证相关的缓存配置</p>
  *
  * @author ronger
@@ -36,6 +36,12 @@ public class AuthCacheConstant {
      */
     public static final String OAUTH2_AUTHORIZATION_REQUEST_CACHE = "oauth2:auth-request";
     public static final long OAUTH2_AUTHORIZATION_REQUEST_EXPIRE_MINUTES = 10;
+
+    /**
+     * OAuth2 授权请求缓存
+     */
+    public static final String OAUTH2_PARAMETER_MAP_CACHE = "oauth2:auth-parameter";
+    public static final long OAUTH2_PARAMETER_MAP_EXPIRE_MINUTES = 15;
 
     /**
      * OAuth2 授权码缓存
