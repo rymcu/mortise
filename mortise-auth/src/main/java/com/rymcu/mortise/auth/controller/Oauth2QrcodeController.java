@@ -1,7 +1,10 @@
 package com.rymcu.mortise.auth.controller;
 
+import com.rymcu.mortise.auth.enumerate.QrcodeState;
+import com.rymcu.mortise.auth.service.AuthCacheService;
 import com.rymcu.mortise.auth.support.UnifiedOAuth2AuthorizationRequestResolver;
 import com.rymcu.mortise.core.result.GlobalResult;
+import io.micrometer.common.util.StringUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -39,6 +42,7 @@ public class Oauth2QrcodeController {
     private final UnifiedOAuth2AuthorizationRequestResolver authorizationRequestResolver;
     private final ClientRegistrationRepository clientRegistrationRepository;
     private final AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository;
+    private final AuthCacheService authCacheService;
 
     @Operation(
         summary = "获取微信 OAuth2 授权二维码链接",
@@ -68,10 +72,26 @@ public class Oauth2QrcodeController {
         // 这一步是关键，它替代了被我们绕过的 OAuth2AuthorizationRequestRedirectFilter 的工作
         this.authorizationRequestRepository.saveAuthorizationRequest(authRequest, request, response);
 
+        String state = authRequest.getState();
+
+        if (StringUtils.isNotBlank(state)) {
+            authCacheService.storeOAuth2QrcodeState(state, QrcodeState.WAITED.getValue());
+        }
+
         // 获取构建好的、包含 state 等参数的完整授权 URL
         String authorizationUri = authRequest.getAuthorizationRequestUri();
         Map<String, String> map = new HashMap<>();
+        map.put("state", state);
         map.put("authorizationUri", authorizationUri);
+        return GlobalResult.success(map);
+    }
+
+    @GetMapping("/state/{state}")
+    public GlobalResult<Map<String, Object>> getStateQRCode(@PathVariable String state) {
+        int qrcodeState = authCacheService.getOAuth2QrcodeState(state);
+        Map<String, Object> map = new HashMap<>();
+        map.put("state", state);
+        map.put("qrcodeState", qrcodeState);
         return GlobalResult.success(map);
     }
 }

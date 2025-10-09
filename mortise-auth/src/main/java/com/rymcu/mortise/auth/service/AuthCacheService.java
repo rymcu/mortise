@@ -88,4 +88,10 @@ public interface AuthCacheService {
      * @param state OAuth2 state 参数
      */
     void removeOAuth2ParameterMap(String state);
+
+    void storeOAuth2QrcodeState(String state, Integer qrcodeState);
+
+    Integer getOAuth2QrcodeState(String state);
+
+    void removeOAuth2QrcodeState(String state);
 }

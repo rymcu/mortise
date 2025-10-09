@@ -42,6 +42,11 @@ public class AuthCacheConstant {
      */
     public static final String OAUTH2_PARAMETER_MAP_CACHE = "oauth2:auth-parameter";
     public static final long OAUTH2_PARAMETER_MAP_EXPIRE_MINUTES = 15;
+    /**
+     * OAuth2 二维码状态缓存
+     */
+    public static final String OAUTH2_QRCODE_STATE_CACHE = "oauth2:auth-qrcode";
+    public static final long OAUTH2_QRCODE_STATE_EXPIRE_MINUTES = 10;
 
     /**
      * OAuth2 授权码缓存

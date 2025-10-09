@@ -151,7 +151,56 @@ public class AuthCacheServiceImpl implements AuthCacheService {
         } else {
             log.error("未找到缓存：{}", AuthCacheConstant.OAUTH2_PARAMETER_MAP_CACHE);
         }
+    }
 
+    @Override
+    public void storeOAuth2QrcodeState(String state, Integer qrcodeState) {
+        Cache cache = cacheManager.getCache(AuthCacheConstant.OAUTH2_QRCODE_STATE_CACHE);
+        if (cache != null) {
+            cache.put(state, qrcodeState);
+            log.info("存储 OAuth2 二维码状态：state={}, type={}", state,
+                    qrcodeState != null ? qrcodeState.getClass().getSimpleName() : "null");
+        } else {
+            log.error("未找到缓存：{}", AuthCacheConstant.OAUTH2_QRCODE_STATE_CACHE);
+        }
+    }
+
+    @Override
+    public Integer getOAuth2QrcodeState(String state) {
+        Cache cache = cacheManager.getCache(AuthCacheConstant.OAUTH2_QRCODE_STATE_CACHE);
+        if (cache != null) {
+            Cache.ValueWrapper wrapper = cache.get(state);
+            if (wrapper != null) {
+                Object value = wrapper.get();
+                String className = value != null ? value.getClass().getName() : "null";
+                log.info("获取 OAuth2 二维码状态：state={} -> 找到，类型={}", state,
+                        className);
+                try {
+                    return (Integer) value;
+                } catch (ClassCastException e) {
+                    log.error("OAuth2 二维码状态类型转换失败：state={}, expectedType={}, actualType={}",
+                            state, Integer.class, className, e);
+                    return null;
+                }
+            } else {
+                log.warn("获取 OAuth2 二维码状态：state={} -> 未找到", state);
+                return null;
+            }
+        } else {
+            log.error("未找到缓存：{}", AuthCacheConstant.OAUTH2_QRCODE_STATE_CACHE);
+            return null;
+        }
+    }
+
+    @Override
+    public void removeOAuth2QrcodeState(String state) {
+        Cache cache = cacheManager.getCache(AuthCacheConstant.OAUTH2_QRCODE_STATE_CACHE);
+        if (cache != null) {
+            cache.evict(state);
+            log.debug("删除 OAuth2 二维码状态：state={}", state);
+        } else {
+            log.error("未找到缓存：{}", AuthCacheConstant.OAUTH2_QRCODE_STATE_CACHE);
+        }
     }
 
 }

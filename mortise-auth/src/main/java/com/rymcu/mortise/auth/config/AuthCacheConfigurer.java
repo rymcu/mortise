@@ -66,6 +66,11 @@ public class AuthCacheConfigurer implements CacheConfigurer {
                 .disableCachingNullValues();
         configs.put(AuthCacheConstant.OAUTH2_AUTHORIZATION_REQUEST_CACHE, oauth2Config);
 
+        // === OAuth2 二维码状态缓存 ===
+        configs.put(AuthCacheConstant.OAUTH2_QRCODE_STATE_CACHE,
+                defaultConfig.entryTtl(Duration.ofMinutes(AuthCacheConstant.OAUTH2_QRCODE_STATE_EXPIRE_MINUTES)));
+
+
         // === OAuth2 参数缓存 ===
         configs.put(AuthCacheConstant.OAUTH2_PARAMETER_MAP_CACHE,
                 defaultConfig.entryTtl(Duration.ofMinutes(AuthCacheConstant.OAUTH2_PARAMETER_MAP_EXPIRE_MINUTES)));
