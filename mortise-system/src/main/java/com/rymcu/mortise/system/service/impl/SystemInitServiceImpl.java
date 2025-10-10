@@ -8,6 +8,7 @@ import com.rymcu.mortise.system.entity.*;
 import com.rymcu.mortise.system.mapper.*;
 import com.rymcu.mortise.system.model.SystemInitInfo;
 import com.rymcu.mortise.system.service.SystemInitService;
+import com.rymcu.mortise.system.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,6 +32,7 @@ import static com.rymcu.mortise.system.entity.table.UserTableDef.USER;
 @RequiredArgsConstructor
 public class SystemInitServiceImpl implements SystemInitService {
 
+    private final UserService userService;
     private final UserMapper userMapper;
     private final RoleMapper roleMapper;
     private final MenuMapper menuMapper;
@@ -265,7 +267,7 @@ public class SystemInitServiceImpl implements SystemInitService {
         log.info("初始化管理员用户...");
 
         User admin = new User();
-        admin.setAccount(initInfo.getAdminAccount());
+        admin.setAccount(userService.nextAccount());
         admin.setPassword(passwordEncoder.encode(initInfo.getAdminPassword()));
         admin.setNickname(initInfo.getAdminNickname());
         admin.setEmail(initInfo.getAdminEmail());

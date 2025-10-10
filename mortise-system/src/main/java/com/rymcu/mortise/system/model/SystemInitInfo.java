@@ -16,12 +16,6 @@ import java.io.Serializable;
 public class SystemInitInfo implements Serializable {
 
     /**
-     * 管理员账号
-     */
-    @Schema(description = "管理员账号", example = "admin", requiredMode = Schema.RequiredMode.REQUIRED, minLength = 4, maxLength = 32)
-    private String adminAccount;
-
-    /**
      * 管理员密码
      */
     @Schema(description = "管理员密码（建议至少8位，包含字母、数字和特殊字符）", example = "Admin@123456", requiredMode = Schema.RequiredMode.REQUIRED, minLength = 8, maxLength = 128)

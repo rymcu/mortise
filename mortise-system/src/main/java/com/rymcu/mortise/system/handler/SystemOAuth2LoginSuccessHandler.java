@@ -1,6 +1,7 @@
 package com.rymcu.mortise.system.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rymcu.mortise.auth.enumerate.QrcodeState;
 import com.rymcu.mortise.auth.service.AuthCacheService;
 import com.rymcu.mortise.auth.spi.OAuth2UserInfoExtractor;
 import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
@@ -83,6 +84,14 @@ public class SystemOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
             if (StringUtils.isEmpty(state)) {
                 parameterMap = new LinkedMultiValueMap<>();
             } else {
+                // 更新二维码状态为已授权
+                if (StringUtils.isNotBlank(state)) {
+                    authCacheService.storeOAuth2QrcodeState(
+                            state,
+                            QrcodeState.AUTHORIZED.getValue()
+                    );
+                    log.info("用户授权成功，state: {}", state);
+                }
                 parameterMap = authCacheService.getOAuth2ParameterMap(state, MultiValueMap.class);
             }
 

@@ -1,10 +1,7 @@
 package com.rymcu.mortise.auth.config;
 
 import com.rymcu.mortise.auth.filter.JwtAuthenticationFilter;
-import com.rymcu.mortise.auth.handler.JwtAuthenticationEntryPoint;
-import com.rymcu.mortise.auth.handler.OAuth2LoginSuccessHandler;
-import com.rymcu.mortise.auth.handler.OAuth2LogoutSuccessHandler;
-import com.rymcu.mortise.auth.handler.RewriteAccessDeniedHandler;
+import com.rymcu.mortise.auth.handler.*;
 import com.rymcu.mortise.auth.repository.CacheAuthorizationRequestRepository;
 import com.rymcu.mortise.auth.repository.DynamicClientRegistrationRepository;
 import com.rymcu.mortise.auth.spi.SecurityConfigurer;
@@ -69,6 +66,8 @@ public class WebSecurityConfig {
     private final ObjectProvider<OAuth2LoginSuccessHandler> oauth2LoginSuccessHandlerProvider;
     private final ObjectProvider<OAuth2LogoutSuccessHandler> oauth2LogoutSuccessHandlerProvider;
     private final ObjectProvider<CacheAuthorizationRequestRepository> cacheAuthorizationRequestRepositoryProvider;
+    // 注入失败处理器
+    private final ObjectProvider<OAuth2LoginFailureHandler> oAuth2LoginFailureHandlers;
 
     // --- 统一的 OAuth2 组件（可选） ---
     private final ObjectProvider<UnifiedOAuth2UserService> unifiedOAuth2UserServiceProvider;
@@ -181,63 +180,56 @@ public class WebSecurityConfig {
      * 使用动态客户端注册仓库，支持运行时动态管理客户端配置
      * 所有 OAuth2 相关的处理器都是可选的，通过 ObjectProvider 获取
      *
-     * @param http                      HttpSecurity
+     * @param http                         HttpSecurity
      * @param clientRegistrationRepository 客户端注册仓库（动态实现）
      * @throws Exception 配置异常
      */
     private void configureOAuth2Login(HttpSecurity http,
-                                     ClientRegistrationRepository clientRegistrationRepository) throws Exception {
+                                      ClientRegistrationRepository clientRegistrationRepository) throws Exception {
         http.oauth2Login(oauth2Login -> {
-                    oauth2Login
-                            .authorizationEndpoint(authorization -> {
-                                // 使用统一的授权请求解析器（如果存在）
-                                authorization.authorizationRequestResolver(
-                                        authorizationRequestResolver(clientRegistrationRepository)
-                                );
-                                // 如果 CacheAuthorizationRequestRepository 存在，则配置它
-                                cacheAuthorizationRequestRepositoryProvider.ifAvailable(
-                                        authorization::authorizationRequestRepository
-                                );
-                            })
-                            .tokenEndpoint(token -> {
-                                // 使用统一的 Token 客户端（如果存在）
-                                unifiedAccessTokenResponseClientProvider.ifAvailable(
-                                        token::accessTokenResponseClient
-                                );
-                            })
-                            .redirectionEndpoint(redirection -> redirection.baseUri("/login/oauth2/code/*"));
+            oauth2Login
+                    .authorizationEndpoint(authorization -> {
+                        // 使用统一的授权请求解析器（如果存在）
+                        authorization.authorizationRequestResolver(
+                                authorizationRequestResolver(clientRegistrationRepository)
+                        );
+                        // 如果 CacheAuthorizationRequestRepository 存在，则配置它
+                        cacheAuthorizationRequestRepositoryProvider.ifAvailable(
+                                authorization::authorizationRequestRepository
+                        );
+                    })
+                    .tokenEndpoint(token -> {
+                        // 使用统一的 Token 客户端（如果存在）
+                        unifiedAccessTokenResponseClientProvider.ifAvailable(
+                                token::accessTokenResponseClient
+                        );
+                    })
+                    .redirectionEndpoint(redirection -> redirection.baseUri("/login/oauth2/code/*"));
 
-                    // 配置用户信息服务（可选）
-                    unifiedOAuth2UserServiceProvider.ifAvailable(service ->
-                            oauth2Login.userInfoEndpoint(userInfo -> userInfo.userService(service))
-                    );
+            // 配置用户信息服务（可选）
+            unifiedOAuth2UserServiceProvider.ifAvailable(service ->
+                    oauth2Login.userInfoEndpoint(userInfo -> userInfo.userService(service))
+            );
 
-                    // 配置成功处理器（可选）
-                    OAuth2LoginSuccessHandler handler = oauth2LoginSuccessHandlerProvider.getIfAvailable();
-                    if (handler != null) {
-                        log.info("配置 OAuth2 登录成功处理器: {}", handler.getClass().getSimpleName());
-                        oauth2Login.successHandler(handler);
-                    } else {
-                        log.warn("未找到 OAuth2LoginSuccessHandler，将使用 Spring Security 默认行为");
-                    }
+            // 配置成功处理器（可选）
+            OAuth2LoginSuccessHandler successHandler = oauth2LoginSuccessHandlerProvider.getIfAvailable();
+            if (successHandler != null) {
+                log.info("配置 OAuth2 登录成功处理器: {}", successHandler.getClass().getSimpleName());
+                oauth2Login.successHandler(successHandler);
+            } else {
+                log.warn("未找到 OAuth2LoginSuccessHandler，将使用 Spring Security 默认行为");
+            }
 
-                    // 配置失败处理器（用于调试）
-                    oauth2Login.failureHandler((request, response, exception) -> {
-                        log.error("===============================================");
-                        log.error("!!! OAuth2 登录失败 !!!");
-                        log.error("Request URI: {}", request.getRequestURI());
-                        log.error("异常类型: {}", exception.getClass().getName());
-                        log.error("异常消息: {}", exception.getMessage());
-                        log.error("===============================================", exception);
+            // 配置失败处理器（可选）
+            OAuth2LoginFailureHandler  failureHandler = oAuth2LoginFailureHandlers.getIfAvailable();
+            if (failureHandler != null) {
+                log.info("配置 OAuth2 登录失败处理器：{}", failureHandler.getClass().getSimpleName());
+                oauth2Login.failureHandler(failureHandler);
+            } else {
+                log.warn("未找到 OAuth2LoginFailureHandler，将使用 Spring Security 默认行为");
+            }
 
-                        response.setContentType("application/json;charset=UTF-8");
-                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                        response.getWriter().write(String.format(
-                            "{\"success\":false,\"message\":\"OAuth2 登录失败: %s\"}",
-                            exception.getMessage()
-                        ));
-                    });
-                });
+        });
 
         // 配置登出成功处理器（可选）
         oauth2LogoutSuccessHandlerProvider.ifAvailable(handler -> {
