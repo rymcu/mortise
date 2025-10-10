@@ -1,5 +1,7 @@
 package com.rymcu.mortise.auth.spi;
 
+import com.rymcu.mortise.auth.entity.Oauth2ClientConfig;
+import com.rymcu.mortise.auth.service.Oauth2ClientConfigService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -21,8 +23,12 @@ public class OAuth2UserInfoExtractor {
 
     private final List<OAuth2ProviderStrategy> strategies;
 
+    private final Oauth2ClientConfigService oauth2ClientConfigService;
+
     @Autowired
-    public OAuth2UserInfoExtractor(Optional<List<OAuth2ProviderStrategy>> strategiesOptional) {
+    public OAuth2UserInfoExtractor(Optional<List<OAuth2ProviderStrategy>> strategiesOptional, Oauth2ClientConfigService oauth2ClientConfigService) {
+        this.oauth2ClientConfigService = oauth2ClientConfigService;
+
         this.strategies = strategiesOptional.orElse(List.of());
         log.info("OAuth2UserInfoExtractor 初始化，发现 {} 个提供商策略", this.strategies.size());
 
@@ -67,6 +73,12 @@ public class OAuth2UserInfoExtractor {
             Map<String, Object> mutableAttributes = new HashMap<>(userInfo.getRawAttributes());
             mutableAttributes.put("_registrationId", registrationId);
             userInfo.setRawAttributes(mutableAttributes);
+        }
+
+        // 获取跳转地址
+        Oauth2ClientConfig oauth2ClientConfig = oauth2ClientConfigService.loadOauth2ClientConfigByRegistrationId(registrationId);
+        if (oauth2ClientConfig != null) {
+            userInfo.setRedirectUri(oauth2ClientConfig.getRedirectUri());
         }
 
         log.debug("用户信息提取完成: provider={}, openId={}, nickname={}",

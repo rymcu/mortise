@@ -220,7 +220,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
         // 2. 尝试通过邮箱匹配现有用户（可选功能）
-        User existingUser = null;
+        User existingUser;
         if (StringUtils.isNotBlank(userInfo.getEmail())) {
             existingUser = userService.findByAccount(userInfo.getEmail());
             if (existingUser != null) {
@@ -232,17 +232,20 @@ public class AuthServiceImpl implements AuthService {
                 return existingUser;
             }
         }
+        // 3. 尝试通过手机号匹配现有用户
+        if (StringUtils.isNotBlank(userInfo.getPhone())) {
+            existingUser = userService.findByAccount(userInfo.getPhone());
+            if (existingUser != null) {
+                log.info("通过手机号匹配到现有用户: userId={}, phone={}",
+                        existingUser.getId(), userInfo.getPhone());
 
-        if ("wechat".equalsIgnoreCase(userInfo.getProvider())) {
-            // TODO 微信登录需手动注册或绑定账号
-            existingUser = new User();
-            String key = Utils.genKey();
-            systemCacheService.storeStandardOAuth2UserInfo(key, userInfo);
-            existingUser.setAccount(key);
-            return existingUser;
+                // 创建 OAuth2 绑定关系
+                createOAuth2Binding(existingUser.getId(), userInfo);
+                return existingUser;
+            }
         }
 
-        // 3. 创建新用户和绑定关系
+        // 4. 创建新用户和绑定关系
         User newUser = createNewUserFromOAuth2(userInfo);
 
         try {
@@ -295,6 +298,7 @@ public class AuthServiceImpl implements AuthService {
         newUser.setNickname(userService.checkNickname(userInfo.getNickname()));
         newUser.setAccount(userService.nextAccount());
         newUser.setEmail(userInfo.getEmail());
+        newUser.setPhone(userInfo.getPhone());
 
         String avatar = userInfo.getAvatar();
         newUser.setAvatar(StringUtils.isNotBlank(avatar) ? avatar : DEFAULT_AVATAR);
@@ -453,6 +457,16 @@ public class AuthServiceImpl implements AuthService {
             }
             throw new BusinessException(ResultCode.UPDATE_PASSWORD_FAIL.getMessage());
         }
+    }
+
+    @Override
+    public void storeOauth2TokenUser(String state, TokenUser tokenUser) {
+        systemCacheService.storeTokenUser(state, tokenUser);
+    }
+
+    @Override
+    public TokenUser getOauth2TokenUser(String state) {
+        return systemCacheService.getOauth2TokenUser(state);
     }
 
     @Override

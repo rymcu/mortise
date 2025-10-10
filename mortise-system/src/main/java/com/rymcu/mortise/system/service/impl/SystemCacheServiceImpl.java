@@ -3,6 +3,7 @@ package com.rymcu.mortise.system.service.impl;
 import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
 import com.rymcu.mortise.cache.service.CacheService;
 import com.rymcu.mortise.system.constant.SystemCacheConstant;
+import com.rymcu.mortise.system.model.auth.TokenUser;
 import com.rymcu.mortise.system.service.SystemCacheService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -167,6 +168,20 @@ public class SystemCacheServiceImpl implements SystemCacheService {
     @Override
     public void storeStandardOAuth2UserInfo(String key, StandardOAuth2UserInfo userInfo) {
         cacheService.set(SystemCacheConstant.STANDARD_OAUTH2_USER_INFO, key, userInfo, Duration.ofMinutes(SystemCacheConstant.STANDARD_OAUTH2_USER_INFO_EXPIRE_MINUTES));
+    }
+
+    @Override
+    public void storeTokenUser(String state, TokenUser tokenUser) {
+        cacheService.set(SystemCacheConstant.STANDARD_AUTH_TOKEN_USER, state, tokenUser, Duration.ofMinutes(SystemCacheConstant.STANDARD_AUTH_TOKEN_USER_EXPIRE_MINUTES));
+    }
+
+    @Override
+    public TokenUser getOauth2TokenUser(String state) {
+        TokenUser user = cacheService.get(SystemCacheConstant.STANDARD_AUTH_TOKEN_USER, state, TokenUser.class);
+        if (user != null) {
+            cacheService.delete(SystemCacheConstant.STANDARD_AUTH_TOKEN_USER, state);
+        }
+        return user;
     }
 
     @Override

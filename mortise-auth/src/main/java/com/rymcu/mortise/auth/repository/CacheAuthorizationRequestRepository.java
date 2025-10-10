@@ -9,8 +9,11 @@ import org.springframework.security.oauth2.client.web.AuthorizationRequestReposi
 import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -63,7 +66,7 @@ public class CacheAuthorizationRequestRepository implements AuthorizationRequest
         // 缓存
         Map<String, String[]> parameterMap = request.getParameterMap();
         if (!parameterMap.isEmpty()) {
-            authCacheService.storeOAuth2ParameterMap(state, parameterMap);
+            authCacheService.storeOAuth2ParameterMap(state, processedParameterMapToJson(parameterMap));
         }
 
         log.debug("保存 OAuth2 授权请求: state={}", state);
@@ -108,5 +111,20 @@ public class CacheAuthorizationRequestRepository implements AuthorizationRequest
      */
     private String getStateParameter(HttpServletRequest request) {
         return request.getParameter(STATE_PARAMETER_NAME);
+    }
+
+    /**
+     * 转换 parameterMap
+     */
+    private Object processedParameterMapToJson(Map<String, String[]> parameterMap) {
+        MultiValueMap<String, String> processedMap = new LinkedMultiValueMap<>();
+        if (parameterMap != null) {
+            // 2. 遍历并安全地填充
+            parameterMap.forEach((key, values) -> {
+                // 将 String[] 转换为 List<String> 并添加
+                processedMap.addAll(key, Arrays.asList(values));
+            });
+        }
+        return processedMap;
     }
 }

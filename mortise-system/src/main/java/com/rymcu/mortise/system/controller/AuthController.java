@@ -187,4 +187,22 @@ public class AuthController {
         return GlobalResult.success(ResultCode.SUCCESS.getMessage());
     }
 
+    /**
+     * 兑换 Token
+     */
+    @Operation(summary = "兑换 Token", description = "使用 state 兑换 Token")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "兑换成功"),
+            @ApiResponse(responseCode = "401", description = "认证失败"),
+            @ApiResponse(responseCode = "400", description = "参数错误")
+    })
+    @RateLimit(limitForPeriod = 5, refreshPeriodSeconds = 300, message = "兑换 Token 请求过于频繁，请 5 分钟后再试")
+    @GetMapping("/callback")
+    public GlobalResult<TokenUser> oauth2Login(
+            @Parameter(description = "兑换 Token 请求", required = true)
+            @Valid @RequestParam("state") String state) {
+        TokenUser tokenUser = authService.getOauth2TokenUser(state);
+        return GlobalResult.success(tokenUser);
+    }
+
 }

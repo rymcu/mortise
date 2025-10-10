@@ -1,11 +1,15 @@
 package com.rymcu.mortise.system.handler;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rymcu.mortise.auth.service.AuthCacheService;
 import com.rymcu.mortise.auth.spi.OAuth2UserInfoExtractor;
 import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
+import com.rymcu.mortise.common.util.Utils;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.model.auth.TokenUser;
 import com.rymcu.mortise.system.service.AuthService;
+import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,9 +19,12 @@ import org.springframework.security.oauth2.client.authentication.OAuth2Authentic
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.util.Objects;
 
 /**
  * 系统管理员 OAuth2 登录成功处理器
@@ -40,6 +47,8 @@ public class SystemOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
 
     private final ObjectMapper objectMapper;
 
+    private final AuthCacheService authCacheService;
+
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request,
                                         HttpServletResponse response,
@@ -61,19 +70,29 @@ public class SystemOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
             StandardOAuth2UserInfo userInfo = userInfoExtractor.extractUserInfo(oauth2User, registrationId);
 
             log.info("系统管理员 OAuth2 登录: registrationId={}, provider={}, openId={}, email={}",
-                registrationId, userInfo.getProvider(), userInfo.getOpenId(), userInfo.getEmail());
+                    registrationId, userInfo.getProvider(), userInfo.getOpenId(), userInfo.getEmail());
 
             // 2. 查找或创建系统用户（简化：无需上下文参数）
             User user = authService.findOrCreateUserFromOAuth2(userInfo);
 
             // 3. 生成 JWT Token
             TokenUser tokenUser = authService.generateTokens(user);
+            // 4. 获取传递的 parameterMap
+            MultiValueMap<String, String> parameterMap;
+            String state = request.getParameter("state");
+            if (StringUtils.isEmpty(state)) {
+                parameterMap = new LinkedMultiValueMap<>();
+            } else {
+                parameterMap = authCacheService.getOAuth2ParameterMap(state, MultiValueMap.class);
+            }
 
-            // 4. 根据 registrationId 决定响应方式
-            handleSuccessResponse(response, registrationId, tokenUser);
+            state = Utils.genKey();
+
+            // 5. 根据 registrationId 决定响应方式
+            handleSuccessResponse(response, registrationId, tokenUser, userInfo.getRedirectUri(), state, parameterMap);
 
             log.info("系统管理员 OAuth2 登录成功: userId={}, account={}",
-                user.getId(), user.getAccount());
+                    user.getId(), user.getAccount());
 
         } catch (Exception e) {
             log.error("系统管理员 OAuth2 登录失败: registrationId={}", registrationId, e);
@@ -86,36 +105,24 @@ public class SystemOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
      */
     private void handleSuccessResponse(HttpServletResponse response,
                                        String registrationId,
-                                       TokenUser tokenUser) throws IOException {
-        // 根据 registrationId 决定返回方式
-        switch (registrationId) {
-            case "logto", "logto-admin" -> {
-                // 管理后台：重定向到前端页面
-                String redirectUrl = String.format(
-                    "https://wx.rymcu.com/admin/oauth-callback?token=%s&refreshToken=%s",
-                    tokenUser.getToken(),
-                    tokenUser.getRefreshToken()
-                );
-                log.info("重定向到: {}", redirectUrl);
-                response.sendRedirect(redirectUrl);
-            }
-            case "github", "google" -> {
-                // 社区登录：重定向到社区首页
-                String redirectUrl = String.format(
-                    "https://www.rymcu.com/oauth/callback?token=%s&refreshToken=%s",
-                    tokenUser.getToken(),
-                    tokenUser.getRefreshToken()
-                );
-                log.info("重定向到: {}", redirectUrl);
-                response.sendRedirect(redirectUrl);
-            }
-            default -> {
-                // 默认：返回 JSON
-                response.setContentType("application/json;charset=UTF-8");
-                response.getWriter().write(objectMapper.writeValueAsString(
+                                       TokenUser tokenUser, String redirectUrl, String state, MultiValueMap<String, String> parameterMap) throws IOException {
+        if (StringUtils.isEmpty(redirectUrl)) {
+            // 默认：返回 JSON
+            response.setContentType("application/json;charset=UTF-8");
+            response.getWriter().write(objectMapper.writeValueAsString(
                     GlobalResult.success(tokenUser)
-                ));
+            ));
+        } else {
+            authService.storeOauth2TokenUser(state, tokenUser);
+            if (Objects.isNull(parameterMap)) {
+                parameterMap = new LinkedMultiValueMap<>();
             }
+            redirectUrl = UriComponentsBuilder.fromUriString(redirectUrl)
+                    .queryParam("state", state)
+                    .queryParams(parameterMap)
+                    .build(true).toUriString();
+            log.info("重定向到: {}", redirectUrl);
+            response.sendRedirect(redirectUrl);
         }
     }
 
@@ -123,7 +130,7 @@ public class SystemOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
         response.getWriter().write(objectMapper.writeValueAsString(
-            GlobalResult.error(message)
+                GlobalResult.error(message)
         ));
     }
 }

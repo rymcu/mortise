@@ -1,10 +1,10 @@
 package com.rymcu.mortise.system.service;
 
 import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
-import com.rymcu.mortise.system.exception.AccountExistsException;
-import com.rymcu.mortise.system.entity.User;
-import com.rymcu.mortise.system.model.auth.AuthInfo;
 import com.rymcu.mortise.common.model.Link;
+import com.rymcu.mortise.system.entity.User;
+import com.rymcu.mortise.system.exception.AccountExistsException;
+import com.rymcu.mortise.system.model.auth.AuthInfo;
 import com.rymcu.mortise.system.model.auth.TokenUser;
 import jakarta.mail.MessagingException;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
@@ -62,7 +62,7 @@ public interface AuthService {
 
     /**
      * OAuth2 登录（旧方法，兼容保留）
-     * 
+     *
      * @deprecated 使用 {@link #findOrCreateUserFromOAuth2(StandardOAuth2UserInfo)} 代替
      */
     @Deprecated
@@ -72,7 +72,7 @@ public interface AuthService {
      * 从 OAuth2 用户信息查找或创建系统用户
      * <p>
      * 简化版本：registrationId 已经包含在 userInfo.provider 中，无需额外上下文参数
-     * 
+     *
      * @param userInfo 标准化的 OAuth2 用户信息（包含 provider/registrationId）
      * @return 系统用户
      */
@@ -80,7 +80,7 @@ public interface AuthService {
 
     /**
      * 为用户生成访问令牌
-     * 
+     *
      * @param user 用户实体
      * @return Token 信息
      */
@@ -95,4 +95,8 @@ public interface AuthService {
     List<Link> userMenus(User user);
 
     boolean forgetPassword(String code, String password);
+
+    void storeOauth2TokenUser(String state, TokenUser tokenUser);
+
+    TokenUser getOauth2TokenUser(String state);
 }

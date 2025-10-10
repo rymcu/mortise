@@ -1,9 +1,9 @@
 package com.rymcu.mortise.system.service;
 
 import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
+import com.rymcu.mortise.system.model.auth.TokenUser;
 
 import java.time.Duration;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -352,4 +352,8 @@ public interface SystemCacheService {
     Boolean hasCache(String key);
 
     void storeStandardOAuth2UserInfo(String key, StandardOAuth2UserInfo userInfo);
+
+    void storeTokenUser(String state, TokenUser tokenUser);
+
+    TokenUser getOauth2TokenUser(String state);
 }

@@ -11,9 +11,9 @@ import java.util.Map;
 
 /**
  * GitHub OAuth2 提供商策略
- * 
- * <p>GitHub API 文档：https://docs.github.com/en/rest/users/users
- * 
+ *
+ * <p>GitHub API 文档：<a href="https://docs.github.com/en/rest/users/users">...</a>
+ *
  * @author ronger
  * @since 1.0.0
  */
@@ -37,7 +37,7 @@ public class GitHubProviderStrategy implements OAuth2ProviderStrategy {
     public StandardOAuth2UserInfo extractUserInfo(OAuth2User oauth2User) {
         // 创建可修改的 attributes 副本，避免 UnsupportedOperationException
         Map<String, Object> attributes = new HashMap<>(oauth2User.getAttributes());
-        
+
         log.debug("提取 GitHub 用户信息: {}", attributes);
 
         return StandardOAuth2UserInfo.builder()
