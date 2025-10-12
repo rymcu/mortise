@@ -82,6 +82,9 @@ public class Oauth2QrcodeController {
         String authorizationUri = authRequest.getAuthorizationRequestUri();
         Map<String, String> map = new HashMap<>();
         map.put("state", state);
+        map.put("appid", authRequest.getClientId());
+        map.put("scope", "snsapi_login");
+        map.put("redirectUri", authRequest.getRedirectUri());
         map.put("authorizationUri", authorizationUri);
         return GlobalResult.success(map);
     }

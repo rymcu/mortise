@@ -10,8 +10,6 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 import org.springframework.security.oauth2.core.endpoint.OAuth2ParameterNames;
 import org.springframework.stereotype.Component;
 
-import java.util.Set;
-
 /**
  * 统一的 OAuth2 授权请求解析器
  * <p>
@@ -64,10 +62,8 @@ public class UnifiedOAuth2AuthorizationRequestResolver implements OAuth2Authoriz
         // --- 针对微信的特殊处理逻辑 ---
         if (isWeChatProvider(registrationId)) {
             // 1. 添加 #wechat_redirect 锚点 (如果需要)
-            if (hasWebChatAuthScope(authorizationRequest.getScopes())) {
-                log.debug("为微信登录添加 #wechat_redirect 锚点: {}", registrationId);
-                requestBuilder.authorizationRequestUri(uri -> uri.fragment("wechat_redirect").build());
-            }
+            log.debug("为微信登录添加 #wechat_redirect 锚点: {}", registrationId);
+            requestBuilder.authorizationRequestUri(uri -> uri.fragment("wechat_redirect").build());
 
             // 2. 添加微信专用的 'appid' 参数
             String clientId = authorizationRequest.getClientId();
@@ -88,12 +84,5 @@ public class UnifiedOAuth2AuthorizationRequestResolver implements OAuth2Authoriz
         if (registrationId == null) return false;
         String lower = registrationId.toLowerCase();
         return lower.contains("wechat") || lower.contains("weixin") || lower.startsWith("wx");
-    }
-
-    /**
-     * 检查 scope 是否包含 'snsapi_base' 或者 'snsapi_userinfo'
-     */
-    private boolean hasWebChatAuthScope(Set<String> scopes) {
-        return scopes != null && (scopes.contains("snsapi_base") || scopes.contains("snsapi_userinfo"));
     }
 }
