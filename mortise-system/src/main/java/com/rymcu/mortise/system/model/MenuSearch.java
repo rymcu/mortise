@@ -19,4 +19,6 @@ public class MenuSearch extends BaseSearch {
 
     private String label;
 
+    private boolean showButton;
+
 }

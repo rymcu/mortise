@@ -6,6 +6,7 @@ import com.rymcu.mortise.common.model.Link;
 import com.rymcu.mortise.system.entity.Menu;
 import com.rymcu.mortise.system.model.MenuSearch;
 import com.rymcu.mortise.system.model.MenuTreeInfo;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -23,8 +24,6 @@ public interface MenuService extends IService<Menu> {
 
     List<Menu> findMenus(Page<Menu> page, MenuSearch search);
 
-    Boolean saveMenu(Menu menu);
-
     Boolean updateStatus(Long idMenu, Integer status);
 
     Boolean deleteMenu(Long idMenu);
@@ -32,4 +31,8 @@ public interface MenuService extends IService<Menu> {
     List<MenuTreeInfo> findMenuTree(MenuSearch search);
 
     Boolean batchDeleteMenus(List<Long> idMenuList);
+
+    Boolean createMenu(@Valid Menu menu);
+
+    Boolean updateMenu(@Valid Menu menu);
 }

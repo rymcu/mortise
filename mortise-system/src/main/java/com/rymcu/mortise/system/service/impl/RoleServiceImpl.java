@@ -21,6 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 import static com.rymcu.mortise.system.entity.table.RoleMenuTableDef.ROLE_MENU;
 import static com.rymcu.mortise.system.entity.table.RoleTableDef.ROLE;
@@ -49,28 +50,6 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
                 .join(USER_ROLE.as("tur")).on(USER_ROLE.ID_MORTISE_ROLE.eq(ROLE.ID))
                 .where(USER_ROLE.ID_MORTISE_USER.eq(idUser));
         return mapper.selectListByQuery(queryWrapper);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean saveRole(Role role) {
-        boolean isUpdate = role.getId() != null;
-        if (isUpdate) {
-            Role oldRole = mapper.selectOneById(role.getId());
-            if (oldRole == null) {
-                throw new ServiceException("数据不存在");
-            }
-            oldRole.setLabel(role.getLabel());
-            oldRole.setPermission(role.getPermission());
-            oldRole.setStatus(role.getStatus());
-            // 更新默认角色标识
-            if (role.getIsDefault() != null) {
-                oldRole.setIsDefault(role.getIsDefault());
-            }
-            oldRole.setUpdatedTime(LocalDateTime.now());
-            return mapper.update(oldRole) > 0;
-        }
-        return mapper.insertSelective(role) > 0;
     }
 
     @Override
@@ -157,5 +136,32 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     public List<User> findUsersByIdRole(Long idRole) {
         // 使用 Mapper 方法，避免参数绑定问题
         return userRoleMapper.findUsersByIdRole(idRole);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean createRole(Role role) {
+        return mapper.insertSelective(role) > 0;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateRole(Role role) {
+        if (Objects.isNull(role) || Objects.isNull(role.getId())) {
+            throw new ServiceException("数据不存在");
+        }
+        Role oldRole = mapper.selectOneById(role.getId());
+        if (Objects.isNull(oldRole)) {
+            throw new ServiceException("数据不存在");
+        }
+        oldRole.setLabel(role.getLabel());
+        oldRole.setPermission(role.getPermission());
+        oldRole.setStatus(role.getStatus());
+        // 更新默认角色标识
+        if (role.getIsDefault() != null) {
+            oldRole.setIsDefault(role.getIsDefault());
+        }
+        oldRole.setUpdatedTime(LocalDateTime.now());
+        return mapper.update(oldRole) > 0;
     }
 }

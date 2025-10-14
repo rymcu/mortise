@@ -6,7 +6,9 @@ import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.system.entity.Menu;
 import com.rymcu.mortise.system.entity.Role;
 import com.rymcu.mortise.system.entity.User;
-import com.rymcu.mortise.system.model.*;
+import com.rymcu.mortise.system.model.BindRoleMenuInfo;
+import com.rymcu.mortise.system.model.BindRoleUserInfo;
+import com.rymcu.mortise.system.model.RoleSearch;
 import com.rymcu.mortise.system.service.RoleService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -66,7 +68,7 @@ public class RoleController {
     })
     @PostMapping
     public GlobalResult<Boolean> createRole(@Parameter(description = "角色信息", required = true) @Valid @RequestBody Role role) {
-        return GlobalResult.success(roleService.saveRole(role));
+        return GlobalResult.success(roleService.createRole(role));
     }
 
     @Operation(summary = "更新角色", description = "修改角色数据")
@@ -80,7 +82,7 @@ public class RoleController {
     public GlobalResult<Boolean> updateRole(@Parameter(description = "角色ID", required = true) @PathVariable("id") Long idRole,
                                            @Parameter(description = "角色信息", required = true) @Valid @RequestBody Role role) {
         role.setId(idRole);
-        return GlobalResult.success(roleService.saveRole(role));
+        return GlobalResult.success(roleService.updateRole(role));
     }
 
     @Operation(summary = "更新角色状态", description = "启用/禁用角色")

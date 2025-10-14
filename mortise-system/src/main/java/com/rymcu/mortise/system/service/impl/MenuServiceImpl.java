@@ -5,6 +5,7 @@ import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.util.UpdateEntity;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.common.enumerate.MenuType;
+import com.rymcu.mortise.common.exception.ServiceException;
 import com.rymcu.mortise.common.model.Link;
 import com.rymcu.mortise.system.entity.Menu;
 import com.rymcu.mortise.system.mapper.MenuMapper;
@@ -16,6 +17,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -42,25 +44,6 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     @Override
     public List<Link> findLinksByIdUser(Long idUser) {
         return findLinkTreeMode(idUser, 0L);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean saveMenu(Menu menu) {
-        Menu oldMenu = mapper.selectOneById(menu.getId());
-        if (Objects.nonNull(oldMenu)) {
-            oldMenu.setLabel(menu.getLabel());
-            oldMenu.setPermission(menu.getPermission());
-            oldMenu.setIcon(menu.getIcon());
-            oldMenu.setHref(menu.getHref());
-            oldMenu.setStatus(menu.getStatus());
-            oldMenu.setMenuType(menu.getMenuType());
-            oldMenu.setSortNo(menu.getSortNo());
-            oldMenu.setParentId(menu.getParentId());
-            oldMenu.setUpdatedTime(menu.getUpdatedTime());
-            return mapper.update(menu) > 0;
-        }
-        return mapper.insertSelective(menu) > 0;
     }
 
     @Override
@@ -93,6 +76,31 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
             return false;
         }
         return mapper.deleteBatchByIds(idMenuList) > 0;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean createMenu(Menu menu) {
+        return mapper.insertSelective(menu) > 0;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateMenu(Menu menu) {
+        Menu oldMenu = mapper.selectOneById(menu.getId());
+        if (Objects.isNull(oldMenu)) {
+            throw new ServiceException("数据不存在");
+        }
+        oldMenu.setLabel(menu.getLabel());
+        oldMenu.setPermission(menu.getPermission());
+        oldMenu.setIcon(menu.getIcon());
+        oldMenu.setHref(menu.getHref());
+        oldMenu.setStatus(menu.getStatus());
+        oldMenu.setMenuType(menu.getMenuType());
+        oldMenu.setSortNo(menu.getSortNo());
+        oldMenu.setParentId(menu.getParentId());
+        oldMenu.setUpdatedTime(LocalDateTime.now());
+        return mapper.update(menu) > 0;
     }
 
     @Override

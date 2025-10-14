@@ -2,7 +2,6 @@ package com.rymcu.mortise.system.controller;
 
 import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.common.model.BatchUpdateInfo;
-import com.rymcu.mortise.common.model.Link;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.system.entity.Menu;
 import com.rymcu.mortise.system.model.MenuSearch;
@@ -68,7 +67,7 @@ public class MenuController {
     })
     @PostMapping
     public GlobalResult<Boolean> createMenu(@Parameter(description = "菜单信息", required = true) @Valid @RequestBody Menu menu) {
-        return GlobalResult.success(menuService.saveMenu(menu));
+        return GlobalResult.success(menuService.createMenu(menu));
     }
 
     @Operation(summary = "更新菜单", description = "修改菜单数据")
@@ -82,7 +81,7 @@ public class MenuController {
     public GlobalResult<Boolean> updateMenu(@Parameter(description = "菜单ID", required = true) @PathVariable("id") Long idMenu,
                                            @Parameter(description = "菜单信息", required = true) @Valid @RequestBody Menu menu) {
         menu.setId(idMenu);
-        return GlobalResult.success(menuService.saveMenu(menu));
+        return GlobalResult.success(menuService.updateMenu(menu));
     }
 
     @Operation(summary = "更新菜单状态", description = "启用/禁用菜单")

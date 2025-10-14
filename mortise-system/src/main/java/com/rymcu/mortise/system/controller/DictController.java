@@ -74,7 +74,7 @@ public class DictController {
                                             @AuthenticationPrincipal UserDetailInfo userDetails) {
         User user = userDetails.getUser();
         dict.setCreatedBy(user.getId());
-        Boolean result = dictService.saveDict(dict);
+        Boolean result = dictService.createDict(dict);
         return GlobalResult.success(result);
     }
 
@@ -92,7 +92,7 @@ public class DictController {
         User user = userDetails.getUser();
         dict.setId(idDict);
         dict.setUpdatedBy(user.getId());
-        Boolean result = dictService.saveDict(dict);
+        Boolean result = dictService.updateDict(dict);
         return GlobalResult.success(result);
     }
 

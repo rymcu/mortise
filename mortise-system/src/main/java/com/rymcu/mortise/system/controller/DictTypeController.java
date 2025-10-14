@@ -70,7 +70,7 @@ public class DictTypeController {
                                                 @AuthenticationPrincipal UserDetailInfo userDetails) {
         User user = userDetails.getUser();
         dictType.setCreatedBy(user.getId());
-        Boolean result = dictTypeService.saveDictType(dictType);
+        Boolean result = dictTypeService.createDictType(dictType);
         return GlobalResult.success(result);
     }
 
@@ -88,7 +88,7 @@ public class DictTypeController {
         User user = userDetails.getUser();
         dictType.setId(idDictType);
         dictType.setUpdatedBy(user.getId());
-        Boolean result = dictTypeService.saveDictType(dictType);
+        Boolean result = dictTypeService.updateDictType(dictType);
         return GlobalResult.success(result);
     }
 

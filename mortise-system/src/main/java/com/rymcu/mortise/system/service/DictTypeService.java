@@ -3,6 +3,7 @@ package com.rymcu.mortise.system.service;
 import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.system.entity.DictType;
 import com.rymcu.mortise.system.model.DictTypeSearch;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -16,8 +17,6 @@ import java.util.List;
 public interface DictTypeService {
     Page<DictType> findDictTypeList(Page<DictType> page, DictTypeSearch search);
 
-    Boolean saveDictType(DictType dictType);
-
     Boolean updateStatus(Long idDictType, Integer status);
 
     Boolean deleteDictType(Long idDictType);
@@ -25,4 +24,8 @@ public interface DictTypeService {
     DictType findById(Long idDictType);
 
     Boolean batchDeleteDictTypes(List<Long> idDictTypes);
+
+    Boolean createDictType(@Valid DictType dictType);
+
+    Boolean updateDictType(@Valid DictType dictType);
 }

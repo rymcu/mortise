@@ -11,7 +11,6 @@ import com.rymcu.mortise.system.model.RoleSearch;
 import jakarta.validation.Valid;
 
 import java.util.List;
-import java.util.Set;
 
 /**
  * Created on 2024/4/13 22:06.
@@ -22,8 +21,6 @@ import java.util.Set;
  */
 public interface RoleService extends IService<Role> {
     List<Role> findRolesByIdUser(Long idUser);
-
-    Boolean saveRole(Role role);
 
     Page<Role> findRoles(Page<Role> page, RoleSearch search);
 
@@ -46,4 +43,8 @@ public interface RoleService extends IService<Role> {
     Boolean bindRoleUser(@Valid BindRoleUserInfo bindRoleUserInfo);
 
     List<User> findUsersByIdRole(Long idRole);
+
+    Boolean createRole(@Valid Role role);
+
+    Boolean updateRole(@Valid Role role);
 }

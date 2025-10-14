@@ -4,7 +4,10 @@ import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.service.IService;
 import com.rymcu.mortise.system.entity.Role;
 import com.rymcu.mortise.system.entity.User;
-import com.rymcu.mortise.system.model.*;
+import com.rymcu.mortise.system.model.BindUserRoleInfo;
+import com.rymcu.mortise.system.model.UserInfo;
+import com.rymcu.mortise.system.model.UserProfileInfo;
+import com.rymcu.mortise.system.model.UserSearch;
 import jakarta.validation.Valid;
 
 import java.util.List;
@@ -59,8 +62,6 @@ public interface UserService extends IService<User> {
 
     UserInfo findUserInfoById(Long idUser);
 
-    Boolean saveUser(UserInfo userInfo);
-
     Boolean updateUserInfo(UserInfo userInfo);
 
     Boolean bindUserRole(BindUserRoleInfo bindUserRoleInfo);
@@ -84,4 +85,8 @@ public interface UserService extends IService<User> {
     List<Role> findRolesByIdUser(Long idUser);
 
     Boolean bindRoleUser(@Valid BindUserRoleInfo bindUserRoleInfo);
+
+    Boolean createUser(@Valid UserInfo userInfo);
+
+    Boolean updateUser(@Valid UserInfo userInfo);
 }

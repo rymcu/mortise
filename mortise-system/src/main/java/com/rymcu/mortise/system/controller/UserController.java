@@ -3,11 +3,9 @@ package com.rymcu.mortise.system.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mybatisflex.core.paginate.Page;
-import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.common.model.BatchUpdateInfo;
+import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.system.entity.Role;
-import com.rymcu.mortise.system.entity.User;
-import com.rymcu.mortise.system.model.BindRoleUserInfo;
 import com.rymcu.mortise.system.model.BindUserRoleInfo;
 import com.rymcu.mortise.system.model.UserInfo;
 import com.rymcu.mortise.system.model.UserSearch;
@@ -72,7 +70,7 @@ public class UserController {
     })
     @PostMapping
     public GlobalResult<Boolean> createUser(@Parameter(description = "用户信息", required = true) @Valid @RequestBody UserInfo userInfo) {
-        return GlobalResult.success(userService.saveUser(userInfo));
+        return GlobalResult.success(userService.createUser(userInfo));
     }
 
     @Operation(summary = "更新用户", description = "修改用户数据")
@@ -86,7 +84,7 @@ public class UserController {
     public GlobalResult<Boolean> updateUser(@Parameter(description = "用户ID", required = true) @PathVariable("id") Long idUser,
                                            @Parameter(description = "用户信息", required = true) @Valid @RequestBody UserInfo userInfo) {
         userInfo.setId(idUser);
-        return GlobalResult.success(userService.saveUser(userInfo));
+        return GlobalResult.success(userService.updateUser(userInfo));
     }
 
     @Operation(summary = "更新用户状态", description = "启用/禁用用户")

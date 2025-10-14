@@ -10,6 +10,7 @@ import com.mybatisflex.core.util.UpdateEntity;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.common.exception.BusinessException;
 import com.rymcu.mortise.common.model.Avatar;
+import com.rymcu.mortise.common.util.Utils;
 import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.system.entity.Role;
 import com.rymcu.mortise.system.entity.User;
@@ -18,11 +19,13 @@ import com.rymcu.mortise.system.handler.event.RegisterEvent;
 import com.rymcu.mortise.system.handler.event.ResetPasswordEvent;
 import com.rymcu.mortise.system.mapper.UserMapper;
 import com.rymcu.mortise.system.mapper.UserRoleMapper;
-import com.rymcu.mortise.system.model.*;
-import com.rymcu.mortise.system.service.SystemCacheService;
+import com.rymcu.mortise.system.model.BindUserRoleInfo;
+import com.rymcu.mortise.system.model.UserInfo;
+import com.rymcu.mortise.system.model.UserProfileInfo;
+import com.rymcu.mortise.system.model.UserSearch;
 import com.rymcu.mortise.system.service.PermissionService;
+import com.rymcu.mortise.system.service.SystemCacheService;
 import com.rymcu.mortise.system.service.UserService;
-import com.rymcu.mortise.common.util.Utils;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
@@ -137,6 +140,46 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean createUser(UserInfo userInfo) {
+        User user = new User();
+        user.setEmail(userInfo.getEmail());
+        user.setPhone(userInfo.getPhone());
+        user.setNickname(checkNickname(userInfo.getNickname()));
+        String code = userInfo.getPassword();
+        if (StringUtils.isBlank(code)) {
+            code = Utils.genKey();
+        }
+        user.setPassword(passwordEncoder.encode(code));
+        user.setAvatar(Objects.isNull(userInfo.getAvatar()) ? DEFAULT_AVATAR : userInfo.getAvatar().getSrc());
+        user.setAccount(nextAccount());
+        boolean result = mapper.insertSelective(user) > 0;
+        if (result) {
+            // 注册成功后执行相关初始化事件
+            applicationEventPublisher.publishEvent(new RegisterEvent(user.getId(), user.getEmail(), code));
+        }
+        return result;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateUser(UserInfo userInfo) {
+        User user = mapper.selectOneByQuery(QueryWrapper.create()
+                .select(USER.ID, USER.EMAIL, USER.PHONE, USER.NICKNAME, USER.STATUS, USER.AVATAR)
+                .where(USER.ID.eq(userInfo.getId())));
+        if (Objects.nonNull(user)) {
+            // 用户已存在
+            user.setEmail(userInfo.getEmail());
+            user.setPhone(userInfo.getPhone());
+            user.setNickname(checkNickname(userInfo.getNickname()));
+            user.setStatus(userInfo.getStatus());
+            user.setAvatar(userInfo.getAvatar().getSrc());
+            return mapper.update(user) > 0;
+        }
+        throw new BusinessException(ResultCode.UNKNOWN_ACCOUNT.getMessage());
+    }
+
+    @Override
     public Set<String> findUserPermissionsByIdUser(Long idUser) {
         // 委托给 PermissionService 处理所有权限逻辑
         return permissionService.findUserPermissionsByIdUser(idUser);
@@ -198,46 +241,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                         USER.LAST_ONLINE_TIME, USER.CREATED_TIME)
                 .from(User.class);
         return mapper.selectObjectByQueryAs(queryWrapper, UserInfo.class);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean saveUser(UserInfo userInfo) {
-        boolean isUpdate = userInfo.getId() != null;
-        User user;
-        if (isUpdate) {
-            user = mapper.selectOneByQuery(QueryWrapper.create()
-                    .select(USER.ID, USER.EMAIL, USER.PHONE, USER.NICKNAME, USER.STATUS, USER.AVATAR)
-                    .where(USER.ID.eq(userInfo.getId())));
-            if (Objects.nonNull(user)) {
-                // 用户已存在
-                user.setEmail(userInfo.getEmail());
-                user.setPhone(userInfo.getPhone());
-                user.setNickname(checkNickname(userInfo.getNickname()));
-                user.setStatus(userInfo.getStatus());
-                user.setAvatar(userInfo.getAvatar().getSrc());
-                return mapper.update(user) > 0;
-            }
-            throw new BusinessException(ResultCode.UNKNOWN_ACCOUNT.getMessage());
-        } else {
-            user = new User();
-            user.setEmail(userInfo.getEmail());
-            user.setPhone(userInfo.getPhone());
-            user.setNickname(checkNickname(userInfo.getNickname()));
-            String code = userInfo.getPassword();
-            if (StringUtils.isBlank(code)) {
-                code = Utils.genKey();
-            }
-            user.setPassword(passwordEncoder.encode(code));
-            user.setAvatar(Objects.isNull(userInfo.getAvatar()) ? DEFAULT_AVATAR : userInfo.getAvatar().getSrc());
-            user.setAccount(nextAccount());
-            boolean result = mapper.insertSelective(user) > 0;
-            if (result) {
-                // 注册成功后执行相关初始化事件
-                applicationEventPublisher.publishEvent(new RegisterEvent(user.getId(), user.getEmail(), code));
-            }
-            return result;
-        }
     }
 
     @Override

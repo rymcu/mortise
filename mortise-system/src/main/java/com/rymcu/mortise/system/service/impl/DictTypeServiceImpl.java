@@ -44,43 +44,6 @@ public class DictTypeServiceImpl extends ServiceImpl<DictTypeMapper, DictType> i
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean saveDictType(DictType dictType) {
-        boolean isUpdate = dictType.getId() != null;
-        String newTypeCode = dictType.getTypeCode();
-
-        if (isUpdate) {
-            DictType oldDictType = mapper.selectOneById(dictType.getId());
-            if (oldDictType == null) {
-                throw new ServiceException("数据不存在");
-            }
-
-            String oldTypeCode = oldDictType.getTypeCode();
-
-            oldDictType.setLabel(dictType.getLabel());
-            oldDictType.setTypeCode(dictType.getTypeCode());
-            oldDictType.setSortNo(dictType.getSortNo());
-            oldDictType.setStatus(dictType.getStatus());
-            oldDictType.setUpdatedBy(dictType.getUpdatedBy());
-            oldDictType.setUpdatedTime(dictType.getUpdatedTime());
-
-            boolean result = mapper.update(oldDictType) > 0;
-
-            // 清除相关缓存 - DictType变更影响对应的Dict缓存
-            if (result) {
-                systemCacheService.removeDictOptions(newTypeCode);
-                if (!oldTypeCode.equals(newTypeCode)) {
-                    systemCacheService.removeDictOptions(oldTypeCode);
-                }
-            }
-
-            return result;
-        }
-
-        return mapper.insertSelective(dictType) > 0;
-    }
-
-    @Override
     public Boolean updateStatus(Long idDictType, Integer status) {
         // 获取原始记录以确定字典类型代码
         DictType originalDictType = mapper.selectOneById(idDictType);
@@ -141,6 +104,45 @@ public class DictTypeServiceImpl extends ServiceImpl<DictTypeMapper, DictType> i
         // 清除相关缓存 - DictType批量删除时清除对应的Dict缓存
         if (result && !affectedTypeCodes.isEmpty()) {
             systemCacheService.removeDictOptionsBatch(affectedTypeCodes);
+        }
+
+        return result;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean createDictType(DictType dictType) {
+        String newTypeCode = dictType.getTypeCode();
+
+        return mapper.insertSelective(dictType) > 0;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean updateDictType(DictType dictType) {
+        String newTypeCode = dictType.getTypeCode();
+        DictType oldDictType = mapper.selectOneById(dictType.getId());
+        if (Objects.isNull(oldDictType)) {
+            throw new ServiceException("数据不存在");
+        }
+
+        String oldTypeCode = oldDictType.getTypeCode();
+
+        oldDictType.setLabel(dictType.getLabel());
+        oldDictType.setTypeCode(dictType.getTypeCode());
+        oldDictType.setSortNo(dictType.getSortNo());
+        oldDictType.setStatus(dictType.getStatus());
+        oldDictType.setUpdatedBy(dictType.getUpdatedBy());
+        oldDictType.setUpdatedTime(dictType.getUpdatedTime());
+
+        boolean result = mapper.update(oldDictType) > 0;
+
+        // 清除相关缓存 - DictType变更影响对应的Dict缓存
+        if (result) {
+            systemCacheService.removeDictOptions(newTypeCode);
+            if (!oldTypeCode.equals(newTypeCode)) {
+                systemCacheService.removeDictOptions(oldTypeCode);
+            }
         }
 
         return result;

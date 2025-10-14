@@ -50,51 +50,6 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    @CacheEvict(value = SystemCacheConstant.DICT_DATA_CACHE, key = "#dict.dictTypeCode")
-    public Boolean saveDict(Dict dict) {
-        boolean isUpdate = dict.getId() != null;
-        String dictTypeCode = dict.getDictTypeCode();
-
-        if (isUpdate) {
-            Dict oldDict = mapper.selectOneById(dict.getId());
-            if (oldDict == null) {
-                throw new ServiceException("数据不存在");
-            }
-            // 如果字典类型代码发生变化，需要清除两个类型的缓存
-            String oldDictTypeCode = oldDict.getDictTypeCode();
-
-            oldDict.setLabel(dict.getLabel());
-            oldDict.setValue(dict.getValue());
-            oldDict.setSortNo(dict.getSortNo());
-            oldDict.setStatus(dict.getStatus());
-            oldDict.setUpdatedBy(dict.getUpdatedBy());
-            oldDict.setUpdatedTime(dict.getUpdatedTime());
-
-            boolean result = mapper.update(oldDict) > 0;
-
-            // 清除相关缓存
-            if (result) {
-                systemCacheService.removeDictOptions(dictTypeCode);
-                if (!oldDictTypeCode.equals(dictTypeCode)) {
-                    systemCacheService.removeDictOptions(oldDictTypeCode);
-                }
-            }
-
-            return result;
-        }
-
-        boolean result = mapper.insertSelective(dict) > 0;
-
-        // 清除相关缓存
-        if (result) {
-            systemCacheService.removeDictOptions(dictTypeCode);
-        }
-
-        return result;
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
     public Boolean updateStatus(Long idDict, Integer status) {
         // 获取原始记录以确定字典类型代码
         Dict originalDict = mapper.selectOneById(idDict);
@@ -194,6 +149,53 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
         // 清除相关缓存
         if (result && !affectedDictTypeCodes.isEmpty()) {
             systemCacheService.removeDictOptionsBatch(affectedDictTypeCodes);
+        }
+
+        return result;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    @CacheEvict(value = SystemCacheConstant.DICT_DATA_CACHE, key = "#dict.dictTypeCode")
+    public Boolean createDict(Dict dict) {
+        String dictTypeCode = dict.getDictTypeCode();
+
+        boolean result = mapper.insertSelective(dict) > 0;
+        // 清除相关缓存
+        if (result) {
+            systemCacheService.removeDictOptions(dictTypeCode);
+        }
+        return result;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    @CacheEvict(value = SystemCacheConstant.DICT_DATA_CACHE, key = "#dict.dictTypeCode")
+    public Boolean updateDict(Dict dict) {
+        String dictTypeCode = dict.getDictTypeCode();
+
+        Dict oldDict = mapper.selectOneById(dict.getId());
+        if (oldDict == null) {
+            throw new ServiceException("数据不存在");
+        }
+        // 如果字典类型代码发生变化，需要清除两个类型的缓存
+        String oldDictTypeCode = oldDict.getDictTypeCode();
+
+        oldDict.setLabel(dict.getLabel());
+        oldDict.setValue(dict.getValue());
+        oldDict.setSortNo(dict.getSortNo());
+        oldDict.setStatus(dict.getStatus());
+        oldDict.setUpdatedBy(dict.getUpdatedBy());
+        oldDict.setUpdatedTime(dict.getUpdatedTime());
+
+        boolean result = mapper.update(oldDict) > 0;
+
+        // 清除相关缓存
+        if (result) {
+            systemCacheService.removeDictOptions(dictTypeCode);
+            if (!oldDictTypeCode.equals(dictTypeCode)) {
+                systemCacheService.removeDictOptions(oldDictTypeCode);
+            }
         }
 
         return result;

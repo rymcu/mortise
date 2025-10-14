@@ -2,10 +2,11 @@ package com.rymcu.mortise.system.service;
 
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.service.IService;
-import com.rymcu.mortise.system.entity.Dict;
 import com.rymcu.mortise.common.model.BaseOption;
+import com.rymcu.mortise.system.entity.Dict;
 import com.rymcu.mortise.system.model.DictInfo;
 import com.rymcu.mortise.system.model.DictSearch;
+import jakarta.validation.Valid;
 
 import java.util.List;
 
@@ -18,8 +19,6 @@ import java.util.List;
  */
 public interface DictService extends IService<Dict> {
     Page<Dict> findDictList(Page<Dict> page, DictSearch search);
-
-    Boolean saveDict(Dict dict);
 
     Boolean updateStatus(Long idDict, Integer status);
 
@@ -34,4 +33,8 @@ public interface DictService extends IService<Dict> {
     List<BaseOption> queryDictOptions(String dictTypeCode);
 
     Boolean batchDeleteDictionaries(List<Long> idDictList);
+
+    Boolean createDict(@Valid Dict dict);
+
+    Boolean updateDict(@Valid Dict dict);
 }
