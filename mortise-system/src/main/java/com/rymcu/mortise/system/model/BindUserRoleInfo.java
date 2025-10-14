@@ -2,6 +2,7 @@ package com.rymcu.mortise.system.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.Set;
 
@@ -13,6 +14,7 @@ import java.util.Set;
  * @desc : com.rymcu.mortise.model
  */
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 public class BindUserRoleInfo {
 
