@@ -20,11 +20,6 @@
         <!-- Mortise Modules -->
         <dependency>
             <groupId>com.rymcu</groupId>
-            <artifactId>mortise-common</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.rymcu</groupId>
             <artifactId>mortise-core</artifactId>
         </dependency>
 
@@ -33,10 +28,9 @@
             <artifactId>mortise-cache</artifactId>
         </dependency>
 
-        <!-- MyBatis-Flex -->
         <dependency>
-            <groupId>com.mybatis-flex</groupId>
-            <artifactId>mybatis-flex-spring-boot3-starter</artifactId>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-persistence</artifactId>
         </dependency>
 
         <!-- Spring Security -->
@@ -74,19 +68,6 @@
             <groupId>jakarta.servlet</groupId>
             <artifactId>jakarta.servlet-api</artifactId>
             <scope>provided</scope>
-        </dependency>
-
-        <!-- Validation -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
-
-        <!-- SpringDoc OpenAPI (for Swagger annotations in controllers) -->
-        <dependency>
-            <groupId>org.springdoc</groupId>
-            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-            <optional>true</optional>
         </dependency>
 
         <!-- Lombok -->

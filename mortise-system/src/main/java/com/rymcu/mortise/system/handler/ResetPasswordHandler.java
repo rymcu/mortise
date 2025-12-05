@@ -3,7 +3,6 @@ package com.rymcu.mortise.system.handler;
 import com.rymcu.mortise.system.handler.event.ResetPasswordEvent;
 import com.rymcu.mortise.system.service.SystemNotificationService;
 import jakarta.annotation.Resource;
-import jakarta.mail.MessagingException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.event.TransactionalEventListener;

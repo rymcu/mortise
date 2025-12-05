@@ -68,6 +68,7 @@ spring:
     schemas: mortise                     # 指定schema
     create-schemas: false                # 尝试创建 schema（生产环境必须禁用）
     table: flyway_schema_history         # 迁移历史记录表名
+    ignore-migration-patterns: "*:*"     # 忽略所有迁移的校验和不匹配问题（开发环境用）
     placeholder-replacement: true        # 启用占位符替换
     sql-migration-prefix: V              # SQL迁移脚本前缀
     sql-migration-separator: __          # SQL迁移脚本分隔符
@@ -76,30 +77,10 @@ spring:
   mail:
     host: smtp.ym.163.com
     port: 465
-#    username: service@rymcu.com
-#    password: ENC(wYjMDevKQeoMzDmkks4Spe4tvNB1f5iSv6qEaA6VFys=)
   servlet:
     multipart:
       max-file-size: 10MB
       max-request-size: 20MB
-#  security:
-#    oauth2:
-#      client:
-#        registration:
-#          logto:
-#            client-name: ATDAK
-#            client-id: ${LOGTO_CLIENT_ID}
-#            client-secret: ${LOGTO_CLIENT_SECRET}
-#            redirect-uri: ${baseUrl}/api/oauth2/code/logto
-#            authorization-grant-type: authorization_code
-#            scope: openid,profile,offline_access,email
-#            provider: logto
-#        provider:
-#          logto:
-#            issuer-uri: https://auth.atdak.com/oidc
-#            authorization-uri: https://auth.atdak.com/oidc/auth
-#            jwk-set-uri: https://auth.atdak.com/oidc/jwks
-#            user-info-uri: https://auth.atdak.com/oidc/me
 logging:
   file:
     path: /logs/mortise
@@ -267,7 +248,7 @@ executor:
         prefix: mortise-async-executor
 mybatis-flex:
   mapper-locations: classpath*:/mapper/**/*.xml
-  type-aliases-package: com.rymcu.mortise.entity
+  type-aliases-package: com.rymcu.mortise.system.entity
   configuration:
     # 开启驼峰命名自动映射
     map-underscore-to-camel-case: true
@@ -323,12 +304,25 @@ springdoc:
     - group: 'system-init'
       display-name: '系统初始化接口'
       paths-to-match: '/api/v1/system-init/**'
-
-# 微信配置
-wechat:
-  # 微信公众号配置
-  mp:
-    enabled: true
-  # 微信开放平台配置
-  open:
-    enabled: true
+    - group: 'wechat'
+      display-name: '微信服务接口'
+      paths-to-match: '/api/v1/wechat/**'
+dromara:
+  x-file-storage:
+    default-platform: local-plus-1
+    local-plus:
+      - platform: local-plus-1
+        enable-storage: true
+        enable-access: true
+        domain: /files/ # 访问域名，例如：“http://127.0.0.1:8030/file/”，注意后面要和 path-patterns 保持一致，“/”结尾，本地存储建议使用相对路径，方便后期更换域名
+        base-path: local-plus/ # 基础路径
+        path-patterns: /files/** # 访问路径
+        storage-path: /app/files/ # 存储路径
+mortise:
+  auth:
+    sms:
+      login-url: /api/v1/auth/login/sms
+      mobile-parameter: mobile
+      code-parameter: smsCode
+      user-type-parameter: userType
+      post-only: true

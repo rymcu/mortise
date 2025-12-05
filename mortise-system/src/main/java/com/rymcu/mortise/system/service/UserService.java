@@ -86,7 +86,7 @@ public interface UserService extends IService<User> {
 
     Boolean bindRoleUser(@Valid BindUserRoleInfo bindUserRoleInfo);
 
-    Boolean createUser(@Valid UserInfo userInfo);
+    Long createUser(@Valid UserInfo userInfo);
 
     Boolean updateUser(@Valid UserInfo userInfo);
 }

@@ -1,6 +1,5 @@
 package com.rymcu.mortise.wechat.service.impl;
 
-import com.rymcu.mortise.wechat.entity.WeChatAccount;
 import com.rymcu.mortise.wechat.service.DynamicWeChatOpenServiceManager;
 import com.rymcu.mortise.wechat.service.DynamicWeChatServiceManager;
 import com.rymcu.mortise.wechat.service.WeChatLoginService;

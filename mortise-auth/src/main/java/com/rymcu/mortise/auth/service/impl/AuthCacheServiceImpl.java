@@ -203,4 +203,34 @@ public class AuthCacheServiceImpl implements AuthCacheService {
         }
     }
 
+    // ==================== Token 黑名单操作实现 ====================
+
+    @Override
+    public void addToBlacklist(String jti, long expireInSeconds) {
+        if (jti == null || jti.trim().isEmpty()) {
+            log.warn("无法将空的 jti 加入黑名单");
+            return;
+        }
+        
+        // 使用 CacheService 存储黑名单，value 为 "1" 表示已注销
+        cacheService.set(AuthCacheConstant.JWT_TOKEN_BLACKLIST_CACHE, jti, "1", expireInSeconds, TimeUnit.SECONDS);
+        log.info("Token 已加入黑名单：jti={}, 过期时间={}秒", jti, expireInSeconds);
+    }
+
+    @Override
+    public boolean isBlacklisted(String jti) {
+        if (jti == null || jti.trim().isEmpty()) {
+            return false;
+        }
+        
+        String value = cacheService.get(AuthCacheConstant.JWT_TOKEN_BLACKLIST_CACHE, jti, String.class);
+        boolean blacklisted = value != null;
+        
+        if (blacklisted) {
+            log.debug("Token 在黑名单中：jti={}", jti);
+        }
+        
+        return blacklisted;
+    }
+
 }

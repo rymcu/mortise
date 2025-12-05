@@ -141,7 +141,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean createUser(UserInfo userInfo) {
+    public Long createUser(UserInfo userInfo) {
         User user = new User();
         user.setEmail(userInfo.getEmail());
         user.setPhone(userInfo.getPhone());
@@ -158,7 +158,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             // 注册成功后执行相关初始化事件
             applicationEventPublisher.publishEvent(new RegisterEvent(user.getId(), user.getEmail(), code));
         }
-        return result;
+        return user.getId();
     }
 
     @Override
@@ -297,7 +297,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
                 applicationEventPublisher.publishEvent(new ResetPasswordEvent(user.getEmail(), code));
                 return code;
             }
-            throw new BusinessException(ResultCode.FAIL.getMessage());
+            throw new BusinessException(ResultCode.BAD_REQUEST.getMessage());
         }
         throw new UsernameNotFoundException(ResultCode.UNKNOWN_ACCOUNT.getMessage());
     }

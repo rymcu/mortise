@@ -1,0 +1,22 @@
+[
+  { "label": "首页", "permission": "home", "icon": "i-lucide-house", "href": "/", "menuType": 1, "sortNo": 1, "parentPermission": null },
+  { "label": "收件箱", "permission": "inbox", "icon": "i-lucide-inbox", "href": "/inbox", "menuType": 1, "sortNo": 2, "parentPermission": null },
+  { "label": "系统", "permission": "system", "icon": "i-lucide-settings-2", "href": "/systems", "menuType": 0, "sortNo": 10, "parentPermission": null },
+  { "label": "设置", "permission": "settings", "icon": "i-lucide-settings", "href": "/settings", "menuType": 0, "sortNo": 1000, "parentPermission": null },
+
+  { "label": "用户", "permission": "system:user", "icon": "i-lucide-users", "href": "/systems/users", "menuType": 1, "sortNo": 1, "parentPermission": "system" },
+  { "label": "角色", "permission": "system:role", "icon": "i-lucide-shield-user", "href": "/systems/roles", "menuType": 1, "sortNo": 2, "parentPermission": "system" },
+  { "label": "菜单", "permission": "system:menu", "icon": "i-lucide-menu", "href": "/systems/menus", "menuType": 1, "sortNo": 3, "parentPermission": "system" },
+  { "label": "字典类型", "permission": "system:dict-type", "icon": "mdi-account-alert", "href": "/systems/dict-types", "menuType": 1, "sortNo": 4, "parentPermission": "system" },
+  { "label": "字典", "permission": "system:dict", "icon": "i-lucide-book", "href": "/systems/dictionaries", "menuType": 1, "sortNo": 5, "parentPermission": "system" },
+  { "label": "素材", "permission": "system:media", "icon": "i-lucide-file", "href": "/systems/media", "menuType": 1, "sortNo": 100, "parentPermission": "system" },
+
+  { "label": "资料", "permission": "settings:profile", "icon": "i-lucide-user", "href": "/settings", "menuType": 1, "sortNo": 1, "parentPermission": "settings" },
+  { "label": "消息", "permission": "settings:notifications", "icon": "i-lucide-bell-ring", "href": "/settings/notifications", "menuType": 1, "sortNo": 2, "parentPermission": "settings" },
+  { "label": "安全", "permission": "settings:security", "icon": "i-lucide-shield", "href": "/settings/security", "menuType": 1, "sortNo": 3, "parentPermission": "settings" },
+
+  { "label": "课程", "permission": "course", "icon": "i-lucide-school", "href": "/courses", "menuType": 1, "sortNo": 3, "parentPermission": null },
+
+  { "label": "微信", "permission": "wechat", "icon": "mdi-account-check", "href": "/courses", "menuType": 1, "sortNo": 9, "parentPermission": null },
+  { "label": "微信账户", "permission": "wechat:account", "icon": "mdi-account-arrow-left", "href": "/systems/wechat-accounts", "menuType": 1, "sortNo": 9, "parentPermission": "wechat" }
+]

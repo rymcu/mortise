@@ -198,6 +198,59 @@ public class CacheTokenManager implements TokenManager {
     }
 
     @Override
+    public void revokeToken(String account, String token) {
+        try {
+            // 1. 从 Token 中获取 jti
+            String jti = jwtTokenUtil.getJtiFromToken(token);
+            
+            if (jti != null) {
+                // 2. 计算 Token 剩余有效期（秒）
+                java.util.Date expiration = jwtTokenUtil.getExpirationDateFromToken(token);
+                long expireInSeconds = 0;
+                if (expiration != null) {
+                    expireInSeconds = (expiration.getTime() - System.currentTimeMillis()) / 1000;
+                    if (expireInSeconds < 0) {
+                        expireInSeconds = 0; // Token 已过期，无需加入黑名单
+                    }
+                }
+                
+                // 3. 将 jti 加入黑名单
+                if (expireInSeconds > 0) {
+                    authCacheService.addToBlacklist(jti, expireInSeconds);
+                    log.info("Token 已加入黑名单: account={}, jti={}, 剩余有效期={}秒", account, jti, expireInSeconds);
+                }
+            } else {
+                log.warn("无法获取 Token 的 jti，跳过黑名单处理: account={}", account);
+            }
+            
+            // 4. 从缓存中删除 Token
+            deleteToken(account);
+            
+        } catch (Exception e) {
+            log.error("注销 Token 时发生异常: account={}", account, e);
+            // 即使出错也要尝试删除缓存中的 Token
+            deleteToken(account);
+        }
+    }
+
+    @Override
+    public boolean isTokenRevoked(String token) {
+        try {
+            String jti = jwtTokenUtil.getJtiFromToken(token);
+            if (jti == null) {
+                // 如果无法获取 jti，保守处理，不认为已注销
+                // 这种情况可能是旧版本生成的 Token（没有 jti）
+                log.debug("Token 没有 jti，跳过黑名单检查");
+                return false;
+            }
+            return authCacheService.isBlacklisted(jti);
+        } catch (Exception e) {
+            log.warn("检查 Token 黑名单时发生异常", e);
+            return false;
+        }
+    }
+
+    @Override
     public String refreshAccessToken(String oldToken, String account) {
         try {
             // 1. 验证旧 Token 是否属于该用户

@@ -140,8 +140,9 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean createRole(Role role) {
-        return mapper.insertSelective(role) > 0;
+    public Long createRole(Role role) {
+        mapper.insertSelective(role);
+        return role.getId();
     }
 
     @Override

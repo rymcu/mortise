@@ -1,4 +1,4 @@
-package com.rymcu.mortise.common.util;
+package com.rymcu.mortise.core.util;
 
 import com.rymcu.mortise.common.constant.ProjectConstant;
 import org.jasypt.encryption.StringEncryptor;
@@ -25,7 +25,7 @@ public class JasyptUtils {
         return encryptJasyptPassword(plainPassword, System.getenv(ProjectConstant.ENCRYPTION_KEY));
     }
 
-    
+
 
     /**
      * 解密密码（使用环境变量中的密钥）
@@ -89,4 +89,5 @@ public class JasyptUtils {
     private JasyptUtils() {
         throw new AssertionError("工具类不应该被实例化");
     }
+
 }

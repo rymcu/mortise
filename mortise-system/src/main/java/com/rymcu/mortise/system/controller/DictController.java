@@ -70,11 +70,11 @@ public class DictController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PostMapping
-    public GlobalResult<Boolean> createDict(@Parameter(description = "字典信息", required = true) @Valid @RequestBody Dict dict,
+    public GlobalResult<Long> createDict(@Parameter(description = "字典信息", required = true) @Valid @RequestBody Dict dict,
                                             @AuthenticationPrincipal UserDetailInfo userDetails) {
         User user = userDetails.getUser();
         dict.setCreatedBy(user.getId());
-        Boolean result = dictService.createDict(dict);
+        Long result = dictService.createDict(dict);
         return GlobalResult.success(result);
     }
 

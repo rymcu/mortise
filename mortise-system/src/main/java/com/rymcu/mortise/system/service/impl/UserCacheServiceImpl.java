@@ -1,20 +1,20 @@
 package com.rymcu.mortise.system.service.impl;
 
+import com.rymcu.mortise.common.util.BeanCopierUtil;
 import com.rymcu.mortise.system.constant.SystemCacheConstant;
 import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.model.auth.AuthInfo;
-import com.rymcu.mortise.system.service.SystemCacheService;
 import com.rymcu.mortise.system.service.MenuService;
+import com.rymcu.mortise.system.service.SystemCacheService;
 import com.rymcu.mortise.system.service.UserService;
-import com.rymcu.mortise.common.util.BeanCopierUtil;
-
-import java.util.Set;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+
+import java.util.Set;
 
 /**
  * 用户缓存服务

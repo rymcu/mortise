@@ -19,7 +19,7 @@ public enum ResultCode {
     /**
      * 失败状态
      */
-    FAIL(400, "操作失败"),
+    BAD_REQUEST(400, "操作失败"),
 
     /**
      * 系统级错误
@@ -27,6 +27,7 @@ public enum ResultCode {
     UNAUTHENTICATED(401, "认证失败，请重新登录"),
     UNAUTHORIZED(403, "无权访问"),
     NOT_FOUND(404, "请求的资源不存在"),
+    DATA_CONFLICT(409, "数据冲突"),
     INTERNAL_SERVER_ERROR(500, "系统繁忙，请稍后再试"),
     // 为兼容旧代码添加别名
     SERVER_ERROR(500, "系统繁忙，请稍后再试"),

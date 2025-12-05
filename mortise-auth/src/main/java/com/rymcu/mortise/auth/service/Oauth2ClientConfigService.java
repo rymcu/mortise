@@ -48,7 +48,7 @@ public interface Oauth2ClientConfigService extends IService<Oauth2ClientConfig> 
 
     Boolean batchDeleteOAuth2ClientConfig(List<Long> idOAuth2ClientConfigs);
 
-    Boolean createOauth2ClientConfig(Oauth2ClientConfig config);
+    Long createOauth2ClientConfig(Oauth2ClientConfig config);
 
     Boolean updateOauth2ClientConfig(Oauth2ClientConfig config);
 }

@@ -101,7 +101,7 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean createOauth2ClientConfig(Oauth2ClientConfig config) {
+    public Long createOauth2ClientConfig(Oauth2ClientConfig config) {
         // 加密敏感信息
         if (StringUtils.hasText(config.getClientSecret())) {
             config.setClientSecret(encryptValue(config.getClientSecret()));
@@ -113,10 +113,10 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
         }
 
         config.setCreatedTime(LocalDateTime.now());
-        int result = mapper.insertSelective(config);
+        mapper.insertSelective(config);
         log.info("创建 OAuth2 配置成功，id: {}, registrationId: {}, name: {}",
                 config.getId(), config.getRegistrationId(), config.getClientName());
-        return result > 0;
+        return config.getId();
     }
 
     @Override

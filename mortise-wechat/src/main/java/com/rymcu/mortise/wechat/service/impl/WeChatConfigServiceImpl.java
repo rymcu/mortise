@@ -13,7 +13,6 @@ import com.rymcu.mortise.wechat.enumerate.WeChatAccountType;
 import com.rymcu.mortise.wechat.mapper.WeChatAccountMapper;
 import com.rymcu.mortise.wechat.mapper.WeChatConfigMapper;
 import com.rymcu.mortise.wechat.service.WeChatConfigService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jasypt.encryption.StringEncryptor;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -23,7 +22,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 

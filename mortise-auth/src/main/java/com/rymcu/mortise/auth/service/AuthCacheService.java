@@ -94,4 +94,24 @@ public interface AuthCacheService {
     Integer getOAuth2QrcodeState(String state);
 
     void removeOAuth2QrcodeState(String state);
+
+    // ==================== Token 黑名单操作 ====================
+
+    /**
+     * 将 Token 加入黑名单
+     * <p>
+     * 用于实现 Token 注销功能，被加入黑名单的 Token 即使未过期也将被拒绝
+     *
+     * @param jti             Token 的唯一标识符 (JWT ID)
+     * @param expireInSeconds 黑名单过期时间（秒），通常设置为 Token 剩余有效期
+     */
+    void addToBlacklist(String jti, long expireInSeconds);
+
+    /**
+     * 检查 Token 是否在黑名单中
+     *
+     * @param jti Token 的唯一标识符 (JWT ID)
+     * @return true: 在黑名单中（已注销），false: 不在黑名单中
+     */
+    boolean isBlacklisted(String jti);
 }

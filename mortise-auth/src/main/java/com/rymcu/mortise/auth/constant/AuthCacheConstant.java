@@ -19,6 +19,15 @@ public class AuthCacheConstant {
     public static final long JWT_TOKEN_EXPIRE_MINUTES = 30;
 
     /**
+     * JWT Token 黑名单缓存
+     * <p>
+     * 用于存储已注销的 Token，防止被注销的 Token 继续使用
+     * 缓存 key 格式: jwt:blacklist:{jti}
+     * </p>
+     */
+    public static final String JWT_TOKEN_BLACKLIST_CACHE = "jwt:blacklist";
+
+    /**
      * 认证令牌缓存（通用）
      */
     public static final String AUTH_TOKEN_CACHE = "auth:token";
@@ -99,6 +108,25 @@ public class AuthCacheConstant {
      */
     public static final String VERIFICATION_CODE_CACHE = "verification:code";
     public static final long VERIFICATION_CODE_EXPIRE_MINUTES = 5;
+
+    /**
+     * 短信验证码缓存（支持多用户类型）
+     * <p>
+     * 缓存key格式: sms:code:{userType}:{mobile}
+     * </p>
+     */
+    public static final String SMS_CODE_CACHE = "sms:code";
+    public static final long SMS_CODE_EXPIRE_MINUTES = 5;
+
+    /**
+     * 短信验证码发送限制缓存
+     * <p>
+     * 防止验证码发送过于频繁，例如60秒内只能发送一次
+     * 缓存key格式: sms:limit:{userType}:{mobile}
+     * </p>
+     */
+    public static final String SMS_CODE_SEND_LIMIT_CACHE = "sms:limit";
+    public static final long SMS_CODE_SEND_LIMIT_SECONDS = 60;
 
     /**
      * 密码重置缓存

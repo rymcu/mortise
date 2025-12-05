@@ -1,6 +1,5 @@
 package com.rymcu.mortise.system.config;
 
-import com.rymcu.mortise.cache.constant.CacheConstant;
 import com.rymcu.mortise.cache.spi.CacheConfigurer;
 import com.rymcu.mortise.system.constant.SystemCacheConstant;
 import lombok.extern.slf4j.Slf4j;
@@ -13,9 +12,9 @@ import java.util.Map;
 
 /**
  * 系统模块缓存配置器
- * 
+ *
  * <p>实现 CacheConfigurer SPI，为系统业务相关的缓存提供配置</p>
- * 
+ *
  * <p><strong>配置的缓存：</strong></p>
  * <ul>
  *     <li>用户信息缓存</li>

@@ -66,11 +66,11 @@ public class DictTypeController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PostMapping
-    public GlobalResult<Boolean> createDictType(@Parameter(description = "字典类型信息", required = true) @Valid @RequestBody DictType dictType,
+    public GlobalResult<Long> createDictType(@Parameter(description = "字典类型信息", required = true) @Valid @RequestBody DictType dictType,
                                                 @AuthenticationPrincipal UserDetailInfo userDetails) {
         User user = userDetails.getUser();
         dictType.setCreatedBy(user.getId());
-        Boolean result = dictTypeService.createDictType(dictType);
+        Long result = dictTypeService.createDictType(dictType);
         return GlobalResult.success(result);
     }
 

@@ -69,7 +69,7 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PostMapping
-    public GlobalResult<Boolean> createUser(@Parameter(description = "用户信息", required = true) @Valid @RequestBody UserInfo userInfo) {
+    public GlobalResult<Long> createUser(@Parameter(description = "用户信息", required = true) @Valid @RequestBody UserInfo userInfo) {
         return GlobalResult.success(userService.createUser(userInfo));
     }
 

@@ -157,7 +157,7 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
     @Override
     @Transactional(rollbackFor = Exception.class)
     @CacheEvict(value = SystemCacheConstant.DICT_DATA_CACHE, key = "#dict.dictTypeCode")
-    public Boolean createDict(Dict dict) {
+    public Long createDict(Dict dict) {
         String dictTypeCode = dict.getDictTypeCode();
 
         boolean result = mapper.insertSelective(dict) > 0;
@@ -165,7 +165,7 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
         if (result) {
             systemCacheService.removeDictOptions(dictTypeCode);
         }
-        return result;
+        return dict.getId();
     }
 
     @Override

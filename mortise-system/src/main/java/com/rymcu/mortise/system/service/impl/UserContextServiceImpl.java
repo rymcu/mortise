@@ -29,16 +29,15 @@ public class UserContextServiceImpl implements UserContextService {
     @Override
     public User getCurrentUser() {
         Authentication authentication = getAuthentication();
-        
+
         if (!isAuthenticationValid(authentication)) {
             log.warn("当前请求未认证或为匿名用户");
             throw new UsernameNotFoundException(ResultCode.UNAUTHORIZED.getMessage());
         }
 
         Object principal = authentication.getPrincipal();
-        
-        if (principal instanceof UserDetailInfo) {
-            UserDetailInfo userDetails = (UserDetailInfo) principal;
+
+        if (principal instanceof UserDetailInfo userDetails) {
             User user = userDetails.getUser();
             if (user != null) {
                 return user;
@@ -72,13 +71,13 @@ public class UserContextServiceImpl implements UserContextService {
     @Override
     public String getCurrentUsername() {
         Authentication authentication = getAuthentication();
-        
+
         if (!isAuthenticationValid(authentication)) {
             return null;
         }
 
         Object principal = authentication.getPrincipal();
-        
+
         if (principal instanceof UserDetailInfo) {
             return ((UserDetailInfo) principal).getUsername();
         }
@@ -102,14 +101,14 @@ public class UserContextServiceImpl implements UserContextService {
     @Override
     public UserDetailInfo getCurrentUserDetails() {
         Authentication authentication = getAuthentication();
-        
+
         if (!isAuthenticationValid(authentication)) {
             log.warn("当前请求未认证或为匿名用户");
             throw new UsernameNotFoundException(ResultCode.UNAUTHORIZED.getMessage());
         }
 
         Object principal = authentication.getPrincipal();
-        
+
         if (principal instanceof UserDetailInfo) {
             return (UserDetailInfo) principal;
         }
@@ -123,9 +122,9 @@ public class UserContextServiceImpl implements UserContextService {
         if (authority == null || authority.trim().isEmpty()) {
             return false;
         }
-        
+
         Authentication authentication = getAuthentication();
-        
+
         if (!isAuthenticationValid(authentication)) {
             return false;
         }
@@ -139,9 +138,9 @@ public class UserContextServiceImpl implements UserContextService {
         if (authorities == null || authorities.length == 0) {
             return false;
         }
-        
+
         Authentication authentication = getAuthentication();
-        
+
         if (!isAuthenticationValid(authentication)) {
             return false;
         }
@@ -159,9 +158,9 @@ public class UserContextServiceImpl implements UserContextService {
         if (authorities == null || authorities.length == 0) {
             return false;
         }
-        
+
         Authentication authentication = getAuthentication();
-        
+
         if (!isAuthenticationValid(authentication)) {
             return false;
         }
@@ -195,8 +194,8 @@ public class UserContextServiceImpl implements UserContextService {
      * @return true: 有效, false: 无效
      */
     private boolean isAuthenticationValid(Authentication authentication) {
-        return authentication != null 
-                && authentication.isAuthenticated() 
+        return authentication != null
+                && authentication.isAuthenticated()
                 && !(authentication instanceof AnonymousAuthenticationToken);
     }
 }

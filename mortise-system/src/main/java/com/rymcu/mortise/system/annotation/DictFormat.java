@@ -24,7 +24,7 @@ public @interface DictFormat {
     /**
      * 是否覆盖原始字段
      */
-    boolean cover() default true;
+    boolean cover() default false;
 
     /**
      * 如果是翻译数据库表字段，指定表名

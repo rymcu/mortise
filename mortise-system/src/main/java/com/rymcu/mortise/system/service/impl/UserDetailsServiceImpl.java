@@ -1,6 +1,7 @@
 package com.rymcu.mortise.system.service.impl;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.rymcu.mortise.auth.service.CustomUserDetailsService;
 import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.system.entity.User;
@@ -14,7 +15,6 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -25,17 +25,26 @@ import java.util.stream.Collectors;
 import static com.rymcu.mortise.system.entity.table.UserTableDef.USER;
 
 /**
- * Spring Security 用户详情服务实现
+ * Spring Security 系统用户详情服务实现
  * <p>
- * 负责从数据库加载用户信息并转换为 Spring Security 所需的 UserDetails 对象
- * 
+ * 负责从数据库加载系统用户信息并转换为 Spring Security 所需的 UserDetails 对象
+ * </p>
+ * <p>
+ * 支持多用户表登录场景，通过 supports 方法指定只处理系统用户（"system"）类型
+ * </p>
+ *
  * @author ronger
  * @email ronger-x@outlook.com
  * @since 2025/2/24
  */
 @Slf4j
 @Service
-public class UserDetailsServiceImpl implements UserDetailsService {
+public class UserDetailsServiceImpl implements CustomUserDetailsService {
+
+    /**
+     * 用户类型标识：系统用户
+     */
+    private static final String USER_TYPE = "system";
 
     @Resource
     private UserMapper userMapper;
@@ -47,7 +56,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
      * 根据用户名加载用户信息
      * <p>
      * 支持通过账号、邮箱或手机号登录
-     * 
+     *
      * @param username 用户名（可以是账号、邮箱或手机号）
      * @return UserDetails 对象
      * @throws UsernameNotFoundException 用户不存在时抛出
@@ -100,10 +109,26 @@ public class UserDetailsServiceImpl implements UserDetailsService {
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toSet());
 
-        log.debug("用户认证信息构建完成: userId={}, account={}, authorityCount={}", 
+        log.debug("用户认证信息构建完成: userId={}, account={}, authorityCount={}",
                   user.getId(), user.getAccount(), authorities.size());
 
         // 7. 构建并返回 UserDetailInfo 对象
         return new UserDetailInfo(user, authorities);
+    }
+
+    /**
+     * 判断是否支持指定的用户类型
+     * <p>
+     * 该实现仅支持系统用户（"system"）类型
+     * </p>
+     *
+     * @param userType 用户类型标识
+     * @return true 表示支持系统用户，false 表示不支持
+     */
+    @Override
+    public Boolean supports(String userType) {
+        boolean supported = USER_TYPE.equals(userType);
+        log.debug("用户类型检查: type={}, supported={}", userType, supported);
+        return supported;
     }
 }

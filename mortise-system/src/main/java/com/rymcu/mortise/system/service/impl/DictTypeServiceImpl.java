@@ -111,10 +111,9 @@ public class DictTypeServiceImpl extends ServiceImpl<DictTypeMapper, DictType> i
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean createDictType(DictType dictType) {
-        String newTypeCode = dictType.getTypeCode();
-
-        return mapper.insertSelective(dictType) > 0;
+    public Long createDictType(DictType dictType) {
+        mapper.insertSelective(dictType);
+        return dictType.getId();
     }
 
     @Override

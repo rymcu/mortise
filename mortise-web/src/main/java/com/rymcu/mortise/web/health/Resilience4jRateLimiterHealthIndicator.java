@@ -9,7 +9,6 @@ import org.springframework.boot.actuate.health.HealthIndicator;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.stereotype.Component;
 
-import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -54,20 +53,20 @@ public class Resilience4jRateLimiterHealthIndicator implements HealthIndicator {
             for (RateLimiter rateLimiter : rateLimiterRegistry.getAllRateLimiters()) {
                 totalLimiters++;
                 String limiterName = rateLimiter.getName();
-                
+
                 // 获取 RateLimiter 的指标
                 RateLimiter.Metrics metrics = rateLimiter.getMetrics();
                 Map<String, Object> limiterDetails = new HashMap<>();
-                
+
                 // 基本配置信息
                 limiterDetails.put("limitForPeriod", metrics.getNumberOfWaitingThreads() >= 0 ? "配置正常" : "配置异常");
                 limiterDetails.put("limitRefreshPeriod", rateLimiter.getRateLimiterConfig().getLimitRefreshPeriod().toString());
                 limiterDetails.put("timeoutDuration", rateLimiter.getRateLimiterConfig().getTimeoutDuration().toString());
-                
+
                 // 运行时指标
                 limiterDetails.put("availablePermissions", metrics.getAvailablePermissions());
                 limiterDetails.put("waitingThreads", metrics.getNumberOfWaitingThreads());
-                
+
                 // 判断状态
                 boolean isHealthy = true;
                 if (metrics.getNumberOfWaitingThreads() > 0) {
@@ -80,7 +79,7 @@ public class Resilience4jRateLimiterHealthIndicator implements HealthIndicator {
                 } else {
                     limiterDetails.put("status", "HEALTHY - 运行正常");
                 }
-                
+
                 details.put("rateLimiter." + limiterName, limiterDetails);
             }
 

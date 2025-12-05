@@ -1,4 +1,4 @@
-package com.rymcu.mortise.auth.controller;
+package com.rymcu.mortise.system.controller.oauth2;
 
 import com.rymcu.mortise.auth.enumerate.QrcodeState;
 import com.rymcu.mortise.auth.service.AuthCacheService;

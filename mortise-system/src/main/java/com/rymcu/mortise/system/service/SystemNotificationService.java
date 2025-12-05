@@ -1,7 +1,5 @@
 package com.rymcu.mortise.system.service;
 
-import com.rymcu.mortise.notification.enums.NotificationType;
-
 import java.util.Map;
 
 /**

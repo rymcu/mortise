@@ -109,15 +109,31 @@ public class AuthController {
     /**
      * 用户登出
      */
-    @Operation(summary = "用户登出", description = "退出登录")
+    @Operation(summary = "用户登出", description = "退出登录，注销 Token 并加入黑名单")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "登出成功")
     })
     @PostMapping("/logout")
-    public GlobalResult<?> logout(@AuthenticationPrincipal UserDetailInfo userDetails) {
+    public GlobalResult<?> logout(
+            @AuthenticationPrincipal UserDetailInfo userDetails,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
         User user = userDetails.getUser();
         if (Objects.nonNull(user)) {
-            tokenManager.deleteToken(user.getAccount());
+            // 从 Authorization 头中提取 Token
+            String token = null;
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                token = authHeader.substring(7);
+            }
+            
+            if (token != null) {
+                // 使用带黑名单的注销方法
+                tokenManager.revokeToken(user.getAccount(), token);
+                log.info("用户登出成功（Token 已加入黑名单）: {}", user.getAccount());
+            } else {
+                // 回退到简单删除
+                tokenManager.deleteToken(user.getAccount());
+                log.info("用户登出成功: {}", user.getAccount());
+            }
         }
         return GlobalResult.success();
     }
@@ -196,7 +212,7 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "认证失败"),
             @ApiResponse(responseCode = "400", description = "参数错误")
     })
-    @RateLimit(limitForPeriod = 5, refreshPeriodSeconds = 300, message = "兑换 Token 请求过于频繁，请 5 分钟后再试")
+    @RateLimit(limitForPeriod = 5, refreshPeriodSeconds = 300, message = "兑换 Token 请求过于频繁,请 5 分钟后再试")
     @GetMapping("/callback")
     public GlobalResult<TokenUser> oauth2Login(
             @Parameter(description = "兑换 Token 请求", required = true)

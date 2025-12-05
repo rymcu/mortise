@@ -41,7 +41,7 @@ public class DictSerializer extends JsonSerializer<Object> {
                     jsonGenerator.writeObject(value);
                     String fieldName = jsonGenerator.getOutputContext().getCurrentName();
                     String textFieldName = fieldName + suffix;
-                    jsonGenerator.writeObjectField(textFieldName, dictInfo.getLabel());
+                    jsonGenerator.writeObjectField(textFieldName, dictInfo);
                 }
             } else {
                 jsonGenerator.writeObject(value);

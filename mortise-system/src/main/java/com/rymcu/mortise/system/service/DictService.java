@@ -34,7 +34,7 @@ public interface DictService extends IService<Dict> {
 
     Boolean batchDeleteDictionaries(List<Long> idDictList);
 
-    Boolean createDict(@Valid Dict dict);
+    Long createDict(@Valid Dict dict);
 
     Boolean updateDict(@Valid Dict dict);
 }

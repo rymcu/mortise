@@ -43,6 +43,28 @@ public interface TokenManager {
     void deleteToken(String account);
 
     /**
+     * 注销 Token 并加入黑名单
+     * <p>
+     * 该方法会：
+     * <ol>
+     *   <li>从缓存中删除 Token</li>
+     *   <li>将 Token 的 jti 加入黑名单，防止被注销的 Token 继续使用</li>
+     * </ol>
+     *
+     * @param account 用户账号
+     * @param token   要注销的 Token
+     */
+    void revokeToken(String account, String token);
+
+    /**
+     * 检查 Token 是否已被注销（在黑名单中）
+     *
+     * @param token JWT Token
+     * @return true: 已被注销，false: 未被注销
+     */
+    boolean isTokenRevoked(String token);
+
+    /**
      * 刷新 Access Token
      * 使用 JWT 自带的刷新机制，验证旧 Token 并生成新 Token
      *

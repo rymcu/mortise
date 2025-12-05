@@ -63,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
     private TokenManager tokenManager;
     @Resource
     private SystemCacheService systemCacheService;
-    @Resource
+    @Resource  // 使用统一的认证管理器（支持多用户表登录）
     private AuthenticationManager authenticationManager;
     @Resource
     private PasswordEncoder passwordEncoder;
@@ -107,8 +107,15 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public TokenUser login(@NotBlank String account, @NotBlank String password) {
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(account, password));
+        // 创建认证令牌并设置用户类型为 "system"
+        UsernamePasswordAuthenticationToken authenticationToken = 
+                new UsernamePasswordAuthenticationToken(account, password);
+        authenticationToken.setDetails("system");
+        
+        // 执行认证
+        Authentication authentication = authenticationManager.authenticate(authenticationToken);
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        
         // 认证成功，可以获取用户信息
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         User user = userService.findByAccount(userDetails.getUsername());

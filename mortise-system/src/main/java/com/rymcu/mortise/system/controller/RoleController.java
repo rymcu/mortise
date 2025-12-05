@@ -67,7 +67,7 @@ public class RoleController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PostMapping
-    public GlobalResult<Boolean> createRole(@Parameter(description = "角色信息", required = true) @Valid @RequestBody Role role) {
+    public GlobalResult<Long> createRole(@Parameter(description = "角色信息", required = true) @Valid @RequestBody Role role) {
         return GlobalResult.success(roleService.createRole(role));
     }
 

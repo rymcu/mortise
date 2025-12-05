@@ -44,7 +44,7 @@ public interface RoleService extends IService<Role> {
 
     List<User> findUsersByIdRole(Long idRole);
 
-    Boolean createRole(@Valid Role role);
+    Long createRole(@Valid Role role);
 
     Boolean updateRole(@Valid Role role);
 }

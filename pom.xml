@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
          https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>3.5.6</version>
+        <version>3.5.7</version>
         <relativePath/>
     </parent>
 
@@ -31,16 +31,18 @@
         <module>mortise-system</module>
         <module>mortise-monitor</module>
         <module>mortise-app</module>
+        <module>mortise-persistence</module>
+        <module>mortise-file</module>
     </modules>
 
     <properties>
         <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        
+
         <!-- 模块版本 -->
         <mortise.version>0.0.1</mortise.version>
-        
+
         <!-- 第三方依赖版本 -->
         <shiro.version>2.0.2</shiro.version>
         <jjwt.version>0.12.5</jjwt.version>
@@ -109,6 +111,16 @@
             <dependency>
                 <groupId>com.rymcu</groupId>
                 <artifactId>mortise-wechat</artifactId>
+                <version>${mortise.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-persistence</artifactId>
+                <version>${mortise.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-file</artifactId>
                 <version>${mortise.version}</version>
             </dependency>
 
@@ -228,32 +240,14 @@
 
     <repositories>
         <repository>
-            <id>public</id>
-            <name>huawei cloud maven</name>
-            <url>https://mirrors.huaweicloud.com/repository/maven/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
+            <id>central</id>
+            <url>https://repo.maven.apache.org/maven2</url>
         </repository>
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
     </repositories>
-
-    <pluginRepositories>
-        <pluginRepository>
-            <id>public</id>
-            <name>huawei cloud</name>
-            <url>https://repo.huaweicloud.com/repository/maven/</url>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </pluginRepository>
-    </pluginRepositories>
 
     <profiles>
         <profile>

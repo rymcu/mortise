@@ -5,6 +5,7 @@ import com.rymcu.mortise.common.exception.ServiceException;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.core.result.ResultCode;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
@@ -34,7 +35,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public GlobalResult<Void> handleBusinessException(BusinessException e) {
         log.warn("业务异常: {}", e.getMessage());
-        return GlobalResult.error(ResultCode.FAIL, e.getMessage());
+        return GlobalResult.error(ResultCode.BAD_REQUEST, e.getMessage());
     }
 
     /**
@@ -78,7 +79,7 @@ public class GlobalExceptionHandler {
                 .stream()
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining("; "));
-        
+
         log.warn("参数校验失败: {}", errors);
         return GlobalResult.error(ResultCode.INVALID_PARAM, errors);
     }
@@ -93,7 +94,7 @@ public class GlobalExceptionHandler {
                 .stream()
                 .map(FieldError::getDefaultMessage)
                 .collect(Collectors.joining("; "));
-        
+
         log.warn("参数绑定失败: {}", errors);
         return GlobalResult.error(ResultCode.INVALID_PARAM, errors);
     }
@@ -106,6 +107,34 @@ public class GlobalExceptionHandler {
     public GlobalResult<Void> handleIllegalArgumentException(IllegalArgumentException e) {
         log.warn("非法参数: {}", e.getMessage());
         return GlobalResult.error(ResultCode.INVALID_PARAM, e.getMessage());
+    }
+
+    /**
+     * 处理数据库唯一约束异常
+     * <p>
+     * 当数据库的唯一索引或主键冲突时，Spring会抛出此异常。
+     */
+    @ExceptionHandler(DuplicateKeyException.class)
+    @ResponseStatus(HttpStatus.CONFLICT) // 409 Conflict: 请求冲突，通常由于资源已存在。
+    public GlobalResult<Void> handleDuplicateKeyException(DuplicateKeyException e) {
+        log.error("数据重复，违反唯一约束: {}", e.getMessage(), e);
+
+        // 基础友好的错误提示
+        String userMessage = "记录已存在，请勿重复提交。";
+
+        // 【进阶】尝试从异常信息中提取更具体的提示
+        //  注意：这种方式依赖于特定数据库的错误消息格式，可能不够健壮，但能提供更好的用户体验。
+        //  PostgreSQL的错误信息: "violates unique constraint "..."
+        //  详细：Key (module_id, sort_no)=(...) already exists.
+        String rootCauseMessage = e.getRootCause() != null ? e.getRootCause().getMessage() : e.getMessage();
+        if (rootCauseMessage != null) {
+            if (rootCauseMessage.contains("sort_no")) {
+                userMessage = "该模块下已存在相同的排序号，请使用其他排序号。";
+            }
+        }
+
+        // 建议在 ResultCode 中定义一个专门用于数据冲突的枚举
+        return GlobalResult.error(ResultCode.DATA_CONFLICT, userMessage);
     }
 
     /**

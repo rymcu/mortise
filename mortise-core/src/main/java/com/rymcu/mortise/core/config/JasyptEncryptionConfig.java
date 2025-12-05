@@ -1,7 +1,7 @@
 package com.rymcu.mortise.core.config;
 
 import com.rymcu.mortise.common.constant.ProjectConstant;
-import com.rymcu.mortise.common.util.JasyptUtils;
+import com.rymcu.mortise.core.util.JasyptUtils;
 import org.jasypt.encryption.StringEncryptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

@@ -60,14 +60,14 @@ public class GlobalResult<T> {
      * 失败，使用默认的 FAIL 状态码和消息
      */
     public static <T> GlobalResult<T> error() {
-        return new GlobalResult<>(ResultCode.FAIL, null);
+        return new GlobalResult<>(ResultCode.BAD_REQUEST, null);
     }
 
     /**
      * 失败，只返回自定义消息
      */
     public static <T> GlobalResult<T> error(String message) {
-        return new GlobalResult<>(ResultCode.FAIL.getCode(), message, null);
+        return new GlobalResult<>(ResultCode.BAD_REQUEST.getCode(), message, null);
     }
 
     /**

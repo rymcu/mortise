@@ -11,7 +11,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
-import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -37,7 +36,7 @@ public class OperationLogAspect {
     @Around("@annotation(operationLog)")
     public Object around(ProceedingJoinPoint joinPoint, OperationLog operationLog) throws Throwable {
         long startTime = System.currentTimeMillis();
-        
+
         // 构建日志实体
         OperationLogEntity logEntity = OperationLogEntity.builder()
                 .id(UlidCreator.getUlid().toString())
@@ -77,7 +76,7 @@ public class OperationLogAspect {
         try {
             // 执行目标方法
             result = joinPoint.proceed();
-            
+
             // 记录返回结果
             if (operationLog.recordResult() && result != null) {
                 try {

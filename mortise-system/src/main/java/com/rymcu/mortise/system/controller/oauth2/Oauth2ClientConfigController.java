@@ -1,4 +1,4 @@
-package com.rymcu.mortise.auth.controller;
+package com.rymcu.mortise.system.controller.oauth2;
 
 import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.auth.entity.Oauth2ClientConfig;
@@ -60,7 +60,7 @@ public class Oauth2ClientConfigController {
 			@ApiResponse(responseCode = "403", description = "权限不足")
 	})
 	@PostMapping
-	public GlobalResult<Boolean> createOauth2ClientConfig(@Parameter(description = "客户端配置", required = true) @RequestBody Oauth2ClientConfig config) {
+	public GlobalResult<Long> createOauth2ClientConfig(@Parameter(description = "客户端配置", required = true) @RequestBody Oauth2ClientConfig config) {
 		return GlobalResult.success(oauth2ClientConfigService.createOauth2ClientConfig(config));
 	}
 

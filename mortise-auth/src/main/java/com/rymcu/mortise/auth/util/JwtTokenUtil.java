@@ -1,11 +1,6 @@
 package com.rymcu.mortise.auth.util;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.JwtParser;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.MalformedJwtException;
-import io.jsonwebtoken.UnsupportedJwtException;
+import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 import jakarta.annotation.PostConstruct;
@@ -20,6 +15,7 @@ import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.function.Function;
 
 /**
@@ -92,6 +88,23 @@ public class JwtTokenUtil {
     }
 
     /**
+     * 从 Token 中获取 JWT ID (jti)
+     * <p>
+     * jti 是每个 Token 的唯一标识符，用于：
+     * <ul>
+     *   <li>Token 黑名单管理（注销 Token）</li>
+     *   <li>防止 Token 重放攻击</li>
+     *   <li>日志追踪和审计</li>
+     * </ul>
+     *
+     * @param token JWT Token
+     * @return Token 的唯一标识符 (jti)
+     */
+    public String getJtiFromToken(String token) {
+        return getClaimFromToken(token, Claims::getId);
+    }
+
+    /**
      * 从 Token 中获取指定的声明 (Claim)
      *
      * @param token          JWT Token
@@ -161,12 +174,26 @@ public class JwtTokenUtil {
 
     /**
      * 执行 Token 生成
-     * 使用缓存的 SecretKey 提高性能
+     * <p>
+     * 使用缓存的 SecretKey 提高性能。
+     * 每个 Token 都会生成唯一的 jti (JWT ID)，用于：
+     * <ul>
+     *   <li>Token 黑名单管理（注销 Token）</li>
+     *   <li>防止 Token 重放攻击</li>
+     *   <li>日志追踪和审计</li>
+     * </ul>
+     *
+     * @param claims  自定义声明
+     * @param subject 用户标识（通常是用户名或用户ID）
+     * @return 生成的 JWT Token
      */
     private String doGenerateToken(Map<String, Object> claims, String subject) {
         Instant now = Instant.now();
+        String jti = UUID.randomUUID().toString(); // 生成唯一的 Token ID
+        
         return Jwts.builder()
                 .claims(claims)
+                .id(jti) // 添加 jti，用于 Token 黑名单和追踪
                 .subject(subject)
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plusMillis(expiration)))

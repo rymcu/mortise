@@ -80,8 +80,9 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean createMenu(Menu menu) {
-        return mapper.insertSelective(menu) > 0;
+    public Long createMenu(Menu menu) {
+        mapper.insertSelective(menu);
+        return menu.getId();
     }
 
     @Override

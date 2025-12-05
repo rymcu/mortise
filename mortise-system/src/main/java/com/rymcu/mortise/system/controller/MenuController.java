@@ -66,7 +66,7 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PostMapping
-    public GlobalResult<Boolean> createMenu(@Parameter(description = "菜单信息", required = true) @Valid @RequestBody Menu menu) {
+    public GlobalResult<Long> createMenu(@Parameter(description = "菜单信息", required = true) @Valid @RequestBody Menu menu) {
         return GlobalResult.success(menuService.createMenu(menu));
     }
 

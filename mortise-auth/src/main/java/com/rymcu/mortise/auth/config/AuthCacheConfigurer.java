@@ -106,6 +106,13 @@ public class AuthCacheConfigurer implements CacheConfigurer {
         configs.put(AuthCacheConstant.VERIFICATION_CODE_CACHE,
                 defaultConfig.entryTtl(Duration.ofMinutes(AuthCacheConstant.VERIFICATION_CODE_EXPIRE_MINUTES)));
 
+        // === 短信验证码缓存 ===
+        configs.put(AuthCacheConstant.SMS_CODE_CACHE,
+                defaultConfig.entryTtl(Duration.ofMinutes(AuthCacheConstant.SMS_CODE_EXPIRE_MINUTES)));
+
+        configs.put(AuthCacheConstant.SMS_CODE_SEND_LIMIT_CACHE,
+                defaultConfig.entryTtl(Duration.ofSeconds(AuthCacheConstant.SMS_CODE_SEND_LIMIT_SECONDS)));
+
         // === 密码重置缓存 ===
         configs.put(AuthCacheConstant.PASSWORD_RESET_CACHE,
                 defaultConfig.entryTtl(Duration.ofMinutes(AuthCacheConstant.PASSWORD_RESET_EXPIRE_MINUTES)));

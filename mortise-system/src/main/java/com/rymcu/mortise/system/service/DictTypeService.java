@@ -25,7 +25,7 @@ public interface DictTypeService {
 
     Boolean batchDeleteDictTypes(List<Long> idDictTypes);
 
-    Boolean createDictType(@Valid DictType dictType);
+    Long createDictType(@Valid DictType dictType);
 
     Boolean updateDictType(@Valid DictType dictType);
 }

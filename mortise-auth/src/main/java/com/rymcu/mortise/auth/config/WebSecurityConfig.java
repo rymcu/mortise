@@ -1,24 +1,29 @@
 package com.rymcu.mortise.auth.config;
 
 import com.rymcu.mortise.auth.filter.JwtAuthenticationFilter;
+import com.rymcu.mortise.auth.filter.VerificationCodeAuthenticationFilter;
 import com.rymcu.mortise.auth.handler.*;
+import com.rymcu.mortise.auth.provider.MultiUserAuthenticationProvider;
+import com.rymcu.mortise.auth.provider.VerificationCodeAuthenticationProvider;
 import com.rymcu.mortise.auth.repository.CacheAuthorizationRequestRepository;
 import com.rymcu.mortise.auth.repository.DynamicClientRegistrationRepository;
+import com.rymcu.mortise.auth.service.CustomUserDetailsService;
+import com.rymcu.mortise.auth.service.SmsCodeService;
 import com.rymcu.mortise.auth.spi.SecurityConfigurer;
 import com.rymcu.mortise.auth.support.UnifiedOAuth2AccessTokenResponseClient;
 import com.rymcu.mortise.auth.support.UnifiedOAuth2AuthorizationRequestResolver;
 import com.rymcu.mortise.auth.support.UnifiedOAuth2UserService;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -34,8 +39,11 @@ import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequest
 import org.springframework.security.oauth2.jose.jws.SignatureAlgorithm;
 import org.springframework.security.oauth2.jwt.JwtDecoderFactory;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.AuthenticationFailureHandler;
+import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -44,6 +52,10 @@ import java.util.List;
  * <p>
  * 核心安全配置，支持通过 SecurityConfigurer SPI 扩展
  * 支持动态 OAuth2 客户端配置，无需重启应用即可添加/修改/删除客户端
+ * </p>
+ * <p>
+ * 支持多用户表登录场景，自动发现所有 CustomUserDetailsService 实现
+ * </p>
  *
  * @author ronger
  */
@@ -59,6 +71,10 @@ public class WebSecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final RewriteAccessDeniedHandler rewriteAccessDeniedHandler;
+
+    // --- 认证成功/失败处理器（密码登录和验证码登录共用） ---
+    private final ObjectProvider<AuthenticationSuccessHandler> authenticationSuccessHandlerProvider;
+    private final ObjectProvider<AuthenticationFailureHandler> authenticationFailureHandlerProvider;
 
     // --- OAuth2 相关依赖（全部可选） ---
     // 使用 ObjectProvider 使得 OAuth2 成为可选功能，当这些 Bean 不存在时应用仍可正常启动
@@ -77,6 +93,26 @@ public class WebSecurityConfig {
     // --- SPI 扩展 ---
     private final List<SecurityConfigurer> securityConfigurers; // Spring 会自动注入一个空列表，如果没有任何实现
 
+    // --- 多用户表登录支持 ---
+    /**
+     * 自动发现所有 CustomUserDetailsService 实现
+     * <p>
+     * Spring 会自动注入所有实现了 CustomUserDetailsService 接口的 Bean
+     * 例如：UserDetailsServiceImpl (系统用户), MemberDetailsServiceImpl (会员用户)
+     * </p>
+     */
+    private final List<CustomUserDetailsService> customUserDetailsServices;
+
+    /**
+     * 手机验证码
+     */
+    private final SmsCodeService smsCodeService;
+
+    /**
+     * 短信验证码登录配置
+     */
+    private final SmsAuthProperties smsAuthProperties;
+
     /**
      * 密码编码器
      */
@@ -86,15 +122,42 @@ public class WebSecurityConfig {
     }
 
     /**
-     * 认证管理器
+     * 认证管理器（支持多用户表登录）
+     * <p>
+     * 自动发现所有 CustomUserDetailsService 实现，并使用 MultiUserAuthenticationProvider 进行认证
+     * </p>
+     * <p>
+     * 这个实现不会与 Spring Security 默认的 AuthenticationConfiguration 冲突，
+     * 因为我们使用 @Primary 注解标记，且返回的是自定义的 ProviderManager 实例
+     * </p>
      *
-     * @param configuration 认证配置
+     * @param passwordEncoder 密码编码器
      * @return AuthenticationManager
-     * @throws Exception 异常
      */
+    @Primary
     @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-        return configuration.getAuthenticationManager();
+    public AuthenticationManager authenticationManager(PasswordEncoder passwordEncoder) {
+        if (customUserDetailsServices == null || customUserDetailsServices.isEmpty()) {
+            log.warn("未发现任何 CustomUserDetailsService 实现，认证功能可能无法正常工作");
+            return new ProviderManager(List.of());
+        }
+
+        log.info("发现 {} 个 CustomUserDetailsService 实现:", customUserDetailsServices.size());
+        customUserDetailsServices.forEach(service ->
+            log.info("  - {}", service.getClass().getSimpleName())
+        );
+
+        // 使用 MultiUserAuthenticationProvider 支持多用户表登录
+        MultiUserAuthenticationProvider provider = new MultiUserAuthenticationProvider(
+                customUserDetailsServices,
+                passwordEncoder
+        );
+
+        // 新增验证码认证 Provider
+        VerificationCodeAuthenticationProvider smsProvider =
+                new VerificationCodeAuthenticationProvider(smsCodeService, customUserDetailsServices);
+
+        return new ProviderManager(Arrays.asList(provider, smsProvider));
     }
 
     /**
@@ -122,8 +185,16 @@ public class WebSecurityConfig {
      */
     @Bean
     @Order(100)
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        log.info("配置安全过滤器链（支持动态 OAuth2 客户端）...");
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, AuthenticationManager authenticationManager) throws Exception {
+        log.info("配置安全过滤器链（支持动态 OAuth2 客户端和短信验证码登录）...");
+
+        // 创建验证码登录过滤器（使用配置属性）
+        VerificationCodeAuthenticationFilter verificationCodeAuthenticationFilter = 
+                new VerificationCodeAuthenticationFilter(authenticationManager, smsAuthProperties);
+
+        // 设置成功和失败处理器（与密码登录共用，可选）
+        authenticationSuccessHandlerProvider.ifAvailable(verificationCodeAuthenticationFilter::setAuthenticationSuccessHandler);
+        authenticationFailureHandlerProvider.ifAvailable(verificationCodeAuthenticationFilter::setAuthenticationFailureHandler);
 
         // 基础配置 (总是应用)
         http.csrf(AbstractHttpConfigurer::disable)
@@ -131,7 +202,9 @@ public class WebSecurityConfig {
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
                         .accessDeniedHandler(rewriteAccessDeniedHandler))
-                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+                // 添加验证码登录过滤器
+                .addFilterAfter(verificationCodeAuthenticationFilter, JwtAuthenticationFilter.class);
 
         // 授权规则配置
         http.authorizeHttpRequests(authorize -> {

@@ -32,7 +32,7 @@ public interface MenuService extends IService<Menu> {
 
     Boolean batchDeleteMenus(List<Long> idMenuList);
 
-    Boolean createMenu(@Valid Menu menu);
+    Long createMenu(@Valid Menu menu);
 
     Boolean updateMenu(@Valid Menu menu);
 }
