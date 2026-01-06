@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.rymcu</groupId>
         <artifactId>mortise</artifactId>
-        <version>0.0.1</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>mortise-log</artifactId>
@@ -21,6 +21,19 @@
         <dependency>
             <groupId>com.rymcu</groupId>
             <artifactId>mortise-common</artifactId>
+        </dependency>
+
+        <!-- Mortise Core (for CurrentUser interface) -->
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-core</artifactId>
+        </dependency>
+
+        <!-- Spring Security Core -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-core</artifactId>
+            <scope>provided</scope>
         </dependency>
 
         <!-- Spring AOP -->

@@ -1,14 +1,20 @@
-package com.rymcu.mortise.log.entity;
+package com.rymcu.mortise.persistence.log.entity;
 
+import com.mybatisflex.annotation.Column;
+import com.mybatisflex.annotation.Id;
+import com.mybatisflex.annotation.KeyType;
+import com.mybatisflex.annotation.Table;
+import com.mybatisflex.core.keygen.KeyGenerators;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 /**
- * 操作日志实体
+ * 操作日志数据库实体
  *
  * @author ronger
  */
@@ -16,11 +22,13 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OperationLogEntity {
+@Table(value = "mortise_operation_log", schema = "mortise")
+public class OperationLog implements Serializable {
 
     /**
      * 日志ID
      */
+    @Id(keyType = KeyType.Generator, value = KeyGenerators.flexId)
     private Long id;
 
     /**
@@ -29,7 +37,7 @@ public class OperationLogEntity {
     private String traceId;
 
     /**
-     * 客户端类型: system-后台管理, app-App端, web-Web端, api-开放API
+     * 客户端类型
      */
     private String clientType;
 
@@ -59,7 +67,7 @@ public class OperationLogEntity {
     private LocalDateTime operateTime;
 
     /**
-     * 请求方法
+     * 请求方法签名
      */
     private String method;
 
@@ -74,12 +82,12 @@ public class OperationLogEntity {
     private String requestMethod;
 
     /**
-     * 请求参数
+     * 请求参数 (JSON)
      */
     private String params;
 
     /**
-     * 返回结果
+     * 返回结果 (JSON)
      */
     private String result;
 
@@ -107,4 +115,10 @@ public class OperationLogEntity {
      * 错误信息
      */
     private String errorMsg;
+
+    /**
+     * 创建时间
+     */
+    @Column(onInsertValue = "CURRENT_TIMESTAMP")
+    private LocalDateTime createdTime;
 }

@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.common.model.BatchUpdateInfo;
 import com.rymcu.mortise.core.result.GlobalResult;
+import com.rymcu.mortise.log.annotation.ApiLog;
+import com.rymcu.mortise.log.annotation.OperationLog;
 import com.rymcu.mortise.system.entity.Role;
 import com.rymcu.mortise.system.model.BindUserRoleInfo;
 import com.rymcu.mortise.system.model.UserInfo;
@@ -45,6 +47,7 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping
+    @ApiLog(recordParams = false, recordResponseBody = false, value = "查询用户列表")
     public GlobalResult<Page<UserInfo>> listUser(@Parameter(description = "用户查询条件") @Valid UserSearch search) {
         Page<UserInfo> page = new Page<>(search.getPageNum(), search.getPageSize());
         page = userService.findUsers(page, search);
@@ -58,6 +61,7 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping("/{id}")
+    @ApiLog(recordParams = true, recordResponseBody = false, value = "获取用户详情")
     public GlobalResult<UserInfo> getUserById(@Parameter(description = "用户ID", required = true) @PathVariable("id") Long idUser) {
         return GlobalResult.success(userService.findUserInfoById(idUser));
     }
@@ -69,6 +73,8 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PostMapping
+    @ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "创建用户")
+    @OperationLog(module = "用户管理", operation = "创建用户", recordParams = false, recordResult = true)
     public GlobalResult<Long> createUser(@Parameter(description = "用户信息", required = true) @Valid @RequestBody UserInfo userInfo) {
         return GlobalResult.success(userService.createUser(userInfo));
     }
@@ -81,6 +87,8 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PutMapping("/{id}")
+    @ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "更新用户")
+    @OperationLog(module = "用户管理", operation = "更新用户", recordParams = false)
     public GlobalResult<Boolean> updateUser(@Parameter(description = "用户ID", required = true) @PathVariable("id") Long idUser,
                                            @Parameter(description = "用户信息", required = true) @Valid @RequestBody UserInfo userInfo) {
         userInfo.setId(idUser);
@@ -94,6 +102,8 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PatchMapping("/{id}/status")
+    @ApiLog(recordParams = true, recordRequestBody = false, recordResponseBody = false, value = "更新用户状态")
+    @OperationLog(module = "用户管理", operation = "更新用户状态", recordParams = true)
     public GlobalResult<Boolean> updateUserStatus(@Parameter(description = "用户ID", required = true) @PathVariable("id") Long idUser,
                                                   @Parameter(description = "用户状态信息", required = true) @Valid @RequestBody UserInfo userInfo) {
         return GlobalResult.success(userService.updateStatus(idUser, userInfo.getStatus()));
@@ -106,6 +116,8 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PostMapping("/{id}/reset-password")
+    @ApiLog(value = "重置用户密码", recordParams = true, recordRequestBody = false, recordResponseBody = false)
+    @OperationLog(module = "用户管理", operation = "重置用户密码", recordParams = true, recordResult = false)
     public GlobalResult<ObjectNode> resetUserPassword(@Parameter(description = "用户ID", required = true) @PathVariable("id") Long idUser) {
         String password = userService.resetPassword(idUser);
         ObjectMapper objectMapper = new ObjectMapper();
@@ -121,6 +133,8 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PostMapping("/{id}/roles")
+    @ApiLog(recordRequestBody = false, recordResponseBody = false, value = "绑定用户角色")
+    @OperationLog(module = "用户管理", operation = "绑定用户角色", recordParams = true)
     public GlobalResult<Boolean> bindUserRoles(@Parameter(description = "用户ID", required = true) @PathVariable("id") Long idUser,
                                               @Parameter(description = "用户用户绑定信息", required = true) @Valid @RequestBody BindUserRoleInfo bindUserRoleInfo) {
         bindUserRoleInfo.setIdUser(idUser);
@@ -134,6 +148,8 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @DeleteMapping("/{id}")
+    @ApiLog(recordParams = true, recordResponseBody = false, value = "删除用户")
+    @OperationLog(module = "用户管理", operation = "删除用户", recordParams = true, recordResult = true)
     public GlobalResult<Boolean> deleteUser(@Parameter(description = "用户ID", required = true) @PathVariable("id") Long idUser) {
         return GlobalResult.success(userService.deleteUser(idUser));
     }
@@ -145,6 +161,8 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @DeleteMapping("/batch")
+    @ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "批量删除用户")
+    @OperationLog(module = "用户管理", operation = "批量删除用户", recordParams = false, recordResult = true)
     public GlobalResult<Boolean> batchDeleteUsers(@Parameter(description = "批量更新信息", required = true) @Valid @RequestBody BatchUpdateInfo batchUpdateInfo) {
         return GlobalResult.success(userService.batchDeleteUsers(batchUpdateInfo.getIds()));
     }
@@ -156,6 +174,7 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping("/{id}/roles")
+    @ApiLog(recordParams = true, recordResponseBody = false, value = "获取用户角色")
     public GlobalResult<List<Role>> getRoleUsers(@Parameter(description = "用户ID", required = true) @PathVariable("id") Long idUser) {
         return GlobalResult.success(userService.findRolesByIdUser(idUser));
     }
@@ -167,6 +186,8 @@ public class UserController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PutMapping("/{id}/roles")
+    @ApiLog(recordRequestBody = false, recordResponseBody = false, value = "更新用户角色")
+    @OperationLog(module = "用户管理", operation = "更新用户角色", recordParams = true)
     public GlobalResult<Boolean> bindRoleUsers(@Parameter(description = "用户ID", required = true) @PathVariable("id") Long idUser,
                                                @Parameter(description = "用户角色绑定信息", required = true) @Valid @RequestBody BindUserRoleInfo bindUserRoleInfo) {
         bindUserRoleInfo.setIdUser(idUser);

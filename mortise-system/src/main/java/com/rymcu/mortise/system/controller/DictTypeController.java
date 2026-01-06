@@ -3,6 +3,8 @@ package com.rymcu.mortise.system.controller;
 import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.common.model.BatchUpdateInfo;
 import com.rymcu.mortise.core.result.GlobalResult;
+import com.rymcu.mortise.log.annotation.ApiLog;
+import com.rymcu.mortise.log.annotation.OperationLog;
 import com.rymcu.mortise.system.entity.DictType;
 import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.model.DictTypeSearch;
@@ -42,6 +44,7 @@ public class DictTypeController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping
+        @ApiLog("查询字典类型列表")
     public GlobalResult<Page<DictType>> listDictType(@Parameter(description = "字典类型查询条件") @Valid DictTypeSearch search) {
         Page<DictType> page = new Page<>(search.getPageNum(), search.getPageSize());
         return GlobalResult.success(dictTypeService.findDictTypeList(page, search));
@@ -54,6 +57,7 @@ public class DictTypeController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping("/{id}")
+        @ApiLog("获取字典类型详情")
     public GlobalResult<DictType> getDictTypeById(@Parameter(description = "字典类型ID", required = true) @PathVariable("id") Long idDictType) {
         DictType dictType = dictTypeService.findById(idDictType);
         return GlobalResult.success(dictType);
@@ -66,6 +70,8 @@ public class DictTypeController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PostMapping
+        @ApiLog("创建字典类型")
+        @OperationLog(module = "字典类型管理", operation = "创建字典类型", recordParams = true, recordResult = true)
     public GlobalResult<Long> createDictType(@Parameter(description = "字典类型信息", required = true) @Valid @RequestBody DictType dictType,
                                                 @AuthenticationPrincipal UserDetailInfo userDetails) {
         User user = userDetails.getUser();
@@ -82,6 +88,8 @@ public class DictTypeController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PutMapping("/{id}")
+        @ApiLog("更新字典类型")
+        @OperationLog(module = "字典类型管理", operation = "更新字典类型", recordParams = true)
     public GlobalResult<Boolean> updateDictType(@Parameter(description = "字典类型ID", required = true) @PathVariable("id") Long idDictType,
                                                 @Parameter(description = "字典类型信息", required = true) @Valid @RequestBody DictType dictType,
                                                 @AuthenticationPrincipal UserDetailInfo userDetails) {
@@ -99,6 +107,8 @@ public class DictTypeController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PatchMapping("/{id}/status")
+        @ApiLog("更新字典类型状态")
+        @OperationLog(module = "字典类型管理", operation = "更新字典类型状态", recordParams = true)
     public GlobalResult<Boolean> updateDictTypeStatus(@Parameter(description = "字典类型ID", required = true) @PathVariable("id") Long idDictType,
                                                       @Parameter(description = "字典类型状态信息", required = true) @Valid @RequestBody DictType dictType) {
         return GlobalResult.success(dictTypeService.updateStatus(idDictType, dictType.getStatus()));
@@ -111,6 +121,8 @@ public class DictTypeController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @DeleteMapping("/{id}")
+        @ApiLog("删除字典类型")
+        @OperationLog(module = "字典类型管理", operation = "删除字典类型")
     public GlobalResult<Boolean> deleteDictType(@Parameter(description = "字典类型ID", required = true) @PathVariable("id") Long idDictType) {
         return GlobalResult.success(dictTypeService.deleteDictType(idDictType));
     }
@@ -122,6 +134,8 @@ public class DictTypeController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @DeleteMapping("/batch")
+        @ApiLog("批量删除字典类型")
+        @OperationLog(module = "字典类型管理", operation = "批量删除字典类型", recordParams = true)
     public GlobalResult<Boolean> batchDeleteDictTypes(@Parameter(description = "批量更新信息", required = true) @Valid @RequestBody BatchUpdateInfo batchUpdateInfo) {
         return GlobalResult.success(dictTypeService.batchDeleteDictTypes(batchUpdateInfo.getIds()));
     }

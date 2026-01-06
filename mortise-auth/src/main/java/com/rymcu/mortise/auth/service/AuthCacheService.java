@@ -95,6 +95,58 @@ public interface AuthCacheService {
 
     void removeOAuth2QrcodeState(String state);
 
+    // ==================== OAuth2 登录响应缓存操作 ====================
+
+    /**
+     * 存储 OAuth2 登录响应（用于 state 兑换 token）
+     *
+     * @param state         OAuth2 state 参数
+     * @param loginResponse OAuth2 登录响应对象
+     */
+    void storeOAuth2LoginResponse(String state, Object loginResponse);
+
+    /**
+     * 获取 OAuth2 登录响应
+     *
+     * @param state OAuth2 state 参数
+     * @param clazz 登录响应对象类型
+     * @param <T>   登录响应对象泛型
+     * @return OAuth2 登录响应对象，如果不存在返回null
+     */
+    <T> T getOAuth2LoginResponse(String state, Class<T> clazz);
+
+    /**
+     * 删除 OAuth2 登录响应
+     *
+     * @param state OAuth2 state 参数
+     */
+    void removeOAuth2LoginResponse(String state);
+
+    // ==================== 会员 Refresh Token 缓存操作 ====================
+
+    /**
+     * 存储会员刷新令牌
+     *
+     * @param refreshToken 刷新令牌
+     * @param memberId     会员ID
+     */
+    void storeMemberRefreshToken(String refreshToken, Long memberId);
+
+    /**
+     * 根据刷新令牌获取会员ID
+     *
+     * @param refreshToken 刷新令牌
+     * @return 会员ID，如果不存在返回null
+     */
+    Long getMemberIdByRefreshToken(String refreshToken);
+
+    /**
+     * 删除会员刷新令牌
+     *
+     * @param refreshToken 刷新令牌
+     */
+    void removeMemberRefreshToken(String refreshToken);
+
     // ==================== Token 黑名单操作 ====================
 
     /**

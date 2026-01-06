@@ -8,7 +8,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
 /**
- * 操作日志实体
+ * API 日志实体
  *
  * @author ronger
  */
@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OperationLogEntity {
+public class ApiLogEntity {
 
     /**
      * 日志ID
@@ -34,34 +34,34 @@ public class OperationLogEntity {
     private String clientType;
 
     /**
-     * 模块名称
+     * API 描述
      */
-    private String module;
+    private String apiDescription;
 
     /**
-     * 操作类型
+     * 类名
      */
-    private String operation;
+    private String className;
 
     /**
-     * 操作人ID
+     * 方法名
      */
-    private Long operatorId;
+    private String methodName;
 
     /**
-     * 操作人账号
+     * 用户ID
      */
-    private String operatorAccount;
+    private Long userId;
 
     /**
-     * 操作时间
+     * 用户名
      */
-    private LocalDateTime operateTime;
+    private String username;
 
     /**
-     * 请求方法
+     * 请求时间
      */
-    private String method;
+    private LocalDateTime requestTime;
 
     /**
      * 请求URI
@@ -74,19 +74,34 @@ public class OperationLogEntity {
     private String requestMethod;
 
     /**
-     * 请求参数
+     * 查询参数
      */
-    private String params;
+    private String queryString;
 
     /**
-     * 返回结果
+     * 请求头（JSON格式）
      */
-    private String result;
+    private String requestHeaders;
 
     /**
-     * IP 地址
+     * 请求体（JSON格式）
      */
-    private String ip;
+    private String requestBody;
+
+    /**
+     * 响应体（JSON格式）
+     */
+    private String responseBody;
+
+    /**
+     * HTTP 状态码
+     */
+    private Integer httpStatus;
+
+    /**
+     * 客户端IP
+     */
+    private String clientIp;
 
     /**
      * 用户代理

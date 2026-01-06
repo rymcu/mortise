@@ -35,12 +35,12 @@ public class FileSecurityConfigurer implements SecurityConfigurer {
         // 文件访问接口 - 无需认证
         registry.requestMatchers("/files/**").permitAll();
 
-        log.info("文件模块安全配置已加载: Auth 端点放行");
+        log.info("文件模块安全配置已加载: /files/** 端点放行");
     }
 
     @Override
     public boolean isEnabled() {
-        // 监控端点配置始终启用
+        // 文件端点配置始终启用
         return true;
     }
 }

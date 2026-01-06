@@ -6,6 +6,8 @@ import com.rymcu.mortise.auth.model.OAuth2ClientConfigSearch;
 import com.rymcu.mortise.auth.service.Oauth2ClientConfigService;
 import com.rymcu.mortise.common.model.BatchUpdateInfo;
 import com.rymcu.mortise.core.result.GlobalResult;
+import com.rymcu.mortise.log.annotation.ApiLog;
+import com.rymcu.mortise.log.annotation.OperationLog;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -37,6 +39,7 @@ public class Oauth2ClientConfigController {
 			@ApiResponse(responseCode = "403", description = "权限不足")
 	})
 	@GetMapping
+	@ApiLog(recordResponseBody = false, value = "获取OAuth2客户端配置列表")
 	public GlobalResult<Page<Oauth2ClientConfig>> list(@Parameter(description = "查询条件") OAuth2ClientConfigSearch search) {
 		Page<Oauth2ClientConfig> page = new Page<>(search.getPageNum(), search.getPageSize());
 		return GlobalResult.success(oauth2ClientConfigService.findOauth2ClientConfigs(page, search));
@@ -49,8 +52,9 @@ public class Oauth2ClientConfigController {
 			@ApiResponse(responseCode = "403", description = "权限不足")
 	})
 	@GetMapping("/{id}")
+	@ApiLog(recordResponseBody = false, value = "获取OAuth2客户端配置详情")
 	public GlobalResult<Oauth2ClientConfig> getById(@Parameter(description = "配置ID", required = true) @PathVariable Long id) {
-		return GlobalResult.success(oauth2ClientConfigService.getById(String.valueOf(id)));
+		return GlobalResult.success(oauth2ClientConfigService.getById(id));
 	}
 
 	@Operation(summary = "创建客户端配置", description = "新增 OAuth2 客户端配置")
@@ -60,6 +64,8 @@ public class Oauth2ClientConfigController {
 			@ApiResponse(responseCode = "403", description = "权限不足")
 	})
 	@PostMapping
+	@ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "创建OAuth2客户端配置")
+	@OperationLog(module = "OAuth2客户端配置", operation = "创建OAuth2客户端配置", recordParams = false, recordResult = false)
 	public GlobalResult<Long> createOauth2ClientConfig(@Parameter(description = "客户端配置", required = true) @RequestBody Oauth2ClientConfig config) {
 		return GlobalResult.success(oauth2ClientConfigService.createOauth2ClientConfig(config));
 	}
@@ -72,6 +78,8 @@ public class Oauth2ClientConfigController {
 			@ApiResponse(responseCode = "403", description = "权限不足")
 	})
 	@PutMapping("/{id}")
+	@ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "更新OAuth2客户端配置")
+	@OperationLog(module = "OAuth2客户端配置", operation = "更新OAuth2客户端配置", recordParams = false, recordResult = false)
 	public GlobalResult<Boolean> updateOauth2ClientConfig(@Parameter(description = "配置ID", required = true) @PathVariable Long id,
 									   @Parameter(description = "客户端配置", required = true) @RequestBody Oauth2ClientConfig config) {
         log.info("更新微信账号，id: {}", id);
@@ -86,6 +94,8 @@ public class Oauth2ClientConfigController {
 			@ApiResponse(responseCode = "403", description = "权限不足")
 	})
 	@DeleteMapping("/{id}")
+	@ApiLog(recordParams = true, recordRequestBody = false, recordResponseBody = false, value = "删除OAuth2客户端配置")
+	@OperationLog(module = "OAuth2客户端配置", operation = "删除OAuth2客户端配置", recordParams = true, recordResult = true)
 	public GlobalResult<Boolean> delete(@Parameter(description = "配置ID", required = true) @PathVariable Long id) {
 		return GlobalResult.success(oauth2ClientConfigService.deleteById(id));
 	}
@@ -97,6 +107,8 @@ public class Oauth2ClientConfigController {
 			@ApiResponse(responseCode = "403", description = "权限不足")
 	})
 	@DeleteMapping("/batch")
+	@ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "批量删除OAuth2客户端配置")
+	@OperationLog(module = "OAuth2客户端配置", operation = "批量删除OAuth2客户端配置", recordParams = false, recordResult = true)
 	public GlobalResult<Boolean> batchDelete(@Parameter(description = "批量删除信息", required = true) @RequestBody BatchUpdateInfo batchUpdateInfo) {
 		return GlobalResult.success(oauth2ClientConfigService.batchDeleteOAuth2ClientConfig(batchUpdateInfo.getIds()));
 	}

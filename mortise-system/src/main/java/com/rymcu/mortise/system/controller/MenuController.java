@@ -3,6 +3,8 @@ package com.rymcu.mortise.system.controller;
 import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.common.model.BatchUpdateInfo;
 import com.rymcu.mortise.core.result.GlobalResult;
+import com.rymcu.mortise.log.annotation.ApiLog;
+import com.rymcu.mortise.log.annotation.OperationLog;
 import com.rymcu.mortise.system.entity.Menu;
 import com.rymcu.mortise.system.model.MenuSearch;
 import com.rymcu.mortise.system.model.MenuTreeInfo;
@@ -41,6 +43,7 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping
+    @ApiLog("查询菜单列表")
     public GlobalResult<Page<Menu>> listMenu(@Parameter(description = "菜单查询条件") @Valid MenuSearch search) {
         Page<Menu> page = new Page<>(search.getPageNum(), search.getPageSize());
         List<Menu> list = menuService.findMenus(page, search);
@@ -55,6 +58,7 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping("/{id}")
+    @ApiLog("获取菜单详情")
     public GlobalResult<Menu> getMenuById(@Parameter(description = "菜单ID", required = true) @PathVariable("id") Long idMenu) {
         return GlobalResult.success(menuService.getById(idMenu));
     }
@@ -66,6 +70,8 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PostMapping
+    @ApiLog("创建菜单")
+    @OperationLog(module = "菜单管理", operation = "创建菜单", recordParams = true, recordResult = true)
     public GlobalResult<Long> createMenu(@Parameter(description = "菜单信息", required = true) @Valid @RequestBody Menu menu) {
         return GlobalResult.success(menuService.createMenu(menu));
     }
@@ -78,6 +84,8 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PutMapping("/{id}")
+    @ApiLog("更新菜单")
+    @OperationLog(module = "菜单管理", operation = "更新菜单", recordParams = true)
     public GlobalResult<Boolean> updateMenu(@Parameter(description = "菜单ID", required = true) @PathVariable("id") Long idMenu,
                                            @Parameter(description = "菜单信息", required = true) @Valid @RequestBody Menu menu) {
         menu.setId(idMenu);
@@ -91,6 +99,8 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PatchMapping("/{id}/status")
+    @ApiLog("更新菜单状态")
+    @OperationLog(module = "菜单管理", operation = "更新菜单状态", recordParams = true)
     public GlobalResult<Boolean> updateMenuStatus(@Parameter(description = "菜单ID", required = true) @PathVariable("id") Long idMenu,
                                                   @Parameter(description = "菜单状态信息", required = true) @Valid @RequestBody Menu menu) {
         return GlobalResult.success(menuService.updateStatus(idMenu, menu.getStatus()));
@@ -103,6 +113,8 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @DeleteMapping("/{id}")
+    @ApiLog("删除菜单")
+    @OperationLog(module = "菜单管理", operation = "删除菜单")
     public GlobalResult<Boolean> deleteMenu(@Parameter(description = "菜单ID", required = true) @PathVariable("id") Long idMenu) {
         return GlobalResult.success(menuService.deleteMenu(idMenu));
     }
@@ -113,6 +125,7 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping("/tree")
+    @ApiLog("获取菜单树")
     public GlobalResult<List<MenuTreeInfo>> getMenuTree(@Parameter(description = "菜单查询条件") @Valid MenuSearch search) {
         List<MenuTreeInfo> menus = menuService.findMenuTree(search);
         return GlobalResult.success(menus);
@@ -125,6 +138,8 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @DeleteMapping("/batch")
+    @ApiLog("批量删除菜单")
+    @OperationLog(module = "菜单管理", operation = "批量删除菜单", recordParams = true)
     public GlobalResult<Boolean> batchDeleteMenus(@Parameter(description = "批量更新信息", required = true) @Valid @RequestBody BatchUpdateInfo batchUpdateInfo) {
         return GlobalResult.success(menuService.batchDeleteMenus(batchUpdateInfo.getIds()));
     }

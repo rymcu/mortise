@@ -70,6 +70,13 @@ public class AuthCacheConfigurer implements CacheConfigurer {
         configs.put(AuthCacheConstant.OAUTH2_QRCODE_STATE_CACHE,
                 defaultConfig.entryTtl(Duration.ofMinutes(AuthCacheConstant.OAUTH2_QRCODE_STATE_EXPIRE_MINUTES)));
 
+        // === OAuth2 登录响应缓存（用于 state 兑换 token）===
+        configs.put(AuthCacheConstant.OAUTH2_LOGIN_RESPONSE_CACHE,
+                defaultConfig.entryTtl(Duration.ofMinutes(AuthCacheConstant.OAUTH2_LOGIN_RESPONSE_EXPIRE_MINUTES)));
+
+        // === 会员刷新令牌缓存 ===
+        configs.put(AuthCacheConstant.MEMBER_REFRESH_TOKEN_CACHE,
+                defaultConfig.entryTtl(Duration.ofHours(AuthCacheConstant.MEMBER_REFRESH_TOKEN_EXPIRE_HOURS)));
 
         // === OAuth2 参数缓存 ===
         configs.put(AuthCacheConstant.OAUTH2_PARAMETER_MAP_CACHE,

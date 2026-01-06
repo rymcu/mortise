@@ -89,5 +89,4 @@ public class JasyptUtils {
     private JasyptUtils() {
         throw new AssertionError("工具类不应该被实例化");
     }
-
 }

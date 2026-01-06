@@ -86,8 +86,8 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
     public Page<Oauth2ClientConfig> findOauth2ClientConfigs(Page<Oauth2ClientConfig> page, OAuth2ClientConfigSearch search) {
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .select()
-                .where(OAUTH2_CLIENT_CONFIG.REGISTRATION_ID.eq(search.getRegistrationId(), String::isEmpty))
-                .and(OAUTH2_CLIENT_CONFIG.CLIENT_ID.eq(search.getClientId(), String::isEmpty));
+                .where(OAUTH2_CLIENT_CONFIG.REGISTRATION_ID.eq(search.getRegistrationId(), StringUtils::hasText))
+                .and(OAUTH2_CLIENT_CONFIG.CLIENT_ID.eq(search.getClientId(), StringUtils::hasText));
         return mapper.paginate(page, queryWrapper);
     }
 

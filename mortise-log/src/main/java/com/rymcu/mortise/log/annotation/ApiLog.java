@@ -24,6 +24,11 @@ public @interface ApiLog {
     boolean recordRequestBody() default true;
 
     /**
+     * 是否记录请求参数（queryString）
+     */
+    boolean recordParams() default true;
+
+    /**
      * 是否记录响应体
      */
     boolean recordResponseBody() default true;

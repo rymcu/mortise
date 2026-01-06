@@ -58,6 +58,18 @@ public class AuthCacheConstant {
     public static final long OAUTH2_QRCODE_STATE_EXPIRE_MINUTES = 10;
 
     /**
+     * OAuth2 登录响应缓存（用于 state 兑换 token）
+     */
+    public static final String OAUTH2_LOGIN_RESPONSE_CACHE = "oauth2:login-response";
+    public static final long OAUTH2_LOGIN_RESPONSE_EXPIRE_MINUTES = 5;
+
+    /**
+     * 会员刷新令牌缓存
+     */
+    public static final String MEMBER_REFRESH_TOKEN_CACHE = "member:refresh-token";
+    public static final long MEMBER_REFRESH_TOKEN_EXPIRE_HOURS = 24;
+
+    /**
      * OAuth2 授权码缓存
      */
     public static final String OAUTH2_AUTHORIZATION_CODE_CACHE = "oauth2:auth-code";
