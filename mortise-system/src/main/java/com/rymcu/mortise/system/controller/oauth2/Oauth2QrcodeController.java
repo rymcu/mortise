@@ -4,6 +4,7 @@ import com.rymcu.mortise.auth.enumerate.QrcodeState;
 import com.rymcu.mortise.auth.service.AuthCacheService;
 import com.rymcu.mortise.auth.support.UnifiedOAuth2AuthorizationRequestResolver;
 import com.rymcu.mortise.core.result.GlobalResult;
+import com.rymcu.mortise.log.annotation.ApiLog;
 import io.micrometer.common.util.StringUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -56,6 +57,7 @@ public class Oauth2QrcodeController {
         }
     )
     @GetMapping("/wechat/{registrationId}")
+    @ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "获取微信OAuth2授权二维码链接")
     public GlobalResult<Map<String, String>> getWeChatQRCode(@PathVariable String registrationId, HttpServletRequest request, HttpServletResponse response) {
         ClientRegistration clientRegistration = this.clientRegistrationRepository.findByRegistrationId(registrationId);
         if (clientRegistration == null) {
@@ -90,6 +92,7 @@ public class Oauth2QrcodeController {
     }
 
     @GetMapping("/state/{state}")
+    @ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "查询OAuth2二维码状态")
     public GlobalResult<Map<String, Object>> getStateQRCode(@PathVariable String state) {
         int qrcodeState = authCacheService.getOAuth2QrcodeState(state);
         Map<String, Object> map = new HashMap<>();

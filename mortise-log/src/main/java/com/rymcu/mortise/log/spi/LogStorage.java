@@ -1,5 +1,6 @@
 package com.rymcu.mortise.log.spi;
 
+import com.rymcu.mortise.log.entity.ApiLogEntity;
 import com.rymcu.mortise.log.entity.OperationLogEntity;
 
 /**
@@ -19,15 +20,17 @@ public interface LogStorage {
         return 100;
     }
 
+    // ==================== 操作日志相关方法 ====================
+
     /**
-     * 同步保存日志
+     * 同步保存操作日志
      *
      * @param log 操作日志实体
      */
     void save(OperationLogEntity log);
 
     /**
-     * 异步保存日志
+     * 异步保存操作日志
      * 默认实现为调用同步保存方法
      *
      * @param log 操作日志实体
@@ -37,7 +40,7 @@ public interface LogStorage {
     }
 
     /**
-     * 批量保存日志
+     * 批量保存操作日志
      * 默认实现为循环调用 save
      *
      * @param logs 操作日志列表
@@ -45,6 +48,39 @@ public interface LogStorage {
     default void saveBatch(java.util.List<OperationLogEntity> logs) {
         if (logs != null && !logs.isEmpty()) {
             logs.forEach(this::save);
+        }
+    }
+
+    // ==================== API 日志相关方法 ====================
+
+    /**
+     * 同步保存 API 日志
+     *
+     * @param log API日志实体
+     */
+    default void saveApiLog(ApiLogEntity log) {
+        // 默认空实现，子类可选择性覆盖
+    }
+
+    /**
+     * 异步保存 API 日志
+     * 默认实现为调用同步保存方法
+     *
+     * @param log API日志实体
+     */
+    default void saveApiLogAsync(ApiLogEntity log) {
+        saveApiLog(log);
+    }
+
+    /**
+     * 批量保存 API 日志
+     * 默认实现为循环调用 saveApiLog
+     *
+     * @param logs API日志列表
+     */
+    default void saveApiLogBatch(java.util.List<ApiLogEntity> logs) {
+        if (logs != null && !logs.isEmpty()) {
+            logs.forEach(this::saveApiLog);
         }
     }
 }

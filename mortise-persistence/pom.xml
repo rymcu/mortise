@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.rymcu</groupId>
         <artifactId>mortise</artifactId>
-        <version>0.0.1</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>mortise-persistence</artifactId>
@@ -21,6 +21,19 @@
     </properties>
 
     <dependencies>
+        <!-- Mortise Log (SPI接口) -->
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-log</artifactId>
+        </dependency>
+
+        <!-- Lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- MyBatis-Flex -->
         <dependency>
             <groupId>com.mybatis-flex</groupId>

@@ -1,59 +1,120 @@
 package com.rymcu.mortise.wechat.integration;
 
+import com.rymcu.mortise.notification.entity.NotificationMessage;
+import com.rymcu.mortise.notification.enums.NotificationType;
+import com.rymcu.mortise.notification.spi.NotificationSender;
 import com.rymcu.mortise.wechat.entity.TemplateMessage;
 import com.rymcu.mortise.wechat.service.WeChatMessageService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.common.error.WxErrorException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.stereotype.Service;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Component;
+
+import java.util.Map;
 
 /**
- * 微信通知发送器
- * <p>将微信消息推送集成到 mortise-notification 模块</p>
- * 
- * <p>使用示例：</p>
- * <pre>
- * // 1. 在 mortise-notification 模块中定义 NotificationSender 接口
- * // 2. 本类实现该接口
- * // 3. 通过 SPI 机制自动发现和注册
- * </pre>
+ * 微信通知发送器 — 实现 NotificationSender SPI
+ * <p>
+ * 通过 SPI 机制自动注册到 NotificationServiceImpl，
+ * 使 notification 模块无需依赖 wechat 模块即可分发微信通知。
+ * </p>
+ * <p>
+ * NotificationMessage.metadata 约定：
+ * <ul>
+ *     <li>{@code openId} — 必填，微信用户 OpenID</li>
+ *     <li>{@code accountId} — 选填，公众号账号 ID（不传则使用默认账号）</li>
+ *     <li>{@code templateId} — 选填，微信模板消息 ID（不传则发送纯文本客服消息）</li>
+ * </ul>
  *
  * @author ronger
  * @since 1.0.0
  */
 @Slf4j
-@Service
+@Component
 @RequiredArgsConstructor
 @ConditionalOnBean(WeChatMessageService.class)
-public class WeChatNotificationSender {
+public class WeChatNotificationSender implements NotificationSender {
 
     private final WeChatMessageService weChatMessageService;
 
+    @Override
+    public NotificationType supportType() {
+        return NotificationType.WECHAT;
+    }
+
+    @Override
+    public int getOrder() {
+        return 200;
+    }
+
+    @Override
+    public boolean send(NotificationMessage message) {
+        Map<String, Object> metadata = message.getMetadata();
+        if (metadata == null || !metadata.containsKey("openId")) {
+            log.warn("微信通知缺少 openId，跳过发送: receiver={}", message.getReceiver());
+            return false;
+        }
+
+        String openId = (String) metadata.get("openId");
+        Long accountId = metadata.containsKey("accountId")
+                ? ((Number) metadata.get("accountId")).longValue() : null;
+        String templateId = (String) metadata.get("templateId");
+
+        try {
+            if (templateId != null) {
+                // 模板消息
+                TemplateMessage templateMessage = TemplateMessage.builder()
+                        .toUser(openId)
+                        .templateId(templateId)
+                        .build();
+
+                // 将 templateParams 映射为模板数据
+                if (message.getTemplateParams() != null) {
+                    message.getTemplateParams().forEach((key, value) ->
+                            templateMessage.addData(key, String.valueOf(value)));
+                }
+
+                weChatMessageService.sendTemplateMessage(accountId, templateMessage);
+            } else {
+                // 纯文本客服消息
+                String content = message.getContent();
+                if (message.getSubject() != null) {
+                    content = message.getSubject() + "\n" + content;
+                }
+                weChatMessageService.sendTextMessage(accountId, openId, content);
+            }
+
+            log.info("微信通知发送成功: openId={}, accountId={}", openId, accountId);
+            return true;
+
+        } catch (WxErrorException e) {
+            log.error("微信通知发送失败: openId={}, accountId={}", openId, accountId, e);
+            return false;
+        }
+    }
+
+    @Async
+    @Override
+    public void sendAsync(NotificationMessage message) {
+        send(message);
+    }
+
+    // ==================== 便捷方法（保留原有业务语义）====================
+
     /**
-     * 发送欢迎通知（使用默认账号）
-     *
-     * @param openId   用户 OpenID
-     * @param username 用户名
-     * @param time     时间
+     * 发送欢迎通知
      */
     public void sendWelcomeNotification(String openId, String username, String time) {
         sendWelcomeNotification(null, openId, username, time);
     }
 
-    /**
-     * 发送欢迎通知（指定账号）
-     *
-     * @param accountId 账号ID（null 表示使用默认公众号账号）
-     * @param openId    用户 OpenID
-     * @param username  用户名
-     * @param time      时间
-     */
     public void sendWelcomeNotification(Long accountId, String openId, String username, String time) {
         try {
             TemplateMessage message = TemplateMessage.builder()
                     .toUser(openId)
-                    .templateId("welcome-template-id") // 需在公众平台配置
+                    .templateId("welcome-template-id")
                     .build()
                     .addData("first", "欢迎注册！", "#173177")
                     .addData("keyword1", username)
@@ -62,39 +123,21 @@ public class WeChatNotificationSender {
 
             weChatMessageService.sendTemplateMessage(accountId, message);
             log.info("欢迎通知发送成功，accountId: {}, openId: {}", accountId, openId);
-
         } catch (WxErrorException e) {
             log.error("发送欢迎通知失败，accountId: {}, openId: {}", accountId, openId, e);
-            // 不抛出异常，避免影响主流程
         }
     }
 
     /**
-     * 发送登录通知（使用默认账号）
-     *
-     * @param openId   用户 OpenID
-     * @param ip       登录 IP
-     * @param location 登录地点
-     * @param device   登录设备
-     * @param time     登录时间
+     * 发送登录通知
      */
-    public void sendLoginNotification(String openId, String ip, String location, 
-                                     String device, String time) {
+    public void sendLoginNotification(String openId, String ip, String location,
+                                      String device, String time) {
         sendLoginNotification(null, openId, ip, location, device, time);
     }
 
-    /**
-     * 发送登录通知（指定账号）
-     *
-     * @param accountId 账号ID（null 表示使用默认公众号账号）
-     * @param openId    用户 OpenID
-     * @param ip        登录 IP
-     * @param location  登录地点
-     * @param device    登录设备
-     * @param time      登录时间
-     */
-    public void sendLoginNotification(Long accountId, String openId, String ip, String location, 
-                                     String device, String time) {
+    public void sendLoginNotification(Long accountId, String openId, String ip, String location,
+                                      String device, String time) {
         try {
             TemplateMessage message = TemplateMessage.builder()
                     .toUser(openId)
@@ -109,36 +152,21 @@ public class WeChatNotificationSender {
 
             weChatMessageService.sendTemplateMessage(accountId, message);
             log.info("登录通知发送成功，accountId: {}, openId: {}", accountId, openId);
-
         } catch (WxErrorException e) {
             log.error("发送登录通知失败，accountId: {}, openId: {}", accountId, openId, e);
         }
     }
 
     /**
-     * 发送系统通知（使用默认账号）
-     *
-     * @param openId  用户 OpenID
-     * @param title   通知标题
-     * @param content 通知内容
-     * @param time    通知时间
+     * 发送系统通知
      */
-    public void sendSystemNotification(String openId, String title, 
-                                      String content, String time) {
+    public void sendSystemNotification(String openId, String title,
+                                       String content, String time) {
         sendSystemNotification(null, openId, title, content, time);
     }
 
-    /**
-     * 发送系统通知（指定账号）
-     *
-     * @param accountId 账号ID（null 表示使用默认公众号账号）
-     * @param openId    用户 OpenID
-     * @param title     通知标题
-     * @param content   通知内容
-     * @param time      通知时间
-     */
-    public void sendSystemNotification(Long accountId, String openId, String title, 
-                                      String content, String time) {
+    public void sendSystemNotification(Long accountId, String openId, String title,
+                                       String content, String time) {
         try {
             TemplateMessage message = TemplateMessage.builder()
                     .toUser(openId)
@@ -151,34 +179,22 @@ public class WeChatNotificationSender {
 
             weChatMessageService.sendTemplateMessage(accountId, message);
             log.info("系统通知发送成功，accountId: {}, openId: {}", accountId, openId);
-
         } catch (WxErrorException e) {
             log.error("发送系统通知失败，accountId: {}, openId: {}", accountId, openId, e);
         }
     }
 
     /**
-     * 发送简单文本消息（使用默认账号）
-     *
-     * @param openId  用户 OpenID
-     * @param content 消息内容
+     * 发送简单文本消息
      */
     public void sendTextNotification(String openId, String content) {
         sendTextNotification(null, openId, content);
     }
 
-    /**
-     * 发送简单文本消息（指定账号）
-     *
-     * @param accountId 账号ID（null 表示使用默认公众号账号）
-     * @param openId    用户 OpenID
-     * @param content   消息内容
-     */
     public void sendTextNotification(Long accountId, String openId, String content) {
         try {
             weChatMessageService.sendTextMessage(accountId, openId, content);
             log.info("文本消息发送成功，accountId: {}, openId: {}", accountId, openId);
-
         } catch (WxErrorException e) {
             log.error("发送文本消息失败，accountId: {}, openId: {}", accountId, openId, e);
         }
@@ -186,15 +202,10 @@ public class WeChatNotificationSender {
 
     /**
      * 批量发送通知
-     *
-     * @param openIds 用户 OpenID 列表
-     * @param content 消息内容
      */
     public void sendBatchNotification(java.util.List<String> openIds, String content) {
         for (String openId : openIds) {
             sendTextNotification(openId, content);
-            
-            // 避免触发微信频率限制
             try {
                 Thread.sleep(100);
             } catch (InterruptedException e) {

@@ -1,5 +1,6 @@
 package com.rymcu.mortise.notification.sender;
 
+import com.rymcu.mortise.common.util.Utils;
 import com.rymcu.mortise.notification.entity.NotificationMessage;
 import com.rymcu.mortise.notification.enums.NotificationType;
 import com.rymcu.mortise.notification.spi.NotificationSender;
@@ -8,6 +9,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Component;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Optional;
 
 /**
@@ -30,6 +33,9 @@ public class EmailNotificationSender implements NotificationSender {
 
     @Resource
     private JavaMailSender mailSender;
+
+    @Value("${spring.mail.username}")
+    private String fromEmail;
 
     private final TemplateEngine templateEngine;
 
@@ -52,6 +58,8 @@ public class EmailNotificationSender implements NotificationSender {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
+            helper.setFrom(fromEmail, Utils.formatEmailDomain(fromEmail));
+
             helper.setTo(message.getReceiver());
             helper.setSubject(message.getSubject());
 
@@ -68,11 +76,11 @@ public class EmailNotificationSender implements NotificationSender {
             helper.setText(content, true); // true表示HTML格式
 
             mailSender.send(mimeMessage);
-            
+
             log.info("邮件发送成功: receiver={}, subject={}", message.getReceiver(), message.getSubject());
             return true;
-        } catch (MessagingException e) {
-            log.error("邮件发送失败: receiver={}, subject={}", 
+        } catch (MessagingException | UnsupportedEncodingException e) {
+            log.error("邮件发送失败: receiver={}, subject={}",
                     message.getReceiver(), message.getSubject(), e);
             return false;
         }

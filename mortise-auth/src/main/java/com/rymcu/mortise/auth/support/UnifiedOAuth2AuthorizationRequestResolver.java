@@ -1,5 +1,6 @@
 package com.rymcu.mortise.auth.support;
 
+import com.rymcu.mortise.auth.util.OAuth2ProviderUtils;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -60,7 +61,7 @@ public class UnifiedOAuth2AuthorizationRequestResolver implements OAuth2Authoriz
         OAuth2AuthorizationRequest.Builder requestBuilder = OAuth2AuthorizationRequest.from(authorizationRequest);
         String registrationId = authorizationRequest.getAttribute(OAuth2ParameterNames.REGISTRATION_ID);
         // --- 针对微信的特殊处理逻辑 ---
-        if (isWeChatProvider(registrationId)) {
+        if (OAuth2ProviderUtils.isWeChatProvider(registrationId)) {
             // 1. 添加 #wechat_redirect 锚点 (如果需要)
             log.debug("为微信登录添加 #wechat_redirect 锚点: {}", registrationId);
             requestBuilder.authorizationRequestUri(uri -> uri.fragment("wechat_redirect").build());
@@ -80,9 +81,4 @@ public class UnifiedOAuth2AuthorizationRequestResolver implements OAuth2Authoriz
         return requestBuilder.build();
     }
 
-    private boolean isWeChatProvider(String registrationId) {
-        if (registrationId == null) return false;
-        String lower = registrationId.toLowerCase();
-        return lower.contains("wechat") || lower.contains("weixin") || lower.startsWith("wx");
-    }
 }

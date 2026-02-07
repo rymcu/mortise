@@ -1,5 +1,6 @@
 package com.rymcu.mortise.auth.support;
 
+import com.rymcu.mortise.auth.util.OAuth2ProviderUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
@@ -57,8 +58,7 @@ public class UnifiedOAuth2UserService implements OAuth2UserService<OAuth2UserReq
         }
 
         // --- 2. 判断是否是自定义的微信登录 ---
-        // 通常可以根据 registrationId 的前缀或特定名称判断
-        if (registrationId.toLowerCase().contains("wechat")) {
+        if (OAuth2ProviderUtils.isWeChatProvider(registrationId)) {
             log.info("Handling custom WeChat user request for {}", registrationId);
             return loadWeChatUser(userRequest);
         }

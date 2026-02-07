@@ -9,7 +9,6 @@ import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 import com.fasterxml.jackson.databind.jsontype.PolymorphicTypeValidator;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.rymcu.mortise.auth.constant.AuthCacheConstant;
-import com.rymcu.mortise.cache.constant.CacheConstant;
 import com.rymcu.mortise.cache.spi.CacheConfigurer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
@@ -70,6 +69,13 @@ public class AuthCacheConfigurer implements CacheConfigurer {
         configs.put(AuthCacheConstant.OAUTH2_QRCODE_STATE_CACHE,
                 defaultConfig.entryTtl(Duration.ofMinutes(AuthCacheConstant.OAUTH2_QRCODE_STATE_EXPIRE_MINUTES)));
 
+        // === OAuth2 登录响应缓存（用于 state 兑换 token）===
+        configs.put(AuthCacheConstant.OAUTH2_LOGIN_RESPONSE_CACHE,
+                defaultConfig.entryTtl(Duration.ofMinutes(AuthCacheConstant.OAUTH2_LOGIN_RESPONSE_EXPIRE_MINUTES)));
+
+        // === 会员刷新令牌缓存 ===
+        configs.put(AuthCacheConstant.MEMBER_REFRESH_TOKEN_CACHE,
+                defaultConfig.entryTtl(Duration.ofHours(AuthCacheConstant.MEMBER_REFRESH_TOKEN_EXPIRE_HOURS)));
 
         // === OAuth2 参数缓存 ===
         configs.put(AuthCacheConstant.OAUTH2_PARAMETER_MAP_CACHE,
@@ -79,30 +85,7 @@ public class AuthCacheConfigurer implements CacheConfigurer {
         configs.put(AuthCacheConstant.JWT_TOKEN_CACHE,
                 defaultConfig.entryTtl(Duration.ofMinutes(AuthCacheConstant.JWT_TOKEN_EXPIRE_MINUTES)));
 
-        // === 认证令牌缓存 ===
-        configs.put(AuthCacheConstant.AUTH_TOKEN_CACHE,
-                defaultConfig.entryTtl(Duration.ofMinutes(CacheConstant.DEFAULT_EXPIRE_MINUTES)));
-
-        configs.put(AuthCacheConstant.AUTH_REFRESH_TOKEN_CACHE,
-                defaultConfig.entryTtl(Duration.ofHours(AuthCacheConstant.REFRESH_TOKEN_EXPIRE_HOURS)));
-
-        // === 用户会话缓存 ===
-        configs.put(AuthCacheConstant.USER_SESSION_CACHE,
-                defaultConfig.entryTtl(Duration.ofHours(AuthCacheConstant.USER_SESSION_EXPIRE_HOURS)));
-
-        configs.put(AuthCacheConstant.USER_ONLINE_STATUS_CACHE,
-                defaultConfig.entryTtl(Duration.ofMinutes(AuthCacheConstant.USER_ONLINE_STATUS_EXPIRE_MINUTES)));
-
-        configs.put(AuthCacheConstant.ACCOUNT_SEQUENCE_CACHE,
-                defaultConfig.entryTtl(Duration.ofHours(AuthCacheConstant.ACCOUNT_SEQUENCE_EXPIRE_HOURS)));
-
         // === 验证码缓存 ===
-        configs.put(AuthCacheConstant.LOGIN_VERIFICATION_CODE_CACHE,
-                defaultConfig.entryTtl(Duration.ofMinutes(AuthCacheConstant.LOGIN_VERIFICATION_CODE_EXPIRE_MINUTES)));
-
-        configs.put(AuthCacheConstant.REGISTER_VERIFICATION_CODE_CACHE,
-                defaultConfig.entryTtl(Duration.ofMinutes(AuthCacheConstant.REGISTER_VERIFICATION_CODE_EXPIRE_MINUTES)));
-
         configs.put(AuthCacheConstant.VERIFICATION_CODE_CACHE,
                 defaultConfig.entryTtl(Duration.ofMinutes(AuthCacheConstant.VERIFICATION_CODE_EXPIRE_MINUTES)));
 
@@ -112,20 +95,6 @@ public class AuthCacheConfigurer implements CacheConfigurer {
 
         configs.put(AuthCacheConstant.SMS_CODE_SEND_LIMIT_CACHE,
                 defaultConfig.entryTtl(Duration.ofSeconds(AuthCacheConstant.SMS_CODE_SEND_LIMIT_SECONDS)));
-
-        // === 密码重置缓存 ===
-        configs.put(AuthCacheConstant.PASSWORD_RESET_CACHE,
-                defaultConfig.entryTtl(Duration.ofMinutes(AuthCacheConstant.PASSWORD_RESET_EXPIRE_MINUTES)));
-
-        configs.put(AuthCacheConstant.PASSWORD_RESET_TOKEN_CACHE,
-                defaultConfig.entryTtl(Duration.ofHours(AuthCacheConstant.PASSWORD_RESET_TOKEN_EXPIRE_HOURS)));
-
-        // === 登录限制缓存 ===
-        configs.put(AuthCacheConstant.LOGIN_FAIL_COUNT_CACHE,
-                defaultConfig.entryTtl(Duration.ofMinutes(AuthCacheConstant.LOGIN_FAIL_COUNT_EXPIRE_MINUTES)));
-
-        configs.put(AuthCacheConstant.ACCOUNT_LOCK_CACHE,
-                defaultConfig.entryTtl(Duration.ofHours(AuthCacheConstant.ACCOUNT_LOCK_EXPIRE_HOURS)));
 
         log.info("认证模块缓存配置已加载: {} 个缓存策略（包含 OAuth2 授权请求缓存）", configs.size());
 

@@ -5,6 +5,8 @@ import com.rymcu.mortise.auth.model.SendSmsCodeRequest;
 import com.rymcu.mortise.auth.model.SmsLoginRequest;
 import com.rymcu.mortise.auth.service.SmsCodeService;
 import com.rymcu.mortise.core.result.GlobalResult;
+import com.rymcu.mortise.log.annotation.ApiLog;
+import com.rymcu.mortise.log.annotation.OperationLog;
 import com.rymcu.mortise.system.model.auth.TokenUser;
 import com.rymcu.mortise.system.service.AuthService;
 import com.rymcu.mortise.web.annotation.RateLimit;
@@ -17,7 +19,10 @@ import jakarta.annotation.Resource;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * 短信验证码认证控制器
@@ -52,26 +57,28 @@ public class SmsAuthController {
     })
     @RateLimit(limitForPeriod = 3, refreshPeriodSeconds = 300, message = "验证码发送过于频繁，请 5 分钟后再试")
     @PostMapping("/send")
+    @ApiLog(value = "发送短信验证码", recordRequestBody = false, recordResponseBody = false)
+    @OperationLog(module = "短信验证码认证", operation = "发送短信验证码", recordParams = false, recordResult = false)
     public GlobalResult<String> sendSmsCode(
             @Parameter(description = "发送验证码请求", required = true)
             @Valid @RequestBody SendSmsCodeRequest request) {
-        
+
         String userType = request.getUserType();
         if (StringUtils.isBlank(userType)) {
             userType = UserType.SYSTEM.getCode();
         }
 
-        log.info("发送短信验证码请求: mobile={}, userType={}", request.getMobile(), userType);
+        String mobileMasked = maskMobile(request.getMobile());
+        log.info("发送短信验证码请求: mobile={}, userType={}", mobileMasked, userType);
 
         try {
             String code = smsCodeService.generateAndSend(request.getMobile(), userType);
-            
+
             // 测试环境返回验证码，生产环境不返回
             if (code != null) {
-                log.debug("验证码（仅测试环境返回）: {}", code);
                 return GlobalResult.success("验证码已发送（测试环境）: " + code);
             }
-            
+
             return GlobalResult.success("验证码已发送，请注意查收");
         } catch (IllegalStateException e) {
             log.warn("发送验证码失败: {}", e.getMessage());
@@ -96,27 +103,40 @@ public class SmsAuthController {
     })
     @RateLimit(limitForPeriod = 5, refreshPeriodSeconds = 300, message = "登录请求过于频繁，请 5 分钟后再试")
     @PostMapping("/login")
+    @ApiLog(value = "短信验证码登录", recordRequestBody = false, recordResponseBody = false)
+    @OperationLog(module = "短信验证码认证", operation = "短信验证码登录", recordParams = false, recordResult = false)
     public GlobalResult<TokenUser> smsLogin(
             @Parameter(description = "验证码登录请求", required = true)
             @Valid @RequestBody SmsLoginRequest request) {
-        
+
         String userType = request.getUserType();
         if (StringUtils.isBlank(userType)) {
             userType = UserType.SYSTEM.getCode();
         }
 
-        log.info("短信验证码登录请求: mobile={}, userType={}", request.getMobile(), userType);
+        String mobileMasked = maskMobile(request.getMobile());
+        log.info("短信验证码登录请求: mobile={}, userType={}", mobileMasked, userType);
 
         try {
             // 通过AuthService处理登录（需要实现loginBySms方法）
             // TokenUser tokenUser = authService.loginBySms(request.getMobile(), request.getSmsCode(), userType);
             // return GlobalResult.success(tokenUser);
-            
+
             // TODO: 实现AuthService.loginBySms方法
             return GlobalResult.error("该接口暂未实现，请使用 POST /api/v1/auth/login/sms 进行验证码登录");
         } catch (Exception e) {
-            log.error("短信验证码登录失败: mobile={}", request.getMobile(), e);
+            log.error("短信验证码登录失败: mobile={}", mobileMasked, e);
             return GlobalResult.error("登录失败: " + e.getMessage());
         }
+    }
+
+    private String maskMobile(String mobile) {
+        if (StringUtils.isBlank(mobile)) {
+            return mobile;
+        }
+        if (mobile.length() <= 7) {
+            return "***";
+        }
+        return mobile.substring(0, 3) + "****" + mobile.substring(mobile.length() - 4);
     }
 }

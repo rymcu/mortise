@@ -203,6 +203,78 @@ public class AuthCacheServiceImpl implements AuthCacheService {
         }
     }
 
+    // ==================== OAuth2 登录响应缓存操作实现 ====================
+
+    @Override
+    public void storeOAuth2LoginResponse(String state, Object loginResponse) {
+        Cache cache = cacheManager.getCache(AuthCacheConstant.OAUTH2_LOGIN_RESPONSE_CACHE);
+        if (cache != null) {
+            cache.put(state, loginResponse);
+            log.info("存储 OAuth2 登录响应：state={}, type={}", state,
+                    loginResponse != null ? loginResponse.getClass().getSimpleName() : "null");
+        } else {
+            log.error("未找到缓存：{}", AuthCacheConstant.OAUTH2_LOGIN_RESPONSE_CACHE);
+        }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public <T> T getOAuth2LoginResponse(String state, Class<T> clazz) {
+        Cache cache = cacheManager.getCache(AuthCacheConstant.OAUTH2_LOGIN_RESPONSE_CACHE);
+        if (cache != null) {
+            Cache.ValueWrapper wrapper = cache.get(state);
+            if (wrapper != null) {
+                Object value = wrapper.get();
+                String className = value != null ? value.getClass().getName() : "null";
+                log.info("获取 OAuth2 登录响应：state={} -> 找到，类型={}", state, className);
+                try {
+                    return (T) value;
+                } catch (ClassCastException e) {
+                    log.error("OAuth2 登录响应类型转换失败：state={}, expectedType={}, actualType={}",
+                            state, clazz.getName(), className, e);
+                    return null;
+                }
+            } else {
+                log.warn("获取 OAuth2 登录响应：state={} -> 未找到", state);
+                return null;
+            }
+        } else {
+            log.error("未找到缓存：{}", AuthCacheConstant.OAUTH2_LOGIN_RESPONSE_CACHE);
+            return null;
+        }
+    }
+
+    @Override
+    public void removeOAuth2LoginResponse(String state) {
+        Cache cache = cacheManager.getCache(AuthCacheConstant.OAUTH2_LOGIN_RESPONSE_CACHE);
+        if (cache != null) {
+            cache.evict(state);
+            log.debug("删除 OAuth2 登录响应：state={}", state);
+        } else {
+            log.error("未找到缓存：{}", AuthCacheConstant.OAUTH2_LOGIN_RESPONSE_CACHE);
+        }
+    }
+
+    // ==================== 会员 Refresh Token 缓存操作实现 ====================
+
+    @Override
+    public void storeMemberRefreshToken(String refreshToken, Long memberId) {
+        cacheService.set(AuthCacheConstant.MEMBER_REFRESH_TOKEN_CACHE, refreshToken, memberId,
+                AuthCacheConstant.MEMBER_REFRESH_TOKEN_EXPIRE_HOURS, TimeUnit.HOURS);
+        log.debug("存储会员刷新令牌: refreshToken={}, memberId={}", refreshToken, memberId);
+    }
+
+    @Override
+    public Long getMemberIdByRefreshToken(String refreshToken) {
+        return cacheService.get(AuthCacheConstant.MEMBER_REFRESH_TOKEN_CACHE, refreshToken, Long.class);
+    }
+
+    @Override
+    public void removeMemberRefreshToken(String refreshToken) {
+        cacheService.delete(AuthCacheConstant.MEMBER_REFRESH_TOKEN_CACHE, refreshToken);
+        log.debug("删除会员刷新令牌: refreshToken={}", refreshToken);
+    }
+
     // ==================== Token 黑名单操作实现 ====================
 
     @Override

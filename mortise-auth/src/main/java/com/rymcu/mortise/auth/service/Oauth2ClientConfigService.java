@@ -51,4 +51,12 @@ public interface Oauth2ClientConfigService extends IService<Oauth2ClientConfig> 
     Long createOauth2ClientConfig(Oauth2ClientConfig config);
 
     Boolean updateOauth2ClientConfig(Oauth2ClientConfig config);
+
+    /**
+     * 根据 clientId 查找客户端配置
+     *
+     * @param clientId 客户端ID
+     * @return 客户端配置（如果存在）
+     */
+    Oauth2ClientConfig loadOauth2ClientConfigByClientId(String clientId);
 }

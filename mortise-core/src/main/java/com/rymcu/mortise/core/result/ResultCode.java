@@ -42,7 +42,16 @@ public enum ResultCode {
     SEND_EMAIL_FAIL(10004, "邮件发送失败，请稍后再试"),
     EMAIL_EXISTS(10005, "该邮箱已被注册！"),
     REGISTER_FAIL(10006, "注册失败！"),
-    UPDATE_PASSWORD_FAIL(10007, "修改密码失败！");
+    UPDATE_PASSWORD_FAIL(10007, "修改密码失败！"),
+
+    /**
+     * 支付模块错误（20000开始）
+     */
+    PAY_ERROR(20000, "支付失败"),
+    REFUND_AMOUNT_EXCEED(20001, "退款金额超限"),
+    CHANNEL_NOT_SUPPORTED(20002, "不支持的支付渠道"),
+    SIGN_VERIFY_FAILED(20003, "签名验证失败"),
+    THIRD_PARTY_ERROR(20004, "第三方支付错误");
 
     private final int code;
     private final String message;

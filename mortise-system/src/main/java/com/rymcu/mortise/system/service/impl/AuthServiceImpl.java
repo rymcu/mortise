@@ -4,6 +4,7 @@ import com.github.f4b6a3.ulid.UlidCreator;
 import com.mybatisflex.core.update.UpdateChain;
 import com.rymcu.mortise.auth.service.TokenManager;
 import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
+import com.rymcu.mortise.auth.util.OAuth2ProviderUtils;
 import com.rymcu.mortise.common.exception.BusinessException;
 import com.rymcu.mortise.common.exception.CaptchaException;
 import com.rymcu.mortise.common.exception.ServiceException;
@@ -392,7 +393,7 @@ public class AuthServiceImpl implements AuthService {
 
         // 2. 如果是微信且有 unionId，尝试通过 unionId 查找
         // 这可以解决同一微信用户在不同应用（公众号、小程序）的账号关联问题
-        if ("wechat".equalsIgnoreCase(userInfo.getProvider())
+        if (OAuth2ProviderUtils.isWeChatProviderType(userInfo.getProvider())
                 && StringUtils.isNotBlank(userInfo.getUnionId())) {
             binding = userOAuth2BindingService.findByProviderAndUnionId(
                     userInfo.getProvider(), userInfo.getUnionId()

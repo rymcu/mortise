@@ -40,6 +40,7 @@ public class MenuTreeInfo {
     /**
      * 状态
      */
+    @DictFormat(value = "Status")
     private Integer status;
 
     /**

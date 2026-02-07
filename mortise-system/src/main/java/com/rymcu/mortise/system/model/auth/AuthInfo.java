@@ -16,6 +16,8 @@ import java.util.Set;
 @Data
 public class AuthInfo {
 
+    private Long id;
+
     private String account;
 
     private String nickname;

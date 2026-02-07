@@ -247,8 +247,11 @@ public class DynamicWeChatServiceManager {
     }
 
     public WxMpService getDefaultService() {
-        WeChatAccount weChatAccount = accountService.getAccountById(null);
-        return getServiceByAccountId(weChatAccount.getId());
+        WeChatMpProperties weChatMpProperties = configService.loadMpConfigByAccountId(null);
+        if (weChatMpProperties == null) {
+            throw new WeChatAccountNotFoundException("Not found default WxMpService");
+        }
+        return getServiceByAppId(weChatMpProperties.getAppId());
     }
 
     public String getAppIdByAccountId(Long accountId) {

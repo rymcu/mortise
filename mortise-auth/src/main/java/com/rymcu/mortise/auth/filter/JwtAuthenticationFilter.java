@@ -179,10 +179,29 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * 从请求头中提取 Token
      */
     private String extractToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader(jwtTokenUtil.getTokenHeader());
-        if (bearerToken != null && bearerToken.startsWith(jwtTokenUtil.getTokenPrefix())) {
-            return bearerToken.substring(jwtTokenUtil.getTokenPrefix().length());
+        String headerValue = request.getHeader(jwtTokenUtil.getTokenHeader());
+        if (headerValue == null) {
+            return null;
         }
-        return null;
+
+        // 兼容：
+        // 1) 正常格式: "Bearer <jwt>"
+        // 2) 重复前缀: "Bearer Bearer <jwt>"（前端把 tokenType 拼进 token 后又加了一次）
+        // 3) 多余空格/大小写差异
+        String token = headerValue.trim();
+
+        String prefix = jwtTokenUtil.getTokenPrefix();
+        String normalizedPrefix = prefix == null ? "Bearer" : prefix.trim();
+        if (normalizedPrefix.isEmpty()) {
+            normalizedPrefix = "Bearer";
+        }
+
+        // 持续剥离前缀，直到不再以 Bearer 开头
+        while (token.length() > normalizedPrefix.length()
+                && token.regionMatches(true, 0, normalizedPrefix, 0, normalizedPrefix.length())) {
+            token = token.substring(normalizedPrefix.length()).trim();
+        }
+
+        return token.isEmpty() ? null : token;
     }
 }

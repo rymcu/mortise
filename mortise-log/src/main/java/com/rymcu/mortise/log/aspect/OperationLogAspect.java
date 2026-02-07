@@ -1,21 +1,32 @@
 package com.rymcu.mortise.log.aspect;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.github.f4b6a3.ulid.UlidCreator;
+import com.rymcu.mortise.core.model.CurrentUser;
 import com.rymcu.mortise.log.annotation.OperationLog;
 import com.rymcu.mortise.log.entity.OperationLogEntity;
+import com.rymcu.mortise.log.resolver.ClientTypeResolverChain;
 import com.rymcu.mortise.log.service.LogService;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.slf4j.MDC;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.stream.Collectors;
 
 /**
  * 操作日志切面
@@ -27,11 +38,16 @@ import java.time.LocalDateTime;
 @Component
 public class OperationLogAspect {
 
+    private static final String TRACE_ID_KEY = "traceId";
+
     @Resource
     private LogService logService;
 
     @Resource
     private ObjectMapper objectMapper;
+
+    @Resource
+    private ClientTypeResolverChain clientTypeResolverChain;
 
     @Around("@annotation(operationLog)")
     public Object around(ProceedingJoinPoint joinPoint, OperationLog operationLog) throws Throwable {
@@ -39,12 +55,14 @@ public class OperationLogAspect {
 
         // 构建日志实体
         OperationLogEntity logEntity = OperationLogEntity.builder()
-                .id(UlidCreator.getUlid().toString())
                 .module(operationLog.module())
                 .operation(operationLog.operation())
                 .operateTime(LocalDateTime.now())
                 .method(joinPoint.getSignature().toLongString())
                 .build();
+
+        // 自动填充操作人信息
+        fillOperatorInfo(logEntity);
 
         // 获取请求信息
         try {
@@ -52,15 +70,30 @@ public class OperationLogAspect {
             if (attributes != null) {
                 HttpServletRequest request = attributes.getRequest();
                 logEntity.setIp(getIpAddress(request));
+                logEntity.setRequestUri(request.getRequestURI());
+                logEntity.setRequestMethod(request.getMethod());
+                logEntity.setUserAgent(request.getHeader("User-Agent"));
+                // 自动识别客户端类型
+                logEntity.setClientType(clientTypeResolverChain.resolve(request));
             }
         } catch (Exception e) {
             log.warn("获取请求信息失败", e);
         }
 
-        // 记录请求参数
+        // 获取链路追踪ID
+        try {
+            String traceId = MDC.get(TRACE_ID_KEY);
+            if (traceId != null) {
+                logEntity.setTraceId(traceId);
+            }
+        } catch (Exception e) {
+            log.debug("获取 traceId 失败", e);
+        }
+
+        // 记录请求参数（过滤敏感参数）
         if (operationLog.recordParams()) {
             try {
-                Object[] args = joinPoint.getArgs();
+                Object[] args = filterArgs(joinPoint.getArgs());
                 if (args != null && args.length > 0) {
                     logEntity.setParams(objectMapper.writeValueAsString(args));
                 }
@@ -105,6 +138,52 @@ public class OperationLogAspect {
         }
 
         return result;
+    }
+
+    /**
+     * 自动填充操作人信息
+     * 从 Spring Security 上下文中获取当前登录用户
+     */
+    private void fillOperatorInfo(OperationLogEntity logEntity) {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+            if (authentication != null && authentication.isAuthenticated()) {
+                Object principal = authentication.getPrincipal();
+
+                // 优先使用 CurrentUser 接口
+                if (principal instanceof CurrentUser currentUser) {
+                    logEntity.setOperatorId(currentUser.getUserId());
+                    logEntity.setOperatorAccount(currentUser.getUsername());
+                } else if (principal instanceof String username) {
+                    // 处理匿名用户或简单字符串 principal
+                    if (!"anonymousUser".equals(username)) {
+                        logEntity.setOperatorAccount(username);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.debug("获取操作人信息失败: {}", e.getMessage());
+        }
+    }
+
+    /**
+     * 过滤不可序列化的参数
+     * 排除 HttpServletRequest、HttpServletResponse、MultipartFile 等类型
+     */
+    private Object[] filterArgs(Object[] args) {
+        if (args == null || args.length == 0) {
+            return args;
+        }
+        return Arrays.stream(args)
+                .filter(arg -> !(arg instanceof HttpServletRequest))
+                .filter(arg -> !(arg instanceof HttpServletResponse))
+                .filter(arg -> !(arg instanceof MultipartFile))
+                .filter(arg -> !(arg instanceof InputStream))
+                .filter(arg -> !(arg instanceof OutputStream))
+                .filter(arg -> !(arg instanceof Authentication))
+                .filter(arg -> !(arg instanceof UserDetails))
+                .collect(Collectors.toList())
+                .toArray();
     }
 
     /**

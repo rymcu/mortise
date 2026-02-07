@@ -7,6 +7,8 @@ import com.rymcu.mortise.common.exception.ServiceException;
 import com.rymcu.mortise.common.model.Link;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.core.result.ResultCode;
+import com.rymcu.mortise.log.annotation.ApiLog;
+import com.rymcu.mortise.log.annotation.OperationLog;
 import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.exception.AccountExistsException;
 import com.rymcu.mortise.system.model.auth.*;
@@ -57,6 +59,8 @@ public class AuthController {
     })
     @RateLimit(limitForPeriod = 5, refreshPeriodSeconds = 300, message = "登录请求过于频繁，请 5 分钟后再试")
     @PostMapping("/login")
+        @ApiLog(value = "用户登录", recordRequestBody = false, recordResponseBody = false)
+        @OperationLog(module = "认证管理", operation = "用户登录", recordParams = false)
     public GlobalResult<TokenUser> login(
             @Parameter(description = "登录请求", required = true)
             @Valid @RequestBody LoginInfo loginInfo) {
@@ -75,6 +79,8 @@ public class AuthController {
     })
     @RateLimit(limitForPeriod = 3, refreshPeriodSeconds = 600, message = "注册请求过于频繁，请 10 分钟后再试")
     @PostMapping("/register")
+        @ApiLog(value = "用户注册", recordRequestBody = false)
+        @OperationLog(module = "认证管理", operation = "用户注册", recordParams = false, recordResult = true)
     public GlobalResult<Boolean> register(
             @Parameter(description = "注册请求", required = true)
             @Valid @RequestBody RegisterInfo registerInfo) throws AccountExistsException {
@@ -98,6 +104,8 @@ public class AuthController {
     })
     @PostMapping("/refresh-token")
     @RateLimit(limitForPeriod = 20, refreshPeriodSeconds = 300, message = "刷新 Token 请求过于频繁，请 5 分钟后再试")
+        @ApiLog(value = "刷新Token", recordRequestBody = false, recordResponseBody = false)
+        @OperationLog(module = "认证管理", operation = "刷新Token", recordParams = false)
     public GlobalResult<TokenUser> refreshToken(
             @Parameter(description = "刷新 Token 请求", required = true)
             @Valid @RequestBody RefreshTokenInfo refreshTokenInfo) {
@@ -114,6 +122,8 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "登出成功")
     })
     @PostMapping("/logout")
+        @ApiLog(value = "用户登出", recordRequestBody = false, recordResponseBody = false)
+        @OperationLog(module = "认证管理", operation = "用户登出", recordParams = false)
     public GlobalResult<?> logout(
             @AuthenticationPrincipal UserDetailInfo userDetails,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
@@ -147,6 +157,7 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "未认证")
     })
     @GetMapping("/me")
+    @ApiLog(value = "获取当前用户信息", recordRequestBody = false, recordResponseBody = false)
     public GlobalResult<ObjectNode> getUserSession(@AuthenticationPrincipal UserDetailInfo userDetails) {
         log.info("获取用户会话信息: {}", userDetails.getUsername());
         AuthInfo authInfo = authService.userSession(userDetails.getUser());
@@ -165,6 +176,7 @@ public class AuthController {
             @ApiResponse(responseCode = "401", description = "未认证")
     })
     @GetMapping("/menus")
+    @ApiLog(value = "获取当前用户菜单", recordRequestBody = false)
     public GlobalResult<List<Link>> menus(@AuthenticationPrincipal UserDetailInfo userDetails) {
         List<Link> menus = authService.userMenus(userDetails.getUser());
         return GlobalResult.success(menus);
@@ -176,6 +188,8 @@ public class AuthController {
             @ApiResponse(responseCode = "404", description = "账号不存在")
     })
     @GetMapping("/password/request")
+    @ApiLog(value = "忘记密码", recordRequestBody = false, recordResponseBody = false)
+    @OperationLog(module = "认证管理", operation = "忘记密码", recordParams = true, recordResult = false)
     public GlobalResult<String> requestPasswordReset(@RequestParam("email") String email) throws MessagingException, ServiceException, AccountNotFoundException {
         authService.requestPasswordReset(email);
         return GlobalResult.success(ResultCode.SUCCESS.getMessage());
@@ -187,6 +201,8 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "验证码无效或已过期")
     })
     @PatchMapping("/password/reset")
+    @ApiLog(value = "重置密码", recordRequestBody = false, recordResponseBody = false)
+    @OperationLog(module = "认证管理", operation = "重置密码", recordParams = false, recordResult = true)
     public GlobalResult<Boolean> resetPassword(@RequestBody ForgetPasswordInfo forgetPassword) throws ServiceException {
         boolean flag = authService.forgetPassword(forgetPassword.getCode(), forgetPassword.getPassword());
         return GlobalResult.success(flag);
@@ -198,6 +214,8 @@ public class AuthController {
             @ApiResponse(responseCode = "400", description = "邮箱已存在")
     })
     @GetMapping("/email/request")
+    @ApiLog(value = "发送邮箱验证", recordRequestBody = false, recordResponseBody = false)
+    @OperationLog(module = "认证管理", operation = "发送邮箱验证码", recordParams = true, recordResult = false)
     public GlobalResult<String> requestEmailVerify(@RequestParam("email") String email) throws MessagingException, AccountExistsException {
         authService.requestEmailVerify(email);
         return GlobalResult.success(ResultCode.SUCCESS.getMessage());
@@ -214,6 +232,8 @@ public class AuthController {
     })
     @RateLimit(limitForPeriod = 5, refreshPeriodSeconds = 300, message = "兑换 Token 请求过于频繁,请 5 分钟后再试")
     @GetMapping("/callback")
+    @ApiLog(value = "OAuth2兑换Token", recordRequestBody = false, recordResponseBody = false)
+    @OperationLog(module = "认证管理", operation = "OAuth2兑换Token", recordParams = false)
     public GlobalResult<TokenUser> oauth2Login(
             @Parameter(description = "兑换 Token 请求", required = true)
             @Valid @RequestParam("state") String state) {

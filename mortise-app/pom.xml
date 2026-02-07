@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.rymcu</groupId>
         <artifactId>mortise</artifactId>
-        <version>0.0.1</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>mortise-app</artifactId>
@@ -65,17 +65,22 @@
 
         <dependency>
             <groupId>com.rymcu</groupId>
-            <artifactId>mortise-wechat</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.rymcu</groupId>
             <artifactId>mortise-persistence</artifactId>
         </dependency>
 
         <dependency>
             <groupId>com.rymcu</groupId>
+            <artifactId>mortise-member</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.rymcu</groupId>
             <artifactId>mortise-file</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-wechat</artifactId>
         </dependency>
 
         <dependency>
@@ -129,6 +134,17 @@
                         </exclude>
                     </excludes>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>repackage</id>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                        <configuration>
+                            <attach>false</attach>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

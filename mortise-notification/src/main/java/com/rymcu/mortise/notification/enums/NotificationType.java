@@ -1,10 +1,13 @@
 package com.rymcu.mortise.notification.enums;
 
+import lombok.Getter;
+
 /**
  * 通知类型枚举
  *
  * @author ronger
  */
+@Getter
 public enum NotificationType {
 
     /**
@@ -25,7 +28,12 @@ public enum NotificationType {
     /**
      * 推送通知
      */
-    PUSH("push", "推送通知");
+    PUSH("push", "推送通知"),
+
+    /**
+     * 微信通知
+     */
+    WECHAT("wechat", "微信通知");
 
     private final String code;
     private final String description;
@@ -35,11 +43,4 @@ public enum NotificationType {
         this.description = description;
     }
 
-    public String getCode() {
-        return code;
-    }
-
-    public String getDescription() {
-        return description;
-    }
 }

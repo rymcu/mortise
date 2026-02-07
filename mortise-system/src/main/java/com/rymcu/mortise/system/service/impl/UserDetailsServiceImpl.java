@@ -1,6 +1,7 @@
 package com.rymcu.mortise.system.service.impl;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.rymcu.mortise.auth.enumerate.UserType;
 import com.rymcu.mortise.auth.service.CustomUserDetailsService;
 import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.core.result.ResultCode;
@@ -40,11 +41,6 @@ import static com.rymcu.mortise.system.entity.table.UserTableDef.USER;
 @Slf4j
 @Service
 public class UserDetailsServiceImpl implements CustomUserDetailsService {
-
-    /**
-     * 用户类型标识：系统用户
-     */
-    private static final String USER_TYPE = "system";
 
     @Resource
     private UserMapper userMapper;
@@ -101,7 +97,7 @@ public class UserDetailsServiceImpl implements CustomUserDetailsService {
         } catch (Exception e) {
             log.error("加载用户权限失败: userId={}", user.getId(), e);
             // 权限加载失败时给予基础权限
-            permissions = Set.of("user");
+            permissions = Set.of("ROLE_USER");
         }
 
         // 6. 转换为 Spring Security 的 GrantedAuthority
@@ -127,7 +123,7 @@ public class UserDetailsServiceImpl implements CustomUserDetailsService {
      */
     @Override
     public Boolean supports(String userType) {
-        boolean supported = USER_TYPE.equals(userType);
+        boolean supported = UserType.SYSTEM.getCode().equals(userType);
         log.debug("用户类型检查: type={}, supported={}", userType, supported);
         return supported;
     }

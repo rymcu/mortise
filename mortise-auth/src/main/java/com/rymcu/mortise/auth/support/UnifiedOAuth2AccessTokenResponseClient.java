@@ -1,5 +1,6 @@
 package com.rymcu.mortise.auth.support;
 
+import com.rymcu.mortise.auth.util.OAuth2ProviderUtils;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -82,7 +83,7 @@ public class UnifiedOAuth2AccessTokenResponseClient
         log.debug("处理 OAuth2 Token 请求: registrationId={}", registrationId);
 
         // 根据 registrationId 判断使用哪个客户端
-        if (isWeChatProvider(registrationId)) {
+        if (OAuth2ProviderUtils.isWeChatProvider(registrationId)) {
             log.info("使用微信专用 Token 客户端处理: {}", registrationId);
             return weChatClient.getTokenResponse(authorizationCodeGrantRequest);
         }
@@ -191,22 +192,4 @@ public class UnifiedOAuth2AccessTokenResponseClient
         return restTemplate;
     }
 
-    /**
-     * 判断是否是微信相关的提供商
-     *
-     * @param registrationId 客户端注册ID
-     * @return 是否是微信提供商
-     */
-    private boolean isWeChatProvider(String registrationId) {
-        if (registrationId == null) {
-            return false;
-        }
-
-        String lowerCaseId = registrationId.toLowerCase();
-
-        // 支持多种微信相关的命名模式
-        return lowerCaseId.contains("wechat") ||
-               lowerCaseId.contains("weixin") ||
-               lowerCaseId.startsWith("wx");
-    }
 }

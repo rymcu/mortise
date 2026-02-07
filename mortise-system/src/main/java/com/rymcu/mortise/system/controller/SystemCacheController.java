@@ -1,6 +1,7 @@
 package com.rymcu.mortise.system.controller;
 
 import com.rymcu.mortise.core.result.GlobalResult;
+import com.rymcu.mortise.log.annotation.ApiLog;
 import com.rymcu.mortise.log.annotation.OperationLog;
 import com.rymcu.mortise.system.service.SystemCacheService;
 import com.rymcu.mortise.web.annotation.RateLimit;
@@ -32,6 +33,7 @@ public class SystemCacheController {
      */
     @DeleteMapping("/user/{userId}")
     @Operation(summary = "清除用户缓存")
+    @ApiLog("清除用户缓存")
     @OperationLog(module = "系统缓存", operation = "清除用户缓存")
     public GlobalResult<Void> evictUserCache(@PathVariable Long userId) {
         systemCacheService.evictUserAllCache(userId);
@@ -43,6 +45,7 @@ public class SystemCacheController {
      */
     @DeleteMapping("/dict/{dictType}")
     @Operation(summary = "清除字典缓存")
+    @ApiLog("清除字典缓存")
     @OperationLog(module = "系统缓存", operation = "清除字典缓存")
     public GlobalResult<Void> evictDictCache(@PathVariable String dictType) {
         systemCacheService.evictDictData(dictType);
@@ -54,6 +57,7 @@ public class SystemCacheController {
      */
     @DeleteMapping("/dict/all")
     @Operation(summary = "清除所有字典缓存")
+    @ApiLog("清除所有字典缓存")
     @OperationLog(module = "系统缓存", operation = "清除所有字典缓存")
     @RateLimit(name = "admin", message = "操作过于频繁")
     public GlobalResult<Void> evictAllDictCache() {
@@ -66,6 +70,8 @@ public class SystemCacheController {
      */
     @PostMapping("/verification-code")
     @Operation(summary = "发送验证码")
+    @ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "发送验证码")
+    @OperationLog(module = "系统缓存", operation = "发送验证码", recordParams = false)
     @RateLimit(name = "verification-code", message = "验证码发送过于频繁，请稍后再试")
     public GlobalResult<Void> sendVerificationCode(@RequestParam String email) {
         // 生成验证码
@@ -75,7 +81,7 @@ public class SystemCacheController {
         systemCacheService.cacheVerificationCode(email, code, Duration.ofMinutes(5));
 
         // TODO: 发送邮件（通过 SystemNotificationService）
-        log.info("验证码已发送: email={}, code={}", email, code);
+        log.info("验证码已生成并缓存");
 
         return GlobalResult.success();
     }
@@ -85,6 +91,7 @@ public class SystemCacheController {
      */
     @PostMapping("/verification-code/verify")
     @Operation(summary = "验证验证码")
+    @ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "验证验证码")
     public GlobalResult<Boolean> verifyCode(@RequestParam String email, @RequestParam String code) {
         String cachedCode = systemCacheService.getVerificationCode(email);
 

@@ -1,6 +1,8 @@
 package com.rymcu.mortise.system.controller;
 
 import com.rymcu.mortise.core.result.GlobalResult;
+import com.rymcu.mortise.log.annotation.ApiLog;
+import com.rymcu.mortise.log.annotation.OperationLog;
 import com.rymcu.mortise.system.model.SystemInitInfo;
 import com.rymcu.mortise.system.service.SystemInitService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -55,6 +57,7 @@ public class SystemInitController {
         )
     })
     @GetMapping("/status")
+    @ApiLog("检查系统初始化状态")
     public GlobalResult<Map<String, Object>> checkInitStatus() {
         Map<String, Object> result = new HashMap<>();
         result.put("initialized", systemInitService.isSystemInitialized());
@@ -120,6 +123,8 @@ public class SystemInitController {
         )
     )
     @PostMapping("/initialize")
+    @ApiLog(recordRequestBody = false, recordResponseBody = false, recordParams = false, value = "执行系统初始化")
+    @OperationLog(module = "系统初始化", operation = "执行系统初始化", recordParams = false, recordResult = false)
     public GlobalResult<String> initializeSystem(@org.springframework.web.bind.annotation.RequestBody SystemInitInfo initInfo) {
         // 检查是否已初始化
         if (systemInitService.isSystemInitialized()) {
@@ -166,6 +171,7 @@ public class SystemInitController {
         )
     })
     @GetMapping("/progress")
+    @ApiLog("获取初始化进度")
     public GlobalResult<Map<String, Object>> getInitProgress() {
         Map<String, Object> result = new HashMap<>();
         result.put("progress", systemInitService.getInitializationProgress());

@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.rymcu</groupId>
         <artifactId>mortise</artifactId>
-        <version>0.0.1</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>mortise-auth</artifactId>
@@ -28,6 +28,7 @@
             <artifactId>mortise-cache</artifactId>
         </dependency>
 
+        <!-- 传递 MyBatis-Flex 依赖，用于 OAuth2 客户端配置的数据库持久化 -->
         <dependency>
             <groupId>com.rymcu</groupId>
             <artifactId>mortise-persistence</artifactId>

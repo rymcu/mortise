@@ -9,15 +9,15 @@ package com.rymcu.mortise.auth.constant;
  */
 public class JwtConstants {
 
+    /**
+     * HTTP Authorization 请求头名称
+     */
     public static final String AUTHORIZATION = "Authorization";
-    public static final String UPLOAD_TOKEN = "X-Upload-Token";
-    public static final String CURRENT_USER_NAME = "CURRENT_TOKEN_USER_NAME";
-    public static final String CURRENT_TOKEN_CLAIMS = "CURRENT_TOKEN_CLAIMS";
 
-    public static final long TOKEN_EXPIRES_HOUR = 2;
-    public static final long LAST_ONLINE_EXPIRES_MINUTE = 10;
+    /**
+     * JWT Token 默认过期时间（分钟）
+     */
     public static final long TOKEN_EXPIRES_MINUTE = 15;
-    public static final long REFRESH_TOKEN_EXPIRES_HOUR = 2;
 
     /**
      * 私有构造函数，防止实例化

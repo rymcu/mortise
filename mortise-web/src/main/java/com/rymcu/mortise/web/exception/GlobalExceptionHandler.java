@@ -15,6 +15,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.stream.Collectors;
 
@@ -135,6 +137,26 @@ public class GlobalExceptionHandler {
 
         // 建议在 ResultCode 中定义一个专门用于数据冲突的枚举
         return GlobalResult.error(ResultCode.DATA_CONFLICT, userMessage);
+    }
+
+    /**
+     * 处理404错误 - 找不到请求的资源
+     * <p>
+     * 需要配置 spring.mvc.throw-exception-if-no-handler-found=true
+     * 和 spring.web.resources.add-mappings=false (仅在不需要默认静态资源映射时)
+     */
+    @ExceptionHandler(NoHandlerFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public GlobalResult<Void> handleNotFoundException(NoHandlerFoundException e) {
+        log.warn("请求的资源不存在: {} {}", e.getHttpMethod(), e.getRequestURL());
+        return GlobalResult.error(ResultCode.NOT_FOUND, "请求的资源不存在");
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public GlobalResult<Void> handleNotResourceFoundException(NoResourceFoundException e) {
+        log.warn("请求的资源不存在: {} {}", e.getHttpMethod(), e.getResourcePath());
+        return GlobalResult.error(ResultCode.NOT_FOUND, "请求的资源不存在");
     }
 
     /**

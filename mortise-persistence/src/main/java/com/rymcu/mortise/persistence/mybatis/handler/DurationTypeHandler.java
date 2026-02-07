@@ -3,13 +3,13 @@ package com.rymcu.mortise.persistence.mybatis.handler;
 import org.apache.ibatis.type.BaseTypeHandler;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.MappedTypes;
+import org.postgresql.util.PGInterval;
 
 import java.sql.CallableStatement;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.Duration;
-import org.postgresql.util.PGInterval;
 
 /**
  * Created on 2025/10/29 15:27.

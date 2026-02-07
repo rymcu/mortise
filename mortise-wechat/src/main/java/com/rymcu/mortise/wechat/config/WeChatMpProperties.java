@@ -1,5 +1,6 @@
 package com.rymcu.mortise.wechat.config;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
 import java.util.List;
@@ -184,6 +185,7 @@ public class WeChatMpProperties {
     /**
      * 获取所有启用的配置
      */
+    @JsonIgnore
     public List<Config> getEnabledConfigs() {
         if (configs == null || configs.isEmpty()) {
             return List.of();
@@ -196,6 +198,7 @@ public class WeChatMpProperties {
     /**
      * 根据 AppID 获取配置
      */
+    @JsonIgnore
     public Config getConfigByAppId(String appId) {
         if (configs == null || configs.isEmpty()) {
             return null;

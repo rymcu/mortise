@@ -154,7 +154,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
         }
 
         account.setUpdatedTime(LocalDateTime.now());
-        int rows = mapper.insertOrUpdateSelective(account);
+        int rows = mapper.update(account);
         log.info("更新微信账号成功，id: {}", account.getId());
         return rows > 0;
     }
@@ -166,7 +166,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
         // 删除账号的所有配置
         configMapper.deleteByQuery(QueryWrapper.create()
                 .from(WeChatConfig.class)
-                .where("account_id = {0}", accountId));
+                .where(WE_CHAT_CONFIG.ACCOUNT_ID.eq(accountId)));
 
         // 删除账号
         int rows = mapper.deleteById(accountId);
@@ -189,7 +189,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
         // 设置为默认
         account.setIsDefault(DefaultFlag.YES.ordinal());
         account.setUpdatedTime(LocalDateTime.now());
-        int rows = mapper.insertOrUpdateSelective(account);
+        int rows = mapper.update(account);
         log.info("设置默认账号成功，id: {}, type: {}", accountId, account.getAccountType());
         return rows > 0;
     }
@@ -205,7 +205,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
 
         account.setIsEnabled(enabled ? 1 : 0);
         account.setUpdatedTime(LocalDateTime.now());
-        int rows = mapper.insertOrUpdateSelective(account);
+        int rows = mapper.update(account);
         log.info("{}账号成功，id: {}", enabled ? "启用" : "禁用", accountId);
         return rows > 0;
     }
@@ -240,7 +240,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
             existing.setConfigValue(finalValue);
             existing.setIsEncrypted(isEncrypted);
             existing.setUpdatedTime(LocalDateTime.now());
-            int rows = configMapper.insertOrUpdateSelective(existing);
+            int rows = configMapper.update(existing);
             log.info("更新配置成功，accountId: {}, key: {}", accountId, configKey);
             return rows > 0;
         } else {
@@ -311,7 +311,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
             throw new IllegalArgumentException("账号名称不能为空");
         }
         if (!StringUtils.hasText(account.getAppId())) {
-            throw new IllegalArgumentException("AppID不能为空");
+            throw new IllegalArgumentException("AppID 不能为空");
         }
     }
 
@@ -344,7 +344,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
             if (account.getIsDefault() != null && account.getIsDefault() == 1) {
                 account.setIsDefault(0);
                 account.setUpdatedTime(LocalDateTime.now());
-                mapper.insertSelective(account);
+                mapper.update(account);
             }
         }
     }

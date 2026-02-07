@@ -108,6 +108,27 @@ public class SystemCacheConfigurer implements CacheConfigurer {
         configs.put(SystemCacheConstant.TEMP_DATA_CACHE,
                 defaultConfig.entryTtl(Duration.ofMinutes(SystemCacheConstant.TEMP_DATA_EXPIRE_MINUTES)));
 
+        // === 用户会话与状态缓存 ===
+        configs.put(SystemCacheConstant.USER_SESSION_CACHE,
+                defaultConfig.entryTtl(Duration.ofHours(SystemCacheConstant.USER_SESSION_EXPIRE_HOURS)));
+
+        configs.put(SystemCacheConstant.USER_ONLINE_STATUS_CACHE,
+                defaultConfig.entryTtl(Duration.ofMinutes(SystemCacheConstant.USER_ONLINE_STATUS_EXPIRE_MINUTES)));
+
+        configs.put(SystemCacheConstant.ACCOUNT_SEQUENCE_CACHE,
+                defaultConfig.entryTtl(Duration.ofHours(SystemCacheConstant.ACCOUNT_SEQUENCE_EXPIRE_HOURS)));
+
+        // === 密码重置缓存 ===
+        configs.put(SystemCacheConstant.PASSWORD_RESET_TOKEN_CACHE,
+                defaultConfig.entryTtl(Duration.ofMinutes(SystemCacheConstant.PASSWORD_RESET_TOKEN_EXPIRE_MINUTES)));
+
+        // === 登录限制缓存 ===
+        configs.put(SystemCacheConstant.LOGIN_FAIL_COUNT_CACHE,
+                defaultConfig.entryTtl(Duration.ofMinutes(SystemCacheConstant.LOGIN_FAIL_COUNT_EXPIRE_MINUTES)));
+
+        configs.put(SystemCacheConstant.ACCOUNT_LOCK_CACHE,
+                defaultConfig.entryTtl(Duration.ofHours(SystemCacheConstant.ACCOUNT_LOCK_EXPIRE_HOURS)));
+
         log.info("系统缓存配置已加载: {} 个缓存策略", configs.size());
 
         return configs;

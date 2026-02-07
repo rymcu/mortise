@@ -21,7 +21,17 @@ public class OperationLogEntity {
     /**
      * 日志ID
      */
-    private String id;
+    private Long id;
+
+    /**
+     * 链路追踪ID
+     */
+    private String traceId;
+
+    /**
+     * 客户端类型: system-后台管理, app-App端, web-Web端, api-开放API
+     */
+    private String clientType;
 
     /**
      * 模块名称
@@ -54,6 +64,16 @@ public class OperationLogEntity {
     private String method;
 
     /**
+     * 请求URI
+     */
+    private String requestUri;
+
+    /**
+     * 请求方式 (GET/POST/PUT/DELETE)
+     */
+    private String requestMethod;
+
+    /**
      * 请求参数
      */
     private String params;
@@ -67,6 +87,11 @@ public class OperationLogEntity {
      * IP 地址
      */
     private String ip;
+
+    /**
+     * 用户代理
+     */
+    private String userAgent;
 
     /**
      * 执行耗时（毫秒）

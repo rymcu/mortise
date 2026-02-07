@@ -86,8 +86,8 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
     public Page<Oauth2ClientConfig> findOauth2ClientConfigs(Page<Oauth2ClientConfig> page, OAuth2ClientConfigSearch search) {
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .select()
-                .where(OAUTH2_CLIENT_CONFIG.REGISTRATION_ID.eq(search.getRegistrationId(), String::isEmpty))
-                .and(OAUTH2_CLIENT_CONFIG.CLIENT_ID.eq(search.getClientId(), String::isEmpty));
+                .where(OAUTH2_CLIENT_CONFIG.REGISTRATION_ID.eq(search.getRegistrationId(), StringUtils::hasText))
+                .and(OAUTH2_CLIENT_CONFIG.CLIENT_ID.eq(search.getClientId(), StringUtils::hasText));
         return mapper.paginate(page, queryWrapper);
     }
 
@@ -136,6 +136,15 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
         int rows = mapper.insertOrUpdateSelective(config);
         log.info("更新微信账号成功，id: {}", config.getId());
         return rows > 0;
+    }
+
+    @Override
+    public Oauth2ClientConfig loadOauth2ClientConfigByClientId(String clientId) {
+        QueryWrapper queryWrapper = QueryWrapper.create()
+                .where(OAUTH2_CLIENT_CONFIG.CLIENT_ID.eq(clientId))
+                .and(OAUTH2_CLIENT_CONFIG.IS_ENABLED.eq(EnabledFlag.YES.ordinal()));
+
+        return mapper.selectOneByQuery(queryWrapper);
     }
 
 

@@ -49,6 +49,26 @@ public class SystemCacheConstant {
     public static final long USER_ONLINE_STATUS_EXPIRE_MINUTES = 30;
 
     /**
+     * 账号序列缓存（用于防止并发登录）
+     */
+    public static final String ACCOUNT_SEQUENCE_CACHE = "account:sequence";
+    public static final long ACCOUNT_SEQUENCE_EXPIRE_HOURS = 8760; // 1年
+
+    // ==================== 登录安全缓存 ====================
+
+    /**
+     * 登录失败次数缓存（用于限制登录尝试）
+     */
+    public static final String LOGIN_FAIL_COUNT_CACHE = "login:fail-count";
+    public static final long LOGIN_FAIL_COUNT_EXPIRE_MINUTES = 30;
+
+    /**
+     * 账号锁定缓存
+     */
+    public static final String ACCOUNT_LOCK_CACHE = "account:lock";
+    public static final long ACCOUNT_LOCK_EXPIRE_HOURS = 1;
+
+    /**
      * 临时数据缓存
      */
     public static final String TEMP_DATA_CACHE = "temp:data";

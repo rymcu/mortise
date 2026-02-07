@@ -8,7 +8,7 @@
     <parent>
         <groupId>com.rymcu</groupId>
         <artifactId>mortise</artifactId>
-        <version>0.0.1</version>
+        <version>${revision}</version>
     </parent>
 
     <artifactId>mortise-wechat</artifactId>
@@ -27,6 +27,10 @@
         <dependency>
             <groupId>com.rymcu</groupId>
             <artifactId>mortise-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-notification</artifactId>
         </dependency>
         <dependency>
             <groupId>com.rymcu</groupId>

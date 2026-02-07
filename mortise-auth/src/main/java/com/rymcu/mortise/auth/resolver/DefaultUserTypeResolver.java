@@ -2,6 +2,8 @@ package com.rymcu.mortise.auth.resolver;
 
 import com.rymcu.mortise.auth.enumerate.UserType;
 import com.rymcu.mortise.auth.spi.UserTypeResolver;
+import com.rymcu.mortise.common.constant.ClientTypeConstant;
+import com.rymcu.mortise.common.constant.HttpHeaderConstant;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,13 +42,13 @@ public class DefaultUserTypeResolver implements UserTypeResolver {
     /**
      * 用户类型请求头名称
      */
-    @Value("${mortise.auth.user-type.header-name:x-client-type}")
+    @Value("${mortise.auth.user-type.header-name:" + HttpHeaderConstant.X_CLIENT_TYPE + "}")
     private String headerName;
 
     /**
      * 会员用户路径前缀列表
      */
-    @Value("${mortise.auth.user-type.member-paths:/api/app,/api/member,/api/v1/app}")
+    @Value("#{'${mortise.auth.user-type.member-paths:/api/app,/api/member,/api/v1/app}'.split(',')}")
     private List<String> memberPaths;
 
     /**
@@ -60,22 +62,45 @@ public class DefaultUserTypeResolver implements UserTypeResolver {
         // 1. 优先从请求头获取用户类型
         String clientType = request.getHeader(headerName);
         if (StringUtils.hasText(clientType)) {
-            String userType = clientType.toLowerCase().trim();
-            log.debug("从请求头 {} 获取用户类型: {}", headerName, userType);
-            return userType;
+            String raw = clientType.toLowerCase().trim();
+
+            // 兼容：如果上游直接传 userType（system/member），则直接返回
+            if (UserType.SYSTEM.getCode().equals(raw) || UserType.MEMBER.getCode().equals(raw)) {
+                log.debug("从请求头 {} 获取用户类型(userType): {}", headerName, raw);
+                return raw;
+            }
+
+            // 统一：将 x-client-type 视为 clientType，再映射为 userType
+            String normalizedClientType = ClientTypeConstant.normalize(raw);
+            String userType = switch (normalizedClientType) {
+                case ClientTypeConstant.SYSTEM -> UserType.SYSTEM.getCode();
+                case ClientTypeConstant.APP, ClientTypeConstant.WEB, ClientTypeConstant.API -> UserType.MEMBER.getCode();
+                default -> null;
+            };
+
+            if (userType != null) {
+                log.debug("从请求头 {} 获取客户端类型(clientType): {} -> userType: {}", headerName, normalizedClientType, userType);
+                return userType;
+            }
         }
 
-        // 2. 根据请求路径判断
+        // 2. 根据请求路径判断（兼容存在 context-path 的场景）
         String requestUri = request.getRequestURI();
+        String contextPath = request.getContextPath();
+        String path = requestUri;
+        if (StringUtils.hasText(contextPath) && path.startsWith(contextPath)) {
+            path = path.substring(contextPath.length());
+        }
+
         for (String memberPath : memberPaths) {
-            if (requestUri.startsWith(memberPath)) {
-                log.debug("根据请求路径判断用户类型: {} -> {}", requestUri, UserType.MEMBER.getCode());
+            if (path.startsWith(memberPath)) {
+                log.debug("根据请求路径判断用户类型: {} (raw: {}) -> {}", path, requestUri, UserType.MEMBER.getCode());
                 return UserType.MEMBER.getCode();
             }
         }
 
         // 3. 返回默认用户类型
-        log.debug("使用默认用户类型: {} -> {}", requestUri, defaultUserType);
+        log.debug("使用默认用户类型: {} (raw: {}) -> {}", path, requestUri, defaultUserType);
         return defaultUserType;
     }
 
