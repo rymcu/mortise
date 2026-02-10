@@ -4,6 +4,7 @@ import com.rymcu.mortise.auth.enumerate.QrcodeState;
 import com.rymcu.mortise.auth.model.QRCodeResult;
 import com.rymcu.mortise.auth.service.AuthCacheService;
 import com.rymcu.mortise.auth.service.QRCodeLoginService;
+import com.rymcu.mortise.auth.service.SilentAuthService;
 import com.rymcu.mortise.auth.support.UnifiedOAuth2AuthorizationRequestResolver;
 import com.rymcu.mortise.auth.util.OAuth2ProviderUtils;
 import com.rymcu.mortise.core.result.GlobalResult;
@@ -14,6 +15,7 @@ import com.rymcu.mortise.member.api.model.OAuth2LoginResponse;
 import com.rymcu.mortise.member.api.model.OAuth2QRCodeResponse;
 import com.rymcu.mortise.member.api.model.OAuth2QRCodeStateResponse;
 import com.rymcu.mortise.member.api.model.QRCodeLoginResponse;
+import com.rymcu.mortise.member.api.model.WeChatOpenIdResponse;
 import com.rymcu.mortise.member.api.service.OAuth2MemberBindingService;
 import com.rymcu.mortise.web.annotation.ApiController;
 import io.micrometer.common.util.StringUtils;
@@ -65,6 +67,7 @@ public class OAuth2AuthController {
     private final AuthCacheService authCacheService;
     private final QRCodeLoginService qrCodeLoginService;
     private final OAuth2MemberBindingService oauth2MemberBindingService;
+    private final SilentAuthService silentAuthService;
 
     @Operation(
             summary = "获取微信 OAuth2 二维码登录链接（PC 端扫码）",
@@ -366,6 +369,99 @@ public class OAuth2AuthController {
         }
     }
 
+
+    // ==================== 静默授权（无感获取 openid，绕开 Spring Security OAuth2 登录流程）====================
+
+    @Operation(
+            summary = "获取微信静默授权 URL（无感获取 openid）",
+            description = """
+                    获取微信 snsapi_base 静默授权链接。\
+                    与 /wechat/mobile/auth-url 的关键区别：此接口的 redirect_uri 指向前端页面，\
+                    微信会将 code 直接回调给前端，不经过 Spring Security OAuth2 登录流程，\
+                    因此不会触发重新登录。\
+                    
+                    
+                    适用场景：用户已登录，仅需获取 openid 做业务操作（如 JSAPI 支付、消息推送）。
+                    
+                    
+                    使用流程：
+                    1. 前端调用此接口获取静默授权 URL
+                    2. 前端执行 location.href 跳转（用户无感知）
+                    3. 微信回调前端页面 redirectUri?code=xxx&state=xxx
+                    4. 前端用 code 调用 /wechat/silent/openid 换取 openid"""
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "成功获取静默授权 URL"),
+            @ApiResponse(responseCode = "500", description = "服务器内部错误")
+    })
+    @GetMapping("/wechat/silent/auth-url")
+    @ApiLog(value = "获取微信静默授权URL", recordRequestBody = false, recordResponseBody = false)
+    public GlobalResult<OAuth2AuthUrlResponse> getSilentAuthUrl(
+            @Parameter(name = "appId", description = "微信公众号 appId，为空时使用默认账号")
+            @RequestParam(value = "appId", defaultValue = "") String appId,
+            @Parameter(name = "redirectUri", description = "授权回调地址（前端页面 URL，不是后端回调）", required = true)
+            @RequestParam("redirectUri") String redirectUri) {
+
+        log.debug("获取微信静默授权 URL - appId: {}, redirectUri: {}", appId, redirectUri);
+
+        String state = UUID.randomUUID().toString().replace("-", "");
+        String authUrl = silentAuthService.buildSilentAuthUrl(appId, redirectUri, state);
+
+        OAuth2AuthUrlResponse response = new OAuth2AuthUrlResponse(
+                authUrl,
+                state,
+                null,
+                null,
+                null,
+                null
+        );
+
+        return GlobalResult.success(response);
+    }
+
+    @Operation(
+            summary = "通过授权码换取 openid（静默授权）",
+            description = """
+                    使用微信静默授权回调中携带的 code 换取用户 openid。\
+                    直接调用微信 API，不经过 Spring Security OAuth2 登录流程，\
+                    不会触发重新登录或用户绑定。\
+                    
+                    
+                    注意：每个 code 只能使用一次，且有效期为 5 分钟。"""
+    )
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "成功获取 openid"),
+            @ApiResponse(responseCode = "400", description = "授权码无效或已过期"),
+            @ApiResponse(responseCode = "500", description = "服务器内部错误")
+    })
+    @GetMapping("/wechat/silent/openid")
+    @ApiLog(value = "静默获取微信openid", recordRequestBody = false, recordResponseBody = false)
+    public GlobalResult<WeChatOpenIdResponse> getOpenIdByCode(
+            @Parameter(name = "code", description = "微信授权码", required = true)
+            @RequestParam("code") String code,
+            @Parameter(name = "appId", description = "微信公众号 appId，为空时使用默认账号")
+            @RequestParam(value = "appId", defaultValue = "") String appId) {
+
+        log.info("静默获取微信 openid - appId: {}", appId);
+
+        try {
+            String openId = silentAuthService.getOpenIdByCode(appId, code);
+
+            // 查询是否已绑定平台会员
+            OAuth2LoginResponse memberInfo = oauth2MemberBindingService.findMemberByOpenid(openId, OAuth2ProviderUtils.PROVIDER_WECHAT_MP);
+
+            WeChatOpenIdResponse response = new WeChatOpenIdResponse(
+                    openId,
+                    memberInfo != null,
+                    memberInfo != null ? memberInfo.memberId() : null
+            );
+
+            return GlobalResult.success(response);
+        } catch (Exception e) {
+            log.error("静默获取微信 openid 失败", e);
+            return GlobalResult.error("获取 openid 失败: " + e.getMessage());
+        }
+    }
 
     // ==================== 内部方法 ====================
 
