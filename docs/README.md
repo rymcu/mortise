@@ -22,6 +22,12 @@ Mortise 是一个基于 **Spring Boot 3.5.7** 构建的现代化后台管理脚�
 - [architecture/project-architecture-optimization.md](architecture/project-architecture-optimization.md)
 - [architecture/module-dependency-and-spi-architecture.md](architecture/module-dependency-and-spi-architecture.md)
 - [architecture/ARCHITECTURE_REFACTOR_PLAN.md](architecture/ARCHITECTURE_REFACTOR_PLAN.md)
+### 📌 需求规范 (spec-kit)
+- [specs/README.md](specs/README.md)
+- [specs/WORKFLOW.md](specs/WORKFLOW.md)
+- [specs/templates/feature-spec.md](specs/templates/feature-spec.md)
+- [specs/templates/feature-spec-lite.md](specs/templates/feature-spec-lite.md)
+- [specs/INDEX.md](specs/INDEX.md)
 
 ### 🛡️ 安全与限流
 - [security/rate-limiting.md](security/rate-limiting.md)

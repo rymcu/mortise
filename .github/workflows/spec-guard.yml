@@ -1,0 +1,18 @@
+name: Spec Guard
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  spec-link-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate spec link
+        shell: bash
+        run: |
+          body='${{ github.event.pull_request.body }}'
+          if ! printf "%s" "$body" | grep -Eq "规范链接:\s*\\S"; then
+            echo "::error::Missing spec link. Please fill the \"规范链接\" field in the PR template."
+            exit 1
+          fi

@@ -758,6 +758,11 @@ psql -U mortise mortise < backup.sql
 - [模块依赖与 SPI 架构](docs/architecture/module-dependency-and-spi-architecture.md) - 模块化设计原则
 - [架构重构计划](docs/architecture/ARCHITECTURE_REFACTOR_PLAN.md) - 重构路线图
 
+### 📌 需求规范 (spec-kit)
+- [规范中心](docs/specs/README.md) - 规范目录与命名规则
+- [落地流程](docs/specs/WORKFLOW.md) - 规范先行流程
+- [规范模板](docs/specs/templates/feature-spec.md) - 新需求模板
+
 ### 🔧 配置与优化
 - [Spring Boot 自动配置优化](docs/configuration/spring-boot-autoconfiguration-optimization.md)
 - [数据库性能优化](docs/database/database-performance-optimization.md)
