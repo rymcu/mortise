@@ -2,4 +2,9 @@
 spring:
   profiles:
     active: '@profileActive@'
+springdoc:
+  swagger-ui:
+    groups-order: ASC
+    operations-sorter: alpha
+    tags-sorter: alpha
 ---

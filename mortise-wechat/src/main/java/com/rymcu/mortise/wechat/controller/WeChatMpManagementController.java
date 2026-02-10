@@ -1,5 +1,6 @@
 package com.rymcu.mortise.wechat.controller;
 
+import com.rymcu.mortise.web.annotation.AdminController;
 import com.rymcu.mortise.wechat.exception.WeChatAccountNotFoundException;
 import com.rymcu.mortise.wechat.service.DynamicWeChatServiceManager;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,7 @@ import java.util.Map;
  * @since 1.0.0
  */
 @Slf4j
-@RestController
+@AdminController
 @RequestMapping("/api/admin/wechat/mp")
 @RequiredArgsConstructor
 public class WeChatMpManagementController {
@@ -171,3 +172,4 @@ public class WeChatMpManagementController {
         return ResponseEntity.ok(result);
     }
 }
+

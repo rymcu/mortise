@@ -12,50 +12,15 @@
     </parent>
 
     <artifactId>mortise-member</artifactId>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
     <name>mortise-member</name>
-    <description>Mortise Member - 会员和商品共享模块</description>
+    <description>Mortise Member - 模块聚合</description>
 
-    <dependencies>
-        <!-- Mortise Core Modules -->
-        <dependency>
-            <groupId>com.rymcu</groupId>
-            <artifactId>mortise-core</artifactId>
-        </dependency>
-
-        <!-- Mortise Infrastructure Modules -->
-        <dependency>
-            <groupId>com.rymcu</groupId>
-            <artifactId>mortise-persistence</artifactId>
-        </dependency>
-
-        <!-- Lombok -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-
-        <!-- Validation -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
-
-        <!-- Test -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
+    <modules>
+        <module>mortise-member-domain</module>
+        <module>mortise-member-application</module>
+        <module>mortise-member-infra</module>
+        <module>mortise-member-admin</module>
+        <module>mortise-member-api</module>
+    </modules>
 </project>

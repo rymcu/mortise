@@ -12,67 +12,15 @@
     </parent>
 
     <artifactId>mortise-system</artifactId>
-    <packaging>jar</packaging>
+    <packaging>pom</packaging>
     <name>mortise-system</name>
-    <description>Mortise System - 系统业务模块</description>
+    <description>Mortise System - 模块聚合</description>
 
-    <dependencies>
-        <!-- Mortise Core Modules -->
-        <dependency>
-            <groupId>com.rymcu</groupId>
-            <artifactId>mortise-common</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.rymcu</groupId>
-            <artifactId>mortise-core</artifactId>
-        </dependency>
-
-        <!-- Mortise Infrastructure Modules -->
-        <dependency>
-            <groupId>com.rymcu</groupId>
-            <artifactId>mortise-log</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.rymcu</groupId>
-            <artifactId>mortise-cache</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.rymcu</groupId>
-            <artifactId>mortise-notification</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.rymcu</groupId>
-            <artifactId>mortise-web</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.rymcu</groupId>
-            <artifactId>mortise-auth</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.rymcu</groupId>
-            <artifactId>mortise-persistence</artifactId>
-        </dependency>
-
-        <!-- Lombok -->
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-            <optional>true</optional>
-        </dependency>
-    </dependencies>
-
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
+    <modules>
+        <module>mortise-system-domain</module>
+        <module>mortise-system-application</module>
+        <module>mortise-system-infra</module>
+        <module>mortise-system-admin</module>
+        <module>mortise-system-api</module>
+    </modules>
 </project>

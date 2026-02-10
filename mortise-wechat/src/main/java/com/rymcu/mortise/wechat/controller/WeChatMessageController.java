@@ -1,5 +1,6 @@
 package com.rymcu.mortise.wechat.controller;
 
+import com.rymcu.mortise.web.annotation.ApiController;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.wechat.entity.TemplateMessage;
 import com.rymcu.mortise.wechat.service.WeChatMessageService;
@@ -22,7 +23,7 @@ import java.util.Map;
  * @since 1.0.0
  */
 @Slf4j
-@RestController
+@ApiController
 @RequestMapping("/api/v1/wechat/messages")
 @RequiredArgsConstructor
 @ConditionalOnBean(WeChatMessageService.class)
@@ -141,3 +142,4 @@ public class WeChatMessageController {
         private String picUrl;
     }
 }
+

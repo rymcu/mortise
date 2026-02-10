@@ -77,13 +77,8 @@ mortise-member/
 ### 2. 使用实体类和 Mapper
 
 ```java
-import com.rymcu.mortise.member.entity.Product;
-import com.rymcu.mortise.member.entity.Member;
-import com.rymcu.mortise.member.entity.Order;
 
-import com.rymcu.mortise.member.mapper.ProductMapper;
-import com.rymcu.mortise.member.mapper.MemberMapper;
-import com.rymcu.mortise.member.mapper.OrderMapper;
+
 ```
 
 ### 3. 扩展基础服务（重要）⭐

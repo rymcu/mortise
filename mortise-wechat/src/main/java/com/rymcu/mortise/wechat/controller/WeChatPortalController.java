@@ -1,5 +1,6 @@
 package com.rymcu.mortise.wechat.controller;
 
+import com.rymcu.mortise.web.annotation.ApiController;
 import com.rymcu.mortise.wechat.service.DynamicWeChatServiceManager;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -23,7 +24,7 @@ import java.util.Optional;
  */
 @Slf4j
 @AllArgsConstructor
-@RestController
+@ApiController
 @RequestMapping("/api/v1/wechat/portal/{appid}")
 @Tag(name = "微信Portal", description = "微信公众号消息回调处理接口")
 public class WeChatPortalController {
@@ -144,3 +145,4 @@ public class WeChatPortalController {
     }
 
 }
+

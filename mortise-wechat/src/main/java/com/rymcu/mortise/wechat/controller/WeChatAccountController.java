@@ -1,5 +1,6 @@
 package com.rymcu.mortise.wechat.controller;
 
+import com.rymcu.mortise.web.annotation.AdminController;
 import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.wechat.entity.WeChatAccount;
@@ -28,7 +29,7 @@ import java.util.List;
  */
 @Tag(name = "微信账号管理", description = "微信账号配置管理相关接口")
 @Slf4j
-@RestController
+@AdminController
 @RequestMapping("/api/v1/wechat/accounts")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
@@ -224,3 +225,4 @@ public class WeChatAccountController {
         return GlobalResult.success();
     }
 }
+

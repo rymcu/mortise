@@ -27,7 +27,8 @@
         <module>mortise-notification</module>
         <module>mortise-auth</module>
         <module>mortise-wechat</module>
-        <module>mortise-web</module>
+        <module>mortise-web-support</module>
+        <module>mortise-test-support</module>
         <module>mortise-system</module>
         <module>mortise-member</module>
         <module>mortise-monitor</module>
@@ -40,6 +41,7 @@
         <!-- CI-Friendly Version -->
         <revision>0.2.0</revision>
 
+        <spring-boot.version>3.5.7</spring-boot.version>
         <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
@@ -97,17 +99,62 @@
             </dependency>
             <dependency>
                 <groupId>com.rymcu</groupId>
-                <artifactId>mortise-web</artifactId>
+                <artifactId>mortise-web-support</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>com.rymcu</groupId>
-                <artifactId>mortise-system</artifactId>
+                <artifactId>mortise-test-support</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
                 <groupId>com.rymcu</groupId>
-                <artifactId>mortise-member</artifactId>
+                <artifactId>mortise-system-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-system-application</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-system-infra</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-system-admin</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-system-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-member-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-member-application</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-member-infra</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-member-admin</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-member-api</artifactId>
                 <version>${revision}</version>
             </dependency>
             <dependency>
@@ -129,6 +176,14 @@
                 <groupId>com.rymcu</groupId>
                 <artifactId>mortise-file</artifactId>
                 <version>${revision}</version>
+            </dependency>
+
+            <!-- Test dependencies (managed versions) -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-test</artifactId>
+                <version>${spring-boot.version}</version>
+                <scope>test</scope>
             </dependency>
 
             <!-- 第三方依赖版本管理 -->

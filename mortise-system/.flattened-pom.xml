@@ -9,58 +9,20 @@
   </parent>
   <artifactId>mortise-system</artifactId>
   <version>0.2.0</version>
+  <packaging>pom</packaging>
   <name>mortise-system</name>
-  <description>Mortise System - 系统业务模块</description>
+  <description>Mortise System - 模块聚合</description>
   <licenses>
     <license>
       <name>Apache License, Version 2.0</name>
       <url>https://www.apache.org/licenses/LICENSE-2.0</url>
     </license>
   </licenses>
-  <dependencies>
-    <dependency>
-      <groupId>com.rymcu</groupId>
-      <artifactId>mortise-common</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.rymcu</groupId>
-      <artifactId>mortise-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.rymcu</groupId>
-      <artifactId>mortise-log</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.rymcu</groupId>
-      <artifactId>mortise-cache</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.rymcu</groupId>
-      <artifactId>mortise-notification</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.rymcu</groupId>
-      <artifactId>mortise-web</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.rymcu</groupId>
-      <artifactId>mortise-auth</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.rymcu</groupId>
-      <artifactId>mortise-persistence</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>org.projectlombok</groupId>
-      <artifactId>lombok</artifactId>
-      <optional>true</optional>
-    </dependency>
-  </dependencies>
-  <build>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-      </plugin>
-    </plugins>
-  </build>
+  <modules>
+    <module>mortise-system-domain</module>
+    <module>mortise-system-application</module>
+    <module>mortise-system-infra</module>
+    <module>mortise-system-admin</module>
+    <module>mortise-system-api</module>
+  </modules>
 </project>

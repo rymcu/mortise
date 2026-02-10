@@ -50,7 +50,7 @@
 
         <dependency>
             <groupId>com.rymcu</groupId>
-            <artifactId>mortise-web</artifactId>
+            <artifactId>mortise-web-support</artifactId>
         </dependency>
 
         <dependency>
@@ -60,7 +60,12 @@
 
         <dependency>
             <groupId>com.rymcu</groupId>
-            <artifactId>mortise-system</artifactId>
+            <artifactId>mortise-system-admin</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-system-api</artifactId>
         </dependency>
 
         <dependency>
@@ -70,7 +75,12 @@
 
         <dependency>
             <groupId>com.rymcu</groupId>
-            <artifactId>mortise-member</artifactId>
+            <artifactId>mortise-member-admin</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-member-api</artifactId>
         </dependency>
 
         <dependency>

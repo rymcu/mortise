@@ -49,8 +49,9 @@
 
         <dependency>
             <groupId>com.rymcu</groupId>
-            <artifactId>mortise-web</artifactId>
+            <artifactId>mortise-web-support</artifactId>
         </dependency>
+
 
         <!-- WxJava - Spring Boot Starter (替代单独依赖) -->
         <dependency>
@@ -58,8 +59,6 @@
             <artifactId>weixin-java-mp</artifactId>
             <version>${weixin-java.version}</version>
         </dependency>
-
-        <!-- WxJava - 微信开放平台 SDK (用于网站扫码登录) -->
         <dependency>
             <groupId>com.github.binarywang</groupId>
             <artifactId>weixin-java-open</artifactId>
@@ -89,8 +88,8 @@
 
         <!-- Test Dependencies -->
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-test-support</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
