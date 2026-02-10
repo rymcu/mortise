@@ -4,108 +4,83 @@
 
 ## 🎯 文档概览
 
-Mortise 是一个基于 **Spring Boot 3.5.6** 构建的现代化后台管理脚手架，集成了企业级的认证授权、监控、缓存、限流等功能。本文档库提供了从开发到运维的全方位技术指导。
+Mortise 是一个基于 **Spring Boot 3.5.7** 构建的现代化后台管理脚手架，集成了企业级的认证授权、监控、缓存、限流等功能。本文档库提供了从开发到运维的全方位技术指导。
 
 ### 📋 技术栈一览
-- **Spring Boot 3.5.6** + **Spring Security 6** + **JWT**
+- **Spring Boot 3.5.7** + **Spring Security 6** + **JWT**
 - **MyBatis-Flex 1.11.0** + **PostgreSQL 17** + **Redis**
 - **Spring Boot Actuator** + **Prometheus** + **Grafana**
 - **Resilience4j** + **HikariCP** + **Docker Compose**
 
 ## 📂 文档结构
 
+### 🧭 快速开始
+- [quickstart/QUICK_START.md](quickstart/QUICK_START.md)
+
+### 🏗️ 架构与规范
+- [architecture/architecture.md](architecture/architecture.md)
+- [architecture/project-architecture-optimization.md](architecture/project-architecture-optimization.md)
+- [architecture/module-dependency-and-spi-architecture.md](architecture/module-dependency-and-spi-architecture.md)
+- [architecture/ARCHITECTURE_REFACTOR_PLAN.md](architecture/ARCHITECTURE_REFACTOR_PLAN.md)
+
+### 🛡️ 安全与限流
+- [security/rate-limiting.md](security/rate-limiting.md)
+- [security/rate-limit-comparison.md](security/rate-limit-comparison.md)
+- [security/RATELIMIT_MIGRATION_PLAN.md](security/RATELIMIT_MIGRATION_PLAN.md)
+- [security/jwt-properties-refactoring.md](security/jwt-properties-refactoring.md)
+- [security/JWT_TOKEN_REFRESH_MECHANISM.md](security/JWT_TOKEN_REFRESH_MECHANISM.md)
+- [security/security-configuration-guide.md](security/security-configuration-guide.md)
+
+### 🔐 OAuth2
+- [oauth2/OAUTH2_QUICK_START.md](oauth2/OAUTH2_QUICK_START.md)
+- [oauth2/oauth2-configuration-guide.md](oauth2/oauth2-configuration-guide.md)
+- [oauth2/OAUTH2_MULTI_PROVIDER_DESIGN.md](oauth2/OAUTH2_MULTI_PROVIDER_DESIGN.md)
+- [oauth2/OAUTH2_IMPLEMENTATION_SUMMARY.md](oauth2/OAUTH2_IMPLEMENTATION_SUMMARY.md)
+
+### 🧪 缓存
+- [caching/cache-optimization-guide.md](caching/cache-optimization-guide.md)
+- [caching/cache-expiration-spi-guide.md](caching/cache-expiration-spi-guide.md)
+- [caching/cache-unification-complete-report.md](caching/cache-unification-complete-report.md)
+- [caching/dict-cache-implementation.md](caching/dict-cache-implementation.md)
+
 ### 📊 监控与运维
-- [`actuator-access-guide.md`](actuator-access-guide.md) - Spring Boot Actuator 访问指南
-  - 如何访问和使用 Actuator 端点
-  - 认证配置和安全考虑
-  - 监控集成 (Prometheus, Grafana)
-  - 故障排查指南
+- [monitoring/actuator-access-guide.md](monitoring/actuator-access-guide.md)
+- [monitoring/CUSTOM_MONITORING_GUIDE.md](monitoring/CUSTOM_MONITORING_GUIDE.md)
+- [monitoring/monitoring-architecture-summary.md](monitoring/monitoring-architecture-summary.md)
+- [monitoring/PERFORMANCE_MONITORING_INTEGRATION.md](monitoring/PERFORMANCE_MONITORING_INTEGRATION.md)
 
-- [`database-monitoring-fixes.md`](database-monitoring-fixes.md) - 数据库监控修复
-  - HikariCP 连接池监控优化
-  - 空指针异常修复
-  - 监控指标完善
+### 🗄️ 数据库
+- [database/database-performance-optimization.md](database/database-performance-optimization.md)
+- [database/DATABASE_PERMISSION_EXPLAINED.md](database/DATABASE_PERMISSION_EXPLAINED.md)
+- [database/POSTGRESQL_17_COMPATIBILITY.md](database/POSTGRESQL_17_COMPATIBILITY.md)
+- [database/FLYWAY_MULTI_MODULE_CONFIG.md](database/FLYWAY_MULTI_MODULE_CONFIG.md)
 
-- [`database-performance-optimization.md`](database-performance-optimization.md) - 数据库性能优化
-  - 连接池配置优化
-  - PostgreSQL 特定配置
-  - 性能监控设置
+### ⚙️ 配置与优化
+- [configuration/spring-boot-autoconfiguration-optimization.md](configuration/spring-boot-autoconfiguration-optimization.md)
+- [configuration/configuration-fixes.md](configuration/configuration-fixes.md)
+- [configuration/mybatis-flex-config-fixes.md](configuration/mybatis-flex-config-fixes.md)
+- [configuration/webmvc-configuration-fix.md](configuration/webmvc-configuration-fix.md)
 
-### 🔧 配置优化
-- [`spring-boot-autoconfiguration-optimization.md`](spring-boot-autoconfiguration-optimization.md) - Spring Boot 自动配置优化
-  - 自动配置冲突解决方案
-  - Bean 重复定义问题分析
-  - 最佳实践建议
+### 🚀 性能
+- [performance/app-startup-time-fix.md](performance/app-startup-time-fix.md)
+- [performance/BATCH_INSERT_OPTIMIZATION.md](performance/BATCH_INSERT_OPTIMIZATION.md)
 
-- [`configuration-fixes.md`](configuration-fixes.md) - 配置修复记录
-  - Spring Boot 属性配置修复
-  - 废弃属性更新
-  - 配置验证问题解决
+### 🔄 迁移
+- [migration/mortise-system-migration-guide.md](migration/mortise-system-migration-guide.md)
+- [migration/mortise-system-migration-plan-v2.md](migration/mortise-system-migration-plan-v2.md)
+- [migration/MIGRATION_INDEX.md](migration/MIGRATION_INDEX.md)
 
-- [`mybatis-flex-config-fixes.md`](mybatis-flex-config-fixes.md) - MyBatis-Flex 配置修复
-  - 配置属性修正
-  - 映射器路径配置
-  - 性能优化设置
+### 📈 报告
+- [reports/PHASE1_REPORT.md](reports/PHASE1_REPORT.md)
+- [reports/PHASE3_REPORT.md](reports/PHASE3_REPORT.md)
+- [reports/PHASE4_REPORT.md](reports/PHASE4_REPORT.md)
 
-- [`circular-dependency-fixes.md`](circular-dependency-fixes.md) - 循环依赖修复
-  - Bean 循环依赖解决方案
-  - @Lazy 注解使用
-  - 依赖注入优化
+### ♻️ 重构与修复
+- [refactor/REFACTOR_SUMMARY.md](refactor/REFACTOR_SUMMARY.md)
 
-- [`scheduled-method-fixes.md`](scheduled-method-fixes.md) - 定时方法修复
-  - @Scheduled 方法参数问题
-  - 定时任务配置优化
-  - 依赖注入修复
-
-- [`health-check-config-fixes.md`](health-check-config-fixes.md) - 健康检查配置修复
-  - 健康检查端点配置
-  - 自定义健康指示器
-  - 监控组配置
-
-- [`final-config-fixes.md`](final-config-fixes.md) - 最终配置修复
-  - 综合配置问题解决
-  - 生产环境优化
-  - 配置最佳实践
-
-### 🛡️ 限流与安全
-- [`rate-limiting.md`](rate-limiting.md) - Resilience4j 限流方案 ⭐
-  - 限流策略实现与配置
-  - 注解使用指南与最佳实践
-  - 性能配置优化技巧
-  - 实际应用场景案例
-
-- [`rate-limit-comparison.md`](rate-limit-comparison.md) - 限流方案技术对比
-  - Resilience4j vs Spring Cloud Gateway vs Nginx
-  - 性能测试结果与分析
-  - 技术选型决策指南
-  - 适用场景推荐
-
-### 🏗️ 架构优化
-- [`project-architecture-optimization.md`](project-architecture-optimization.md) - 项目架构优化 ⭐
-  - 整体架构设计理念
-  - 模块化改进策略
-  - 代码结构优化实践
-  - 可扩展性设计原则
-
-### 🧪 缓存优化
-- [`cache-optimization-guide.md`](cache-optimization-guide.md) - 缓存优化指南
-  - Redis 缓存策略设计
-  - 缓存穿透/击穿/雪崩防护
-  - 性能优化技巧
-
-- [`cache-unification-complete-report.md`](cache-unification-complete-report.md) - 缓存统一化报告
-  - 缓存架构统一方案
-  - 实施过程与效果分析
-
-- [`dict-cache-implementation.md`](dict-cache-implementation.md) - 字典缓存实现
-  - 系统字典缓存设计
-  - 实现细节与使用指南
-
-### 🔄 事件与监听
-- [`event-listener-timing-analysis.md`](event-listener-timing-analysis.md) - 事件监听器时序分析
-  - Spring 事件机制深度解析
-  - 异步事件处理优化
-  - 时序问题排查指南
+### 🟩 微信集成
+- [wechat/WECHAT_QUICK_START.md](wechat/WECHAT_QUICK_START.md)
+- [wechat/WECHAT_DEPLOYMENT_GUIDE.md](wechat/WECHAT_DEPLOYMENT_GUIDE.md)
 
 ## 🚀 快速开始
 

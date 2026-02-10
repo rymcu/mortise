@@ -35,7 +35,7 @@ import java.util.List;
  */
 @Tag(name = "用户管理", description = "用户管理相关接口")
 @AdminController
-@RequestMapping("/api/v1/admin/users")
+@RequestMapping("/users")
 @PreAuthorize("hasRole('ADMIN')")
 public class UserController {
 

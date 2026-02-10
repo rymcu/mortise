@@ -24,7 +24,7 @@ import java.util.Map;
  */
 @Slf4j
 @ApiController
-@RequestMapping("/api/v1/wechat/messages")
+@RequestMapping("/wechat/messages")
 @RequiredArgsConstructor
 @ConditionalOnBean(WeChatMessageService.class)
 @Tag(name = "微信消息", description = "微信消息发送相关接口")

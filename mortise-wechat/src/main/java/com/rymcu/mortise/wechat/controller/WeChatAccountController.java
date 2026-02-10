@@ -30,7 +30,7 @@ import java.util.List;
 @Tag(name = "微信账号管理", description = "微信账号配置管理相关接口")
 @Slf4j
 @AdminController
-@RequestMapping("/api/v1/wechat/accounts")
+@RequestMapping("/wechat/accounts")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('ADMIN')")
 public class WeChatAccountController {

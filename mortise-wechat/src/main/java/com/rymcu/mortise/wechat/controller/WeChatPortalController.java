@@ -25,7 +25,7 @@ import java.util.Optional;
 @Slf4j
 @AllArgsConstructor
 @ApiController
-@RequestMapping("/api/v1/wechat/portal/{appid}")
+@RequestMapping("/wechat/portal/{appid}")
 @Tag(name = "微信Portal", description = "微信公众号消息回调处理接口")
 public class WeChatPortalController {
     private final DynamicWeChatServiceManager dynamicWeChatServiceManager; // 微信公众号服务工具类

@@ -24,6 +24,15 @@
 
         <dependency>
             <groupId>com.rymcu</groupId>
+            <artifactId>mortise-file</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-auth</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.rymcu</groupId>
             <artifactId>mortise-member-application</artifactId>
         </dependency>
 

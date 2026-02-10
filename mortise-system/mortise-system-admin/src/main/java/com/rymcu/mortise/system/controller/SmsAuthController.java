@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Slf4j
 @Tag(name = "短信验证码认证", description = "短信验证码登录相关接口")
 @AdminController
-@RequestMapping("/api/v1/auth/sms")
+@RequestMapping("/auth/sms")
 public class SmsAuthController {
 
     @Resource

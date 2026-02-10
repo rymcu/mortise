@@ -35,7 +35,7 @@ public class JacksonConfig {
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│                   mortise-web (Web 层)                      │
+│               mortise-web-support (Web 层)                  │
 │  ┌─────────────────────────────────────────────────────────┐│
 │  │              JacksonConfig                              ││
 │  │   • 基础配置（日期、数值、容错）                          ││
@@ -67,7 +67,7 @@ public class JacksonConfig {
 
 | 模块 | 职责 | 包含内容 |
 |------|------|----------|
-| **mortise-web** | Jackson 核心配置 | 基础序列化规则、SPI 管理器、通用配置 |
+| **mortise-web-support** | Jackson 核心配置 | 基础序列化规则、SPI 管理器、通用配置 |
 | **mortise-system** | 业务字典翻译 | `@DictFormat` 注解处理、字典值转换 |
 | **mortise-auth** | 安全相关序列化 | 敏感数据脱敏、OAuth2 序列化等 |
 | **其他业务模块** | 领域特定序列化 | 各自的业务序列化逻辑 |
@@ -191,13 +191,13 @@ public class YourJacksonConfigurer implements JacksonConfigurer {
 
 ### **从原始 JacksonConfig 迁移**
 
-1. **保留基础配置** → `mortise-web/JacksonConfig`
+1. **保留基础配置** → `mortise-web-support/JacksonConfig`
 2. **业务逻辑拆分** → 各自模块的 `XxxJacksonConfigurer`
 3. **依赖解耦** → 通过 SPI 接口通信
 4. **逐步迁移** → 一个业务一个配置器
 
 ### **迁移检查清单**
-- [ ] 基础 Jackson 配置移至 `mortise-web`
+- [ ] 基础 Jackson 配置移至 `mortise-web-support`
 - [ ] 业务序列化逻辑拆分到各模块
 - [ ] 创建对应的 `JacksonConfigurer` 实现
 - [ ] 添加条件注解确保模块间解耦
@@ -209,7 +209,7 @@ public class YourJacksonConfigurer implements JacksonConfigurer {
 ## 🎉 **总结**
 
 ### **解决的核心问题**
-1. ✅ **模块归属明确**：Jackson 配置位于 `mortise-web`
+1. ✅ **模块归属明确**：Jackson 配置位于 `mortise-web-support`
 2. ✅ **业务代码分离**：各模块管理自己的序列化逻辑
 3. ✅ **高度可扩展**：基于 SPI 的插件化架构
 4. ✅ **职责清晰**：单一职责，易于维护

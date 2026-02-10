@@ -22,7 +22,7 @@ import java.time.Duration;
  */
 @Slf4j
 @AdminController
-@RequestMapping("/api/system/cache")
+@RequestMapping("/system/cache")
 @Tag(name = "系统缓存管理", description = "系统缓存管理接口")
 public class SystemCacheController {
 

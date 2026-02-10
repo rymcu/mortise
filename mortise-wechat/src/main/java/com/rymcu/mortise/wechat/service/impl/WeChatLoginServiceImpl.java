@@ -131,6 +131,47 @@ public class WeChatLoginServiceImpl implements WeChatLoginService {
         log.info("刷新微信登录缓存");
     }
 
+    @Override
+    public String buildSilentAuthUrl(String appId, String redirectUri, String state) {
+        log.info("构建微信静默授权 URL - appId: {}, redirectUri: {}", appId, redirectUri);
+        try {
+            WxMpService wxMpService = getWxMpServiceByAppId(appId);
+            String authUrl = wxMpService.getOAuth2Service()
+                    .buildAuthorizationUrl(redirectUri, WxConsts.OAuth2Scope.SNSAPI_BASE, state);
+            log.info("静默授权 URL 构建成功: {}", maskUrl(authUrl));
+            return authUrl;
+        } catch (Exception e) {
+            log.error("构建微信静默授权 URL 失败 - appId: {}", appId, e);
+            throw new RuntimeException("构建微信静默授权链接失败: " + e.getMessage(), e);
+        }
+    }
+
+    @Override
+    public String getOpenIdByCode(String appId, String code) {
+        log.info("通过授权码静默获取 openid - appId: {}", appId);
+        try {
+            WxMpService wxMpService = getWxMpServiceByAppId(appId);
+            // snsapi_base 只需换取 access_token，openid 包含在 token 响应中
+            WxOAuth2AccessToken accessToken = wxMpService.getOAuth2Service().getAccessToken(code);
+            String openId = accessToken.getOpenId();
+            log.info("静默获取 openid 成功 - openId: {}", openId);
+            return openId;
+        } catch (Exception e) {
+            log.error("静默获取 openid 失败 - appId: {}", appId, e);
+            throw new RuntimeException("获取微信 openid 失败: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * 根据 appId 获取 WxMpService，为空时使用默认服务
+     */
+    private WxMpService getWxMpServiceByAppId(String appId) {
+        if (appId != null && !appId.isBlank()) {
+            return dynamicWeChatServiceManager.getServiceByAppId(appId);
+        }
+        return dynamicWeChatServiceManager.getDefaultService();
+    }
+
     /**
      * 脱敏字符串（用于日志）
      */

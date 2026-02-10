@@ -51,6 +51,30 @@ public interface WeChatLoginService {
     boolean validateAccessToken(String accessToken, String openId);
 
     /**
+     * 构建静默授权 URL（snsapi_base）
+     * <p>
+     * redirect_uri 指向前端页面，绕开 Spring Security OAuth2 登录流程。
+     *
+     * @param appId       微信公众号 appId，为空时使用默认账号
+     * @param redirectUri 授权回调地址（前端页面 URL）
+     * @param state       自定义状态参数
+     * @return 静默授权 URL
+     */
+    String buildSilentAuthUrl(String appId, String redirectUri, String state);
+
+    /**
+     * 通过授权码静默获取 openid（snsapi_base 场景）
+     * <p>
+     * 仅执行 code 换 access_token，openid 包含在 token 响应中，
+     * 不调用 getUserInfo 接口，适用于无感获取 openid 的场景。
+     *
+     * @param appId 微信公众号 appId，为空时使用默认账号
+     * @param code  微信授权码
+     * @return openid
+     */
+    String getOpenIdByCode(String appId, String code);
+
+    /**
      * 刷新缓存（清除所有登录相关缓存）
      */
     void refreshCache();

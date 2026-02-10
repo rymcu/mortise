@@ -30,7 +30,7 @@ import java.util.Map;
  */
 @Tag(name = "系统初始化", description = "系统初始化引导接口")
 @AdminController
-@RequestMapping("/api/v1/system-init")
+@RequestMapping("/system-init")
 @RequiredArgsConstructor
 public class SystemInitController {
 

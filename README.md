@@ -12,7 +12,7 @@
 **现代化企业级后台管理脚手架**
 
 [![Java](https://img.shields.io/badge/Java-21-orange?logo=openjdk)](https://openjdk.org/)
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.6-brightgreen?logo=spring-boot)](https://spring.io/projects/spring-boot)
+[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.5.7-brightgreen?logo=spring-boot)](https://spring.io/projects/spring-boot)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](./LICENSE)
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)]()
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](https://github.com/rymcu/mortise/pulls)
@@ -44,7 +44,7 @@
 
 ## Introduction
 
-**Mortise** 是一款现代化、模块化的企业级后台管理脚手架项目，基于 Spring Boot 3.5.6 构建。采用多模块单体架构设计，集成了完整的认证授权、监控、缓存等企业级功能，开箱即用。
+**Mortise** 是一款现代化、模块化的企业级后台管理脚手架项目，基于 Spring Boot 3.5.7 构建。采用多模块单体架构设计，集成了完整的认证授权、监控、缓存等企业级功能，开箱即用。
 
 ### 🎯 项目特点
 
@@ -81,7 +81,7 @@
 ### 🚀 技术栈
 
 **后端核心**
-- **Spring Boot 3.5.6** - 主框架
+- **Spring Boot 3.5.7** - 主框架
 - **Spring Security 6** - 安全认证框架
 - **JWT (JJWT 0.12.5)** - 无状态 Token 认证
 - **MyBatis-Flex 1.11.0** - 轻量级 ORM 框架
@@ -749,66 +749,67 @@ psql -U mortise mortise < backup.sql
 项目包含 **50+ 份**详细技术文档，位于 [`docs/`](docs/) 目录。
 
 ### 🚀 快速开始
-- [快速开始指南](docs/QUICK_START.md) - 三步快速启动项目
-- [系统迁移指南](docs/mortise-system-migration-guide.md) - 模块迁移完整流程
+- [快速开始指南](docs/quickstart/QUICK_START.md) - 三步快速启动项目
+- [系统迁移指南](docs/migration/mortise-system-migration-guide.md) - 模块迁移完整流程
 
 ### 🏗️ 架构设计
-- [项目架构优化](docs/project-architecture-optimization.md) - 整体架构设计
-- [模块依赖与 SPI 架构](docs/module-dependency-and-spi-architecture.md) - 模块化设计原则
-- [架构重构计划](docs/ARCHITECTURE_REFACTOR_PLAN.md) - 重构路线图
+- [架构说明](docs/architecture/architecture.md) - 分层与模块职责
+- [项目架构优化](docs/architecture/project-architecture-optimization.md) - 整体架构设计
+- [模块依赖与 SPI 架构](docs/architecture/module-dependency-and-spi-architecture.md) - 模块化设计原则
+- [架构重构计划](docs/architecture/ARCHITECTURE_REFACTOR_PLAN.md) - 重构路线图
 
 ### 🔧 配置与优化
-- [Spring Boot 自动配置优化](docs/spring-boot-autoconfiguration-optimization.md)
-- [数据库性能优化](docs/database-performance-optimization.md)
-- [MyBatis-Flex 配置指南](docs/mybatis-flex-config-fixes.md)
-- [循环依赖修复方案](docs/circular-dependency-fixes.md)
-- [应用启动时间优化](docs/app-startup-time-fix.md)
+- [Spring Boot 自动配置优化](docs/configuration/spring-boot-autoconfiguration-optimization.md)
+- [数据库性能优化](docs/database/database-performance-optimization.md)
+- [MyBatis-Flex 配置指南](docs/configuration/mybatis-flex-config-fixes.md)
+- [循环依赖修复方案](docs/configuration/circular-dependency-fixes.md)
+- [应用启动时间优化](docs/performance/app-startup-time-fix.md)
 
-### � 缓存系统
-- [缓存统一实现报告](docs/cache-unification-complete-report.md)
-- [缓存优化指南](docs/cache-optimization-guide.md)
-- [缓存过期 SPI 指南](docs/cache-expiration-spi-guide.md)
-- [Redis 键过期监听升级](docs/redis-key-expiration-listener-upgrade.md)
-- [字典缓存实现](docs/dict-cache-implementation.md)
+### 🧪 缓存系统
+- [缓存统一实现报告](docs/caching/cache-unification-complete-report.md)
+- [缓存优化指南](docs/caching/cache-optimization-guide.md)
+- [缓存过期 SPI 指南](docs/caching/cache-expiration-spi-guide.md)
+- [Redis 键过期监听升级](docs/caching/redis-key-expiration-listener-upgrade.md)
+- [字典缓存实现](docs/caching/dict-cache-implementation.md)
 
-### �📊 监控与运维
-- [Actuator 访问指南](docs/actuator-access-guide.md)
-- [自定义监控集成](docs/CUSTOM_MONITORING_GUIDE.md)
-- [性能监控最佳实践](docs/PERFORMANCE_MONITORING_INTEGRATION.md)
-- [数据库监控配置](docs/database-monitoring-fixes.md)
-- [健康检查配置](docs/health-check-config-fixes.md)
-- [监控架构总结](docs/monitoring-architecture-summary.md)
+### 📊 监控与运维
+- [Actuator 访问指南](docs/monitoring/actuator-access-guide.md)
+- [自定义监控集成](docs/monitoring/CUSTOM_MONITORING_GUIDE.md)
+- [性能监控最佳实践](docs/monitoring/PERFORMANCE_MONITORING_INTEGRATION.md)
+- [数据库监控配置](docs/monitoring/database-monitoring-fixes.md)
+- [健康检查配置](docs/monitoring/health-check-config-fixes.md)
+- [监控架构总结](docs/monitoring/monitoring-architecture-summary.md)
 
 ### 🛡️ 安全与限流
-- [限流方案实现](docs/rate-limiting.md)
-- [限流方案对比](docs/rate-limit-comparison.md)
-- [限流迁移计划](docs/RATELIMIT_MIGRATION_PLAN.md)
-- [JWT 属性重构](docs/jwt-properties-refactoring.md)
-- [OAuth2 配置指南](docs/oauth2-configuration-guide.md)
-- [认证管理器修复](docs/authentication-manager-fix.md)
+- [限流方案实现](docs/security/rate-limiting.md)
+- [限流方案对比](docs/security/rate-limit-comparison.md)
+- [限流迁移计划](docs/security/RATELIMIT_MIGRATION_PLAN.md)
+- [JWT 属性重构](docs/security/jwt-properties-refactoring.md)
+- [OAuth2 配置指南](docs/oauth2/oauth2-configuration-guide.md)
+- [认证管理器修复](docs/security/authentication-manager-fix.md)
 
 ### 🔄 迁移指南
-- [系统迁移检查清单](docs/mortise-system-migration-checklist.md)
-- [系统迁移计划 V2](docs/mortise-system-migration-plan-v2.md)
-- [OAuth2 缓存服务迁移](docs/oauth2-cache-service-migration.md)
-- [OAuth2 序列化器迁移](docs/oauth2-serializer-migration.md)
-- [缓存迁移总结](docs/CACHE_MIGRATION_SUMMARY.md)
+- [系统迁移检查清单](docs/migration/mortise-system-migration-checklist.md)
+- [系统迁移计划 V2](docs/migration/mortise-system-migration-plan-v2.md)
+- [OAuth2 缓存服务迁移](docs/migration/oauth2-cache-service-migration.md)
+- [OAuth2 序列化器迁移](docs/migration/oauth2-serializer-migration.md)
+- [缓存迁移总结](docs/migration/CACHE_MIGRATION_SUMMARY.md)
 
 ### 📈 项目报告
-- [第一阶段报告](docs/PHASE1_REPORT.md)
-- [第三阶段报告](docs/PHASE3_REPORT.md)
-- [第三阶段总结](docs/PHASE3_SUMMARY.md)
-- [第四阶段报告](docs/PHASE4_REPORT.md)
-- [第五阶段报告](docs/PHASE5_REPORT.md)
+- [第一阶段报告](docs/reports/PHASE1_REPORT.md)
+- [第三阶段报告](docs/reports/PHASE3_REPORT.md)
+- [第三阶段总结](docs/reports/PHASE3_SUMMARY.md)
+- [第四阶段报告](docs/reports/PHASE4_REPORT.md)
+- [第五阶段报告](docs/reports/PHASE5_REPORT.md)
 
 ### 🐛 问题修复
-- [配置问题修复](docs/configuration-fixes.md)
-- [最终配置修复](docs/final-config-fixes.md)
-- [MyBatis-Flex 参数绑定修复](docs/mybatisflex-parameter-binding-fix.md)
-- [事件监听器时序分析](docs/event-listener-timing-analysis.md)
+- [配置问题修复](docs/configuration/configuration-fixes.md)
+- [最终配置修复](docs/configuration/final-config-fixes.md)
+- [MyBatis-Flex 参数绑定修复](docs/configuration/mybatisflex-parameter-binding-fix.md)
+- [事件监听器时序分析](docs/refactor/event-listener-timing-analysis.md)
 
 ### 📖 完整文档索引
-查看完整文档列表：[docs/MIGRATION_INDEX.md](docs/MIGRATION_INDEX.md)
+查看完整文档列表：[docs/migration/MIGRATION_INDEX.md](docs/migration/MIGRATION_INDEX.md)
 
 ## 🏛️ 项目架构
 
@@ -820,13 +821,113 @@ mortise/
 ├── mortise-core/            # 核心模块 - 基础配置、结果封装
 ├── mortise-cache/           # 缓存模块 - 缓存抽象与 Redis 实现
 ├── mortise-auth/            # 认证模块 - JWT、Spring Security 集成
-├── mortise-web/             # Web 模块 - 全局异常、拦截器
-├── mortise-system/          # 系统模块 - 用户、角色、菜单管理
+├── mortise-web-support/     # Web 支撑 - 全局异常、拦截器、OpenAPI
+├── mortise-test-support/    # 测试支撑 - 共享测试配置
+├── mortise-system/          # 系统域聚合
+│   ├── mortise-system-domain/       # 领域模型与常量
+│   ├── mortise-system-application/  # 应用服务
+│   ├── mortise-system-infra/        # 基础设施实现
+│   ├── mortise-system-admin/        # 管理端接口
+│   └── mortise-system-api/          # 公共 API 接口
+├── mortise-member/          # 会员域聚合
+│   ├── mortise-member-domain/
+│   ├── mortise-member-application/
+│   ├── mortise-member-infra/
+│   ├── mortise-member-admin/
+│   └── mortise-member-api/
 ├── mortise-log/             # 日志模块 - 操作日志、审计日志
 ├── mortise-monitor/         # 监控模块 - Actuator、指标自定义
 ├── mortise-notification/    # 通知模块 - 消息通知服务
 └── mortise-app/             # 应用模块 - 启动类、配置整合
 ```
+
+### 架构图
+
+```mermaid
+flowchart TB
+  subgraph L6[应用层]
+    app[mortise-app]
+  end
+
+  subgraph L5[业务域 API]
+    sysAdmin[mortise-system-admin]
+    sysApi[mortise-system-api]
+    memAdmin[mortise-member-admin]
+    memApi[mortise-member-api]
+  end
+
+  subgraph L4[业务域应用与基础设施]
+    sysApp[mortise-system-application]
+    sysInfra[mortise-system-infra]
+    memApp[mortise-member-application]
+    memInfra[mortise-member-infra]
+    sysDomain[mortise-system-domain]
+    memDomain[mortise-member-domain]
+  end
+
+  subgraph L3[应用基础层]
+    auth[mortise-auth]
+    webSupport[mortise-web-support]
+    monitor[mortise-monitor]
+  end
+
+  subgraph L2[基础设施层]
+    log[mortise-log]
+    cache[mortise-cache]
+    notify[mortise-notification]
+    persistence[mortise-persistence]
+  end
+
+  subgraph L1[核心层]
+    common[mortise-common]
+    core[mortise-core]
+  end
+
+  app --> sysAdmin
+  app --> sysApi
+  app --> memAdmin
+  app --> memApi
+  app --> auth
+  app --> webSupport
+  app --> monitor
+
+  sysAdmin --> sysApp
+  sysApi --> sysApp
+  memAdmin --> memApp
+  memApi --> memApp
+
+  sysApp --> sysDomain
+  sysApp --> sysInfra
+  memApp --> memDomain
+  memApp --> memInfra
+
+  sysInfra --> persistence
+  memInfra --> persistence
+  sysInfra --> log
+  memInfra --> log
+
+  auth --> cache
+  monitor --> common
+  webSupport --> core
+
+  log --> core
+  cache --> core
+  notify --> core
+  persistence --> core
+
+  core --> common
+```
+
+### 依赖矩阵（简化）
+
+| 层级 | 允许依赖 |
+| --- | --- |
+| L6 应用层 | L1-L5 全部模块 |
+| L5 业务域 API | L3-L4 与本域 domain/application/infra |
+| L4 业务域应用与基础设施 | L1-L3 与本域 domain |
+| L3 应用基础层 | L1-L2 |
+| L2 基础设施层 | L1 |
+| L1 核心层 | 无 |
 
 ### 技术特色
 
@@ -1029,7 +1130,7 @@ A: 实现 `CacheService` 接口，通过 SPI 机制注册自定义实现。参�
 ![GitHub issues](https://img.shields.io/github/issues/rymcu/mortise)
 ![GitHub license](https://img.shields.io/github/license/rymcu/mortise)
 ![Java version](https://img.shields.io/badge/Java-21-orange)
-![Spring Boot version](https://img.shields.io/badge/Spring%20Boot-3.5.6-brightgreen)
+![Spring Boot version](https://img.shields.io/badge/Spring%20Boot-3.5.7-brightgreen)
 
 ### 📅 版本历史
 

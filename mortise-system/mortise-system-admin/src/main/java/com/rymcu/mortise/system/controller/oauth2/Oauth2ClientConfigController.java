@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.*;
 @Tag(name = "OAuth2客户端配置", description = "OAuth2 客户端配置管理接口")
 @Slf4j
 @AdminController
-@RequestMapping("/api/v1/admin/oauth2/client-configs")
+@RequestMapping("/oauth2/client-configs")
 @PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class Oauth2ClientConfigController {

@@ -54,14 +54,14 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     /**
      * 统一接口前缀：
-     * - 使用 @AdminController 统一加 /admin
-     * - 使用 @ApiController 统一加 /api
+     * - 使用 @AdminController 统一加 /api/v1/admin
+     * - 使用 @ApiController 统一加 /api/v1
      */
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {
-        configurer.addPathPrefix("/admin", HandlerTypePredicate.forAnnotation(AdminController.class));
-        configurer.addPathPrefix("/api", HandlerTypePredicate.forAnnotation(ApiController.class));
+        configurer.addPathPrefix("/api/v1/admin", HandlerTypePredicate.forAnnotation(AdminController.class));
+        configurer.addPathPrefix("/api/v1", HandlerTypePredicate.forAnnotation(ApiController.class));
 
-        log.info("接口前缀配置已加载: /admin/**, /api/**");
+        log.info("接口前缀配置已加载: /api/v1/admin/**, /api/v1/**");
     }
 }

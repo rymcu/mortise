@@ -32,7 +32,7 @@ import java.util.List;
  */
 @Tag(name = "菜单管理", description = "菜单管理相关接口")
 @AdminController
-@RequestMapping("/api/v1/admin/menus")
+@RequestMapping("/menus")
 @PreAuthorize("hasRole('ADMIN')")
 public class MenuController {
     @Resource

@@ -1,5 +1,7 @@
 package com.rymcu.mortise.system.controller;
 
+import com.rymcu.mortise.system.model.auth.RefreshTokenInfo;
+import com.rymcu.mortise.system.model.auth.TokenUser;
 import com.rymcu.mortise.web.annotation.AdminController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -40,7 +42,7 @@ import java.util.Objects;
 @Slf4j
 @Tag(name = "认证管理", description = "认证授权相关接口")
 @AdminController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/auth")
 public class AuthController {
 
     @Resource
@@ -135,7 +137,7 @@ public class AuthController {
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 token = authHeader.substring(7);
             }
-            
+
             if (token != null) {
                 // 使用带黑名单的注销方法
                 tokenManager.revokeToken(user.getAccount(), token);

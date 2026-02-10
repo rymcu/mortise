@@ -2,28 +2,28 @@
 
 ## ✅ 集成状态
 
-`Resilience4jRateLimiterHealthIndicator` 已成功集成到 **`mortise-web` 模块**中！
+`Resilience4jRateLimiterHealthIndicator` 已成功集成到 **`mortise-web-support` 模块**中！
 
 ### 📁 文件位置
 ```
-mortise-web/
+mortise-web-support/
 └── src/main/java/com/rymcu/mortise/web/
     └── health/
         └── Resilience4jRateLimiterHealthIndicator.java
 ```
 
-## 🎯 为什么放在 mortise-web？
+## 🎯 为什么放在 mortise-web-support？
 
-### 方案 A（已采用）：放在 mortise-web 模块 ✅
+### 方案 A（已采用）：放在 mortise-web-support 模块 ✅
 
 **核心原因**：
-1. **业务逻辑就在这里**：限流器的使用逻辑在 `RateLimitAspect`（mortise-web）
+1. **业务逻辑就在这里**：限流器的使用逻辑在 `RateLimitAspect`（mortise-web-support）
 2. **模块内聚性**：监控和业务逻辑在同一模块，便于维护
-3. **依赖关系清晰**：避免 `mortise-monitor` 依赖 `mortise-web`
+3. **依赖关系清晰**：避免 `mortise-monitor` 依赖 `mortise-web-support`
 
 **架构图**：
 ```
-mortise-web
+mortise-web-support
 ├── aspect/
 │   └── RateLimitAspect.java           ← 限流逻辑
 ├── annotation/
@@ -35,13 +35,13 @@ mortise-web
 ### 方案 B（未采用）：放在 mortise-monitor 模块 ❌
 
 **不采用的原因**：
-- 会导致 `mortise-monitor` 需要依赖 `mortise-web`
+- 会导致 `mortise-monitor` 需要依赖 `mortise-web-support`
 - 违反了"基础设施监控"和"业务监控"的分离原则
 - 限流器是 Web 层的业务功能，不是纯基础设施
 
 ## 📦 依赖配置
 
-### mortise-web/pom.xml
+### mortise-web-support/pom.xml
 ```xml
 <!-- Resilience4j (限流) -->
 <dependency>
@@ -206,7 +206,7 @@ management:
 
 | 监控类型 | 放置位置 | 示例 |
 |---------|---------|------|
-| **Web 层功能监控** | `mortise-web` | RateLimiter、请求统计、API 状态 |
+| **Web 层功能监控** | `mortise-web-support` | RateLimiter、请求统计、API 状态 |
 | **认证功能监控** | `mortise-auth` | JWT Token、OAuth2、登录统计 |
 | **系统业务监控** | `mortise-system` | 用户在线、业务指标 |
 | **基础设施监控** | `mortise-monitor` | JVM、数据库连接池、Redis |
@@ -221,24 +221,24 @@ management:
 
 ## 🔗 相关文档
 
-- [监控指标放置位置快速决策表](./monitoring-placement-quick-reference.md)
-- [自定义监控指标指南](./CUSTOM_MONITORING_GUIDE.md)
-- [限流功能说明](./rate-limiting.md)
+- [监控指标放置位置快速决策表](monitoring/monitoring-placement-quick-reference.md)
+- [自定义监控指标指南](monitoring/CUSTOM_MONITORING_GUIDE.md)
+- [限流功能说明](security/rate-limiting.md)
 
 ## ✅ 验证清单
 
-- [x] `Resilience4jRateLimiterHealthIndicator` 已创建在 `mortise-web` 模块
-- [x] `actuator` 依赖已添加到 `mortise-web/pom.xml`
+- [x] `Resilience4jRateLimiterHealthIndicator` 已创建在 `mortise-web-support` 模块
+- [x] `actuator` 依赖已添加到 `mortise-web-support/pom.xml`
 - [x] 使用 `Optional` 处理可选依赖
 - [x] 使用 `@ConditionalOnClass` 条件加载
-- [x] 编译通过：`mvn clean compile -pl mortise-web -am -q`
+- [x] 编译通过：`mvn clean compile -pl mortise-web-support -am -q`
 - [x] 架构原则文档已更新
 
 ## 🎉 总结
 
 `Resilience4jRateLimiterHealthIndicator` 现在已经：
 
-1. ✅ 正确放置在 `mortise-web` 模块中
+1. ✅ 正确放置在 `mortise-web-support` 模块中
 2. ✅ 与限流业务逻辑（`RateLimitAspect`）在同一模块
 3. ✅ 遵循"谁拥有业务，谁拥有监控"的架构原则
 4. ✅ 提供详细的限流器状态监控

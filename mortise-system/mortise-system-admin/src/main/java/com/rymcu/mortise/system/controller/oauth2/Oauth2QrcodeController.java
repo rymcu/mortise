@@ -36,7 +36,7 @@ import java.util.Map;
 @Tag(name = "OAuth2 授权二维码", description = "OAuth2 授权二维码生成接口")
 @Slf4j
 @AdminController
-@RequestMapping("/api/v1/oauth2/qrcode")
+@RequestMapping("/oauth2/qrcode")
 @RequiredArgsConstructor
 public class Oauth2QrcodeController {
 

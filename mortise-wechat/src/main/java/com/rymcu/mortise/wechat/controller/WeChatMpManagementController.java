@@ -22,7 +22,7 @@ import java.util.Map;
  */
 @Slf4j
 @AdminController
-@RequestMapping("/api/admin/wechat/mp")
+@RequestMapping("/wechat/mp")
 @RequiredArgsConstructor
 public class WeChatMpManagementController {
 
