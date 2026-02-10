@@ -74,9 +74,9 @@
 
 ## Web 规范
 
-- 使用 `@AdminController` 标记管理端接口，自动添加 `/admin` 前缀。
-- 使用 `@ApiController` 标记公开 API，自动添加 `/api` 前缀。
-- OpenAPI 分组自动生成：`admin` 与 `api`。
+- 使用 `@AdminController` 标记管理端接口，自动添加 `/api/v1/admin` 前缀。
+- 使用 `@ApiController` 标记公开 API，自动添加 `/api/v1` 前缀。
+- OpenAPI 分组自动生成：`admin`（匹配 `/api/v1/admin/**`）与 `api`（匹配 `/api/v1/**`）。
 - `@RateLimit` 注解支持 IP / 用户 / 方法 / SpEL 多维限流策略。
 - `GlobalExceptionHandler` 统一处理 `BusinessException`、`ServiceException`、`AuthenticationException`、校验异常等。
 

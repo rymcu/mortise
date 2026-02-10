@@ -47,7 +47,7 @@ public class OpenApiConfig {
         public GroupedOpenApi adminOpenApi() {
                 return buildGroupedOpenApi(
                                 "admin",
-                                "/admin/**",
+                                "/api/v1/admin/**",
                                 AdminController.class,
                                 "Admin API",
                                 "Administration endpoints"
@@ -56,13 +56,22 @@ public class OpenApiConfig {
 
         @Bean
         public GroupedOpenApi publicOpenApi() {
-                return buildGroupedOpenApi(
-                                "api",
-                                "/api/**",
-                                ApiController.class,
-                                "Public API",
-                                "Public REST API endpoints"
-                );
+                return GroupedOpenApi.builder()
+                                .group("api")
+                                .pathsToMatch("/api/v1/**")
+                                .pathsToExclude("/api/v1/admin/**")
+                                .addOpenApiMethodFilter(method ->
+                                                method.getDeclaringClass().isAnnotationPresent(ApiController.class))
+                                .addOpenApiCustomizer(openApi -> {
+                                        Info info = openApi.getInfo();
+                                        if (info == null) {
+                                                info = new Info();
+                                        }
+                                        info.setTitle("Public API");
+                                        info.setDescription("Public REST API endpoints");
+                                        openApi.setInfo(info);
+                                })
+                                .build();
         }
 
             private GroupedOpenApi buildGroupedOpenApi(
