@@ -1,25 +1,19 @@
-FROM eclipse-temurin:21-jdk-alpine
+FROM eclipse-temurin:21-jre-alpine
 
 LABEL maintainer="rymcu.com"
 
-# 设置时区为上海
 ENV TZ=Asia/Shanghai
 
-# 更换为清华大学的 Alpine 镜像源以加速，并安装必要的工具
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.tuna.tsinghua.edu.cn/g' /etc/apk/repositories && \
-    apk add --no-cache curl tzdata
+    apk add --no-cache tzdata
 
-# 创建应用目录和日志目录
-RUN mkdir -p /app /logs/mortise/data
+WORKDIR /app
 
-MAINTAINER rymcu.com
+RUN mkdir -p /logs/mortise/data
 
-RUN mkdir -p /logs/mortise
-
-RUN rm -rf /usr/local/tomcat/webapps.dist
-
-RUN rm -rf /usr/local/tomcat/webapps/*
-
-COPY target/mortise.war /usr/local/tomcat/webapps/
+ARG JAR_FILE=mortise-app/target/mortise.jar
+COPY ${JAR_FILE} /app/mortise.jar
 
 EXPOSE 8080
+
+ENTRYPOINT ["java", "-jar", "/app/mortise.jar"]

@@ -4,12 +4,12 @@ services:
     container_name: mortise-postgres
     restart: unless-stopped
     environment:
-      POSTGRES_USER: mortise
-      POSTGRES_PASSWORD: XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl
-      POSTGRES_DB: postgres
-      TZ: Asia/Shanghai
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      TZ: ${TZ}
     healthcheck:
-      test: [ 'CMD-SHELL', 'pg_isready -U postgres' ]
+      test: [ 'CMD-SHELL', 'pg_isready -U ${POSTGRES_USER}' ]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -37,9 +37,9 @@ services:
     command:
       - /bin/sh
       - -c
-      - redis-server --requirepass d9d2j9w2 --appendonly yes
+      - redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes
     environment:
-      TZ: Asia/Shanghai
+      TZ: ${TZ}
   logto:
     image: svhd/logto:1.24.1
     container_name: mortise-logto
@@ -51,11 +51,11 @@ services:
       postgresql:
         condition: service_healthy
     environment:
-      INTEGRATION_TEST: true
-      TRUST_PROXY_HEADER: true
-      DB_URL: postgresql://mortise:XzHvhX4CDaN696oQAXdmlcsrqgWbkxRl@mortise-postgres:5432/logto
-      ENDPOINT: https://auth.rymcu.local
-      ADMIN_ENDPOINT: https://logto.rymcu.local
+      INTEGRATION_TEST: ${LOGTO_INTEGRATION_TEST}
+      TRUST_PROXY_HEADER: ${LOGTO_TRUST_PROXY_HEADER}
+      DB_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@mortise-postgres:5432/${LOGTO_DB_NAME}
+      ENDPOINT: ${LOGTO_ENDPOINT}
+      ADMIN_ENDPOINT: ${LOGTO_ADMIN_ENDPOINT}
       # Self-signed certificates require NODE_EXTRA_CA_CERTS to be configured
       NODE_EXTRA_CA_CERTS: /usr/local/share/ca-certificates/logto-rootCA.crt
     # Self-signed certificates need to be added to the container
@@ -63,8 +63,8 @@ services:
       - ./config/rootCA.pem:/usr/local/share/ca-certificates/logto-rootCA.crt
     extra_hosts:
       # Map the hostnames to the IP addresses of the host machine
-      - "auth.rymcu.local:172.17.0.1"
-      - "logto.rymcu.local:172.17.0.1"
+      - "${LOGTO_AUTH_HOST}:${LOGTO_HOST_IP}"
+      - "${LOGTO_ADMIN_HOST}:${LOGTO_HOST_IP}"
     entrypoint: ['sh', '-c', 'npm run cli db seed -- --swe && npm start']
   app:
     image: 'nginx:latest'
@@ -77,4 +77,4 @@ services:
       - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./config/nginx/certs:/etc/nginx/certs
     environment:
-      TZ: Asia/Shanghai
+      TZ: ${TZ}
