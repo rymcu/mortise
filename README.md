@@ -48,12 +48,14 @@
 
 ### 🎯 项目特点
 
-- 🏗️ **模块化设计** - 清晰的模块划分，低耦合高内聚
+- 🏗️ **模块化设计** - 25 个模块、6 层依赖矩阵、12 组 SPI 可扩展接口
 - 🚀 **开箱即用** - Docker Compose 一键启动完整环境
-- 🔒 **安全可靠** - Spring Security 6 + JWT 双重保障
-- 📊 **可观测性** - 集成 Prometheus + Grafana 监控体系
-- ⚡ **高性能** - MyBatis-Flex + Redis 缓存优化
-- 🛡️ **生产就绪** - 限流、熔断、配置加密等企业级特性
+- 🔒 **安全可靠** - Spring Security 6 + JWT + OAuth2 多平台 + SMS 验证码 + 扫码登录
+- 📊 **可观测性** - 集成 Prometheus + Grafana 监控体系、自定义 DB/Redis 指标
+- ⚡ **高性能** - MyBatis-Flex + Redis + JDK 21 虚拟线程
+- 🛡️ **生产就绪** - Resilience4j `@RateLimit` 限流、Jasypt 加密、Flyway 数据库迁移
+- 💬 **微信集成** - 多账号公众号管理、消息路由、扫码登录、模板消息
+- 📁 **文件管理** - x-file-storage 统一存储、阿里云 OSS 适配、分片上传
 
 ### 📸 项目预览
 
@@ -84,23 +86,34 @@
 - **Spring Boot 3.5.7** - 主框架
 - **Spring Security 6** - 安全认证框架
 - **JWT (JJWT 0.12.5)** - 无状态 Token 认证
+- **OAuth2 Client** - GitHub / Google / Logto / 微信多平台登录
 - **MyBatis-Flex 1.11.0** - 轻量级 ORM 框架
 - **Redis 6.0+** - 缓存与会话存储
 - **PostgreSQL 17** - 主数据库（推荐）/ MySQL 8.0+
+- **Flyway** - 数据库版本化迁移
+
+**微信生态**
+- **WxJava** - 微信公众号 / 开放平台 SDK
+- **多账号管理** - 动态服务实例、配置热加载
+
+**文件存储**
+- **x-file-storage** - 统一文件管理框架
+- **阿里云 OSS** - 对象存储适配
 
 **监控与运维**
 - **Spring Boot Actuator** - 应用健康监控
-- **Prometheus** - 时序数据库与指标收集
+- **Prometheus + Micrometer** - 时序指标收集
 - **Grafana** - 可视化监控面板
 - **HikariCP** - 高性能数据库连接池
 
 **安全与限流**
-- **Resilience4j 2.2.0** - 限流、熔断、重试
+- **Resilience4j 2.2.0** - `@RateLimit` 注解限流（IP / 用户 / 方法 / SpEL）
 - **Jasypt 3.0.5** - 配置文件加密
-- **Apache Commons** - 工具库集合（Lang3, IO, Codec, Collections4）
+- **Apache Commons** - 工具库集合（Lang3, IO, Codec, Text, Collections4）
 
 **开发工具**
-- **SpringDoc OpenAPI** - API 文档自动生成
+- **JDK 21 虚拟线程** - 异步任务默认执行器
+- **SpringDoc OpenAPI 2.8** - API 文档自动生成（Swagger UI）
 - **Lombok** - 简化 Java 代码
 - **ULID Creator** - 分布式唯一 ID 生成器
 
@@ -110,49 +123,91 @@
 
 **核心业务模块**
 - [x] **用户管理** - 用户注册、登录、个人信息管理、密码修改
+- [x] **会员管理** - 会员注册、登录、个人资料、OAuth2 绑定、手机验证码登录
 - [x] **角色管理** - 角色定义、权限分配、角色层级
 - [x] **菜单管理** - 动态菜单加载、多级菜单支持、权限控制
 - [x] **权限管理** - 基于角色的访问控制（RBAC）、细粒度权限控制
-- [x] **字典管理** - 系统字典配置、字典缓存优化
+- [x] **字典管理** - 系统字典配置、字典缓存优化、`@DictFormat` 自动翻译
 
 **安全与认证**
 - [x] **JWT 认证** - 无状态 Token 认证、自动续期、Token 刷新
 - [x] **Spring Security 集成** - 统一认证授权、方法级权限控制
+- [x] **OAuth2 多平台登录** - 支持 GitHub、Google、Logto、微信等多平台，Strategy 模式可扩展
+- [x] **短信验证码登录** - 手机号 + 验证码认证，Redis 存储验证码
+- [x] **扫码登录** - 二维码生成、扫码确认、Spring Event 事件驱动
+- [x] **多用户表认证** - 系统用户 / 会员用户分表管理，`CustomUserDetailsService` SPI 扩展
 - [x] **配置加密** - Jasypt 敏感配置加密存储
+
+**操作日志与审计**
+- [x] **操作日志** - `@OperationLog` AOP 注解、模块/操作类型/参数记录、异步写入
+- [x] **API 日志** - `@ApiLog` 注解、请求/响应体/头信息记录、耗时统计
+- [x] **日志存储 SPI** - 支持数据库存储、文件存储，可扩展自定义实现
+- [x] **客户端类型识别** - 责任链模式自动识别客户端类型
+
+**文件管理**
+- [x] **文件上传下载** - 基于 x-file-storage 的统一文件管理
+- [x] **分片上传** - 大文件分片上传支持
+- [x] **文件元数据** - 文件详情数据库持久化、删除事件监听
+- [x] **对象存储适配** - 支持阿里云 OSS 等多种存储后端
+
+**通知系统**
+- [x] **统一通知抽象** - `NotificationSender` SPI，支持多渠道扩展
+- [x] **邮件通知** - Spring Mail + Thymeleaf 模板引擎
+- [x] **微信模板消息** - 微信公众号模板消息推送
+- [x] **异步批量发送** - 支持异步发送和批量发送
+
+**微信集成**
+- [x] **公众号管理** - 多账号管理、动态服务实例、配置热加载
+- [x] **消息路由** - 关注/取关/扫码/菜单/文本消息等事件路由
+- [x] **微信扫码登录** - 公众号扫码 + 微信开放平台扫码登录
+- [x] **模板消息** - 微信模板消息发送与管理
+- [x] **微信开放平台** - 第三方平台接入支持
 
 **缓存与性能**
 - [x] **多级缓存** - 统一缓存抽象、Redis 实现、缓存过期策略
-- [x] **SPI 架构** - 缓存接口可扩展、支持自定义实现
+- [x] **SPI 架构** - `CacheConfigurer` 模块化缓存 TTL 注册、`CacheExpirationHandler` 过期事件处理
 - [x] **缓存预热** - 应用启动时自动加载热点数据
+- [x] **键过期监听** - Redis Keyspace Notification 自动处理过期事件
+
+**API 文档**
+- [x] **SpringDoc OpenAPI 3** - 自动生成 API 文档
+- [x] **接口分组** - Admin / API 分组展示
+- [x] **Swagger UI** - 内置交互式 API 调试界面
 
 **监控与运维**
 - [x] **Actuator 集成** - 健康检查、应用指标、端点管理
-- [x] **Prometheus 集成** - 指标导出、自定义指标
+- [x] **Prometheus 集成** - 指标导出、自定义指标、公共标签
 - [x] **Grafana 可视化** - 实时监控面板、告警配置
-- [x] **数据库监控** - HikariCP 连接池监控、慢查询分析
+- [x] **数据库监控** - HikariCP 连接池监控、自定义数据库健康指标
+- [x] **Redis 健康检查** - 自定义 Redis 连接健康指标
+- [x] **启动性能监控** - 应用启动耗时统计
 
 **限流与保护**
-- [x] **Resilience4j 限流** - 基于令牌桶的限流
-- [x] **熔断降级** - 自动故障恢复、服务保护
+- [x] **Resilience4j 限流** - `@RateLimit` 注解、多维限流策略（IP / 方法 / 用户 / SpEL）
+- [x] **限流健康指标** - Resilience4j 限流器健康状态上报
+
+**数据持久化**
+- [x] **PostgreSQL 深度适配** - JSONB / Duration / StringList 自定义类型处理器
+- [x] **Flyway 数据库迁移** - 版本化 SQL 迁移脚本
+- [x] **MyBatis-Flex** - 轻量级 ORM、FlexId 生成器
 
 **开发体验**
-- [x] **模块化架构** - 清晰的模块划分（10+ 模块）
+- [x] **模块化架构** - 清晰的 15+ 模块划分，6 层依赖矩阵
+- [x] **SPI 可扩展** - 12 组 SPI 接口，支持模块化热插拔
+- [x] **JDK 21 虚拟线程** - 异步任务默认使用虚拟线程
 - [x] **详细文档** - 50+ 技术文档、最佳实践指南
 - [x] **Docker 支持** - 一键启动开发环境
 
-### 🚧 开发中功能
-- [ ] **操作日志** - 完整的审计日志、操作追踪
-- [ ] **文件管理** - 对象存储集成、文件上传下载
-- [ ] **API 文档** - SpringDoc OpenAPI 3 集成
-- [ ] **通知系统** - 站内信、邮件、短信通知
+### 🚧 开发中 / 计划功能
 - [ ] **工作流引擎** - Flowable 集成
 - [ ] **多租户支持** - 租户隔离、数据隔离
+- [ ] **支付集成** - 微信支付 / 支付宝（依赖已引入）
+- [ ] **定时任务** - 定时任务调度
 
-### 🎯 计划功能
+### 🎯 远期规划
 - [ ] **分布式事务** - Seata 集成
 - [ ] **消息队列** - RocketMQ/Kafka 集成
 - [ ] **全文搜索** - Elasticsearch 集成
-- [ ] **定时任务** - XXL-Job 集成
 - [ ] **微服务化** - Spring Cloud 改造方案
 
 ## 📋 Requirements
@@ -356,10 +411,10 @@ cd mortise-app
 mvn spring-boot:run
 
 # 方式 2: 使用 jar 包启动
-java -jar mortise-app/target/mortise-app-0.0.1.jar
+java -jar mortise-app/target/mortise-app-0.2.0.jar
 
 # 方式 3: 指定配置文件启动
-java -jar mortise-app/target/mortise-app-0.0.1.jar --spring.profiles.active=dev
+java -jar mortise-app/target/mortise-app-0.2.0.jar --spring.profiles.active=dev
 ```
 
 #### 7️⃣ 验证启动
@@ -393,7 +448,7 @@ http://localhost:9999/mortise/actuator
 mvn clean package -Pprod -DskipTests
 
 # 生成的 jar 包位置
-ls -lh mortise-app/target/mortise-app-0.0.1.jar
+ls -lh mortise-app/target/mortise-app-0.2.0.jar
 ```
 
 #### 使用 Docker 部署
@@ -821,47 +876,50 @@ psql -U mortise mortise < backup.sql
 ### 模块说明
 
 ```
-mortise/
-├── mortise-common/          # 公共模块 - 通用工具类、异常定义
-├── mortise-core/            # 核心模块 - 基础配置、结果封装
-├── mortise-cache/           # 缓存模块 - 缓存抽象与 Redis 实现
-├── mortise-auth/            # 认证模块 - JWT、Spring Security 集成
-├── mortise-web-support/     # Web 支撑 - 全局异常、拦截器、OpenAPI
-├── mortise-test-support/    # 测试支撑 - 共享测试配置
-├── mortise-system/          # 系统域聚合
-│   ├── mortise-system-domain/       # 领域模型与常量
-│   ├── mortise-system-application/  # 应用服务
-│   ├── mortise-system-infra/        # 基础设施实现
-│   ├── mortise-system-admin/        # 管理端接口
-│   └── mortise-system-api/          # 公共 API 接口
-├── mortise-member/          # 会员域聚合
-│   ├── mortise-member-domain/
-│   ├── mortise-member-application/
-│   ├── mortise-member-infra/
-│   ├── mortise-member-admin/
-│   └── mortise-member-api/
-├── mortise-log/             # 日志模块 - 操作日志、审计日志
-├── mortise-monitor/         # 监控模块 - Actuator、指标自定义
-├── mortise-notification/    # 通知模块 - 消息通知服务
-└── mortise-app/             # 应用模块 - 启动类、配置整合
+mortise/                             # 父 POM，版本管理与模块聚合
+├── mortise-common/                  # L1 公共模块 - 通用工具类（ULID/BeanCopier）、异常体系、枚举常量
+├── mortise-core/                    # L1 核心模块 - 统一返回 GlobalResult、CurrentUser SPI、JDK21 虚拟线程、Jasypt 加密
+├── mortise-log/                     # L2 日志模块 - @OperationLog/@ApiLog AOP 注解、LogStorage SPI、ClientTypeResolver 责任链
+├── mortise-cache/                   # L2 缓存模块 - CacheService 统一抽象、Redis 实现、CacheConfigurer/CacheExpirationHandler SPI
+├── mortise-notification/            # L2 通知模块 - NotificationSender SPI、邮件/微信模板消息、异步批量发送
+├── mortise-persistence/             # L2 持久化模块 - MyBatis-Flex 配置、PostgreSQL JSONB/Duration 类型处理器、数据库日志存储
+├── mortise-auth/                    # L3 认证模块 - JWT、Spring Security 6、OAuth2 多平台、短信/扫码登录、多用户表
+├── mortise-web-support/             # L3 Web 支撑 - @AdminController/@ApiController、GlobalExceptionHandler、@RateLimit、OpenAPI
+├── mortise-monitor/                 # L3 监控模块 - Actuator 端点安全、Prometheus 指标、DB/Redis 健康检查
+├── mortise-file/                    # L3 文件模块 - x-file-storage 集成、阿里云 OSS、分片上传、文件元数据管理
+├── mortise-wechat/                  # L3 微信模块 - 多账号公众号管理、消息路由、扫码登录、模板消息、开放平台接入
+├── mortise-test-support/            # 测试支撑 - 共享测试配置与工具
+├── mortise-system/                  # 系统域聚合（DDD 分层）
+│   ├── mortise-system-domain/       # L4 领域层 - User/Role/Menu/Dict/DictType 实体、@DictFormat 注解
+│   ├── mortise-system-infra/        # L4 基础设施层 - Mapper 接口、SystemCacheConfigurer、日志存储实现
+│   ├── mortise-system-application/  # L4 应用层 - UserService/AuthService/RoleService 等、事件驱动（登录/注册/重置密码）
+│   ├── mortise-system-admin/        # L5 管理端 API - 系统管理 REST 接口、DictSerializer 字典翻译、SecurityConfigurer
+│   └── mortise-system-api/          # L5 公共 API（预留扩展）
+├── mortise-member/                  # 会员域聚合（DDD 分层）
+│   ├── mortise-member-domain/       # L4 领域层 - Member/MemberOAuth2Binding 实体
+│   ├── mortise-member-infra/        # L4 基础设施层 - Mapper 接口
+│   ├── mortise-member-application/  # L4 应用层 - MemberService、OAuth2 绑定服务
+│   ├── mortise-member-admin/        # L5 管理端 API - 会员管理 REST 接口
+│   └── mortise-member-api/          # L5 公共 API - 会员注册/登录/OAuth2/文件上传接口、MemberDetailsService
+└── mortise-app/                     # L6 应用装配 - Spring Boot 启动入口、Flyway 迁移、多环境配置
 ```
 
 ### 架构图
 
 ```mermaid
 flowchart TB
-  subgraph L6[应用层]
-    app[mortise-app]
+  subgraph L6[L6 应用层]
+    app[mortise-app<br/><i>Spring Boot 启动 · Flyway</i>]
   end
 
-  subgraph L5[业务域 API]
+  subgraph L5[L5 业务域 API]
     sysAdmin[mortise-system-admin]
     sysApi[mortise-system-api]
     memAdmin[mortise-member-admin]
     memApi[mortise-member-api]
   end
 
-  subgraph L4[业务域应用与基础设施]
+  subgraph L4[L4 业务域应用与基础设施]
     sysApp[mortise-system-application]
     sysInfra[mortise-system-infra]
     memApp[mortise-member-application]
@@ -870,55 +928,50 @@ flowchart TB
     memDomain[mortise-member-domain]
   end
 
-  subgraph L3[应用基础层]
-    auth[mortise-auth]
-    webSupport[mortise-web-support]
-    monitor[mortise-monitor]
+  subgraph L3[L3 应用基础层]
+    auth[mortise-auth<br/><i>JWT · OAuth2 · SMS · QR</i>]
+    webSupport[mortise-web-support<br/><i>@RateLimit · OpenAPI</i>]
+    monitor[mortise-monitor<br/><i>Actuator · Prometheus</i>]
+    file[mortise-file<br/><i>x-file-storage · OSS</i>]
+    wechat[mortise-wechat<br/><i>公众号 · 开放平台</i>]
   end
 
-  subgraph L2[基础设施层]
-    log[mortise-log]
-    cache[mortise-cache]
-    notify[mortise-notification]
-    persistence[mortise-persistence]
+  subgraph L2[L2 基础设施层]
+    log[mortise-log<br/><i>@OperationLog · @ApiLog</i>]
+    cache[mortise-cache<br/><i>Redis · SPI</i>]
+    notify[mortise-notification<br/><i>邮件 · 微信</i>]
+    persistence[mortise-persistence<br/><i>MyBatis-Flex · JSONB</i>]
   end
 
-  subgraph L1[核心层]
-    common[mortise-common]
-    core[mortise-core]
+  subgraph L1[L1 核心层]
+    common[mortise-common<br/><i>工具 · 异常 · 枚举</i>]
+    core[mortise-core<br/><i>GlobalResult · 虚拟线程</i>]
   end
 
-  app --> sysAdmin
-  app --> sysApi
-  app --> memAdmin
-  app --> memApi
-  app --> auth
-  app --> webSupport
-  app --> monitor
+  app --> sysAdmin & sysApi & memAdmin & memApi
+  app --> auth & webSupport & monitor & file & wechat
 
   sysAdmin --> sysApp
   sysApi --> sysApp
   memAdmin --> memApp
   memApi --> memApp
 
-  sysApp --> sysDomain
-  sysApp --> sysInfra
-  memApp --> memDomain
-  memApp --> memInfra
+  sysApp --> sysDomain & sysInfra
+  memApp --> memDomain & memInfra
 
-  sysInfra --> persistence
+  sysInfra --> persistence & log & cache
   memInfra --> persistence
-  sysInfra --> log
-  memInfra --> log
 
-  auth --> cache
+  wechat --> auth & cache & notify & webSupport
+  file --> auth
+  auth --> core & cache & persistence
+  webSupport --> core & log & auth
   monitor --> common
-  webSupport --> core
 
   log --> core
-  cache --> core
-  notify --> core
-  persistence --> core
+  cache --> common
+  notify --> common
+  persistence --> log
 
   core --> common
 ```
@@ -936,27 +989,49 @@ flowchart TB
 
 ### 技术特色
 
-**🎯 SPI 架构设计**
-- 缓存接口抽象，支持多种实现（Redis、本地缓存）
-- Jackson 序列化器可扩展
-- 监控指标自定义接口
+**🎯 SPI 架构设计（12 组 SPI 接口）**
+
+项目全面采用 SPI（Service Provider Interface）机制，实现模块间松耦合与热插拔扩展：
+
+| SPI 接口 | 所属模块 | 用途 | 已有实现 |
+|---|---|---|---|
+| `LogStorage` | mortise-log | 日志存储策略 | DatabaseLogStorage、SystemLogStorage |
+| `ClientTypeResolver` | mortise-log | 客户端类型识别 | DefaultClientTypeResolver |
+| `CacheConfigurer` | mortise-cache | 模块缓存 TTL 注册 | SystemCacheConfigurer、AuthCacheConfigurer |
+| `CacheExpirationHandler` | mortise-cache | 缓存过期事件处理 | UserOnlineStatusExpirationHandler |
+| `SecurityConfigurer` | mortise-auth | 模块安全规则注册 | System/App/Web/Monitor/File/WeChat 共 6 个实现 |
+| `CustomUserDetailsService` | mortise-auth | 多用户表认证 | UserDetailsServiceImpl、MemberDetailsServiceImpl |
+| `UserTypeResolver` | mortise-auth | 用户类型识别 | DefaultUserTypeResolver |
+| `OAuth2ProviderStrategy` | mortise-auth | OAuth2 平台适配 | GitHub/Google/WeChat/Logto 共 4 个实现 |
+| `OAuth2LoginSuccessHandlerProvider` | mortise-auth | OAuth2 登录成功处理 | System/Api 共 2 个实现 |
+| `NotificationSender` | mortise-notification | 通知渠道扩展 | EmailNotificationSender、WeChatNotificationSender |
+| `JacksonConfigurer` | mortise-web-support | Jackson 序列化扩展 | DictJacksonConfigurer |
+| `CurrentUser` | mortise-core | 当前用户抽象 | UserDetailInfo、MemberDetailInfo |
 
 **🔄 缓存过期策略**
-- 统一过期时间管理
-- Redis 键空间通知监听
-- 自动缓存刷新机制
+- 统一过期时间管理（`CacheConfigurer` SPI 每模块独立注册）
+- Redis Keyspace Notification 监听键过期
+- `CacheExpirationHandler` SPI 自动分发过期事件
 
 **📊 可观测性**
-- 自定义 Actuator 端点
-- Prometheus 指标导出
-- HikariCP 连接池监控
-- 应用性能指标收集
+- Spring Boot Actuator 端点 + JWT 安全保护
+- Prometheus 指标导出 + 公共标签
+- HikariCP 连接池 / Redis / DB 自定义健康指标
+- 应用启动耗时监控
 
 **🛡️ 安全保障**
-- JWT Token 认证
-- Spring Security 方法级权限
+- JWT Token 认证 + Token 刷新
+- OAuth2 多平台登录（GitHub / Google / Logto / 微信）
+- SMS 验证码登录 + 扫码登录
+- Spring Security 方法级权限控制
 - Jasypt 配置加密
-- Resilience4j 限流保护
+- Resilience4j `@RateLimit` 注解限流（IP / 用户 / 方法 / SpEL）
+
+**⚡ 高性能设计**
+- JDK 21 虚拟线程作为默认异步执行器
+- MyBatis-Flex 轻量级 ORM + PostgreSQL JSONB 原生支持
+- Redis 缓存 + 键过期自动处理
+- Flyway 版本化数据库迁移
 
 ## 🤝 贡献指南
 
@@ -1125,7 +1200,7 @@ A: 是的。所有 Actuator 端点都需要 JWT Token 认证，确保生产环�
 <details>
 <summary><b>Q: 如何自定义缓存实现？</b></summary>
 
-A: 实现 `CacheService` 接口，通过 SPI 机制注册自定义实现。参考 [缓存过期 SPI 指南](docs/cache-expiration-spi-guide.md)。
+A: 实现 `CacheConfigurer` 接口注册模块缓存 TTL，或实现 `CacheExpirationHandler` 处理过期事件。参考 [缓存过期 SPI 指南](docs/caching/cache-expiration-spi-guide.md)。
 </details>
 
 ## � 项目状态
@@ -1142,6 +1217,7 @@ A: 实现 `CacheService` 接口，通过 SPI 机制注册自定义实现。参�
 | 版本 | 发布日期 | 主要更新 |
 |------|----------|----------|
 | v0.0.1 | 2024-09-24 | 🎉 首次发布：核心功能、基础架构 |
+| v0.2.0 | 2025-12 | 🚀 全面功能完善：OAuth2 多平台、微信集成、文件管理、日志审计、通知系统、SPI 架构 |
 
 ### 🗺️ 发展路线图
 
@@ -1153,21 +1229,29 @@ v0.0.1 (✅ 已完成)
 ├─ Actuator 监控
 └─ 基础文档
 
-v0.2.0 (🚧 开发中 - 预计 Q1 2025)
-├─ 操作日志完善
-├─ 文件上传管理
-├─ API 文档集成
-├─ 监控告警优化
-└─ 性能优化
+v0.2.0 (✅ 已完成)
+├─ 操作日志 (@OperationLog/@ApiLog AOP + SPI 存储)
+├─ 文件上传管理 (x-file-storage + 阿里云 OSS)
+├─ SpringDoc OpenAPI 3 API 文档
+├─ 通知系统 (邮件 + 微信模板消息 SPI)
+├─ OAuth2 多平台登录 (GitHub/Google/Logto/微信)
+├─ 短信验证码 / 扫码登录
+├─ 微信公众号 & 开放平台集成
+├─ 会员模块 (DDD 分层)
+├─ Resilience4j @RateLimit 注解限流
+├─ 12 组 SPI 接口完整实现
+├─ JDK 21 虚拟线程 & 性能优化
+├─ Prometheus + Grafana 监控体系
+└─ PostgreSQL JSONB / Flyway 数据库迁移
 
-v0.3.0 (📋 计划中 - 预计 Q2 2025)
-├─ 通知系统
-├─ 工作流引擎
+v0.3.0 (📋 计划中 - 预计 Q2 2026)
+├─ 支付集成 (微信支付 / 支付宝)
+├─ 工作流引擎 (Flowable)
 ├─ 多租户支持
 ├─ 前端管理界面
-└─ 单元测试覆盖
+└─ 单元测试覆盖提升
 
-v1.0.0 (🎯 目标 - 预计 Q3 2025)
+v1.0.0 (🎯 目标 - 预计 Q4 2026)
 ├─ 生产就绪认证
 ├─ 完整测试覆盖
 ├─ 性能基准测试
@@ -1175,10 +1259,10 @@ v1.0.0 (🎯 目标 - 预计 Q3 2025)
 └─ 详尽使用手册
 
 v2.0.0 (💡 展望)
-├─ 微服务架构
-├─ 消息队列集成
-├─ 分布式事务
-├─ 全文搜索
+├─ 微服务架构 (Spring Cloud)
+├─ 消息队列 (RocketMQ/Kafka)
+├─ 分布式事务 (Seata)
+├─ 全文搜索 (Elasticsearch)
 └─ 大数据分析
 ```
 
@@ -1263,8 +1347,8 @@ in the Software without restriction...
 
 Made with ❤️ by [RYMCU](https://github.com/rymcu)
 
-**最后更新**: 2025-10-02  
-**当前版本**: v0.0.1  
+**最后更新**: 2026-02-10  
+**当前版本**: v0.2.0  
 **维护者**: [RYMCU 开发团队](https://github.com/rymcu)
 
 </div>

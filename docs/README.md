@@ -7,10 +7,18 @@
 Mortise 是一个基于 **Spring Boot 3.5.7** 构建的现代化后台管理脚手架，集成了企业级的认证授权、监控、缓存、限流等功能。本文档库提供了从开发到运维的全方位技术指导。
 
 ### 📋 技术栈一览
-- **Spring Boot 3.5.7** + **Spring Security 6** + **JWT**
-- **MyBatis-Flex 1.11.0** + **PostgreSQL 17** + **Redis**
-- **Spring Boot Actuator** + **Prometheus** + **Grafana**
-- **Resilience4j** + **HikariCP** + **Docker Compose**
+- **Spring Boot 3.5.7** + **Spring Security 6** + **JWT (JJWT 0.12.5)** + **OAuth2 多平台**
+- **MyBatis-Flex 1.11.0** + **PostgreSQL 17** + **Redis** + **Flyway**
+- **Spring Boot Actuator** + **Prometheus** + **Grafana** + **Micrometer**
+- **Resilience4j 2.2.0** + **HikariCP** + **Docker Compose**
+- **微信公众号/开放平台 (WxJava)** + **x-file-storage** + **阿里云 OSS**
+- **JDK 21 虚拟线程** + **SpringDoc OpenAPI 3** + **Jasypt 3.0.5**
+
+### 📊 项目规模
+- **模块总数**: 25（含子模块）
+- **SPI 接口**: 12 组可扩展接口
+- **Java 源文件**: ~356 个
+- **当前版本**: 0.2.0
 
 ## 📂 文档结构
 
@@ -18,10 +26,11 @@ Mortise 是一个基于 **Spring Boot 3.5.7** 构建的现代化后台管理脚�
 - [quickstart/QUICK_START.md](quickstart/QUICK_START.md)
 
 ### 🏗️ 架构与规范
-- [architecture/architecture.md](architecture/architecture.md)
+- [architecture/architecture.md](architecture/architecture.md) — **分层架构、模块职责、SPI 矩阵、设计模式**
 - [architecture/project-architecture-optimization.md](architecture/project-architecture-optimization.md)
 - [architecture/module-dependency-and-spi-architecture.md](architecture/module-dependency-and-spi-architecture.md)
 - [architecture/ARCHITECTURE_REFACTOR_PLAN.md](architecture/ARCHITECTURE_REFACTOR_PLAN.md)
+
 ### 📌 需求规范 (spec-kit)
 - [specs/README.md](specs/README.md)
 - [specs/WORKFLOW.md](specs/WORKFLOW.md)
@@ -71,6 +80,10 @@ Mortise 是一个基于 **Spring Boot 3.5.7** 构建的现代化后台管理脚�
 - [performance/app-startup-time-fix.md](performance/app-startup-time-fix.md)
 - [performance/BATCH_INSERT_OPTIMIZATION.md](performance/BATCH_INSERT_OPTIMIZATION.md)
 
+### 🟩 微信集成
+- [wechat/WECHAT_QUICK_START.md](wechat/WECHAT_QUICK_START.md)
+- [wechat/WECHAT_DEPLOYMENT_GUIDE.md](wechat/WECHAT_DEPLOYMENT_GUIDE.md)
+
 ### 🔄 迁移
 - [migration/mortise-system-migration-guide.md](migration/mortise-system-migration-guide.md)
 - [migration/mortise-system-migration-plan-v2.md](migration/mortise-system-migration-plan-v2.md)
@@ -84,9 +97,10 @@ Mortise 是一个基于 **Spring Boot 3.5.7** 构建的现代化后台管理脚�
 ### ♻️ 重构与修复
 - [refactor/REFACTOR_SUMMARY.md](refactor/REFACTOR_SUMMARY.md)
 
-### 🟩 微信集成
-- [wechat/WECHAT_QUICK_START.md](wechat/WECHAT_QUICK_START.md)
-- [wechat/WECHAT_DEPLOYMENT_GUIDE.md](wechat/WECHAT_DEPLOYMENT_GUIDE.md)
+### 🧩 SPI 与扩展
+- [jackson-spi-architecture.md](jackson-spi-architecture.md) — Jackson SPI 扩展架构
+- [module-dependency-and-spi-architecture.md](module-dependency-and-spi-architecture.md) — 模块依赖与 SPI 架构
+- [resilience4j-rate-limiter-integration.md](resilience4j-rate-limiter-integration.md) — Resilience4j 限流集成
 
 ## 🚀 快速开始
 
@@ -292,6 +306,7 @@ docs/
 
 | 版本 | 日期 | 主要更新内容 | 维护者 |
 |------|------|-------------|--------|
+| **v4.0** | 2026-02-10 | 同步实现现状：OAuth2 多平台、微信集成、文件管理、日志审计、通知系统、12 组 SPI 接口 | RYMCU Team |
 | **v3.0** | 2025-09-24 | 文档全面重构，增加监控指南、安全配置、架构优化等 | RYMCU Team |
 | **v2.1** | 2025-09-23 | 新增缓存优化、事件监听等文档 | RYMCU Team |
 | **v2.0** | 2025-09-20 | 文档整理版本，技术文档迁移至 docs 目录 | RYMCU Team |
@@ -324,7 +339,7 @@ docs/
 # 应用管理
 mvn spring-boot:run -Dspring-boot.run.profiles=dev  # 开发环境启动
 mvn clean package -DskipTests                        # 打包 (跳过测试)
-java -jar target/mortise-0.0.1.war                  # 生产环境启动
+java -jar mortise-app/target/mortise-app-0.2.0.jar    # 生产环境启动
 
 # Docker 管理  
 docker-compose up -d                                 # 后台启动所有服务
@@ -427,7 +442,7 @@ redis-cli config get requirepass
 
 ---
 
-**📅 最后更新**: 2025-09-24  
+**📅 最后更新**: 2026-02-10  
 **🏢 维护团队**: [RYMCU 开发团队](https://github.com/rymcu)  
 **📧 技术支持**: support@rymcu.com  
 **🌟 项目主页**: https://github.com/rymcu/mortise
