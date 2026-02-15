@@ -255,6 +255,29 @@
 
 #### 1️⃣ 克隆项目
 
+按使用场景选择：
+
+```bash
+# 基础版（不拉取商业私有模块）
+git clone https://github.com/rymcu/mortise.git
+cd mortise
+
+# 商业版（拉取私有子模块，需要对应仓库权限）
+git clone --recurse-submodules git@github.com:rymcu/mortise.git
+cd mortise
+
+# 已有仓库时补拉子模块
+git submodule update --init --recursive
+```
+
+如需拉取商业模块最新远端提交：
+
+```bash
+git submodule update --remote --merge
+```
+
+仅需主仓代码时，也可使用以下常规克隆方式：
+
 ```bash
 # HTTPS
 git clone https://github.com/rymcu/mortise.git
