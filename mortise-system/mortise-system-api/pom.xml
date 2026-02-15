@@ -16,6 +16,10 @@
     <name>mortise-system-api</name>
     <description>Mortise System - Public API Layer</description>
 
+    <properties>
+        <layer.guard.skip>false</layer.guard.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.rymcu</groupId>

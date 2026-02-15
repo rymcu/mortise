@@ -2,9 +2,9 @@
 -- Mortise Member Module - OAuth2 Binding Schema
 -- PostgreSQL DDL Script
 -- Author: ronger
--- Create Date: 2025-12-15
 -- Description: 会员 OAuth2 绑定表结构
 -- 注意: 主键ID由应用层 MyBatis-Flex flexId 生成，不使用数据库自增
+-- Version Range: Member V20-V39
 -- =============================================
 
 -- =============================================

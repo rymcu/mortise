@@ -62,6 +62,8 @@
         <springdoc.version>2.8.13</springdoc.version>
         <resilience4j.version>2.2.0</resilience4j.version>
         <pay-java.version>2.14.9</pay-java.version>
+        <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
+        <layer.guard.skip>true</layer.guard.skip>
     </properties>
 
     <dependencyManagement>
@@ -175,6 +177,87 @@
             <dependency>
                 <groupId>com.rymcu</groupId>
                 <artifactId>mortise-file</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Product 模块（商业版，通过 pro profile 按需引入） -->
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-product-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-product-application</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-product-infra</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-product-admin</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-product-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Commerce 模块（商业版，通过 pro profile 按需引入） -->
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-commerce-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-commerce-application</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-commerce-infra</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-commerce-admin</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-commerce-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- Payment 模块（商业版，通过 pro profile 按需引入） -->
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-payment-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-payment-application</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-payment-infra</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-payment-admin</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-payment-api</artifactId>
                 <version>${revision}</version>
             </dependency>
 
@@ -313,6 +396,33 @@
         <!-- CI-Friendly Versions: flatten-maven-plugin -->
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>${maven-enforcer-plugin.version}</version>
+                <executions>
+                    <execution>
+                        <id>enforce-layered-dependencies</id>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <skip>${layer.guard.skip}</skip>
+                            <fail>true</fail>
+                            <rules>
+                                <bannedDependencies>
+                                    <searchTransitive>false</searchTransitive>
+                                    <excludes>
+                                        <exclude>com.rymcu:${project.parent.artifactId}-domain</exclude>
+                                        <exclude>com.rymcu:${project.parent.artifactId}-infra</exclude>
+                                    </excludes>
+                                    <message>Admin/API 模块禁止直接依赖 Domain/Infra，请通过 Application 层访问。</message>
+                                </bannedDependencies>
+                            </rules>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>flatten-maven-plugin</artifactId>
                 <version>1.6.0</version>
@@ -369,6 +479,20 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
+        </profile>
+        <!-- 商业版 Profile：自动检测商业模块是否存在 -->
+        <profile>
+            <id>pro</id>
+            <activation>
+                <file>
+                    <exists>mortise-payment/pom.xml</exists>
+                </file>
+            </activation>
+            <modules>
+                <module>mortise-product</module>
+                <module>mortise-commerce</module>
+                <module>mortise-payment</module>
+            </modules>
         </profile>
     </profiles>
 </project>

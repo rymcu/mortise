@@ -16,6 +16,10 @@
     <name>mortise-member-admin</name>
     <description>Mortise Member - Admin API Layer</description>
 
+    <properties>
+        <layer.guard.skip>false</layer.guard.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.rymcu</groupId>

@@ -158,4 +158,45 @@
             </plugin>
         </plugins>
     </build>
+
+    <!-- 商业版 Profile：自动检测商业模块并引入依赖 -->
+    <profiles>
+        <profile>
+            <id>pro</id>
+            <activation>
+                <file>
+                    <exists>${basedir}/../mortise-payment/pom.xml</exists>
+                </file>
+            </activation>
+            <dependencies>
+                <!-- Product 模块 -->
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-product-admin</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-product-api</artifactId>
+                </dependency>
+                <!-- Commerce 模块 -->
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-commerce-admin</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-commerce-api</artifactId>
+                </dependency>
+                <!-- Payment 模块 -->
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-payment-admin</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-payment-api</artifactId>
+                </dependency>
+            </dependencies>
+        </profile>
+    </profiles>
 </project>

@@ -1,3 +1,7 @@
+-- =============================================
+-- Mortise System Module - Add Redirect URI
+-- Description: 为 OAuth2 客户端配置表添加 redirect_uri 列
+-- =============================================
 DO $$
 BEGIN
     -- 检查 'redirect_uri' 列是否存在于 'mortise.mortise_oauth2_client_config' 表中

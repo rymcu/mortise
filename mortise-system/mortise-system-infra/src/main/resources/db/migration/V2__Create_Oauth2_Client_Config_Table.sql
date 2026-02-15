@@ -1,4 +1,11 @@
 -- =============================================
+-- Mortise System Module - OAuth2 Client Config
+-- PostgreSQL DDL Script
+-- Author: ronger
+-- Description: OAuth2 客户端配置表
+-- =============================================
+
+-- =============================================
 -- 表: mortise_oauth2_client_config (OAuth2 客户端配置表)
 -- =============================================
 CREATE TABLE IF NOT EXISTS mortise.mortise_oauth2_client_config

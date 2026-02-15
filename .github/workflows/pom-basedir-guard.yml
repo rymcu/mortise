@@ -1,0 +1,26 @@
+name: Maven POM Guard
+
+on:
+  pull_request:
+    paths:
+      - "**/pom.xml"
+  push:
+    paths:
+      - "**/pom.xml"
+
+jobs:
+  forbid-project-basedir-in-profile-activation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Forbid ${project.basedir} in pom.xml
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -R -n --include='pom.xml' '\${project\.basedir}' .; then
+            echo "::error::Found forbidden expression \${project.basedir} in pom.xml. Use \${basedir} instead."
+            exit 1
+          fi
+          echo "No forbidden \${project.basedir} usage found in pom.xml files."

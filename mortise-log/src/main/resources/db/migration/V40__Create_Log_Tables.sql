@@ -1,6 +1,10 @@
 -- =============================================
--- Mortise Log Module - Migrate ID to BIGINT (flexId)
--- PostgreSQL Flyway Migration
+-- Mortise Log Module - Log Tables Schema
+-- PostgreSQL DDL Script
+-- Author: ronger
+-- Description: 日志模块表结构（操作日志 + API日志）
+-- 注意: 主键ID由应用层 MyBatis-Flex flexId 生成，不使用数据库自增
+-- Version Range: Log V40-V49
 --
 -- Strategy:
 -- 1) Drop existing log tables (including any *_ulid leftovers)

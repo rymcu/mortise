@@ -16,22 +16,11 @@
     <name>mortise-system-admin</name>
     <description>Mortise System - Admin API Layer</description>
 
+    <properties>
+        <layer.guard.skip>false</layer.guard.skip>
+    </properties>
+
     <dependencies>
-        <dependency>
-            <groupId>com.rymcu</groupId>
-            <artifactId>mortise-common</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.rymcu</groupId>
-            <artifactId>mortise-core</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.rymcu</groupId>
-            <artifactId>mortise-auth</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>com.rymcu</groupId>
             <artifactId>mortise-web-support</artifactId>
@@ -40,16 +29,6 @@
         <dependency>
             <groupId>com.rymcu</groupId>
             <artifactId>mortise-system-application</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.rymcu</groupId>
-            <artifactId>mortise-system-domain</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.rymcu</groupId>
-            <artifactId>mortise-system-infra</artifactId>
         </dependency>
 
         <dependency>
