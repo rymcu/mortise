@@ -1,0 +1,12 @@
+[submodule "mortise-product"]
+	path = mortise-product
+	url = git@github.com:rymcu/mortise-product.git
+	branch = master
+[submodule "mortise-commerce"]
+	path = mortise-commerce
+	url = git@github.com:rymcu/mortise-commerce.git
+	branch = master
+[submodule "mortise-payment"]
+	path = mortise-payment
+	url = git@github.com:rymcu/mortise-payment.git
+	branch = master
