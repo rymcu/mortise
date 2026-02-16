@@ -196,6 +196,15 @@
                     <groupId>com.rymcu</groupId>
                     <artifactId>mortise-payment-api</artifactId>
                 </dependency>
+                <!-- Community 模块 -->
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-community-admin</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-community-api</artifactId>
+                </dependency>
             </dependencies>
         </profile>
     </profiles>

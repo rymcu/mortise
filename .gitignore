@@ -37,3 +37,4 @@ build/
 /logs/
 /redis/
 /app/
+/old-code/

@@ -66,13 +66,14 @@ COMMENT ON COLUMN mortise.mortise_member_oauth2_binding.created_time IS '创建�
 COMMENT ON COLUMN mortise.mortise_member_oauth2_binding.updated_time IS '更新时间';
 
 -- 创建索引
-CREATE INDEX idx_member_oauth2_member_id ON mortise.mortise_member_oauth2_binding (member_id);
-CREATE INDEX idx_member_oauth2_provider ON mortise.mortise_member_oauth2_binding (provider);
-CREATE INDEX idx_member_oauth2_provider_unionid ON mortise.mortise_member_oauth2_binding (provider, union_id);
-CREATE INDEX idx_member_oauth2_status ON mortise.mortise_member_oauth2_binding (status);
-CREATE INDEX idx_member_oauth2_del_flag ON mortise.mortise_member_oauth2_binding (del_flag);
+CREATE INDEX IF NOT EXISTS idx_member_oauth2_member_id ON mortise.mortise_member_oauth2_binding (member_id);
+CREATE INDEX IF NOT EXISTS idx_member_oauth2_provider ON mortise.mortise_member_oauth2_binding (provider);
+CREATE INDEX IF NOT EXISTS idx_member_oauth2_provider_unionid ON mortise.mortise_member_oauth2_binding (provider, union_id);
+CREATE INDEX IF NOT EXISTS idx_member_oauth2_status ON mortise.mortise_member_oauth2_binding (status);
+CREATE INDEX IF NOT EXISTS idx_member_oauth2_del_flag ON mortise.mortise_member_oauth2_binding (del_flag);
 
 -- 创建触发器（实现 ON UPDATE CURRENT_TIMESTAMP 功能）
+DROP TRIGGER IF EXISTS update_mortise_member_oauth2_binding_updated_time ON mortise.mortise_member_oauth2_binding;
 CREATE TRIGGER update_mortise_member_oauth2_binding_updated_time
     BEFORE UPDATE
     ON mortise.mortise_member_oauth2_binding

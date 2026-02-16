@@ -45,10 +45,10 @@ COMMENT ON COLUMN mortise.mortise_user.created_time IS '创建时间';
 COMMENT ON COLUMN mortise.mortise_user.last_online_time IS '最后在线时间';
 
 -- 创建索引
-CREATE INDEX idx_mortise_user_account ON mortise.mortise_user (account);
-CREATE INDEX idx_mortise_user_email ON mortise.mortise_user (email);
-CREATE INDEX idx_mortise_user_status ON mortise.mortise_user (status);
-CREATE INDEX idx_mortise_user_del_flag ON mortise.mortise_user (del_flag);
+CREATE INDEX IF NOT EXISTS idx_mortise_user_account ON mortise.mortise_user (account);
+CREATE INDEX IF NOT EXISTS idx_mortise_user_email ON mortise.mortise_user (email);
+CREATE INDEX IF NOT EXISTS idx_mortise_user_status ON mortise.mortise_user (status);
+CREATE INDEX IF NOT EXISTS idx_mortise_user_del_flag ON mortise.mortise_user (del_flag);
 
 -- =============================================
 -- 表2: mortise_role (角色表)
@@ -77,9 +77,9 @@ COMMENT ON COLUMN mortise.mortise_role.created_time IS '创建时间';
 COMMENT ON COLUMN mortise.mortise_role.updated_time IS '更新时间';
 
 -- 创建索引
-CREATE INDEX idx_mortise_role_permission ON mortise.mortise_role (permission);
-CREATE INDEX idx_mortise_role_status ON mortise.mortise_role (status);
-CREATE INDEX idx_mortise_role_del_flag ON mortise.mortise_role (del_flag);
+CREATE INDEX IF NOT EXISTS idx_mortise_role_permission ON mortise.mortise_role (permission);
+CREATE INDEX IF NOT EXISTS idx_mortise_role_status ON mortise.mortise_role (status);
+CREATE INDEX IF NOT EXISTS idx_mortise_role_del_flag ON mortise.mortise_role (del_flag);
 
 -- =============================================
 -- 表3: mortise_menu (菜单表)
@@ -115,10 +115,10 @@ COMMENT ON COLUMN mortise.mortise_menu.created_time IS '创建时间';
 COMMENT ON COLUMN mortise.mortise_menu.updated_time IS '更新时间';
 
 -- 创建索引
-CREATE INDEX idx_mortise_menu_parent_id ON mortise.mortise_menu (parent_id);
-CREATE INDEX idx_mortise_menu_status ON mortise.mortise_menu (status);
-CREATE INDEX idx_mortise_menu_del_flag ON mortise.mortise_menu (del_flag);
-CREATE INDEX idx_mortise_menu_sort_no ON mortise.mortise_menu (sort_no);
+CREATE INDEX IF NOT EXISTS idx_mortise_menu_parent_id ON mortise.mortise_menu (parent_id);
+CREATE INDEX IF NOT EXISTS idx_mortise_menu_status ON mortise.mortise_menu (status);
+CREATE INDEX IF NOT EXISTS idx_mortise_menu_del_flag ON mortise.mortise_menu (del_flag);
+CREATE INDEX IF NOT EXISTS idx_mortise_menu_sort_no ON mortise.mortise_menu (sort_no);
 
 -- =============================================
 -- 表4: mortise_user_role (用户角色关联表)
@@ -137,8 +137,8 @@ COMMENT ON COLUMN mortise.mortise_user_role.id_mortise_user IS '用户ID';
 COMMENT ON COLUMN mortise.mortise_user_role.id_mortise_role IS '角色ID';
 
 -- 创建索引
-CREATE INDEX idx_mortise_user_role_user ON mortise.mortise_user_role (id_mortise_user);
-CREATE INDEX idx_mortise_user_role_role ON mortise.mortise_user_role (id_mortise_role);
+CREATE INDEX IF NOT EXISTS idx_mortise_user_role_user ON mortise.mortise_user_role (id_mortise_user);
+CREATE INDEX IF NOT EXISTS idx_mortise_user_role_role ON mortise.mortise_user_role (id_mortise_role);
 
 -- =============================================
 -- 表5: mortise_role_menu (角色菜单关联表)
@@ -157,8 +157,8 @@ COMMENT ON COLUMN mortise.mortise_role_menu.id_mortise_role IS '角色ID';
 COMMENT ON COLUMN mortise.mortise_role_menu.id_mortise_menu IS '菜单ID';
 
 -- 创建索引
-CREATE INDEX idx_mortise_role_menu_role ON mortise.mortise_role_menu (id_mortise_role);
-CREATE INDEX idx_mortise_role_menu_menu ON mortise.mortise_role_menu (id_mortise_menu);
+CREATE INDEX IF NOT EXISTS idx_mortise_role_menu_role ON mortise.mortise_role_menu (id_mortise_role);
+CREATE INDEX IF NOT EXISTS idx_mortise_role_menu_menu ON mortise.mortise_role_menu (id_mortise_menu);
 
 -- =============================================
 -- 表6: mortise_dict_type (字典类型表)
@@ -193,9 +193,9 @@ COMMENT ON COLUMN mortise.mortise_dict_type.updated_by IS '更新人ID';
 COMMENT ON COLUMN mortise.mortise_dict_type.updated_time IS '更新时间';
 
 -- 创建索引
-CREATE INDEX idx_mortise_dict_type_code ON mortise.mortise_dict_type (type_code);
-CREATE INDEX idx_mortise_dict_type_status ON mortise.mortise_dict_type (status);
-CREATE INDEX idx_mortise_dict_type_del_flag ON mortise.mortise_dict_type (del_flag);
+CREATE INDEX IF NOT EXISTS idx_mortise_dict_type_code ON mortise.mortise_dict_type (type_code);
+CREATE INDEX IF NOT EXISTS idx_mortise_dict_type_status ON mortise.mortise_dict_type (status);
+CREATE INDEX IF NOT EXISTS idx_mortise_dict_type_del_flag ON mortise.mortise_dict_type (del_flag);
 
 -- =============================================
 -- 表7: mortise_dict (字典数据表)
@@ -236,10 +236,10 @@ COMMENT ON COLUMN mortise.mortise_dict.image IS '图片';
 COMMENT ON COLUMN mortise.mortise_dict.color IS 'Chip颜色';
 
 -- 创建索引
-CREATE INDEX idx_mortise_dict_dict_type_code ON mortise.mortise_dict (dict_type_code);
-CREATE INDEX idx_mortise_dict_status ON mortise.mortise_dict (status);
-CREATE INDEX idx_mortise_dict_del_flag ON mortise.mortise_dict (del_flag);
-CREATE INDEX idx_mortise_dict_sort_no ON mortise.mortise_dict (sort_no);
+CREATE INDEX IF NOT EXISTS idx_mortise_dict_dict_type_code ON mortise.mortise_dict (dict_type_code);
+CREATE INDEX IF NOT EXISTS idx_mortise_dict_status ON mortise.mortise_dict (status);
+CREATE INDEX IF NOT EXISTS idx_mortise_dict_del_flag ON mortise.mortise_dict (del_flag);
+CREATE INDEX IF NOT EXISTS idx_mortise_dict_sort_no ON mortise.mortise_dict (sort_no);
 
 -- =============================================
 -- 表8: mortise_user_oauth2_binding (用户OAuth2绑定表)
@@ -280,9 +280,9 @@ COMMENT ON COLUMN mortise.mortise_user_oauth2_binding.created_time IS '创建时
 COMMENT ON COLUMN mortise.mortise_user_oauth2_binding.updated_time IS '更新时间';
 
 -- 创建索引
-CREATE INDEX idx_user_id ON mortise.mortise_user_oauth2_binding (user_id);
-CREATE INDEX idx_provider ON mortise.mortise_user_oauth2_binding (provider);
-CREATE INDEX idx_provider_unionid ON mortise.mortise_user_oauth2_binding (provider, union_id);
+CREATE INDEX IF NOT EXISTS idx_user_id ON mortise.mortise_user_oauth2_binding (user_id);
+CREATE INDEX IF NOT EXISTS idx_provider ON mortise.mortise_user_oauth2_binding (provider);
+CREATE INDEX IF NOT EXISTS idx_provider_unionid ON mortise.mortise_user_oauth2_binding (provider, union_id);
 
 -- =============================================
 -- 创建更新时间触发器函数（全局共用）
@@ -297,6 +297,7 @@ END;
 $$ language 'plpgsql';
 
 -- 创建触发器
+DROP TRIGGER IF EXISTS update_mortise_user_oauth2_binding_updated_time ON mortise.mortise_user_oauth2_binding;
 CREATE TRIGGER update_mortise_user_oauth2_binding_updated_time
     BEFORE UPDATE
     ON mortise.mortise_user_oauth2_binding

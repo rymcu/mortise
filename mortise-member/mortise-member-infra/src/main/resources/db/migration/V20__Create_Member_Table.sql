@@ -64,19 +64,20 @@ COMMENT ON COLUMN mortise.mortise_member.created_time IS '创建时间';
 COMMENT ON COLUMN mortise.mortise_member.updated_time IS '更新时间';
 COMMENT ON COLUMN mortise.mortise_member.del_flag IS '删除标记：0-未删除, 1-已删除';
 
-CREATE INDEX idx_member_email ON mortise.mortise_member (email) WHERE del_flag = 0;
-CREATE INDEX idx_member_phone ON mortise.mortise_member (phone) WHERE del_flag = 0;
-CREATE INDEX idx_member_status ON mortise.mortise_member (status) WHERE del_flag = 0;
-CREATE INDEX idx_member_level ON mortise.mortise_member (member_level);
-CREATE INDEX idx_member_referrer ON mortise.mortise_member (referrer_id);
+CREATE INDEX IF NOT EXISTS idx_member_email ON mortise.mortise_member (email) WHERE del_flag = 0;
+CREATE INDEX IF NOT EXISTS idx_member_phone ON mortise.mortise_member (phone) WHERE del_flag = 0;
+CREATE INDEX IF NOT EXISTS idx_member_status ON mortise.mortise_member (status) WHERE del_flag = 0;
+CREATE INDEX IF NOT EXISTS idx_member_level ON mortise.mortise_member (member_level);
+CREATE INDEX IF NOT EXISTS idx_member_referrer ON mortise.mortise_member (referrer_id);
 -- 复合索引用于会员查询
-CREATE INDEX idx_member_status_level ON mortise.mortise_member (status, member_level, del_flag);
-CREATE INDEX idx_member_created ON mortise.mortise_member (created_time DESC);
+CREATE INDEX IF NOT EXISTS idx_member_status_level ON mortise.mortise_member (status, member_level, del_flag);
+CREATE INDEX IF NOT EXISTS idx_member_created ON mortise.mortise_member (created_time DESC);
 -- JSONB 字段 GIN 索引（用于 JSONB 查询）
-CREATE INDEX idx_member_profile_gin ON mortise.mortise_member USING GIN (profile) WHERE profile IS NOT NULL;
-CREATE INDEX idx_member_preferences_gin ON mortise.mortise_member USING GIN (preferences) WHERE preferences IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_member_profile_gin ON mortise.mortise_member USING GIN (profile) WHERE profile IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_member_preferences_gin ON mortise.mortise_member USING GIN (preferences) WHERE preferences IS NOT NULL;
 
 -- 更新时间触发器
+DROP TRIGGER IF EXISTS update_mortise_member_updated_time ON mortise.mortise_member;
 CREATE TRIGGER update_mortise_member_updated_time
     BEFORE UPDATE
     ON mortise.mortise_member

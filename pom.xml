@@ -261,6 +261,33 @@
                 <version>${revision}</version>
             </dependency>
 
+            <!-- Community 模块（商业版，通过 pro profile 按需引入） -->
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-community-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-community-application</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-community-infra</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-community-admin</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-community-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
             <!-- Test dependencies (managed versions) -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -492,6 +519,7 @@
                 <module>mortise-product</module>
                 <module>mortise-commerce</module>
                 <module>mortise-payment</module>
+                <module>mortise-community</module>
             </modules>
         </profile>
     </profiles>
