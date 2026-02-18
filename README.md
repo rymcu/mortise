@@ -249,6 +249,8 @@
 
 ## 🚀 Quick Start
 
+📖 详细快速开始文档：[docs/quickstart/QUICK_START.md](docs/quickstart/QUICK_START.md)
+
 ### 方式一：Docker Compose（推荐）⭐
 
 适合快速体验和开发环境，一键启动包含数据库、Redis、Nginx 等完整服务。
@@ -275,6 +277,49 @@ git submodule update --init --recursive
 ```bash
 git submodule update --remote --merge
 ```
+
+#### 1️⃣-扩展：只购买了部分商业模块时如何操作
+
+推荐先克隆主仓，再按需初始化指定子模块（避免拉取未授权/未购买模块）：
+
+```bash
+git clone git@github.com:rymcu/mortise.git
+cd mortise
+
+# 示例：仅初始化 payment 与 commerce
+git submodule update --init --recursive mortise-payment mortise-commerce
+```
+
+如已执行过全量拉取，也可停用不需要的模块：
+
+```bash
+# 示例：停用 product 模块
+git submodule deinit -f mortise-product
+```
+
+> 提示：若账号无某私有模块权限，初始化该模块时会报 `repository not found` 或 `Permission denied`，属于预期行为。
+
+#### 1️⃣-扩展：开发人员如何维护并新增商业模块
+
+新增一个商业模块（示例：`mortise-xxx`）建议按以下流程：
+
+```bash
+# 1) 在 GitHub 创建私有仓库 rymcu/mortise-xxx，并将模块代码推送到 master
+
+# 2) 在主仓挂载子模块
+git submodule add -b master git@github.com:rymcu/mortise-xxx.git mortise-xxx
+
+# 3) 提交主仓引用
+git add .gitmodules mortise-xxx
+git commit -m "feat: add mortise-xxx as git submodule"
+git push origin master
+```
+
+维护要求（建议）：
+
+- 在本 README 的 Quick Start 保持“基础版/商业版/按模块初始化”命令最新。
+- 在每个商业模块目录下维护独立 README，说明权限、初始化、更新与常见问题。
+- 主仓仅提交子模块引用（gitlink），不要将商业模块源码直接并入主仓。
 
 仅需主仓代码时，也可使用以下常规克隆方式：
 
