@@ -359,6 +359,9 @@ dromara:
         path-patterns: /files/** # 访问路径
         storage-path: /app/files/ # 存储路径
 mortise:
+  github:
+    api-base-url: https://api.github.com
+    token: ${GITHUB_TOKEN:}  # GitHub Personal Access Token（需要 repo admin 权限）
   auth:
     sms:
       login-url: /api/v1/auth/login/sms
