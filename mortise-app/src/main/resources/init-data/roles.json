@@ -2,16 +2,13 @@
   {
     "label": "超级管理员",
     "permission": "ADMIN",
-    "isDefault": 0
-  },
-  {
-    "label": "教师",
-    "permission": "teacher",
+    "status": 0,
     "isDefault": 0
   },
   {
     "label": "普通用户",
     "permission": "USER",
+    "status": 0,
     "isDefault": 1
   }
 ]

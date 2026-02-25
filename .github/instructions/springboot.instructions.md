@@ -53,7 +53,8 @@ applyTo: '**/*.java, **/*.kt'
 ## Build and Verification
 
 - After adding or modifying code, verify the project continues to build successfully.
-- If the project uses Maven, run `mvn clean package`.
+- **Always use `mvn` (system-installed Maven) instead of `mvnw` / `mvnw.cmd` (Maven Wrapper).**
+- Common commands: `mvn clean package`, `mvn clean install`, `mvn test`.
 - If the project uses Gradle, run `./gradlew build` (or `gradlew.bat build` on Windows).
 - Ensure all tests pass as part of the build.
 
@@ -61,8 +62,8 @@ applyTo: '**/*.java, **/*.kt'
 
 | Gradle Command            | Maven Command                     | Description                                   |
 |:--------------------------|:----------------------------------|:----------------------------------------------|
-| `./gradlew bootRun`       |`./mvnw spring-boot:run`           | Run the application.                          |
-| `./gradlew build`         |`./mvnw package`                   | Build the application.                        |
-| `./gradlew test`          |`./mvnw test`                      | Run tests.                                    |
-| `./gradlew bootJar`       |`./mvnw spring-boot:repackage`     | Package the application as a JAR.             |
-| `./gradlew bootBuildImage`|`./mvnw spring-boot:build-image`   | Package the application as a container image. |
+| `./gradlew bootRun`       |`mvn spring-boot:run`              | Run the application.                          |
+| `./gradlew build`         |`mvn package`                      | Build the application.                        |
+| `./gradlew test`          |`mvn test`                         | Run tests.                                    |
+| `./gradlew bootJar`       |`mvn spring-boot:repackage`        | Package the application as a JAR.             |
+| `./gradlew bootBuildImage`|`mvn spring-boot:build-image`      | Package the application as a container image. |

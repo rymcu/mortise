@@ -32,17 +32,17 @@ public class SystemSecurityConfigurer implements SecurityConfigurer {
     public void configureAuthorization(
             AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry registry
     ) {
-        // 系统初始化 API - 无需认证
-        registry.requestMatchers("/api/v1/system-init/**").permitAll();
+        // 系统初始化 API - 无需认证（@AdminController 自动加 /api/v1/admin 前缀）
+        registry.requestMatchers("/api/v1/admin/system-init/**").permitAll();
         // 认证相关 API - 无需认证
-        registry.requestMatchers("/api/v1/auth/login").permitAll();
-        registry.requestMatchers("/api/v1/auth/register").permitAll();
-        registry.requestMatchers("/api/v1/auth/logout").permitAll();
-        registry.requestMatchers("/api/v1/auth/refresh-token").permitAll();
-        registry.requestMatchers("/api/v1/auth/password/request").permitAll();
-        registry.requestMatchers("/api/v1/auth/password/reset").permitAll();
-        registry.requestMatchers("/api/v1/auth/email/request").permitAll();
-        registry.requestMatchers("/api/v1/auth/callback").permitAll();
+        registry.requestMatchers("/api/v1/admin/auth/login").permitAll();
+        registry.requestMatchers("/api/v1/admin/auth/register").permitAll();
+        registry.requestMatchers("/api/v1/admin/auth/logout").permitAll();
+        registry.requestMatchers("/api/v1/admin/auth/refresh-token").permitAll();
+        registry.requestMatchers("/api/v1/admin/auth/password/request").permitAll();
+        registry.requestMatchers("/api/v1/admin/auth/password/reset").permitAll();
+        registry.requestMatchers("/api/v1/admin/auth/email/request").permitAll();
+        registry.requestMatchers("/api/v1/admin/auth/callback").permitAll();
 
         log.info("系统模块安全配置已加载: Auth 端点放行");
     }

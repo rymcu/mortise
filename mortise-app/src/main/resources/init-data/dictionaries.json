@@ -16,7 +16,7 @@
   {
     "label": "默认标记", "typeCode": "DefaultFlag", "description": "默认标记字典", "sortNo": 3,
     "dicts": [
-      { "label": "非默认", "value": "0", "sortNo": 1, "icon": "i-lucide-square-x", "info": "info" },
+      { "label": "非默认", "value": "0", "sortNo": 1, "icon": "i-lucide-square-x", "color": "info" },
       { "label": "默认", "value": "1", "sortNo": 2, "icon": "i-lucide-square-check", "color": "success" }
     ]
   },
@@ -26,6 +26,54 @@
       { "label": "目录", "value": "0", "sortNo": 1, "icon": "i-lucide-folder", "color": "info" },
       { "label": "菜单", "value": "1", "sortNo": 2, "icon": "i-lucide-menu", "color": "primary" },
       { "label": "按钮", "value": "2", "sortNo": 3, "icon": "i-lucide-mouse-pointer-click", "color": "warning" }
+    ]
+  },
+  {
+    "label": "性别", "typeCode": "Sex", "description": "用户性别字典", "sortNo": 5,
+    "dicts": [
+      { "label": "未知", "value": "0", "sortNo": 1, "icon": "i-lucide-help-circle", "color": "info" },
+      { "label": "男", "value": "1", "sortNo": 2, "icon": "i-lucide-user", "color": "primary" },
+      { "label": "女", "value": "2", "sortNo": 3, "icon": "i-lucide-user", "color": "error" }
+    ]
+  },
+  {
+    "label": "是否", "typeCode": "YesNo", "description": "通用是否字典", "sortNo": 6,
+    "dicts": [
+      { "label": "否", "value": "0", "sortNo": 1, "icon": "i-lucide-x", "color": "error" },
+      { "label": "是", "value": "1", "sortNo": 2, "icon": "i-lucide-check", "color": "success" }
+    ]
+  },
+  {
+    "label": "通知类型", "typeCode": "NoticeType", "description": "通知类型字典", "sortNo": 7,
+    "dicts": [
+      { "label": "系统通知", "value": "0", "sortNo": 1, "icon": "i-lucide-megaphone", "color": "warning" },
+      { "label": "个人消息", "value": "1", "sortNo": 2, "icon": "i-lucide-mail", "color": "primary" }
+    ]
+  },
+  {
+    "label": "操作类型", "typeCode": "OperationType", "description": "操作日志类型字典", "sortNo": 8,
+    "dicts": [
+      { "label": "查询", "value": "0", "sortNo": 1, "icon": "i-lucide-search", "color": "info" },
+      { "label": "新增", "value": "1", "sortNo": 2, "icon": "i-lucide-plus", "color": "success" },
+      { "label": "修改", "value": "2", "sortNo": 3, "icon": "i-lucide-pencil", "color": "primary" },
+      { "label": "删除", "value": "3", "sortNo": 4, "icon": "i-lucide-trash-2", "color": "error" },
+      { "label": "导入", "value": "4", "sortNo": 5, "icon": "i-lucide-upload", "color": "warning" },
+      { "label": "导出", "value": "5", "sortNo": 6, "icon": "i-lucide-download", "color": "warning" },
+      { "label": "授权", "value": "6", "sortNo": 7, "icon": "i-lucide-shield-check", "color": "success" }
+    ]
+  },
+  {
+    "label": "登录状态", "typeCode": "LoginStatus", "description": "登录状态字典", "sortNo": 9,
+    "dicts": [
+      { "label": "成功", "value": "0", "sortNo": 1, "icon": "i-lucide-log-in", "color": "success" },
+      { "label": "失败", "value": "1", "sortNo": 2, "icon": "i-lucide-log-out", "color": "error" }
+    ]
+  },
+  {
+    "label": "可见性", "typeCode": "Visibility", "description": "内容可见性字典", "sortNo": 10,
+    "dicts": [
+      { "label": "公开", "value": "0", "sortNo": 1, "icon": "i-lucide-eye", "color": "success" },
+      { "label": "私有", "value": "1", "sortNo": 2, "icon": "i-lucide-eye-off", "color": "warning" }
     ]
   }
 ]
