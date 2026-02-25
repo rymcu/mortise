@@ -1,0 +1,19 @@
+{
+  "name": "mortise-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@10.29.3",
+  "scripts": {
+    "dev:admin": "pnpm --filter @mortise/admin dev",
+    "dev:web": "pnpm --filter @mortise/web dev",
+    "dev:site": "pnpm --filter @mortise/site dev",
+    "build": "pnpm -r --filter ./apps/* build",
+    "lint": "pnpm -r --filter ./apps/* lint",
+    "typecheck": "pnpm -r --filter ./apps/* typecheck",
+    "typecheck:auth": "pnpm --filter @mortise/web exec tsc -p ../../packages/auth/tsconfig.json --noEmit",
+    "typecheck:core-sdk": "pnpm --filter @mortise/web exec tsc -p ../../packages/core-sdk/tsconfig.json --noEmit",
+    "typecheck:ui": "pnpm --filter @mortise/web exec tsc -p ../../packages/ui/tsconfig.json --noEmit",
+    "typecheck:config": "pnpm --filter @mortise/web exec tsc -p ../../packages/config/tsconfig.json --noEmit",
+    "typecheck:packages": "pnpm typecheck:auth && pnpm typecheck:core-sdk && pnpm typecheck:ui && pnpm typecheck:config"
+  }
+}

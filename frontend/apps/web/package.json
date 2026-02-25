@@ -1,0 +1,28 @@
+{
+  "name": "@mortise/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "nuxt dev",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "typecheck": "nuxt typecheck"
+  },
+  "dependencies": {
+    "@mortise/auth": "workspace:*",
+    "@nuxt/ui": "^4.5.0",
+    "@pinia/nuxt": "^0.11.2",
+    "nuxt": "^4.3.1",
+    "pinia": "^3.0.3",
+    "tailwindcss": "^4.1.18",
+    "vue": "^3.5.28"
+  },
+  "devDependencies": {
+    "@nuxt/eslint": "^1.15.1",
+    "eslint": "^10.0.0",
+    "typescript": "^5.9.3",
+    "vue-tsc": "^3.2.4"
+  }
+}
