@@ -37,12 +37,21 @@ const {
 })
 
 await loadUsers()
+
+// 配置角色弹窗
+const showRoleModal = ref(false)
+const currentRoleUser = ref<Record<string, unknown>>({})
+
+function openRoleModal(row: Record<string, unknown>) {
+  currentRoleUser.value = { ...row }
+  showRoleModal.value = true
+}
 </script>
 
 <template>
   <UDashboardPanel id="system-users">
     <template #header>
-      <UDashboardNavbar title="Users">
+      <UDashboardNavbar title="用户管理">
         <template #leading>
           <UDashboardSidebarCollapse />
         </template>
@@ -59,6 +68,7 @@ await loadUsers()
         :page-num="pageNum"
         :page-size="pageSize"
         :keyword="keyword"
+        show-actions
         search-placeholder="搜索账号/昵称"
         empty-text="暂无用户数据"
         @update:keyword="keyword = $event"
@@ -66,12 +76,28 @@ await loadUsers()
         @refresh="loadUsers"
         @search-enter="loadUsers"
       >
+        <template #toolbar>
+          <UsersUserAddModal @success="loadUsers" />
+        </template>
+
         <template #cell-status="{ row }">
           <UBadge :color="row.status === 0 ? 'success' : 'neutral'" variant="subtle">
             {{ row.status === 0 ? '启用' : '禁用' }}
           </UBadge>
         </template>
+
+        <template #actions="{ row }">
+          <UsersUserEditModal :user="row" @success="loadUsers" />
+          <UButton icon="i-lucide-shield" color="primary" variant="ghost" size="xs" @click="openRoleModal(row)">
+            角色
+          </UButton>
+          <UsersUserResetPasswordModal :user="row" @success="loadUsers" />
+          <UsersUserDeleteModal :user="row" @success="loadUsers" />
+        </template>
       </AdminPagedTableCard>
+
+      <!-- 配置角色弹窗 -->
+      <UsersUserRoleModal v-model:open="showRoleModal" :user="currentRoleUser" @success="loadUsers" />
     </template>
   </UDashboardPanel>
 </template>

@@ -16,10 +16,16 @@ const props = withDefaults(defineProps<{
   keyword: string
   searchPlaceholder?: string
   emptyText?: string
+  /** 是否显示操作列 */
+  showActions?: boolean
+  /** 操作列标题 */
+  actionsLabel?: string
 }>(), {
   errorMessage: '',
   searchPlaceholder: '搜索',
-  emptyText: '暂无数据'
+  emptyText: '暂无数据',
+  showActions: false,
+  actionsLabel: '操作'
 })
 
 const emit = defineEmits<{
@@ -28,6 +34,15 @@ const emit = defineEmits<{
   (e: 'refresh'): void
   (e: 'searchEnter'): void
 }>()
+
+/** 最终列 = 原始列 + (可选)操作列 */
+const allColumns = computed(() => {
+  const base = [...props.columns]
+  if (props.showActions) {
+    base.push({ key: '_actions', label: props.actionsLabel, align: 'right' })
+  }
+  return base
+})
 
 function cellText(row: Record<string, unknown>, key: string): string {
   const value = row[key]
@@ -55,18 +70,24 @@ function nextPage() {
     <UAlert v-if="errorMessage" color="error" variant="soft" :title="errorMessage" class="mb-4" />
 
     <UCard>
-      <div class="mb-4 flex flex-wrap items-center gap-2">
-        <UInput
-          :model-value="keyword"
-          :placeholder="searchPlaceholder"
-          icon="i-lucide-search"
-          class="w-72"
-          @update:model-value="emit('update:keyword', String($event || ''))"
-          @keyup.enter="emit('searchEnter')"
-        />
-        <UButton color="neutral" variant="soft" icon="i-lucide-refresh-cw" :loading="loading" @click="emit('refresh')">
-          刷新
-        </UButton>
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <UInput
+            :model-value="keyword"
+            :placeholder="searchPlaceholder"
+            icon="i-lucide-search"
+            class="w-72"
+            @update:model-value="emit('update:keyword', String($event || ''))"
+            @keyup.enter="emit('searchEnter')"
+          />
+          <UButton color="neutral" variant="soft" icon="i-lucide-refresh-cw" :loading="loading" @click="emit('refresh')">
+            刷新
+          </UButton>
+        </div>
+        <!-- 工具栏右侧插槽：放置新增、批量删除等按钮 -->
+        <div class="flex items-center gap-2">
+          <slot name="toolbar" />
+        </div>
       </div>
 
       <div class="overflow-x-auto">
@@ -74,9 +95,9 @@ function nextPage() {
           <thead>
             <tr class="border-b border-default">
               <th
-                v-for="column in columns"
+                v-for="column in allColumns"
                 :key="column.key"
-                class="py-2"
+                class="py-2 px-2"
                 :class="{
                   'text-left': (column.align || 'left') === 'left',
                   'text-center': column.align === 'center',
@@ -88,24 +109,30 @@ function nextPage() {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="row in rows" :key="String(row.id || JSON.stringify(row))" class="border-b border-default/60">
+            <tr v-for="row in rows" :key="String(row.id || JSON.stringify(row))" class="border-b border-default/60 hover:bg-elevated/50 transition-colors">
               <td
-                v-for="column in columns"
+                v-for="column in allColumns"
                 :key="column.key"
-                class="py-2"
+                class="py-2 px-2"
                 :class="{
                   'text-left': (column.align || 'left') === 'left',
                   'text-center': column.align === 'center',
                   'text-right': column.align === 'right'
                 }"
               >
-                <slot :name="`cell-${column.key}`" :row="row">
+                <!-- 操作列使用专用插槽 -->
+                <template v-if="column.key === '_actions'">
+                  <div class="flex items-center justify-end gap-1">
+                    <slot name="actions" :row="row" />
+                  </div>
+                </template>
+                <slot v-else :name="`cell-${column.key}`" :row="row">
                   {{ cellText(row, column.key) }}
                 </slot>
               </td>
             </tr>
             <tr v-if="!rows.length && !loading">
-              <td :colspan="columns.length" class="py-6 text-center text-muted">
+              <td :colspan="allColumns.length" class="py-6 text-center text-muted">
                 {{ emptyText }}
               </td>
             </tr>
