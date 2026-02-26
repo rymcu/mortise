@@ -8,6 +8,14 @@ interface AdminLoginResponse {
   refreshToken?: string
 }
 
+interface AuthSessionResponse {
+  user?: Record<string, unknown>
+}
+
+interface FetchCurrentUserOptions {
+  noRetryOnUnauthorized?: boolean
+}
+
 /** 后端菜单 Link 结构 */
 export interface MenuLink {
   id: string
@@ -34,18 +42,24 @@ export const useAuthStore = defineStore('admin-auth', () => {
     sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60 // 7 天
   })
-  const refreshTokenCookie = useCookie<string | null>('mortise-admin-refresh-token', {
-    sameSite: 'lax',
-    maxAge: 30 * 24 * 60 * 60 // 30 天
-  })
+  const refreshTokenCookie = useCookie<string | null>(
+    'mortise-admin-refresh-token',
+    {
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 // 30 天
+    }
+  )
   const tokenTypeCookie = useCookie<string | null>('mortise-admin-token-type', {
     sameSite: 'lax',
     maxAge: 7 * 24 * 60 * 60
   })
-  const userCookie = useCookie<Record<string, unknown> | null>('mortise-admin-user', {
-    sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60
-  })
+  const userCookie = useCookie<Record<string, unknown> | null>(
+    'mortise-admin-user',
+    {
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60
+    }
+  )
 
   // ─── 响应式状态 ───
   const loading = ref(false)
@@ -102,19 +116,31 @@ export const useAuthStore = defineStore('admin-auth', () => {
     userCookie.value = null
   }
 
+  function setSessionUser(user: Record<string, unknown> | null) {
+    userCookie.value = user
+  }
+
   // ─── Actions ───
 
   /** 兼容旧调用（cookie 始终可读，无需手动恢复） */
-  function restore() { /* no-op: cookie 在 SSR/CSR 均自动可用 */ }
+  function restore() {
+    /* no-op: cookie 在 SSR/CSR 均自动可用 */
+  }
 
   /** 兼容旧调用 */
-  function persist() { /* no-op: cookie 自动持久化 */ }
+  function persist() {
+    /* no-op: cookie 自动持久化 */
+  }
 
   async function login(account: string, password: string) {
     loading.value = true
     try {
-      const payload = await buildClient().login<AdminLoginResponse>({ account, password })
+      const payload = await buildClient().login<AdminLoginResponse>({
+        account,
+        password
+      })
       saveTokens(payload)
+      await fetchCurrentUser()
     } finally {
       loading.value = false
     }
@@ -123,6 +149,7 @@ export const useAuthStore = defineStore('admin-auth', () => {
   async function exchangeOAuthState(state: string) {
     const payload = await buildClient().callback<AdminLoginResponse>(state)
     saveTokens(payload)
+    await fetchCurrentUser()
   }
 
   async function refresh(): Promise<AuthSession | null> {
@@ -138,8 +165,11 @@ export const useAuthStore = defineStore('admin-auth', () => {
 
     refreshPromise.value = (async () => {
       try {
-        const payload = await buildClient().refresh<AdminLoginResponse>(refreshTokenCookie.value!)
+        const payload = await buildClient().refresh<AdminLoginResponse>(
+          refreshTokenCookie.value!
+        )
         saveTokens(payload)
+        await fetchCurrentUser({ noRetryOnUnauthorized: true })
         return session.value
       } catch {
         logout()
@@ -164,10 +194,42 @@ export const useAuthStore = defineStore('admin-auth', () => {
     if (!isAuthenticated.value) return
     const { $api } = useNuxtApp()
     try {
-      const res = await $api<{ code: number; data: MenuLink[] }>('/api/v1/admin/auth/menus')
+      const res = await $api<{ code: number; data: MenuLink[] }>(
+        '/api/v1/admin/auth/menus'
+      )
       userMenus.value = res?.data ?? []
     } catch {
       userMenus.value = []
+    }
+  }
+
+  async function fetchCurrentUser(options: FetchCurrentUserOptions = {}) {
+    if (!isAuthenticated.value) {
+      return null
+    }
+
+    const { $api } = useNuxtApp()
+    try {
+      const requestOptions = options.noRetryOnUnauthorized
+        ? { _retried: true }
+        : undefined
+      const res = await $api<{ code: number; data?: AuthSessionResponse }>(
+        '/api/v1/admin/auth/me',
+        requestOptions
+      )
+      const remoteUser = res?.data?.user
+      if (!remoteUser) {
+        return null
+      }
+
+      const merged = {
+        ...(userCookie.value ?? {}),
+        ...remoteUser
+      }
+      userCookie.value = merged
+      return merged
+    } catch {
+      return null
     }
   }
 
@@ -197,6 +259,8 @@ export const useAuthStore = defineStore('admin-auth', () => {
     refresh,
     startOAuthLogin,
     fetchMenus,
+    fetchCurrentUser,
+    setSessionUser,
     logout,
     buildClient
   }

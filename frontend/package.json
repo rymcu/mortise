@@ -9,11 +9,19 @@
     "dev:site": "pnpm --filter @mortise/site dev",
     "build": "pnpm -r --filter ./apps/* build",
     "lint": "pnpm -r --filter ./apps/* lint",
+    "lint:prettier-check": "pnpm lint && pnpm format:check",
+    "format": "prettier --write \"**/*.{js,mjs,cjs,ts,mts,cts,vue,json,md,yml,yaml}\"",
+    "format:check": "prettier --check \"**/*.{js,mjs,cjs,ts,mts,cts,vue,json,md,yml,yaml}\"",
     "typecheck": "pnpm -r --filter ./apps/* typecheck",
     "typecheck:auth": "pnpm --filter @mortise/web exec tsc -p ../../packages/auth/tsconfig.json --noEmit",
     "typecheck:core-sdk": "pnpm --filter @mortise/web exec tsc -p ../../packages/core-sdk/tsconfig.json --noEmit",
     "typecheck:ui": "pnpm --filter @mortise/web exec tsc -p ../../packages/ui/tsconfig.json --noEmit",
     "typecheck:config": "pnpm --filter @mortise/web exec tsc -p ../../packages/config/tsconfig.json --noEmit",
     "typecheck:packages": "pnpm typecheck:auth && pnpm typecheck:core-sdk && pnpm typecheck:ui && pnpm typecheck:config"
+  },
+  "devDependencies": {
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.7.4",
+    "prettier-plugin-tailwindcss": "^0.7.2"
   }
 }

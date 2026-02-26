@@ -17,7 +17,12 @@ const { update, loading, errorMessage } = useAdminCrud('/api/v1/admin/menus')
 const formRef = ref()
 const formData = ref<Record<string, unknown>>({ ...props.menu })
 
-watch(() => props.menu, (v) => { formData.value = { ...v } })
+watch(
+  () => props.menu,
+  (v) => {
+    formData.value = { ...v }
+  }
+)
 
 async function handleConfirm() {
   const valid = await formRef.value?.validate()
@@ -34,7 +39,12 @@ async function handleConfirm() {
 <template>
   <UModal v-model:open="open" title="编辑菜单">
     <template #body>
-      <UAlert v-if="errorMessage" color="error" :title="errorMessage" class="mb-4" />
+      <UAlert
+        v-if="errorMessage"
+        color="error"
+        :title="errorMessage"
+        class="mb-4"
+      />
       <MenusMenuForm ref="formRef" :data="menu" @change="formData = $event" />
     </template>
     <template #footer>

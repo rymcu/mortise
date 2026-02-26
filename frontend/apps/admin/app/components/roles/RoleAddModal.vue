@@ -28,7 +28,12 @@ async function handleConfirm() {
 <template>
   <UModal v-model:open="open" title="新增角色">
     <template #body>
-      <UAlert v-if="errorMessage" color="error" :title="errorMessage" class="mb-4" />
+      <UAlert
+        v-if="errorMessage"
+        color="error"
+        :title="errorMessage"
+        class="mb-4"
+      />
       <RolesRoleForm ref="formRef" @change="formData = $event" />
     </template>
     <template #footer>

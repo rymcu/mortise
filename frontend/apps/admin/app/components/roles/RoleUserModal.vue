@@ -27,7 +27,7 @@ const { $api } = useNuxtApp()
 
 const isOpen = computed({
   get: () => props.open,
-  set: v => emit('update:open', v)
+  set: (v) => emit('update:open', v)
 })
 
 const loading = ref(false)
@@ -53,13 +53,16 @@ async function loadData() {
         pageSize: pageSize.value,
         keyword: searchKeyword.value || undefined
       }),
-      fetchAdminGet<UserItem[]>($api, `/api/v1/admin/roles/${props.role.id}/users`)
+      fetchAdminGet<UserItem[]>(
+        $api,
+        `/api/v1/admin/roles/${props.role.id}/users`
+      )
     ])
     allUsers.value = pageResult.records || []
     total.value = pageResult.totalRow || 0
     // 仅首次打开时初始化选中状态
     if (checkedIds.value.size === 0) {
-      checkedIds.value = new Set((roleUsers || []).map(u => u.id))
+      checkedIds.value = new Set((roleUsers || []).map((u) => u.id))
     }
   } catch (err) {
     errorMessage.value = err instanceof Error ? err.message : '加载用户失败'
@@ -72,11 +75,15 @@ async function loadUsers() {
   dataLoading.value = true
   errorMessage.value = ''
   try {
-    const pageResult = await fetchAdminPage<UserItem>($api, '/api/v1/admin/users', {
-      pageNum: pageNum.value,
-      pageSize: pageSize.value,
-      keyword: searchKeyword.value || undefined
-    })
+    const pageResult = await fetchAdminPage<UserItem>(
+      $api,
+      '/api/v1/admin/users',
+      {
+        pageNum: pageNum.value,
+        pageSize: pageSize.value,
+        keyword: searchKeyword.value || undefined
+      }
+    )
     allUsers.value = pageResult.records || []
     total.value = pageResult.totalRow || 0
   } catch (err) {
@@ -133,14 +140,17 @@ async function onSubmit() {
   }
 }
 
-watch(() => props.open, (val) => {
-  if (val) {
-    checkedIds.value = new Set()
-    pageNum.value = 1
-    searchKeyword.value = ''
-    loadData()
+watch(
+  () => props.open,
+  (val) => {
+    if (val) {
+      checkedIds.value = new Set()
+      pageNum.value = 1
+      searchKeyword.value = ''
+      loadData()
+    }
   }
-})
+)
 </script>
 
 <template>
@@ -151,9 +161,7 @@ watch(() => props.open, (val) => {
   >
     <template #body>
       <div class="space-y-4">
-        <p class="text-sm text-muted">
-          为角色「{{ role.label }}」分配用户
-        </p>
+        <p class="text-muted text-sm">为角色「{{ role.label }}」分配用户</p>
 
         <UAlert
           v-if="errorMessage"
@@ -182,35 +190,45 @@ watch(() => props.open, (val) => {
         </div>
 
         <!-- 用户列表 -->
-        <div v-if="dataLoading && !allUsers.length" class="flex justify-center items-center h-32">
-          <span class="text-sm text-muted">加载用户列表中...</span>
+        <div
+          v-if="dataLoading && !allUsers.length"
+          class="flex h-32 items-center justify-center"
+        >
+          <span class="text-muted text-sm">加载用户列表中...</span>
         </div>
 
-        <div v-else class="max-h-80 overflow-y-auto space-y-1">
+        <div v-else class="max-h-80 space-y-1 overflow-y-auto">
           <div
             v-for="user in allUsers"
             :key="String(user.id)"
-            class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-elevated/50 cursor-pointer transition-colors"
+            class="hover:bg-elevated/50 flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition-colors"
             @click="toggleUser(user.id)"
           >
             <input
               type="checkbox"
               :checked="checkedIds.has(user.id)"
-              class="rounded border-default"
+              class="border-default rounded"
               @click.stop="toggleUser(user.id)"
-            >
-            <div class="flex-1 flex items-center gap-2">
-              <span class="text-sm font-medium">{{ user.nickname || user.account }}</span>
-              <span v-if="user.email" class="text-xs text-muted">{{ user.email }}</span>
+            />
+            <div class="flex flex-1 items-center gap-2">
+              <span class="text-sm font-medium">{{
+                user.nickname || user.account
+              }}</span>
+              <span v-if="user.email" class="text-muted text-xs">{{
+                user.email
+              }}</span>
             </div>
           </div>
-          <p v-if="!allUsers.length" class="text-center text-sm text-muted py-4">
+          <p
+            v-if="!allUsers.length"
+            class="text-muted py-4 text-center text-sm"
+          >
             暂无用户
           </p>
         </div>
 
         <!-- 分页 -->
-        <div class="flex items-center justify-between text-sm text-muted">
+        <div class="text-muted flex items-center justify-between text-sm">
           <span>已选 {{ checkedIds.size }} 人，共 {{ total }} 条</span>
           <div class="flex items-center gap-2">
             <UButton

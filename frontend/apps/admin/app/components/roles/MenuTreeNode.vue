@@ -36,7 +36,14 @@ function formatMenuType(type?: number): string {
   return ''
 }
 
-type BadgeColor = 'info' | 'success' | 'warning' | 'neutral' | 'primary' | 'secondary' | 'error'
+type BadgeColor =
+  | 'info'
+  | 'success'
+  | 'warning'
+  | 'neutral'
+  | 'primary'
+  | 'secondary'
+  | 'error'
 
 function menuTypeColor(type?: number): BadgeColor {
   if (type === 0) return 'info'
@@ -50,17 +57,22 @@ function menuTypeColor(type?: number): BadgeColor {
   <div>
     <!-- 当前节点行 -->
     <div
-      class="flex items-center gap-2 py-1.5 px-2 rounded hover:bg-elevated/50 transition-colors cursor-pointer"
+      class="hover:bg-elevated/50 flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 transition-colors"
       :style="{ paddingLeft: `${depth * 1.25 + 0.5}rem` }"
       @click="emit('toggle-check', node)"
     >
       <!-- 展开/折叠按钮 -->
       <button
         v-if="hasChildren"
-        class="w-5 h-5 flex items-center justify-center rounded text-muted hover:text-default transition-colors"
+        class="text-muted hover:text-default flex h-5 w-5 items-center justify-center rounded transition-colors"
         @click.stop="emit('toggle-expand', node)"
       >
-        <UIcon :name="isExpanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'" class="text-sm" />
+        <UIcon
+          :name="
+            isExpanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'
+          "
+          class="text-sm"
+        />
       </button>
       <span v-else class="w-5" />
 
@@ -69,25 +81,29 @@ function menuTypeColor(type?: number): BadgeColor {
         type="checkbox"
         :checked="isChecked"
         :indeterminate="isIndeterminate(node)"
-        class="rounded border-default"
+        class="border-default rounded"
         @click.stop="emit('toggle-check', node)"
-      >
+      />
 
       <!-- 图标 -->
-      <UIcon v-if="node.icon" :name="String(node.icon)" class="text-base text-muted" />
+      <UIcon
+        v-if="node.icon"
+        :name="String(node.icon)"
+        class="text-muted text-base"
+      />
 
       <!-- 标签 -->
       <span class="text-sm">{{ node.label }}</span>
 
       <!-- 权限标识 -->
-      <span v-if="node.permission" class="text-xs text-muted ml-1">
+      <span v-if="node.permission" class="text-muted ml-1 text-xs">
         {{ node.permission }}
       </span>
 
       <!-- 类型徽章 -->
       <UBadge
         v-if="node.menuType !== undefined"
-        :color="(menuTypeColor(Number(node.menuType)) as any)"
+        :color="menuTypeColor(Number(node.menuType)) as any"
         variant="subtle"
         size="xs"
       >

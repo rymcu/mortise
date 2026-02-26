@@ -81,7 +81,10 @@ function openEditModal(row: Record<string, unknown>) {
         @search-enter="loadMembers"
       >
         <template #cell-status="{ row }">
-          <UBadge :color="row.status === 0 ? 'success' : 'neutral'" variant="subtle">
+          <UBadge
+            :color="row.status === 0 ? 'success' : 'neutral'"
+            variant="subtle"
+          >
             {{ row.status === 0 ? '启用' : '禁用' }}
           </UBadge>
         </template>
@@ -100,7 +103,11 @@ function openEditModal(row: Record<string, unknown>) {
       </AdminPagedTableCard>
 
       <!-- 弹窗 -->
-      <MembersMemberEditModal v-model:open="showEditModal" :member="currentRow" @success="loadMembers" />
+      <MembersMemberEditModal
+        v-model:open="showEditModal"
+        :member="currentRow"
+        @success="loadMembers"
+      />
     </template>
   </UDashboardPanel>
 </template>

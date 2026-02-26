@@ -7,13 +7,21 @@ export default defineNuxtPlugin(() => {
   try {
     const oldRaw = localStorage.getItem('mortise.auth.session')
     if (oldRaw) {
-      const old = JSON.parse(oldRaw) as { token?: string; refreshToken?: string; user?: Record<string, unknown> }
+      const old = JSON.parse(oldRaw) as {
+        token?: string
+        refreshToken?: string
+        user?: Record<string, unknown>
+      }
       // 如果 cookie 中还没有 token，将旧会话迁移过去
       const tokenCookie = useCookie<string | null>('mortise-admin-token')
       if (!tokenCookie.value && old.token) {
-        const refreshCookie = useCookie<string | null>('mortise-admin-refresh-token')
+        const refreshCookie = useCookie<string | null>(
+          'mortise-admin-refresh-token'
+        )
         const typeCookie = useCookie<string | null>('mortise-admin-token-type')
-        const userCookieVal = useCookie<Record<string, unknown> | null>('mortise-admin-user')
+        const userCookieVal = useCookie<Record<string, unknown> | null>(
+          'mortise-admin-user'
+        )
         tokenCookie.value = old.token
         refreshCookie.value = old.refreshToken ?? null
         typeCookie.value = 'Bearer'

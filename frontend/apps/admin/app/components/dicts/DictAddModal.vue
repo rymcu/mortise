@@ -8,7 +8,9 @@ const emit = defineEmits<{
   (e: 'success'): void
 }>()
 
-const { create, loading, errorMessage } = useAdminCrud('/api/v1/admin/dictionaries')
+const { create, loading, errorMessage } = useAdminCrud(
+  '/api/v1/admin/dictionaries'
+)
 
 const formRef = ref()
 const formData = ref<Record<string, unknown>>({})
@@ -28,7 +30,12 @@ async function handleConfirm() {
 <template>
   <UModal v-model:open="open" title="新增字典">
     <template #body>
-      <UAlert v-if="errorMessage" color="error" :title="errorMessage" class="mb-4" />
+      <UAlert
+        v-if="errorMessage"
+        color="error"
+        :title="errorMessage"
+        class="mb-4"
+      />
       <DictsDictForm ref="formRef" @change="formData = $event" />
     </template>
     <template #footer>

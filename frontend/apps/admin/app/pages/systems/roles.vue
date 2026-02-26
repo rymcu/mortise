@@ -91,28 +91,60 @@ function openMenuModal(row: Record<string, unknown>) {
         @search-enter="loadRoles"
       >
         <template #toolbar>
-          <UButton icon="i-lucide-plus" color="primary" variant="soft" @click="showAddModal = true">
+          <UButton
+            icon="i-lucide-plus"
+            color="primary"
+            variant="soft"
+            @click="showAddModal = true"
+          >
             新增角色
           </UButton>
         </template>
 
         <template #cell-status="{ row }">
-          <UBadge :color="row.status === 0 ? 'success' : 'neutral'" variant="subtle">
+          <UBadge
+            :color="row.status === 0 ? 'success' : 'neutral'"
+            variant="subtle"
+          >
             {{ row.status === 0 ? '启用' : '禁用' }}
           </UBadge>
         </template>
 
         <template #actions="{ row }">
-          <UButton icon="i-lucide-users" color="info" variant="ghost" size="xs" @click="openUserModal(row)">
+          <UButton
+            icon="i-lucide-users"
+            color="info"
+            variant="ghost"
+            size="xs"
+            @click="openUserModal(row)"
+          >
             用户
           </UButton>
-          <UButton icon="i-lucide-folder-tree" color="info" variant="ghost" size="xs" @click="openMenuModal(row)">
+          <UButton
+            icon="i-lucide-folder-tree"
+            color="info"
+            variant="ghost"
+            size="xs"
+            @click="openMenuModal(row)"
+          >
             菜单
           </UButton>
-          <UButton icon="i-lucide-pencil" color="primary" variant="ghost" size="xs" @click="openEditModal(row)">
+          <UButton
+            icon="i-lucide-pencil"
+            color="primary"
+            variant="ghost"
+            size="xs"
+            @click="openEditModal(row)"
+          >
             编辑
           </UButton>
-          <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click="openDeleteModal(row)">
+          <UButton
+            icon="i-lucide-trash-2"
+            color="error"
+            variant="ghost"
+            size="xs"
+            @click="openDeleteModal(row)"
+          >
             删除
           </UButton>
         </template>
@@ -120,10 +152,26 @@ function openMenuModal(row: Record<string, unknown>) {
 
       <!-- 弹窗 -->
       <RolesRoleAddModal v-model:open="showAddModal" @success="loadRoles" />
-      <RolesRoleEditModal v-model:open="showEditModal" :role="currentRow" @success="loadRoles" />
-      <RolesRoleDeleteModal v-model:open="showDeleteModal" :role="currentRow" @success="loadRoles" />
-      <RolesRoleUserModal v-model:open="showUserModal" :role="currentRow" @success="loadRoles" />
-      <RolesRoleMenuModal v-model:open="showMenuModal" :role="currentRow" @success="loadRoles" />
+      <RolesRoleEditModal
+        v-model:open="showEditModal"
+        :role="currentRow"
+        @success="loadRoles"
+      />
+      <RolesRoleDeleteModal
+        v-model:open="showDeleteModal"
+        :role="currentRow"
+        @success="loadRoles"
+      />
+      <RolesRoleUserModal
+        v-model:open="showUserModal"
+        :role="currentRow"
+        @success="loadRoles"
+      />
+      <RolesRoleMenuModal
+        v-model:open="showMenuModal"
+        :role="currentRow"
+        @success="loadRoles"
+      />
     </template>
   </UDashboardPanel>
 </template>

@@ -84,36 +84,70 @@ function openDeleteModal(row: Record<string, unknown>) {
         @search-enter="loadData"
       >
         <template #toolbar>
-          <UButton icon="i-lucide-plus" color="primary" variant="soft" @click="showAddModal = true">
+          <UButton
+            icon="i-lucide-plus"
+            color="primary"
+            variant="soft"
+            @click="showAddModal = true"
+          >
             新增
           </UButton>
         </template>
 
         <template #cell-isDefault="{ row }">
-          <UBadge :color="row.isDefault === 0 ? 'success' : 'neutral'" variant="subtle">
+          <UBadge
+            :color="row.isDefault === 0 ? 'success' : 'neutral'"
+            variant="subtle"
+          >
             {{ row.isDefault === 0 ? '是' : '否' }}
           </UBadge>
         </template>
         <template #cell-isEnabled="{ row }">
-          <UBadge :color="row.isEnabled === 0 ? 'success' : 'neutral'" variant="subtle">
+          <UBadge
+            :color="row.isEnabled === 0 ? 'success' : 'neutral'"
+            variant="subtle"
+          >
             {{ row.isEnabled === 0 ? '启用' : '禁用' }}
           </UBadge>
         </template>
 
         <template #actions="{ row }">
-          <UButton icon="i-lucide-pencil" color="primary" variant="ghost" size="xs" @click="openEditModal(row)">
+          <UButton
+            icon="i-lucide-pencil"
+            color="primary"
+            variant="ghost"
+            size="xs"
+            @click="openEditModal(row)"
+          >
             编辑
           </UButton>
-          <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click="openDeleteModal(row)">
+          <UButton
+            icon="i-lucide-trash-2"
+            color="error"
+            variant="ghost"
+            size="xs"
+            @click="openDeleteModal(row)"
+          >
             删除
           </UButton>
         </template>
       </AdminPagedTableCard>
 
       <!-- 弹窗 -->
-      <WechatAccountsWeChatAccountAddModal v-model:open="showAddModal" @success="loadData" />
-      <WechatAccountsWeChatAccountEditModal v-model:open="showEditModal" :account="currentRow" @success="loadData" />
-      <WechatAccountsWeChatAccountDeleteModal v-model:open="showDeleteModal" :account="currentRow" @success="loadData" />
+      <WechatAccountsWeChatAccountAddModal
+        v-model:open="showAddModal"
+        @success="loadData"
+      />
+      <WechatAccountsWeChatAccountEditModal
+        v-model:open="showEditModal"
+        :account="currentRow"
+        @success="loadData"
+      />
+      <WechatAccountsWeChatAccountDeleteModal
+        v-model:open="showDeleteModal"
+        :account="currentRow"
+        @success="loadData"
+      />
     </template>
   </UDashboardPanel>
 </template>

@@ -4,11 +4,14 @@
  */
 import * as z from 'zod'
 
-const props = withDefaults(defineProps<{
-  data?: Record<string, unknown>
-}>(), {
-  data: () => ({})
-})
+const props = withDefaults(
+  defineProps<{
+    data?: Record<string, unknown>
+  }>(),
+  {
+    data: () => ({})
+  }
+)
 
 const emit = defineEmits<{
   (e: 'change', data: Record<string, unknown>): void
@@ -57,30 +60,52 @@ defineExpose({ validate, state })
 <template>
   <UForm ref="formRef" :schema="schema" :state="state" class="space-y-4">
     <UFormField label="类型编码" name="typeCode" required>
-      <UInput v-model="state.typeCode" placeholder="如：Status" class="w-full" />
+      <UInput
+        v-model="state.typeCode"
+        placeholder="如：Status"
+        class="w-full"
+      />
     </UFormField>
 
     <UFormField label="类型名称" name="label" required>
-      <UInput v-model="state.label" placeholder="请输入类型名称" class="w-full" />
+      <UInput
+        v-model="state.label"
+        placeholder="请输入类型名称"
+        class="w-full"
+      />
     </UFormField>
 
     <UFormField label="描述" name="description">
-      <UTextarea v-model="state.description" placeholder="请输入描述" :rows="3" class="w-full" />
+      <UTextarea
+        v-model="state.description"
+        placeholder="请输入描述"
+        :rows="3"
+        class="w-full"
+      />
     </UFormField>
 
     <UFormField label="排序号" name="sortNo">
-      <UInput v-model.number="state.sortNo" type="number" placeholder="数字越小越靠前" class="w-full" />
+      <UInput
+        v-model.number="state.sortNo"
+        type="number"
+        placeholder="数字越小越靠前"
+        class="w-full"
+      />
     </UFormField>
 
     <UFormField label="状态" name="status">
       <div class="flex gap-4">
-        <label v-for="opt in statusOptions" :key="opt.value" class="flex items-center gap-1.5 cursor-pointer">
+        <label
+          v-for="opt in statusOptions"
+          :key="opt.value"
+          class="flex cursor-pointer items-center gap-1.5"
+        >
           <input
             type="radio"
             :value="opt.value"
             :checked="state.status === opt.value"
-            @change="state.status = opt.value"
             class="accent-primary"
+            @change="state.status = opt.value"
           />
           <span class="text-sm">{{ opt.label }}</span>
         </label>

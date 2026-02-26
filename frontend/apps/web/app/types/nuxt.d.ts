@@ -1,4 +1,7 @@
-type ApiFetch = <T>(request: string, options?: Record<string, unknown>) => Promise<T>
+type ApiFetch = <T>(
+  request: string,
+  options?: Record<string, unknown>
+) => Promise<T>
 
 declare module '#app' {
   interface NuxtApp {

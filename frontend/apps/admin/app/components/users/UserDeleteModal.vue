@@ -27,7 +27,13 @@ async function onConfirm() {
   >
     <template #default />
   </AdminConfirmDeleteModal>
-  <UButton icon="i-lucide-trash-2" color="error" variant="ghost" size="xs" @click="open = true">
+  <UButton
+    icon="i-lucide-trash-2"
+    color="error"
+    variant="ghost"
+    size="xs"
+    @click="open = true"
+  >
     删除
   </UButton>
 </template>

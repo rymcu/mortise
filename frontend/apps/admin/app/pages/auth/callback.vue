@@ -21,7 +21,8 @@ onMounted(async () => {
     await navigateTo('/dashboard')
   } catch (error) {
     hasError.value = true
-    statusText.value = error instanceof Error ? error.message : '登录回调处理失败'
+    statusText.value =
+      error instanceof Error ? error.message : '登录回调处理失败'
   }
 })
 </script>
@@ -32,7 +33,11 @@ onMounted(async () => {
       <h1 class="text-lg font-semibold">OAuth2 回调</h1>
     </template>
 
-    <UAlert :color="hasError ? 'error' : 'primary'" variant="soft" :title="statusText" />
+    <UAlert
+      :color="hasError ? 'error' : 'primary'"
+      variant="soft"
+      :title="statusText"
+    />
 
     <template v-if="hasError">
       <div class="mt-4">

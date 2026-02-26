@@ -16,12 +16,21 @@ interface MenuTreeItem {
   children?: MenuTreeItem[]
 }
 
+type BadgeColor =
+  | 'error'
+  | 'info'
+  | 'success'
+  | 'primary'
+  | 'secondary'
+  | 'warning'
+  | 'neutral'
+
 const props = defineProps<{
   node: MenuTreeItem
   depth: number
   expandedIds: Set<string | number>
   formatMenuType: (type?: number) => string
-  menuTypeBadgeColor: (type?: number) => string
+  menuTypeBadgeColor: (type?: number) => BadgeColor
 }>()
 
 const emit = defineEmits<{
@@ -34,58 +43,76 @@ const isExpanded = computed(() => props.expandedIds.has(props.node.id))
 </script>
 
 <template>
-  <tr class="border-b border-default/60 hover:bg-elevated/50 transition-colors">
+  <tr class="border-default/60 hover:bg-elevated/50 border-b transition-colors">
     <!-- 菜单名称（含缩进和展开按钮） -->
-    <td class="py-2 px-2">
-      <div class="flex items-center gap-1.5" :style="{ paddingLeft: `${depth * 1.25}rem` }">
+    <td class="px-2 py-2">
+      <div
+        class="flex items-center gap-1.5"
+        :style="{ paddingLeft: `${depth * 1.25}rem` }"
+      >
         <!-- 展开/折叠按钮 -->
         <button
           v-if="hasChildren"
-          class="w-5 h-5 flex items-center justify-center rounded text-muted hover:text-default transition-colors shrink-0"
+          class="text-muted hover:text-default flex h-5 w-5 shrink-0 items-center justify-center rounded transition-colors"
           @click="emit('toggle-expand', node.id)"
         >
-          <UIcon :name="isExpanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'" class="text-sm" />
+          <UIcon
+            :name="
+              isExpanded ? 'i-lucide-chevron-down' : 'i-lucide-chevron-right'
+            "
+            class="text-sm"
+          />
         </button>
         <span v-else class="w-5 shrink-0" />
 
         <!-- 图标 -->
-        <UIcon v-if="node.icon" :name="String(node.icon)" class="text-base text-muted shrink-0" />
+        <UIcon
+          v-if="node.icon"
+          :name="String(node.icon)"
+          class="text-muted shrink-0 text-base"
+        />
 
         <span class="text-sm">{{ node.label || '-' }}</span>
       </div>
     </td>
 
     <!-- 权限标识 -->
-    <td class="py-2 px-2 text-sm text-muted">
+    <td class="text-muted px-2 py-2 text-sm">
       {{ node.permission || '-' }}
     </td>
 
     <!-- 路由 -->
-    <td class="py-2 px-2 text-sm text-muted">
+    <td class="text-muted px-2 py-2 text-sm">
       {{ node.href || '-' }}
     </td>
 
     <!-- 类型 -->
-    <td class="py-2 px-2 text-center">
-      <UBadge :color="menuTypeBadgeColor(Number(node.menuType))" variant="subtle">
+    <td class="px-2 py-2 text-center">
+      <UBadge
+        :color="menuTypeBadgeColor(Number(node.menuType))"
+        variant="subtle"
+      >
         {{ formatMenuType(Number(node.menuType)) }}
       </UBadge>
     </td>
 
     <!-- 排序 -->
-    <td class="py-2 px-2 text-center text-sm text-muted">
+    <td class="text-muted px-2 py-2 text-center text-sm">
       {{ node.sortNo ?? '-' }}
     </td>
 
     <!-- 状态 -->
-    <td class="py-2 px-2 text-center">
-      <UBadge :color="node.status === 0 ? 'success' : 'neutral'" variant="subtle">
+    <td class="px-2 py-2 text-center">
+      <UBadge
+        :color="node.status === 0 ? 'success' : 'neutral'"
+        variant="subtle"
+      >
         {{ node.status === 0 ? '启用' : '禁用' }}
       </UBadge>
     </td>
 
     <!-- 操作 -->
-    <td class="py-2 px-2 text-right">
+    <td class="px-2 py-2 text-right">
       <div class="flex items-center justify-end gap-1">
         <UButton
           icon="i-lucide-pencil"

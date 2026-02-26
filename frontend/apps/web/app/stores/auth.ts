@@ -1,5 +1,12 @@
 import { defineStore } from 'pinia'
-import { createAuthClient, clearSession, loadSession, saveSession, unwrapGlobalResult, type AuthSession } from '@mortise/auth'
+import {
+  createAuthClient,
+  clearSession,
+  loadSession,
+  saveSession,
+  unwrapGlobalResult,
+  type AuthSession
+} from '@mortise/auth'
 
 interface WebLoginResponse {
   memberId?: number
@@ -42,9 +49,9 @@ export const useAuthStore = defineStore('web-auth', {
   }),
 
   getters: {
-    isAuthenticated: state => Boolean(state.session?.token),
-    accessToken: state => state.session?.token || '',
-    authHeader: state => {
+    isAuthenticated: (state) => Boolean(state.session?.token),
+    accessToken: (state) => state.session?.token || '',
+    authHeader: (state) => {
       if (!state.session?.token) {
         return ''
       }
@@ -81,7 +88,10 @@ export const useAuthStore = defineStore('web-auth', {
       this.loading = true
       try {
         const client = this.buildClient()
-        const payload = await client.login<WebLoginResponse>({ account, password })
+        const payload = await client.login<WebLoginResponse>({
+          account,
+          password
+        })
         this.session = toSession(payload)
         this.persist()
       } finally {
@@ -109,7 +119,9 @@ export const useAuthStore = defineStore('web-auth', {
       this.refreshPromise = (async () => {
         try {
           const client = this.buildClient()
-          const payload = await client.refresh<WebLoginResponse>(this.session!.refreshToken!)
+          const payload = await client.refresh<WebLoginResponse>(
+            this.session!.refreshToken!
+          )
           this.session = toSession(payload)
           this.persist()
           return this.session
@@ -134,7 +146,9 @@ export const useAuthStore = defineStore('web-auth', {
         }
       })
 
-      const data = await unwrapGlobalResult<{ authorizationUrl: string }>(response)
+      const data = await unwrapGlobalResult<{ authorizationUrl: string }>(
+        response
+      )
 
       if (!data?.authorizationUrl) {
         throw new Error('未获取到 OAuth2 授权地址')

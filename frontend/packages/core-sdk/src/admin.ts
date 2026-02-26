@@ -1,6 +1,9 @@
 import type { GlobalResult, PageResult } from './types'
 
-export type ApiInvoker = <R>(request: string, options?: Record<string, unknown>) => Promise<R>
+export type ApiInvoker = <R>(
+  request: string,
+  options?: Record<string, unknown>
+) => Promise<R>
 
 /** 分页查询 */
 export async function fetchAdminPage<T>(

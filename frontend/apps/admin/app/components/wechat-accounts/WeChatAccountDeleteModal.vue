@@ -12,7 +12,9 @@ const emit = defineEmits<{
   (e: 'success'): void
 }>()
 
-const { remove, loading, errorMessage } = useAdminCrud('/api/v1/admin/wechat/accounts')
+const { remove, loading, errorMessage } = useAdminCrud(
+  '/api/v1/admin/wechat/accounts'
+)
 
 async function handleConfirm() {
   const ok = await remove(props.account.id as number)

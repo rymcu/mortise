@@ -14,10 +14,16 @@ if (!auth.isAuthenticated) {
       </template>
 
       <p class="mb-3">当前已登录。</p>
-      <pre class="text-xs overflow-auto">{{ auth.session }}</pre>
+      <pre class="overflow-auto text-xs">{{ auth.session }}</pre>
 
       <div class="mt-4">
-        <UButton color="neutral" @click="auth.logout(); navigateTo('/app/auth/login')">
+        <UButton
+          color="neutral"
+          @click="
+            auth.logout()
+            navigateTo('/app/auth/login')
+          "
+        >
           退出登录
         </UButton>
       </div>

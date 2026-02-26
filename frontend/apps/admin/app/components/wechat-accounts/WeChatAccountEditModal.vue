@@ -12,12 +12,19 @@ const emit = defineEmits<{
   (e: 'success'): void
 }>()
 
-const { update, loading, errorMessage } = useAdminCrud('/api/v1/admin/wechat/accounts')
+const { update, loading, errorMessage } = useAdminCrud(
+  '/api/v1/admin/wechat/accounts'
+)
 
 const formRef = ref()
 const formData = ref<Record<string, unknown>>({ ...props.account })
 
-watch(() => props.account, (v) => { formData.value = { ...v } })
+watch(
+  () => props.account,
+  (v) => {
+    formData.value = { ...v }
+  }
+)
 
 async function handleConfirm() {
   const valid = await formRef.value?.validate()
@@ -34,8 +41,17 @@ async function handleConfirm() {
 <template>
   <UModal v-model:open="open" title="编辑微信账号">
     <template #body>
-      <UAlert v-if="errorMessage" color="error" :title="errorMessage" class="mb-4" />
-      <WechatAccountsWeChatAccountForm ref="formRef" :data="account" @change="formData = $event" />
+      <UAlert
+        v-if="errorMessage"
+        color="error"
+        :title="errorMessage"
+        class="mb-4"
+      />
+      <WechatAccountsWeChatAccountForm
+        ref="formRef"
+        :data="account"
+        @change="formData = $event"
+      />
     </template>
     <template #footer>
       <div class="flex justify-end gap-2">

@@ -12,7 +12,9 @@ const emit = defineEmits<{
   (e: 'success'): void
 }>()
 
-const { remove, loading, errorMessage } = useAdminCrud('/api/v1/admin/dictionary-types')
+const { remove, loading, errorMessage } = useAdminCrud(
+  '/api/v1/admin/dictionary-types'
+)
 
 async function handleConfirm() {
   const ok = await remove(props.dictType.id as number)

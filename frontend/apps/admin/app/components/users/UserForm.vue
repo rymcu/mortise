@@ -5,14 +5,17 @@
  */
 import * as z from 'zod'
 
-const props = withDefaults(defineProps<{
-  data?: Record<string, unknown>
-  /** 是否为编辑模式（隐藏密码字段为可选） */
-  editMode?: boolean
-}>(), {
-  data: () => ({}),
-  editMode: false
-})
+const props = withDefaults(
+  defineProps<{
+    data?: Record<string, unknown>
+    /** 是否为编辑模式（隐藏密码字段为可选） */
+    editMode?: boolean
+  }>(),
+  {
+    data: () => ({}),
+    editMode: false
+  }
+)
 
 const emit = defineEmits<{
   (e: 'change', data: Record<string, unknown>): void
@@ -36,6 +39,7 @@ const state = reactive({
 })
 
 const formRef = ref()
+const showPassword = ref(false)
 
 watch(state, (v) => emit('change', { ...v }), { deep: true })
 
@@ -56,11 +60,20 @@ defineExpose({ validate, state })
 <template>
   <UForm ref="formRef" :schema="schema" :state="state" class="space-y-4">
     <UFormField label="昵称" name="nickname" required>
-      <UInput v-model="state.nickname" placeholder="请输入昵称" class="w-full" />
+      <UInput
+        v-model="state.nickname"
+        placeholder="请输入昵称"
+        class="w-full"
+      />
     </UFormField>
 
     <UFormField label="邮箱" name="email">
-      <UInput v-model="state.email" type="email" placeholder="请输入邮箱" class="w-full" />
+      <UInput
+        v-model="state.email"
+        type="email"
+        placeholder="请输入邮箱"
+        class="w-full"
+      />
     </UFormField>
 
     <UFormField label="手机号" name="phone">
@@ -68,7 +81,25 @@ defineExpose({ validate, state })
     </UFormField>
 
     <UFormField v-if="!editMode" label="密码" name="password" required>
-      <UInput v-model="state.password" type="password" placeholder="请输入密码" class="w-full" />
+      <UInput
+        v-model="state.password"
+        :type="showPassword ? 'text' : 'password'"
+        placeholder="请输入密码"
+        :ui="{ trailing: 'pe-1' }"
+        class="w-full"
+      >
+        <template #trailing>
+          <UButton
+            color="neutral"
+            variant="link"
+            size="sm"
+            :icon="showPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+            :aria-label="showPassword ? '隐藏密码' : '显示密码'"
+            :aria-pressed="showPassword"
+            @click="showPassword = !showPassword"
+          />
+        </template>
+      </UInput>
     </UFormField>
   </UForm>
 </template>

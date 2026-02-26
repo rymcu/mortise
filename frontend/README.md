@@ -37,3 +37,12 @@
 - 严格按 capability 注册路由和菜单。
 - `core-sdk` 禁止引用 commerce/order/payment API。
 - 鉴权主流程自主实现，避免依赖通用 auth 全家桶。
+
+## 常用命令
+
+- `pnpm dev:admin`：启动管理端开发环境
+- `pnpm dev:web`：启动用户端开发环境
+- `pnpm lint`：执行所有 app 的 ESLint 校验
+- `pnpm format`：执行 Prettier 自动格式化
+- `pnpm format:check`：执行 Prettier 格式检查
+- `pnpm lint:prettier-check`：联合执行 ESLint + Prettier 检查（推荐 CI 使用）

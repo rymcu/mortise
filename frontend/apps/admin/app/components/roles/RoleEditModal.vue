@@ -17,7 +17,12 @@ const { update, loading, errorMessage } = useAdminCrud('/api/v1/admin/roles')
 const formRef = ref()
 const formData = ref<Record<string, unknown>>({ ...props.role })
 
-watch(() => props.role, (v) => { formData.value = { ...v } })
+watch(
+  () => props.role,
+  (v) => {
+    formData.value = { ...v }
+  }
+)
 
 async function handleConfirm() {
   const valid = await formRef.value?.validate()
@@ -34,7 +39,12 @@ async function handleConfirm() {
 <template>
   <UModal v-model:open="open" title="编辑角色">
     <template #body>
-      <UAlert v-if="errorMessage" color="error" :title="errorMessage" class="mb-4" />
+      <UAlert
+        v-if="errorMessage"
+        color="error"
+        :title="errorMessage"
+        class="mb-4"
+      />
       <RolesRoleForm ref="formRef" :data="role" @change="formData = $event" />
     </template>
     <template #footer>

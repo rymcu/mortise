@@ -5,6 +5,8 @@ export default defineNuxtRouteMiddleware((to) => {
   const publicRoutes = new Set([
     '/auth/login',
     '/auth/callback',
+    '/auth/forgot-password',
+    '/terms/service',
     '/setup'
   ])
 

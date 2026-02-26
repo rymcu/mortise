@@ -1,4 +1,9 @@
-import { fetchAdminPost, fetchAdminPut, fetchAdminDelete, fetchAdminBatchDelete } from '@mortise/core-sdk'
+import {
+  fetchAdminPost,
+  fetchAdminPut,
+  fetchAdminDelete,
+  fetchAdminBatchDelete
+} from '@mortise/core-sdk'
 
 /**
  * 通用 CRUD 操作 composable
@@ -10,7 +15,9 @@ export function useAdminCrud(basePath: string) {
   const errorMessage = ref('')
 
   /** 新增 */
-  async function create<T = unknown>(data: Record<string, unknown>): Promise<T | null> {
+  async function create<T = unknown>(
+    data: Record<string, unknown>
+  ): Promise<T | null> {
     loading.value = true
     errorMessage.value = ''
     try {
@@ -24,7 +31,10 @@ export function useAdminCrud(basePath: string) {
   }
 
   /** 更新 */
-  async function update<T = unknown>(id: string | number, data: Record<string, unknown>): Promise<T | null> {
+  async function update<T = unknown>(
+    id: string | number,
+    data: Record<string, unknown>
+  ): Promise<T | null> {
     loading.value = true
     errorMessage.value = ''
     try {
@@ -68,7 +78,10 @@ export function useAdminCrud(basePath: string) {
   }
 
   /** 自定义 POST 操作（如重置密码、分配角色等） */
-  async function postAction<T = unknown>(subPath: string, data?: Record<string, unknown>): Promise<T | null> {
+  async function postAction<T = unknown>(
+    subPath: string,
+    data?: Record<string, unknown>
+  ): Promise<T | null> {
     loading.value = true
     errorMessage.value = ''
     try {
@@ -82,7 +95,10 @@ export function useAdminCrud(basePath: string) {
   }
 
   /** 自定义 PUT 操作（如启用/禁用等） */
-  async function putAction<T = unknown>(subPath: string, data?: Record<string, unknown>): Promise<T | null> {
+  async function putAction<T = unknown>(
+    subPath: string,
+    data?: Record<string, unknown>
+  ): Promise<T | null> {
     loading.value = true
     errorMessage.value = ''
     try {

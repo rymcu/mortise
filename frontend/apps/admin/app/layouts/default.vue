@@ -15,7 +15,7 @@ onMounted(async () => {
 /** 将后端 MenuLink 树递归转换为 NavigationMenuItem */
 function toNavItems(links: MenuLink[]): NavigationMenuItem[] {
   return links
-    .filter(l => l.status === 0 || l.status === undefined) // 只展示启用状态的菜单
+    .filter((l) => l.status === 0 || l.status === undefined) // 只展示启用状态的菜单
     .sort((a, b) => (a.sortNo ?? 0) - (b.sortNo ?? 0))
     .map((link) => {
       const hasChildren = Boolean(link.children?.length)
@@ -23,9 +23,14 @@ function toNavItems(links: MenuLink[]): NavigationMenuItem[] {
         label: link.label,
         icon: link.icon || undefined,
         // 有子菜单时不设置 to，阻止点击跳转，仅展开/折叠
-        to: hasChildren ? undefined : (link.to || undefined),
+        to: hasChildren ? undefined : link.to || undefined,
         defaultOpen: link.defaultOpen ?? undefined,
-        onSelect: (!hasChildren && link.to) ? () => { open.value = false } : undefined
+        onSelect:
+          !hasChildren && link.to
+            ? () => {
+                open.value = false
+              }
+            : undefined
       }
       if (hasChildren) {
         item.children = toNavItems(link.children!)
@@ -41,12 +46,16 @@ const navItems = computed<NavigationMenuItem[]>(() => {
     return toNavItems(menus)
   }
   // 降级：菜单未加载时显示默认菜单
-  return [{
-    label: 'Dashboard',
-    icon: 'i-lucide-house',
-    to: '/dashboard',
-    onSelect: () => { open.value = false }
-  }]
+  return [
+    {
+      label: 'Dashboard',
+      icon: 'i-lucide-house',
+      to: '/dashboard',
+      onSelect: () => {
+        open.value = false
+      }
+    }
+  ]
 })
 
 async function logout() {
@@ -66,7 +75,7 @@ async function logout() {
       :ui="{ footer: 'lg:border-t lg:border-default' }"
     >
       <template #header>
-        <div class="px-2 py-1 text-sm font-semibold text-highlighted">
+        <div class="text-highlighted px-2 py-1 text-sm font-semibold">
           Mortise Admin
         </div>
       </template>

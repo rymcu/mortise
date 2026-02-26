@@ -81,14 +81,23 @@ function openRoleModal(row: Record<string, unknown>) {
         </template>
 
         <template #cell-status="{ row }">
-          <UBadge :color="row.status === 0 ? 'success' : 'neutral'" variant="subtle">
+          <UBadge
+            :color="row.status === 0 ? 'success' : 'neutral'"
+            variant="subtle"
+          >
             {{ row.status === 0 ? '启用' : '禁用' }}
           </UBadge>
         </template>
 
         <template #actions="{ row }">
           <UsersUserEditModal :user="row" @success="loadUsers" />
-          <UButton icon="i-lucide-shield" color="primary" variant="ghost" size="xs" @click="openRoleModal(row)">
+          <UButton
+            icon="i-lucide-shield"
+            color="primary"
+            variant="ghost"
+            size="xs"
+            @click="openRoleModal(row)"
+          >
             角色
           </UButton>
           <UsersUserResetPasswordModal :user="row" @success="loadUsers" />
@@ -97,7 +106,11 @@ function openRoleModal(row: Record<string, unknown>) {
       </AdminPagedTableCard>
 
       <!-- 配置角色弹窗 -->
-      <UsersUserRoleModal v-model:open="showRoleModal" :user="currentRoleUser" @success="loadUsers" />
+      <UsersUserRoleModal
+        v-model:open="showRoleModal"
+        :user="currentRoleUser"
+        @success="loadUsers"
+      />
     </template>
   </UDashboardPanel>
 </template>

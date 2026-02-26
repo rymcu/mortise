@@ -2,7 +2,10 @@ export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()
   const auth = useAuthStore()
 
-  const api = async <T>(request: string, options: Record<string, unknown> = {}) => {
+  const api = async <T>(
+    request: string,
+    options: Record<string, unknown> = {}
+  ) => {
     const retried = Boolean(options._retried)
     const skipAuth = Boolean(options.skipAuth)
     const headers = {
@@ -20,7 +23,8 @@ export default defineNuxtPlugin(() => {
         headers
       })
     } catch (error) {
-      const responseStatus = (error as { response?: { status?: number } })?.response?.status
+      const responseStatus = (error as { response?: { status?: number } })
+        ?.response?.status
       if (responseStatus !== 401 || retried) {
         throw error
       }

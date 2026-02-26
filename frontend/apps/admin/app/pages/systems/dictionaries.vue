@@ -32,10 +32,14 @@ const selectedTypeCode = ref('')
 
 async function loadDictTypes() {
   try {
-    const page = await fetchAdminPage<DictTypeOption>($api, '/api/v1/admin/dictionary-types', {
-      pageNum: 1,
-      pageSize: 999
-    })
+    const page = await fetchAdminPage<DictTypeOption>(
+      $api,
+      '/api/v1/admin/dictionary-types',
+      {
+        pageNum: 1,
+        pageSize: 999
+      }
+    )
     dictTypes.value = (page.records || []) as DictTypeOption[]
   } catch {
     // 静默失败
@@ -125,12 +129,14 @@ function openDeleteModal(row: Record<string, unknown>) {
           <!-- 字典类型筛选 -->
           <select
             v-model="selectedTypeCode"
-            class="h-8 rounded-md border border-default bg-default px-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+            class="border-default bg-default focus:ring-primary h-8 rounded-md border px-2 text-sm focus:ring-2 focus:outline-none"
           >
-            <option value="">
-              全部类型
-            </option>
-            <option v-for="dt in dictTypes" :key="dt.typeCode" :value="dt.typeCode">
+            <option value="">全部类型</option>
+            <option
+              v-for="dt in dictTypes"
+              :key="dt.typeCode"
+              :value="dt.typeCode"
+            >
               {{ dt.label }}（{{ dt.typeCode }}）
             </option>
           </select>
@@ -145,7 +151,10 @@ function openDeleteModal(row: Record<string, unknown>) {
         </template>
 
         <template #cell-status="{ row }">
-          <UBadge :color="row.status === 0 ? 'success' : 'neutral'" variant="subtle">
+          <UBadge
+            :color="row.status === 0 ? 'success' : 'neutral'"
+            variant="subtle"
+          >
             {{ row.status === 0 ? '启用' : '禁用' }}
           </UBadge>
         </template>
@@ -155,7 +164,10 @@ function openDeleteModal(row: Record<string, unknown>) {
         </template>
         <template #cell-color="{ row }">
           <div v-if="row.color" class="flex items-center gap-1.5">
-            <span class="inline-block w-3 h-3 rounded-full" :class="`bg-${row.color}-500`" />
+            <span
+              class="inline-block h-3 w-3 rounded-full"
+              :class="`bg-${row.color}-500`"
+            />
             <span class="text-xs">{{ row.color }}</span>
           </div>
           <span v-else>-</span>
@@ -185,8 +197,16 @@ function openDeleteModal(row: Record<string, unknown>) {
 
       <!-- 弹窗 -->
       <DictsDictAddModal v-model:open="showAddModal" @success="loadData" />
-      <DictsDictEditModal v-model:open="showEditModal" :dict="currentRow" @success="loadData" />
-      <DictsDictDeleteModal v-model:open="showDeleteModal" :dict="currentRow" @success="loadData" />
+      <DictsDictEditModal
+        v-model:open="showEditModal"
+        :dict="currentRow"
+        @success="loadData"
+      />
+      <DictsDictDeleteModal
+        v-model:open="showDeleteModal"
+        :dict="currentRow"
+        @success="loadData"
+      />
     </template>
   </UDashboardPanel>
 </template>

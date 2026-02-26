@@ -12,7 +12,9 @@ const emit = defineEmits<{
   (e: 'success'): void
 }>()
 
-const { remove, loading, errorMessage } = useAdminCrud('/api/v1/admin/oauth2/client-configs')
+const { remove, loading, errorMessage } = useAdminCrud(
+  '/api/v1/admin/oauth2/client-configs'
+)
 
 async function handleConfirm() {
   const ok = await remove(props.client.id as number)

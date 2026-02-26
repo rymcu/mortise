@@ -6,7 +6,10 @@ const emit = defineEmits<{ (e: 'success'): void }>()
 
 const { loading, create } = useAdminCrud('/api/v1/admin/users')
 const open = ref(false)
-const formRef = ref<{ validate: () => Promise<boolean>; state: Record<string, unknown> } | null>(null)
+const formRef = ref<{
+  validate: () => Promise<boolean>
+  state: Record<string, unknown>
+} | null>(null)
 
 function openModal() {
   open.value = true
@@ -26,7 +29,12 @@ async function onSubmit() {
 
 <template>
   <UModal v-model:open="open" title="新增用户">
-    <UButton icon="i-lucide-plus" color="primary" variant="soft" @click="openModal">
+    <UButton
+      icon="i-lucide-plus"
+      color="primary"
+      variant="soft"
+      @click="openModal"
+    >
       新增用户
     </UButton>
     <template #body>
@@ -34,8 +42,16 @@ async function onSubmit() {
     </template>
     <template #footer>
       <div class="flex w-full justify-end gap-2">
-        <UButton color="primary" :loading="loading" @click="onSubmit">保存</UButton>
-        <UButton color="neutral" variant="subtle" :disabled="loading" @click="open = false">取消</UButton>
+        <UButton color="primary" :loading="loading" @click="onSubmit"
+          >保存</UButton
+        >
+        <UButton
+          color="neutral"
+          variant="subtle"
+          :disabled="loading"
+          @click="open = false"
+          >取消</UButton
+        >
       </div>
     </template>
   </UModal>

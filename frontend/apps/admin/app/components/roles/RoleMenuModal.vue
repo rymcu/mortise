@@ -31,7 +31,7 @@ const { $api } = useNuxtApp()
 
 const isOpen = computed({
   get: () => props.open,
-  set: v => emit('update:open', v)
+  set: (v) => emit('update:open', v)
 })
 
 const loading = ref(false)
@@ -68,7 +68,10 @@ function collectSubtree(node: MenuTreeItem): MenuTreeItem[] {
 }
 
 /** 查找目标节点的所有祖先节点 */
-function findAncestors(tree: MenuTreeItem[], targetId: string | number): MenuTreeItem[] {
+function findAncestors(
+  tree: MenuTreeItem[],
+  targetId: string | number
+): MenuTreeItem[] {
   const path: MenuTreeItem[] = []
   const find = (nodes: MenuTreeItem[], stack: MenuTreeItem[]): boolean => {
     for (const n of nodes) {
@@ -94,17 +97,22 @@ async function loadData() {
   try {
     const [tree, roleMenus] = await Promise.all([
       fetchAdminGet<MenuTreeItem[]>($api, '/api/v1/admin/menus/tree'),
-      fetchAdminGet<MenuTreeItem[]>($api, `/api/v1/admin/roles/${props.role.id}/menus`)
+      fetchAdminGet<MenuTreeItem[]>(
+        $api,
+        `/api/v1/admin/roles/${props.role.id}/menus`
+      )
     ])
     menuTree.value = tree || []
     // 初始化选中状态：仅保留菜单树中存在的 ID
-    const allIds = new Set(flattenTree(menuTree.value).map(m => m.id))
+    const allIds = new Set(flattenTree(menuTree.value).map((m) => m.id))
     checkedIds.value = new Set(
-      (roleMenus || []).filter(m => allIds.has(m.id)).map(m => m.id)
+      (roleMenus || []).filter((m) => allIds.has(m.id)).map((m) => m.id)
     )
     // 默认展开所有节点
     expandedIds.value = new Set(
-      flattenTree(menuTree.value).filter(m => m.children?.length).map(m => m.id)
+      flattenTree(menuTree.value)
+        .filter((m) => m.children?.length)
+        .map((m) => m.id)
     )
   } catch (err) {
     errorMessage.value = err instanceof Error ? err.message : '加载菜单失败'
@@ -122,14 +130,14 @@ function toggleMenu(node: MenuTreeItem) {
   if (wasChecked) {
     // 取消选中：取消自身 + 所有子节点 + 取消祖先
     const subtree = collectSubtree(node)
-    subtree.forEach(n => s.delete(n.id))
+    subtree.forEach((n) => s.delete(n.id))
     // 取消所有祖先节点
     const ancestors = findAncestors(menuTree.value, node.id)
-    ancestors.forEach(a => s.delete(a.id))
+    ancestors.forEach((a) => s.delete(a.id))
   } else {
     // 选中：选中自身 + 所有子节点
     const subtree = collectSubtree(node)
-    subtree.forEach(n => s.add(n.id))
+    subtree.forEach((n) => s.add(n.id))
     // 检查祖先：如果所有兄弟都已选中，则自动选中父节点
     autoCheckAncestors(s, menuTree.value, node.id)
   }
@@ -138,13 +146,17 @@ function toggleMenu(node: MenuTreeItem) {
 }
 
 /** 向上检查：如果某个节点的所有子节点都已选中，则自动选中该节点 */
-function autoCheckAncestors(ids: Set<string | number>, tree: MenuTreeItem[], targetId: string | number) {
+function autoCheckAncestors(
+  ids: Set<string | number>,
+  tree: MenuTreeItem[],
+  targetId: string | number
+) {
   const ancestors = findAncestors(tree, targetId)
   for (let i = ancestors.length - 1; i >= 0; i--) {
     const parent: MenuTreeItem | undefined = ancestors[i]
     if (!parent) continue
     if (parent.children?.length) {
-      const allChildrenChecked = parent.children.every(c => ids.has(c.id))
+      const allChildrenChecked = parent.children.every((c) => ids.has(c.id))
       if (allChildrenChecked) {
         ids.add(parent.id)
       }
@@ -182,15 +194,20 @@ async function onSubmit() {
   }
 }
 
-watch(() => props.open, (val) => {
-  if (val) loadData()
-})
+watch(
+  () => props.open,
+  (val) => {
+    if (val) loadData()
+  }
+)
 
 /** 判断节点是否"半选"（部分子节点已选中但非全部） */
 function isIndeterminate(node: MenuTreeItem): boolean {
   if (!node.children?.length) return false
   const allDescendants = flattenTree(node.children)
-  const checkedCount = allDescendants.filter(d => checkedIds.value.has(d.id)).length
+  const checkedCount = allDescendants.filter((d) =>
+    checkedIds.value.has(d.id)
+  ).length
   return checkedCount > 0 && checkedCount < allDescendants.length
 }
 </script>
@@ -203,9 +220,7 @@ function isIndeterminate(node: MenuTreeItem): boolean {
   >
     <template #body>
       <div class="space-y-4">
-        <p class="text-sm text-muted">
-          为角色「{{ role.label }}」分配菜单权限
-        </p>
+        <p class="text-muted text-sm">为角色「{{ role.label }}」分配菜单权限</p>
 
         <UAlert
           v-if="errorMessage"
@@ -214,12 +229,15 @@ function isIndeterminate(node: MenuTreeItem): boolean {
           :title="errorMessage"
         />
 
-        <div v-if="dataLoading" class="flex justify-center items-center h-32">
-          <span class="text-sm text-muted">加载菜单树中...</span>
+        <div v-if="dataLoading" class="flex h-32 items-center justify-center">
+          <span class="text-muted text-sm">加载菜单树中...</span>
         </div>
 
         <div v-else class="max-h-[50vh] overflow-y-auto">
-          <div v-if="!menuTree.length" class="text-center text-sm text-muted py-4">
+          <div
+            v-if="!menuTree.length"
+            class="text-muted py-4 text-center text-sm"
+          >
             暂无菜单数据
           </div>
           <!-- 递归渲染菜单树 -->
@@ -236,7 +254,7 @@ function isIndeterminate(node: MenuTreeItem): boolean {
           </template>
         </div>
 
-        <div class="text-xs text-muted">
+        <div class="text-muted text-xs">
           已选择 {{ checkedIds.size }} 个菜单
         </div>
       </div>

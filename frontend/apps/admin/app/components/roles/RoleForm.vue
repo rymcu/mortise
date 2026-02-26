@@ -4,11 +4,14 @@
  */
 import * as z from 'zod'
 
-const props = withDefaults(defineProps<{
-  data?: Record<string, unknown>
-}>(), {
-  data: () => ({})
-})
+const props = withDefaults(
+  defineProps<{
+    data?: Record<string, unknown>
+  }>(),
+  {
+    data: () => ({})
+  }
+)
 
 const emit = defineEmits<{
   (e: 'change', data: Record<string, unknown>): void
@@ -50,7 +53,11 @@ defineExpose({ validate, state })
     </UFormField>
 
     <UFormField label="权限标识" name="permission" required>
-      <UInput v-model="state.permission" placeholder="如：admin、editor" class="w-full" />
+      <UInput
+        v-model="state.permission"
+        placeholder="如：admin、editor"
+        class="w-full"
+      />
     </UFormField>
   </UForm>
 </template>

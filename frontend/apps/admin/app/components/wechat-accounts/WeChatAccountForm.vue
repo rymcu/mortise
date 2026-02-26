@@ -4,11 +4,14 @@
  */
 import * as z from 'zod'
 
-const props = withDefaults(defineProps<{
-  data?: Record<string, unknown>
-}>(), {
-  data: () => ({})
-})
+const props = withDefaults(
+  defineProps<{
+    data?: Record<string, unknown>
+  }>(),
+  {
+    data: () => ({})
+  }
+)
 
 const emit = defineEmits<{
   (e: 'change', data: Record<string, unknown>): void
@@ -53,6 +56,7 @@ const state = reactive({
 })
 
 const formRef = ref()
+const showAppSecret = ref(false)
 
 watch(state, (v) => emit('change', { ...v }), { deep: true })
 
@@ -74,30 +78,64 @@ defineExpose({ validate, state })
   <UForm ref="formRef" :schema="schema" :state="state" class="space-y-4">
     <div class="grid grid-cols-2 gap-4">
       <UFormField label="账号名称" name="accountName" required>
-        <UInput v-model="state.accountName" placeholder="请输入账号名称" class="w-full" />
+        <UInput
+          v-model="state.accountName"
+          placeholder="请输入账号名称"
+          class="w-full"
+        />
       </UFormField>
 
       <UFormField label="账号类型" name="accountType">
-        <UInput v-model="state.accountType" placeholder="如：公众号、小程序" class="w-full" />
+        <UInput
+          v-model="state.accountType"
+          placeholder="如：公众号、小程序"
+          class="w-full"
+        />
       </UFormField>
 
       <UFormField label="AppID" name="appId" required>
-        <UInput v-model="state.appId" placeholder="请输入 AppID" class="w-full" />
+        <UInput
+          v-model="state.appId"
+          placeholder="请输入 AppID"
+          class="w-full"
+        />
       </UFormField>
 
       <UFormField label="AppSecret" name="appSecret">
-        <UInput v-model="state.appSecret" type="password" placeholder="请输入 AppSecret" class="w-full" />
+        <UInput
+          v-model="state.appSecret"
+          :type="showAppSecret ? 'text' : 'password'"
+          placeholder="请输入 AppSecret"
+          :ui="{ trailing: 'pe-1' }"
+          class="w-full"
+        >
+          <template #trailing>
+            <UButton
+              color="neutral"
+              variant="link"
+              size="sm"
+              :icon="showAppSecret ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+              :aria-label="showAppSecret ? '隐藏密钥' : '显示密钥'"
+              :aria-pressed="showAppSecret"
+              @click="showAppSecret = !showAppSecret"
+            />
+          </template>
+        </UInput>
       </UFormField>
 
       <UFormField label="是否默认" name="isDefault">
         <div class="flex gap-4">
-          <label v-for="opt in yesNoOptions" :key="opt.value" class="flex items-center gap-1.5 cursor-pointer">
+          <label
+            v-for="opt in yesNoOptions"
+            :key="opt.value"
+            class="flex cursor-pointer items-center gap-1.5"
+          >
             <input
               type="radio"
               :value="opt.value"
               :checked="state.isDefault === opt.value"
-              @change="state.isDefault = opt.value"
               class="accent-primary"
+              @change="state.isDefault = opt.value"
             />
             <span class="text-sm">{{ opt.label }}</span>
           </label>
@@ -106,13 +144,17 @@ defineExpose({ validate, state })
 
       <UFormField label="是否启用" name="isEnabled">
         <div class="flex gap-4">
-          <label v-for="opt in enabledOptions" :key="opt.value" class="flex items-center gap-1.5 cursor-pointer">
+          <label
+            v-for="opt in enabledOptions"
+            :key="opt.value"
+            class="flex cursor-pointer items-center gap-1.5"
+          >
             <input
               type="radio"
               :value="opt.value"
               :checked="state.isEnabled === opt.value"
-              @change="state.isEnabled = opt.value"
               class="accent-primary"
+              @change="state.isEnabled = opt.value"
             />
             <span class="text-sm">{{ opt.label }}</span>
           </label>
@@ -121,13 +163,17 @@ defineExpose({ validate, state })
 
       <UFormField label="状态" name="status">
         <div class="flex gap-4">
-          <label v-for="opt in statusOptions" :key="opt.value" class="flex items-center gap-1.5 cursor-pointer">
+          <label
+            v-for="opt in statusOptions"
+            :key="opt.value"
+            class="flex cursor-pointer items-center gap-1.5"
+          >
             <input
               type="radio"
               :value="opt.value"
               :checked="state.status === opt.value"
-              @change="state.status = opt.value"
               class="accent-primary"
+              @change="state.status = opt.value"
             />
             <span class="text-sm">{{ opt.label }}</span>
           </label>
@@ -136,7 +182,12 @@ defineExpose({ validate, state })
     </div>
 
     <UFormField label="备注" name="remark">
-      <UTextarea v-model="state.remark" placeholder="备注信息" :rows="3" class="w-full" />
+      <UTextarea
+        v-model="state.remark"
+        placeholder="备注信息"
+        :rows="3"
+        class="w-full"
+      />
     </UFormField>
   </UForm>
 </template>

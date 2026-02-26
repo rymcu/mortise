@@ -20,7 +20,9 @@ export default defineNuxtPlugin(() => {
     try {
       const parts = token.split('.')
       if (parts.length !== 3) return null
-      const payload = JSON.parse(atob(parts[1]))
+      const payloadPart = parts[1]
+      if (!payloadPart) return null
+      const payload = JSON.parse(atob(payloadPart))
       return typeof payload.exp === 'number' ? payload.exp * 1000 : null
     } catch {
       return null

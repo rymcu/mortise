@@ -28,7 +28,12 @@ async function handleConfirm() {
 <template>
   <UModal v-model:open="open" title="新增菜单">
     <template #body>
-      <UAlert v-if="errorMessage" color="error" :title="errorMessage" class="mb-4" />
+      <UAlert
+        v-if="errorMessage"
+        color="error"
+        :title="errorMessage"
+        class="mb-4"
+      />
       <MenusMenuForm ref="formRef" @change="formData = $event" />
     </template>
     <template #footer>

@@ -8,7 +8,9 @@ const emit = defineEmits<{
   (e: 'success'): void
 }>()
 
-const { create, loading, errorMessage } = useAdminCrud('/api/v1/admin/oauth2/client-configs')
+const { create, loading, errorMessage } = useAdminCrud(
+  '/api/v1/admin/oauth2/client-configs'
+)
 
 const formRef = ref()
 const formData = ref<Record<string, unknown>>({})
@@ -28,8 +30,16 @@ async function handleConfirm() {
 <template>
   <UModal v-model:open="open" title="新增 OAuth2 客户端">
     <template #body>
-      <UAlert v-if="errorMessage" color="error" :title="errorMessage" class="mb-4" />
-      <Oauth2ClientsOauth2ClientForm ref="formRef" @change="formData = $event" />
+      <UAlert
+        v-if="errorMessage"
+        color="error"
+        :title="errorMessage"
+        class="mb-4"
+      />
+      <Oauth2ClientsOauth2ClientForm
+        ref="formRef"
+        @change="formData = $event"
+      />
     </template>
     <template #footer>
       <div class="flex justify-end gap-2">

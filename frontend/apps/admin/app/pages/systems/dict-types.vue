@@ -74,11 +74,15 @@ async function loadDicts() {
   dictsLoading.value = true
   dictsError.value = ''
   try {
-    const page = await fetchAdminPage<DictInfo>($api, '/api/v1/admin/dictionaries', {
-      dictTypeCode: selectedType.value.typeCode,
-      pageNum: dictPageNum.value,
-      pageSize: dictPageSize.value
-    })
+    const page = await fetchAdminPage<DictInfo>(
+      $api,
+      '/api/v1/admin/dictionaries',
+      {
+        dictTypeCode: selectedType.value.typeCode,
+        pageNum: dictPageNum.value,
+        pageSize: dictPageSize.value
+      }
+    )
     dictRecords.value = page.records || []
     dictTotal.value = page.totalRow || 0
   } catch (err) {
@@ -120,7 +124,10 @@ function openTypeDeleteModal(row: Record<string, unknown>) {
 function onTypesSuccess() {
   loadTypes()
   // 如果删除了选中的类型，清空右侧
-  if (selectedType.value && currentTypeRow.value?.id === selectedType.value.id) {
+  if (
+    selectedType.value &&
+    currentTypeRow.value?.id === selectedType.value.id
+  ) {
     selectedType.value = null
     dictRecords.value = []
   }
@@ -168,14 +175,12 @@ function typesNextPage() {
     </template>
 
     <template #body>
-      <div class="flex gap-4 h-full">
+      <div class="flex h-full gap-4">
         <!-- 左侧：字典类型列表 -->
         <div class="w-80 shrink-0">
           <UCard>
             <div class="mb-3 flex items-center justify-between gap-2">
-              <h3 class="font-medium text-sm">
-                字典类型
-              </h3>
+              <h3 class="text-sm font-medium">字典类型</h3>
               <div class="flex items-center gap-1">
                 <UButton
                   icon="i-lucide-plus"
@@ -213,48 +218,65 @@ function typesNextPage() {
             />
 
             <!-- 类型列表 -->
-            <div class="space-y-1 max-h-[60vh] overflow-y-auto">
+            <div class="max-h-[60vh] space-y-1 overflow-y-auto">
               <div
                 v-for="type in typeRecords"
                 :key="type.id"
-                class="px-3 py-2 rounded-lg cursor-pointer transition-colors text-sm"
-                :class="selectedType?.id === type.id ? 'bg-primary/10 text-primary ring-1 ring-primary/20' : 'hover:bg-elevated/50'"
+                class="cursor-pointer rounded-lg px-3 py-2 text-sm transition-colors"
+                :class="
+                  selectedType?.id === type.id
+                    ? 'bg-primary/10 text-primary ring-primary/20 ring-1'
+                    : 'hover:bg-elevated/50'
+                "
                 @click="selectType(type)"
               >
                 <div class="flex items-center justify-between">
-                  <div class="flex-1 min-w-0">
-                    <div class="font-medium truncate">
+                  <div class="min-w-0 flex-1">
+                    <div class="truncate font-medium">
                       {{ type.label }}
                     </div>
-                    <div class="text-xs text-muted truncate">
+                    <div class="text-muted truncate text-xs">
                       {{ type.typeCode }}
                     </div>
                   </div>
-                  <div class="flex items-center gap-1 ml-2 shrink-0">
+                  <div class="ml-2 flex shrink-0 items-center gap-1">
                     <UButton
                       icon="i-lucide-pencil"
                       color="neutral"
                       variant="ghost"
                       size="xs"
-                      @click.stop="openTypeEditModal(type as unknown as Record<string, unknown>)"
+                      @click.stop="
+                        openTypeEditModal(
+                          type as unknown as Record<string, unknown>
+                        )
+                      "
                     />
                     <UButton
                       icon="i-lucide-trash-2"
                       color="error"
                       variant="ghost"
                       size="xs"
-                      @click.stop="openTypeDeleteModal(type as unknown as Record<string, unknown>)"
+                      @click.stop="
+                        openTypeDeleteModal(
+                          type as unknown as Record<string, unknown>
+                        )
+                      "
                     />
                   </div>
                 </div>
               </div>
-              <div v-if="!typeRecords.length && !typesLoading" class="text-center text-sm text-muted py-4">
+              <div
+                v-if="!typeRecords.length && !typesLoading"
+                class="text-muted py-4 text-center text-sm"
+              >
                 暂无字典类型
               </div>
             </div>
 
             <!-- 类型翻页 -->
-            <div class="mt-3 flex items-center justify-between text-xs text-muted">
+            <div
+              class="text-muted mt-3 flex items-center justify-between text-xs"
+            >
               <span>共 {{ typesTotal }} 条</span>
               <div class="flex items-center gap-1">
                 <UButton
@@ -281,16 +303,21 @@ function typesNextPage() {
         </div>
 
         <!-- 右侧：字典项列表 -->
-        <div class="flex-1 min-w-0">
+        <div class="min-w-0 flex-1">
           <UCard>
             <template v-if="selectedType">
               <div class="mb-4 flex items-center justify-between gap-2">
                 <div>
-                  <h3 class="font-medium text-sm">
+                  <h3 class="text-sm font-medium">
                     {{ selectedType.label }}
-                    <span class="text-muted font-normal">（{{ selectedType.typeCode }}）</span>
+                    <span class="text-muted font-normal"
+                      >（{{ selectedType.typeCode }}）</span
+                    >
                   </h3>
-                  <p v-if="selectedType.description" class="text-xs text-muted mt-0.5">
+                  <p
+                    v-if="selectedType.description"
+                    class="text-muted mt-0.5 text-xs"
+                  >
                     {{ selectedType.description }}
                   </p>
                 </div>
@@ -328,50 +355,73 @@ function typesNextPage() {
               <div class="overflow-x-auto">
                 <table class="min-w-full text-sm">
                   <thead>
-                    <tr class="border-b border-default">
-                      <th v-for="col in dictColumns" :key="col.key" class="py-2 px-2 text-left">
+                    <tr class="border-default border-b">
+                      <th
+                        v-for="col in dictColumns"
+                        :key="col.key"
+                        class="px-2 py-2 text-left"
+                      >
                         {{ col.label }}
                       </th>
-                      <th class="py-2 px-2 text-right">
-                        操作
-                      </th>
+                      <th class="px-2 py-2 text-right">操作</th>
                     </tr>
                   </thead>
                   <tbody>
-                    <tr v-for="dict in dictRecords" :key="dict.id" class="border-b border-default/60 hover:bg-elevated/50 transition-colors">
-                      <td class="py-2 px-2">
+                    <tr
+                      v-for="dict in dictRecords"
+                      :key="dict.id"
+                      class="border-default/60 hover:bg-elevated/50 border-b transition-colors"
+                    >
+                      <td class="px-2 py-2">
                         {{ dict.label || '-' }}
                       </td>
-                      <td class="py-2 px-2 text-muted">
+                      <td class="text-muted px-2 py-2">
                         {{ dict.value || '-' }}
                       </td>
-                      <td class="py-2 px-2 text-muted">
+                      <td class="text-muted px-2 py-2">
                         {{ dict.sortNo ?? '-' }}
                       </td>
-                      <td class="py-2 px-2">
-                        <UBadge :color="dict.status === 0 ? 'success' : 'neutral'" variant="subtle">
+                      <td class="px-2 py-2">
+                        <UBadge
+                          :color="dict.status === 0 ? 'success' : 'neutral'"
+                          variant="subtle"
+                        >
                           {{ dict.status === 0 ? '启用' : '禁用' }}
                         </UBadge>
                       </td>
-                      <td class="py-2 px-2">
-                        <UIcon v-if="dict.icon" :name="String(dict.icon)" class="text-lg" />
+                      <td class="px-2 py-2">
+                        <UIcon
+                          v-if="dict.icon"
+                          :name="String(dict.icon)"
+                          class="text-lg"
+                        />
                         <span v-else class="text-muted">-</span>
                       </td>
-                      <td class="py-2 px-2">
-                        <div v-if="dict.color" class="flex items-center gap-1.5">
-                          <span class="inline-block w-3 h-3 rounded-full" :class="`bg-${dict.color}-500`" />
+                      <td class="px-2 py-2">
+                        <div
+                          v-if="dict.color"
+                          class="flex items-center gap-1.5"
+                        >
+                          <span
+                            class="inline-block h-3 w-3 rounded-full"
+                            :class="`bg-${dict.color}-500`"
+                          />
                           <span class="text-xs">{{ dict.color }}</span>
                         </div>
                         <span v-else class="text-muted">-</span>
                       </td>
-                      <td class="py-2 px-2 text-right">
+                      <td class="px-2 py-2 text-right">
                         <div class="flex items-center justify-end gap-1">
                           <UButton
                             icon="i-lucide-pencil"
                             color="primary"
                             variant="ghost"
                             size="xs"
-                            @click="openDictEditModal(dict as unknown as Record<string, unknown>)"
+                            @click="
+                              openDictEditModal(
+                                dict as unknown as Record<string, unknown>
+                              )
+                            "
                           >
                             编辑
                           </UButton>
@@ -380,7 +430,11 @@ function typesNextPage() {
                             color="error"
                             variant="ghost"
                             size="xs"
-                            @click="openDictDeleteModal(dict as unknown as Record<string, unknown>)"
+                            @click="
+                              openDictDeleteModal(
+                                dict as unknown as Record<string, unknown>
+                              )
+                            "
                           >
                             删除
                           </UButton>
@@ -388,7 +442,10 @@ function typesNextPage() {
                       </td>
                     </tr>
                     <tr v-if="!dictRecords.length && !dictsLoading">
-                      <td :colspan="dictColumns.length + 1" class="py-6 text-center text-muted">
+                      <td
+                        :colspan="dictColumns.length + 1"
+                        class="text-muted py-6 text-center"
+                      >
                         暂无字典数据
                       </td>
                     </tr>
@@ -396,7 +453,9 @@ function typesNextPage() {
                 </table>
               </div>
 
-              <div class="mt-4 flex items-center justify-between text-sm text-muted">
+              <div
+                class="text-muted mt-4 flex items-center justify-between text-sm"
+              >
                 <span>共 {{ dictTotal }} 条</span>
                 <div class="flex items-center gap-2">
                   <UButton
@@ -421,28 +480,46 @@ function typesNextPage() {
             </template>
 
             <!-- 未选择类型时的占位 -->
-            <div v-else class="flex flex-col items-center justify-center py-16 text-muted">
-              <UIcon name="i-lucide-book-open" class="text-4xl mb-3" />
-              <p class="text-sm">
-                请从左侧选择一个字典类型
-              </p>
-              <p class="text-xs mt-1">
-                选择后可查看和管理该类型下的字典项
-              </p>
+            <div
+              v-else
+              class="text-muted flex flex-col items-center justify-center py-16"
+            >
+              <UIcon name="i-lucide-book-open" class="mb-3 text-4xl" />
+              <p class="text-sm">请从左侧选择一个字典类型</p>
+              <p class="mt-1 text-xs">选择后可查看和管理该类型下的字典项</p>
             </div>
           </UCard>
         </div>
       </div>
 
       <!-- 字典类型弹窗 -->
-      <DictTypesDictTypeAddModal v-model:open="showTypeAddModal" @success="onTypesSuccess" />
-      <DictTypesDictTypeEditModal v-model:open="showTypeEditModal" :dict-type="currentTypeRow" @success="onTypesSuccess" />
-      <DictTypesDictTypeDeleteModal v-model:open="showTypeDeleteModal" :dict-type="currentTypeRow" @success="onTypesSuccess" />
+      <DictTypesDictTypeAddModal
+        v-model:open="showTypeAddModal"
+        @success="onTypesSuccess"
+      />
+      <DictTypesDictTypeEditModal
+        v-model:open="showTypeEditModal"
+        :dict-type="currentTypeRow"
+        @success="onTypesSuccess"
+      />
+      <DictTypesDictTypeDeleteModal
+        v-model:open="showTypeDeleteModal"
+        :dict-type="currentTypeRow"
+        @success="onTypesSuccess"
+      />
 
       <!-- 字典项弹窗 -->
       <DictsDictAddModal v-model:open="showDictAddModal" @success="loadDicts" />
-      <DictsDictEditModal v-model:open="showDictEditModal" :dict="currentDictRow" @success="loadDicts" />
-      <DictsDictDeleteModal v-model:open="showDictDeleteModal" :dict="currentDictRow" @success="loadDicts" />
+      <DictsDictEditModal
+        v-model:open="showDictEditModal"
+        :dict="currentDictRow"
+        @success="loadDicts"
+      />
+      <DictsDictDeleteModal
+        v-model:open="showDictDeleteModal"
+        :dict="currentDictRow"
+        @success="loadDicts"
+      />
     </template>
   </UDashboardPanel>
 </template>

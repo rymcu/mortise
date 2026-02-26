@@ -13,6 +13,7 @@ useSeoMeta({
 
 const auth = useAuthStore()
 const errorMessage = ref('')
+const showPassword = ref(false)
 
 const schema = z.object({
   account: z.string().min(1, '请输入账号/邮箱/手机号'),
@@ -43,33 +44,64 @@ async function loginWithOAuth(provider: string) {
   try {
     await auth.startOAuthLogin(provider)
   } catch (error) {
-    errorMessage.value = error instanceof Error ? error.message : 'OAuth2 登录失败'
+    errorMessage.value =
+      error instanceof Error ? error.message : 'OAuth2 登录失败'
   }
 }
 </script>
 
 <template>
-  <UCard class="w-full max-w-sm mx-auto">
-    <div class="text-center mb-6">
-      <div class="mb-2 pointer-events-none flex justify-center">
-        <UIcon name="i-lucide-lock" class="w-8 h-8 flex-shrink-0 text-gray-900 dark:text-white" />
+  <UCard class="mx-auto w-full max-w-sm">
+    <div class="mb-6 text-center">
+      <div class="pointer-events-none mb-2 flex justify-center">
+        <UIcon
+          name="i-lucide-lock"
+          class="h-8 w-8 shrink-0 text-gray-900 dark:text-white"
+        />
       </div>
       <h1 class="text-2xl font-bold text-gray-900 dark:text-white">欢迎回来</h1>
-      <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
-        没有账号？ <ULink to="/app/auth/register" class="text-primary font-medium">注册</ULink>
+      <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+        没有账号？
+        <ULink to="/app/auth/register" class="text-primary font-medium"
+          >注册</ULink
+        >
       </p>
     </div>
 
     <UForm :schema="schema" :state="state" class="space-y-4" @submit="onSubmit">
       <UFormField label="账号" name="account" required>
-        <UInput v-model="state.account" placeholder="请输入账号/邮箱/手机号" class="w-full" />
+        <UInput
+          v-model="state.account"
+          placeholder="请输入账号/邮箱/手机号"
+          class="w-full"
+        />
       </UFormField>
 
       <UFormField label="密码" name="password" required>
         <template #hint>
-          <ULink to="#" class="text-primary font-medium" tabindex="-1">忘记密码？</ULink>
+          <ULink to="#" class="text-primary font-medium" tabindex="-1"
+            >忘记密码？</ULink
+          >
         </template>
-        <UInput v-model="state.password" type="password" placeholder="请输入密码" class="w-full" />
+        <UInput
+          v-model="state.password"
+          :type="showPassword ? 'text' : 'password'"
+          placeholder="请输入密码"
+          :ui="{ trailing: 'pe-1' }"
+          class="w-full"
+        >
+          <template #trailing>
+            <UButton
+              color="neutral"
+              variant="link"
+              size="sm"
+              :icon="showPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+              :aria-label="showPassword ? '隐藏密码' : '显示密码'"
+              :aria-pressed="showPassword"
+              @click="showPassword = !showPassword"
+            />
+          </template>
+        </UInput>
       </UFormField>
 
       <UFormField name="remember">
@@ -81,22 +113,40 @@ async function loginWithOAuth(provider: string) {
       <USeparator label="或" class="my-4" />
 
       <div class="space-y-2">
-        <UButton color="neutral" variant="soft" block icon="i-simple-icons-wechat" @click="loginWithOAuth('wechat-app')">
+        <UButton
+          color="neutral"
+          variant="soft"
+          block
+          icon="i-simple-icons-wechat"
+          @click="loginWithOAuth('wechat-app')"
+        >
           使用微信登录
         </UButton>
-        <UButton color="neutral" variant="soft" block icon="i-simple-icons-github" @click="loginWithOAuth('github-app')">
+        <UButton
+          color="neutral"
+          variant="soft"
+          block
+          icon="i-simple-icons-github"
+          @click="loginWithOAuth('github-app')"
+        >
           使用 GitHub 登录
         </UButton>
       </div>
 
-      <UAlert v-if="errorMessage" color="error" variant="soft" :title="errorMessage" class="mt-4" />
+      <UAlert
+        v-if="errorMessage"
+        color="error"
+        variant="soft"
+        :title="errorMessage"
+        class="mt-4"
+      />
     </UForm>
 
     <template #footer>
       <div class="text-center text-sm text-gray-500 dark:text-gray-400">
-        登录即表示您同意我们的 <ULink to="#" class="text-primary font-medium">服务条款</ULink>。
+        登录即表示您同意我们的
+        <ULink to="#" class="text-primary font-medium">服务条款</ULink>。
       </div>
     </template>
   </UCard>
 </template>
-

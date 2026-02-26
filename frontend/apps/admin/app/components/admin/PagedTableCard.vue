@@ -5,34 +5,36 @@ interface ColumnDef {
   align?: 'left' | 'center' | 'right'
 }
 
-const props = withDefaults(defineProps<{
-  columns: ColumnDef[]
-  rows: Record<string, unknown>[]
-  loading: boolean
-  errorMessage?: string
-  total: number
-  pageNum: number
-  pageSize: number
-  keyword: string
-  searchPlaceholder?: string
-  emptyText?: string
-  /** 是否显示操作列 */
-  showActions?: boolean
-  /** 操作列标题 */
-  actionsLabel?: string
-}>(), {
-  errorMessage: '',
-  searchPlaceholder: '搜索',
-  emptyText: '暂无数据',
-  showActions: false,
-  actionsLabel: '操作'
-})
+const props = withDefaults(
+  defineProps<{
+    columns: ColumnDef[]
+    rows: Record<string, unknown>[]
+    loading: boolean
+    errorMessage?: string
+    total: number
+    pageNum: number
+    pageSize: number
+    keyword: string
+    searchPlaceholder?: string
+    emptyText?: string
+    /** 是否显示操作列 */
+    showActions?: boolean
+    /** 操作列标题 */
+    actionsLabel?: string
+  }>(),
+  {
+    errorMessage: '',
+    searchPlaceholder: '搜索',
+    emptyText: '暂无数据',
+    showActions: false,
+    actionsLabel: '操作'
+  }
+)
 
 const emit = defineEmits<{
   (e: 'update:keyword', value: string): void
   (e: 'update:pageNum', value: number): void
-  (e: 'refresh'): void
-  (e: 'searchEnter'): void
+  (e: 'refresh' | 'searchEnter'): void
 }>()
 
 /** 最终列 = 原始列 + (可选)操作列 */
@@ -67,7 +69,13 @@ function nextPage() {
 
 <template>
   <div>
-    <UAlert v-if="errorMessage" color="error" variant="soft" :title="errorMessage" class="mb-4" />
+    <UAlert
+      v-if="errorMessage"
+      color="error"
+      variant="soft"
+      :title="errorMessage"
+      class="mb-4"
+    />
 
     <UCard>
       <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
@@ -80,7 +88,13 @@ function nextPage() {
             @update:model-value="emit('update:keyword', String($event || ''))"
             @keyup.enter="emit('searchEnter')"
           />
-          <UButton color="neutral" variant="soft" icon="i-lucide-refresh-cw" :loading="loading" @click="emit('refresh')">
+          <UButton
+            color="neutral"
+            variant="soft"
+            icon="i-lucide-refresh-cw"
+            :loading="loading"
+            @click="emit('refresh')"
+          >
             刷新
           </UButton>
         </div>
@@ -93,11 +107,11 @@ function nextPage() {
       <div class="overflow-x-auto">
         <table class="min-w-full text-sm">
           <thead>
-            <tr class="border-b border-default">
+            <tr class="border-default border-b">
               <th
                 v-for="column in allColumns"
                 :key="column.key"
-                class="py-2 px-2"
+                class="px-2 py-2"
                 :class="{
                   'text-left': (column.align || 'left') === 'left',
                   'text-center': column.align === 'center',
@@ -109,11 +123,15 @@ function nextPage() {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="row in rows" :key="String(row.id || JSON.stringify(row))" class="border-b border-default/60 hover:bg-elevated/50 transition-colors">
+            <tr
+              v-for="row in rows"
+              :key="String(row.id || JSON.stringify(row))"
+              class="border-default/60 hover:bg-elevated/50 border-b transition-colors"
+            >
               <td
                 v-for="column in allColumns"
                 :key="column.key"
-                class="py-2 px-2"
+                class="px-2 py-2"
                 :class="{
                   'text-left': (column.align || 'left') === 'left',
                   'text-center': column.align === 'center',
@@ -132,7 +150,10 @@ function nextPage() {
               </td>
             </tr>
             <tr v-if="!rows.length && !loading">
-              <td :colspan="allColumns.length" class="py-6 text-center text-muted">
+              <td
+                :colspan="allColumns.length"
+                class="text-muted py-6 text-center"
+              >
                 {{ emptyText }}
               </td>
             </tr>
@@ -140,12 +161,24 @@ function nextPage() {
         </table>
       </div>
 
-      <div class="mt-4 flex items-center justify-between text-sm text-muted">
+      <div class="text-muted mt-4 flex items-center justify-between text-sm">
         <span>共 {{ total }} 条</span>
         <div class="flex items-center gap-2">
-          <UButton color="neutral" variant="ghost" :disabled="pageNum <= 1" @click="prevPage">上一页</UButton>
+          <UButton
+            color="neutral"
+            variant="ghost"
+            :disabled="pageNum <= 1"
+            @click="prevPage"
+            >上一页</UButton
+          >
           <span>第 {{ pageNum }} 页</span>
-          <UButton color="neutral" variant="ghost" :disabled="rows.length < pageSize" @click="nextPage">下一页</UButton>
+          <UButton
+            color="neutral"
+            variant="ghost"
+            :disabled="rows.length < pageSize"
+            @click="nextPage"
+            >下一页</UButton
+          >
         </div>
       </div>
     </UCard>

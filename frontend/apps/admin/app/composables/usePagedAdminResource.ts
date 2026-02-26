@@ -5,7 +5,9 @@ interface UsePagedAdminResourceOptions {
   errorMessage: string
 }
 
-export function usePagedAdminResource<T>(options: UsePagedAdminResourceOptions) {
+export function usePagedAdminResource<T>(
+  options: UsePagedAdminResourceOptions
+) {
   const { $api } = useNuxtApp()
 
   const loading = ref(false)
@@ -30,7 +32,8 @@ export function usePagedAdminResource<T>(options: UsePagedAdminResourceOptions) 
       records.value = page.records || []
       total.value = page.totalRow || 0
     } catch (error) {
-      errorMessage.value = error instanceof Error ? error.message : options.errorMessage
+      errorMessage.value =
+        error instanceof Error ? error.message : options.errorMessage
     } finally {
       loading.value = false
     }

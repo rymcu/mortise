@@ -30,7 +30,10 @@ async function loadMenus() {
   loading.value = true
   errorMessage.value = ''
   try {
-    const tree = await fetchAdminGet<MenuTreeItem[]>($api, '/api/v1/admin/menus/tree')
+    const tree = await fetchAdminGet<MenuTreeItem[]>(
+      $api,
+      '/api/v1/admin/menus/tree'
+    )
     menuTree.value = tree || []
     // 默认展开所有含子节点的节点
     const ids = new Set<string | number>()
@@ -73,11 +76,17 @@ const filteredTree = computed(() => {
   function filterNodes(nodes: MenuTreeItem[]): MenuTreeItem[] {
     const result: MenuTreeItem[] = []
     for (const node of nodes) {
-      const childMatches = node.children?.length ? filterNodes(node.children) : []
-      const selfMatch = (node.label || '').toLowerCase().includes(kw) ||
+      const childMatches = node.children?.length
+        ? filterNodes(node.children)
+        : []
+      const selfMatch =
+        (node.label || '').toLowerCase().includes(kw) ||
         (node.permission || '').toLowerCase().includes(kw)
       if (selfMatch || childMatches.length > 0) {
-        result.push({ ...node, children: childMatches.length > 0 ? childMatches : node.children })
+        result.push({
+          ...node,
+          children: childMatches.length > 0 ? childMatches : node.children
+        })
       }
     }
     return result
@@ -120,7 +129,16 @@ function formatMenuType(type?: number): string {
   return '-'
 }
 
-function menuTypeBadgeColor(type?: number): string {
+type BadgeColor =
+  | 'error'
+  | 'info'
+  | 'success'
+  | 'primary'
+  | 'secondary'
+  | 'warning'
+  | 'neutral'
+
+function menuTypeBadgeColor(type?: number): BadgeColor {
   if (type === 0) return 'info'
   if (type === 1) return 'success'
   if (type === 2) return 'warning'
@@ -156,7 +174,13 @@ function openDeleteModal(row: MenuTreeItem) {
 
     <template #body>
       <div>
-        <UAlert v-if="errorMessage" color="error" variant="soft" :title="errorMessage" class="mb-4" />
+        <UAlert
+          v-if="errorMessage"
+          color="error"
+          variant="soft"
+          :title="errorMessage"
+          class="mb-4"
+        />
 
         <UCard>
           <!-- 工具栏 -->
@@ -168,18 +192,39 @@ function openDeleteModal(row: MenuTreeItem) {
                 icon="i-lucide-search"
                 class="w-72"
               />
-              <UButton color="neutral" variant="soft" icon="i-lucide-refresh-cw" :loading="loading" @click="loadMenus">
+              <UButton
+                color="neutral"
+                variant="soft"
+                icon="i-lucide-refresh-cw"
+                :loading="loading"
+                @click="loadMenus"
+              >
                 刷新
               </UButton>
-              <UButton color="neutral" variant="ghost" size="sm" @click="expandAll">
+              <UButton
+                color="neutral"
+                variant="ghost"
+                size="sm"
+                @click="expandAll"
+              >
                 全部展开
               </UButton>
-              <UButton color="neutral" variant="ghost" size="sm" @click="collapseAll">
+              <UButton
+                color="neutral"
+                variant="ghost"
+                size="sm"
+                @click="collapseAll"
+              >
                 全部折叠
               </UButton>
             </div>
             <div class="flex items-center gap-2">
-              <UButton icon="i-lucide-plus" color="primary" variant="soft" @click="showAddModal = true">
+              <UButton
+                icon="i-lucide-plus"
+                color="primary"
+                variant="soft"
+                @click="showAddModal = true"
+              >
                 新增菜单
               </UButton>
             </div>
@@ -189,32 +234,23 @@ function openDeleteModal(row: MenuTreeItem) {
           <div class="overflow-x-auto">
             <table class="min-w-full text-sm">
               <thead>
-                <tr class="border-b border-default">
-                  <th class="py-2 px-2 text-left" style="min-width: 280px;">
+                <tr class="border-default border-b">
+                  <th class="px-2 py-2 text-left" style="min-width: 280px">
                     菜单名称
                   </th>
-                  <th class="py-2 px-2 text-left">
-                    权限标识
-                  </th>
-                  <th class="py-2 px-2 text-left">
-                    路由
-                  </th>
-                  <th class="py-2 px-2 text-center">
-                    类型
-                  </th>
-                  <th class="py-2 px-2 text-center">
-                    排序
-                  </th>
-                  <th class="py-2 px-2 text-center">
-                    状态
-                  </th>
-                  <th class="py-2 px-2 text-right">
-                    操作
-                  </th>
+                  <th class="px-2 py-2 text-left">权限标识</th>
+                  <th class="px-2 py-2 text-left">路由</th>
+                  <th class="px-2 py-2 text-center">类型</th>
+                  <th class="px-2 py-2 text-center">排序</th>
+                  <th class="px-2 py-2 text-center">状态</th>
+                  <th class="px-2 py-2 text-right">操作</th>
                 </tr>
               </thead>
               <tbody>
-                <template v-for="rootNode in filteredTree" :key="String(rootNode.id)">
+                <template
+                  v-for="rootNode in filteredTree"
+                  :key="String(rootNode.id)"
+                >
                   <MenusMenuTreeRow
                     :node="rootNode"
                     :depth="0"
@@ -227,7 +263,7 @@ function openDeleteModal(row: MenuTreeItem) {
                   />
                 </template>
                 <tr v-if="!filteredTree.length && !loading">
-                  <td colspan="7" class="py-6 text-center text-muted">
+                  <td colspan="7" class="text-muted py-6 text-center">
                     暂无菜单数据
                   </td>
                 </tr>
@@ -235,15 +271,23 @@ function openDeleteModal(row: MenuTreeItem) {
             </table>
           </div>
 
-          <div class="mt-4 flex items-center text-sm text-muted">
+          <div class="text-muted mt-4 flex items-center text-sm">
             <span>共 {{ totalCount }} 个菜单</span>
           </div>
         </UCard>
 
         <!-- 弹窗 -->
         <MenusMenuAddModal v-model:open="showAddModal" @success="loadMenus" />
-        <MenusMenuEditModal v-model:open="showEditModal" :menu="currentRow" @success="loadMenus" />
-        <MenusMenuDeleteModal v-model:open="showDeleteModal" :menu="currentRow" @success="loadMenus" />
+        <MenusMenuEditModal
+          v-model:open="showEditModal"
+          :menu="currentRow"
+          @success="loadMenus"
+        />
+        <MenusMenuDeleteModal
+          v-model:open="showDeleteModal"
+          :menu="currentRow"
+          @success="loadMenus"
+        />
       </div>
     </template>
   </UDashboardPanel>

@@ -3,7 +3,11 @@
  * 用户角色配置弹窗
  * 打开时加载所有角色列表和用户已绑定的角色，通过复选框选择后保存
  */
-import { fetchAdminGet, fetchAdminPost, fetchAdminPage } from '@mortise/core-sdk'
+import {
+  fetchAdminGet,
+  fetchAdminPost,
+  fetchAdminPage
+} from '@mortise/core-sdk'
 
 interface RoleItem {
   id: string | number
@@ -26,7 +30,7 @@ const { $api } = useNuxtApp()
 
 const isOpen = computed({
   get: () => props.open,
-  set: v => emit('update:open', v)
+  set: (v) => emit('update:open', v)
 })
 
 const loading = ref(false)
@@ -43,11 +47,17 @@ async function loadData() {
   try {
     // 并行加载：所有角色列表 + 用户已绑定角色
     const [pageResult, userRoles] = await Promise.all([
-      fetchAdminPage<RoleItem>($api, '/api/v1/admin/roles', { pageNum: 1, pageSize: 999 }),
-      fetchAdminGet<RoleItem[]>($api, `/api/v1/admin/users/${props.user.id}/roles`)
+      fetchAdminPage<RoleItem>($api, '/api/v1/admin/roles', {
+        pageNum: 1,
+        pageSize: 999
+      }),
+      fetchAdminGet<RoleItem[]>(
+        $api,
+        `/api/v1/admin/users/${props.user.id}/roles`
+      )
     ])
     allRoles.value = pageResult.records || []
-    checkedIds.value = new Set((userRoles || []).map(r => r.id))
+    checkedIds.value = new Set((userRoles || []).map((r) => r.id))
   } catch (err) {
     errorMessage.value = err instanceof Error ? err.message : '加载角色失败'
   } finally {
@@ -83,16 +93,19 @@ async function onSubmit() {
   }
 }
 
-watch(() => props.open, (val) => {
-  if (val) loadData()
-})
+watch(
+  () => props.open,
+  (val) => {
+    if (val) loadData()
+  }
+)
 </script>
 
 <template>
   <UModal v-model:open="isOpen" title="配置角色">
     <template #body>
       <div class="space-y-4">
-        <p class="text-sm text-muted">
+        <p class="text-muted text-sm">
           为用户「{{ user.nickname || user.account }}」分配角色
         </p>
 
@@ -103,29 +116,34 @@ watch(() => props.open, (val) => {
           :title="errorMessage"
         />
 
-        <div v-if="rolesLoading" class="flex justify-center items-center h-32">
-          <span class="text-sm text-muted">加载角色列表中...</span>
+        <div v-if="rolesLoading" class="flex h-32 items-center justify-center">
+          <span class="text-muted text-sm">加载角色列表中...</span>
         </div>
 
-        <div v-else class="max-h-80 overflow-y-auto space-y-2">
+        <div v-else class="max-h-80 space-y-2 overflow-y-auto">
           <div
             v-for="role in allRoles"
             :key="String(role.id)"
-            class="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-elevated/50 cursor-pointer transition-colors"
+            class="hover:bg-elevated/50 flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition-colors"
             @click="toggleRole(role.id)"
           >
             <input
               type="checkbox"
               :checked="checkedIds.has(role.id)"
-              class="rounded border-default"
+              class="border-default rounded"
               @click.stop="toggleRole(role.id)"
-            >
+            />
             <div class="flex-1">
               <span class="text-sm font-medium">{{ role.label }}</span>
-              <span v-if="role.permission" class="ml-2 text-xs text-muted">{{ role.permission }}</span>
+              <span v-if="role.permission" class="text-muted ml-2 text-xs">{{
+                role.permission
+              }}</span>
             </div>
           </div>
-          <p v-if="!allRoles.length" class="text-center text-sm text-muted py-4">
+          <p
+            v-if="!allRoles.length"
+            class="text-muted py-4 text-center text-sm"
+          >
             暂无可用角色
           </p>
         </div>
