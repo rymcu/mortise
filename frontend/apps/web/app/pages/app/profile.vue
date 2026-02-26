@@ -4,6 +4,11 @@ const auth = useAuthStore()
 if (!auth.isAuthenticated) {
   await navigateTo('/app/auth/login')
 }
+
+async function handleLogout() {
+  await auth.logout()
+  await navigateTo('/app/auth/login')
+}
 </script>
 
 <template>
@@ -17,13 +22,7 @@ if (!auth.isAuthenticated) {
       <pre class="overflow-auto text-xs">{{ auth.session }}</pre>
 
       <div class="mt-4">
-        <UButton
-          color="neutral"
-          @click="
-            auth.logout()
-            navigateTo('/app/auth/login')
-          "
-        >
+        <UButton color="neutral" @click="handleLogout">
           退出登录
         </UButton>
       </div>
