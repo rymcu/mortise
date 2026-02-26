@@ -46,3 +46,45 @@
 - `pnpm format`：执行 Prettier 自动格式化
 - `pnpm format:check`：执行 Prettier 格式检查
 - `pnpm lint:prettier-check`：联合执行 ESLint + Prettier 检查（推荐 CI 使用）
+
+## Docker Compose 部署
+
+### 1. 前置条件
+
+- 已安装 Docker / Docker Compose
+- 后端 API 可访问（默认示例：`http://host.docker.internal:9999/mortise`）
+
+### 2. 启动
+
+在 `frontend` 目录执行：
+
+```bash
+docker compose -f compose.yaml up -d --build
+```
+
+### 3. 访问地址
+
+- admin: `http://localhost:3101/admin/`
+- web: `http://localhost:3102/`
+- site: `http://localhost:3103/`
+
+### 4. 自定义后端地址
+
+可在命令前覆盖环境变量：
+
+```bash
+NUXT_PUBLIC_API_BASE=https://your-domain/mortise docker compose -f compose.yaml up -d --build
+```
+
+PowerShell 示例：
+
+```powershell
+$env:NUXT_PUBLIC_API_BASE = "https://your-domain/mortise"
+docker compose -f compose.yaml up -d --build
+```
+
+### 5. 停止与清理
+
+```bash
+docker compose -f compose.yaml down
+```

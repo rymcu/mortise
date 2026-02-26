@@ -1,0 +1,48 @@
+services:
+  admin:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: admin
+    image: mortise-frontend-admin:latest
+    container_name: mortise-frontend-admin
+    restart: unless-stopped
+    ports:
+      - "3101:3000"
+    environment:
+      NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-http://host.docker.internal:9999/mortise}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: web
+    image: mortise-frontend-web:latest
+    container_name: mortise-frontend-web
+    restart: unless-stopped
+    ports:
+      - "3102:3000"
+    environment:
+      NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-http://host.docker.internal:9999/mortise}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  site:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        APP_NAME: site
+    image: mortise-frontend-site:latest
+    container_name: mortise-frontend-site
+    restart: unless-stopped
+    ports:
+      - "3103:3000"
+    environment:
+      NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-http://host.docker.internal:9999/mortise}
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
