@@ -20,7 +20,8 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      apiBase: 'http://localhost:9999/mortise',
+      // 优先用环境变量，默认本地开发地址
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:9999/mortise',
       auth: {
         loginPath: '/api/v1/admin/auth/login',
         refreshPath: '/api/v1/admin/auth/refresh-token',

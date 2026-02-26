@@ -10,6 +10,7 @@ services:
     restart: unless-stopped
     ports:
       - "3101:3000"
+    # 后端 API 地址，优先取 .env 文件 NUXT_PUBLIC_API_BASE
     environment:
       NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-http://host.docker.internal:9999/mortise}
     extra_hosts:
@@ -26,6 +27,7 @@ services:
     restart: unless-stopped
     ports:
       - "3102:3000"
+    # 后端 API 地址，优先取 .env 文件 NUXT_PUBLIC_API_BASE
     environment:
       NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-http://host.docker.internal:9999/mortise}
     extra_hosts:
@@ -42,6 +44,7 @@ services:
     restart: unless-stopped
     ports:
       - "3103:3000"
+    # 后端 API 地址，优先取 .env 文件 NUXT_PUBLIC_API_BASE
     environment:
       NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-http://host.docker.internal:9999/mortise}
     extra_hosts:
