@@ -356,4 +356,62 @@ public interface SystemCacheService {
     void storeTokenUser(String state, TokenUser tokenUser);
 
     TokenUser getOauth2TokenUser(String state);
+
+    // ==================== Dashboard 统计缓存 ====================
+
+    /**
+     * 缓存用户数统计
+     *
+     * @param count 用户数
+     */
+    void cacheUserCount(Long count);
+
+    /**
+     * 获取用户数统计
+     *
+     * @return 用户数，不存在返回 null
+     */
+    Long getUserCount();
+
+    /**
+     * 缓存角色数统计
+     *
+     * @param count 角色数
+     */
+    void cacheRoleCount(Long count);
+
+    /**
+     * 获取角色数统计
+     *
+     * @return 角色数，不存在返回 null
+     */
+    Long getRoleCount();
+
+    /**
+     * 缓存菜单数统计
+     *
+     * @param count 菜单数
+     */
+    void cacheMenuCount(Long count);
+
+    /**
+     * 获取菜单数统计
+     *
+     * @return 菜单数，不存在返回 null
+     */
+    Long getMenuCount();
+
+    /**
+     * 缓存会员数统计
+     *
+     * @param count 会员数
+     */
+    void cacheMemberCount(Long count);
+
+    /**
+     * 获取会员数统计
+     *
+     * @return 会员数，不存在返回 null
+     */
+    Long getMemberCount();
 }

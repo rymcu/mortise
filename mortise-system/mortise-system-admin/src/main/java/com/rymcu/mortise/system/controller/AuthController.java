@@ -1,10 +1,12 @@
 package com.rymcu.mortise.system.controller;
 
+import com.rymcu.mortise.system.model.UserProfileInfo;
 import com.rymcu.mortise.system.model.auth.AuthInfo;
 import com.rymcu.mortise.system.model.auth.ForgetPasswordInfo;
 import com.rymcu.mortise.system.model.auth.RefreshTokenInfo;
 import com.rymcu.mortise.system.model.auth.TokenUser;
 import com.rymcu.mortise.system.model.auth.UserDetailInfo;
+import com.rymcu.mortise.system.service.UserService;
 import com.rymcu.mortise.web.annotation.AdminController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -53,6 +55,9 @@ public class AuthController {
 
     @Resource
     private TokenManager tokenManager;
+
+    @Resource
+    private UserService userService;
 
     /**
      * 用户登录
@@ -245,6 +250,47 @@ public class AuthController {
             @Valid @RequestParam("state") String state) {
         TokenUser tokenUser = authService.getOauth2TokenUser(state);
         return GlobalResult.success(tokenUser);
+    }
+
+    /**
+     * 获取当前用户资料
+     */
+    @Operation(summary = "获取当前用户资料", description = "获取当前登录用户的个人资料")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "查询成功"),
+            @ApiResponse(responseCode = "401", description = "未认证")
+    })
+    @GetMapping("/profile")
+    @ApiLog(value = "获取当前用户资料", recordRequestBody = false, recordResponseBody = false)
+    public GlobalResult<UserProfileInfo> getProfile(@AuthenticationPrincipal UserDetailInfo userDetails) {
+        User user = userDetails.getUser();
+        UserProfileInfo profileInfo = new UserProfileInfo();
+        profileInfo.setNickname(user.getNickname());
+        profileInfo.setAvatar(user.getAvatar());
+        profileInfo.setEmail(user.getEmail());
+        profileInfo.setAccount(user.getAccount());
+        return GlobalResult.success(profileInfo);
+    }
+
+    /**
+     * 更新当前用户资料
+     */
+    @Operation(summary = "更新当前用户资料", description = "更新当前登录用户的个人资料")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "更新成功"),
+            @ApiResponse(responseCode = "401", description = "未认证"),
+            @ApiResponse(responseCode = "400", description = "参数错误")
+    })
+    @PutMapping("/profile")
+    @ApiLog(value = "更新当前用户资料", recordRequestBody = false, recordResponseBody = false)
+    @OperationLog(module = "认证管理", operation = "更新用户资料", recordParams = false, recordResult = true)
+    public GlobalResult<Boolean> updateProfile(
+            @AuthenticationPrincipal UserDetailInfo userDetails,
+            @Valid @RequestBody UserProfileInfo userProfileInfo) {
+        User user = userDetails.getUser();
+        log.info("更新用户资料请求: {}", user.getAccount());
+        Boolean result = userService.updateUserProfileInfo(userProfileInfo, user);
+        return GlobalResult.success(result);
     }
 
 }

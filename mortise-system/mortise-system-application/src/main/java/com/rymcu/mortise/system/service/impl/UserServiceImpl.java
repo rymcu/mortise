@@ -155,6 +155,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         user.setAccount(nextAccount());
         boolean result = mapper.insertSelective(user) > 0;
         if (result) {
+            // 更新用户数缓存
+            systemCacheService.cacheUserCount(count());
             // 注册成功后执行相关初始化事件
             applicationEventPublisher.publishEvent(new RegisterEvent(user.getId(), user.getEmail(), code));
         }
@@ -304,7 +306,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public Boolean deleteUser(Long idUser) {
-        return mapper.deleteById(idUser) > 0;
+        boolean result = mapper.deleteById(idUser) > 0;
+        if (result) {
+            systemCacheService.cacheUserCount(count());
+        }
+        return result;
     }
 
     @Override
@@ -312,7 +318,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (idUserList == null || idUserList.isEmpty()) {
             return false;
         }
-        return mapper.deleteBatchByIds(idUserList) > 0;
+        boolean result = mapper.deleteBatchByIds(idUserList) > 0;
+        if (result) {
+            systemCacheService.cacheUserCount(count());
+        }
+        return result;
     }
 
     @Override

@@ -1,13 +1,18 @@
 <script setup lang="ts">
-import { fetchAdminPut } from '@mortise/core-sdk'
-
 /**
  * 资料设置页面
  */
+
+interface ProfileInfo {
+  nickname: string
+  avatar: string | null
+  email: string | null
+  account: string
+  bio: string | null
+}
+
+const { $api } = useNuxtApp()
 const auth = useAuthStore()
-const user = computed(
-  () => (auth.session?.user as Record<string, unknown> | undefined) ?? {}
-)
 
 const state = reactive({
   nickname: '',
@@ -15,12 +20,30 @@ const state = reactive({
 })
 
 const loading = ref(false)
+const pageLoading = ref(true)
 const submitError = ref('')
 const submitSuccess = ref('')
 
-watchEffect(() => {
-  state.nickname = String(user.value.nickname ?? '')
-  state.email = String(user.value.email ?? '')
+// 从后端获取用户资料
+async function fetchProfile() {
+  pageLoading.value = true
+  try {
+    const res = await $api<{ code: number; data: ProfileInfo }>(
+      '/api/v1/admin/auth/profile'
+    )
+    if (res?.data) {
+      state.nickname = res.data.nickname || ''
+      state.email = res.data.email || ''
+    }
+  } catch (error) {
+    submitError.value = error instanceof Error ? error.message : '获取资料失败'
+  } finally {
+    pageLoading.value = false
+  }
+}
+
+onMounted(() => {
+  fetchProfile()
 })
 
 const canSubmit = computed(() => {
@@ -41,26 +64,21 @@ async function onSubmit() {
   submitError.value = ''
   submitSuccess.value = ''
 
-  const userId = Number(user.value.id)
-  if (!Number.isFinite(userId) || userId <= 0) {
-    submitError.value = '当前用户信息缺失，无法保存资料'
-    return
-  }
-
   if (!canSubmit.value) {
     submitError.value = '请检查昵称和邮箱格式后再提交'
     return
   }
 
-  const { $api } = useNuxtApp()
   loading.value = true
   try {
-    await fetchAdminPut<boolean>($api, `/api/v1/admin/users/${userId}`, {
-      id: userId,
-      account: user.value.account,
-      nickname: state.nickname.trim(),
-      email: state.email.trim() || null
+    await $api('/api/v1/admin/auth/profile', {
+      method: 'PUT',
+      body: {
+        nickname: state.nickname.trim(),
+        email: state.email.trim() || null
+      }
     })
+    // 刷新用户会话信息
     await auth.fetchCurrentUser()
     submitSuccess.value = '资料保存成功'
   } catch (error) {
@@ -69,6 +87,11 @@ async function onSubmit() {
     loading.value = false
   }
 }
+
+// 使用 auth store 中的用户信息显示只读字段
+const user = computed(
+  () => (auth.session?.user as Record<string, unknown> | undefined) ?? {}
+)
 </script>
 
 <template>

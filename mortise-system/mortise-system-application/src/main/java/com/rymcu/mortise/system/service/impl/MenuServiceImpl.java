@@ -12,6 +12,8 @@ import com.rymcu.mortise.system.mapper.MenuMapper;
 import com.rymcu.mortise.system.model.MenuSearch;
 import com.rymcu.mortise.system.model.MenuTreeInfo;
 import com.rymcu.mortise.system.service.MenuService;
+import com.rymcu.mortise.system.service.SystemCacheService;
+import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,9 @@ import static com.rymcu.mortise.system.entity.table.MenuTableDef.MENU;
  */
 @Service
 public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements MenuService {
+
+    @Resource
+    private SystemCacheService systemCacheService;
 
     @Override
     public List<Menu> findMenusByIdUser(Long idUser) {
@@ -67,7 +72,11 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
 
     @Override
     public Boolean deleteMenu(Long idMenu) {
-        return mapper.deleteById(idMenu) > 0;
+        boolean result = mapper.deleteById(idMenu) > 0;
+        if (result) {
+            systemCacheService.cacheMenuCount(count());
+        }
+        return result;
     }
 
     @Override
@@ -75,13 +84,18 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         if (idMenuList == null || idMenuList.isEmpty()) {
             return false;
         }
-        return mapper.deleteBatchByIds(idMenuList) > 0;
+        boolean result = mapper.deleteBatchByIds(idMenuList) > 0;
+        if (result) {
+            systemCacheService.cacheMenuCount(count());
+        }
+        return result;
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createMenu(Menu menu) {
         mapper.insertSelective(menu);
+        systemCacheService.cacheMenuCount(count());
         return menu.getId();
     }
 

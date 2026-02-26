@@ -2,6 +2,7 @@ package com.rymcu.mortise.member.api.service.impl;
 
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
+import com.rymcu.mortise.cache.service.CacheService;
 import com.rymcu.mortise.member.api.service.ApiMemberService;
 import com.rymcu.mortise.member.api.service.VerificationCodeService;
 import com.rymcu.mortise.member.entity.Member;
@@ -13,6 +14,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 
 import static com.rymcu.mortise.member.entity.table.MemberTableDef.MEMBER;
@@ -31,6 +33,10 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
 
     private final PasswordEncoder passwordEncoder;
     private final VerificationCodeService verificationCodeService;
+    private final CacheService cacheService;
+
+    private static final String DASHBOARD_MEMBER_COUNT = "dashboard:member:count";
+    private static final long CACHE_EXPIRE_HOURS = 1;
 
     @Override
     public Member findByUsername(String username) {
@@ -87,6 +93,8 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
 
         // 使用继承自 ServiceImpl 的 save 方法
         save(member);
+        // 更新会员数缓存
+        updateMemberCountCache();
         return member.getId();
     }
 
@@ -295,6 +303,8 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
 
         // 保存会员
         save(member);
+        // 更新会员数缓存
+        updateMemberCountCache();
 
         log.info("从 OAuth2 用户创建会员成功: memberId={}, username={}", member.getId(), member.getUsername());
         return member.getId();
@@ -381,5 +391,18 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
         }
 
         return username;
+    }
+
+    /**
+     * 更新会员数缓存
+     */
+    private void updateMemberCountCache() {
+        try {
+            long count = count();
+            cacheService.set(DASHBOARD_MEMBER_COUNT, "value", count, Duration.ofHours(CACHE_EXPIRE_HOURS));
+            log.debug("更新会员数缓存: count={}", count);
+        } catch (Exception e) {
+            log.warn("更新会员数缓存失败: {}", e.getMessage());
+        }
     }
 }

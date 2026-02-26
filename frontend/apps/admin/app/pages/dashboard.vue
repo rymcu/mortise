@@ -100,7 +100,7 @@ const statCards = computed(() => [
           </template>
           <div class="flex flex-wrap gap-2">
             <UButton
-              to="/system/users"
+              to="/systems/users"
               color="primary"
               variant="soft"
               icon="i-lucide-user"
@@ -108,7 +108,7 @@ const statCards = computed(() => [
               用户管理
             </UButton>
             <UButton
-              to="/system/roles"
+              to="/systems/roles"
               color="neutral"
               variant="soft"
               icon="i-lucide-shield"
@@ -116,7 +116,7 @@ const statCards = computed(() => [
               角色管理
             </UButton>
             <UButton
-              to="/system/menus"
+              to="/systems/menus"
               color="neutral"
               variant="soft"
               icon="i-lucide-layout-grid"

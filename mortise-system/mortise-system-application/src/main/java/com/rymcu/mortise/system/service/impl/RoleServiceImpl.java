@@ -14,6 +14,7 @@ import com.rymcu.mortise.system.model.BindRoleMenuInfo;
 import com.rymcu.mortise.system.model.BindRoleUserInfo;
 import com.rymcu.mortise.system.model.RoleSearch;
 import com.rymcu.mortise.system.service.RoleService;
+import com.rymcu.mortise.system.service.SystemCacheService;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,8 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     private RoleMenuMapper roleMenuMapper;
     @Resource
     private UserRoleMapper userRoleMapper;
+    @Resource
+    private SystemCacheService systemCacheService;
 
     @Override
     public List<Role> findRolesByIdUser(Long idUser) {
@@ -92,7 +95,11 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
 
     @Override
     public Boolean deleteRole(Long idRole) {
-        return mapper.deleteById(idRole) > 0;
+        boolean result = mapper.deleteById(idRole) > 0;
+        if (result) {
+            systemCacheService.cacheRoleCount(count());
+        }
+        return result;
     }
 
     @Override
@@ -100,7 +107,11 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
         if (idRoleList == null || idRoleList.isEmpty()) {
             return false;
         }
-        return mapper.deleteBatchByIds(idRoleList) > 0;
+        boolean result = mapper.deleteBatchByIds(idRoleList) > 0;
+        if (result) {
+            systemCacheService.cacheRoleCount(count());
+        }
+        return result;
     }
 
     /**
@@ -142,6 +153,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role> implements Ro
     @Transactional(rollbackFor = Exception.class)
     public Long createRole(Role role) {
         mapper.insertSelective(role);
+        systemCacheService.cacheRoleCount(count());
         return role.getId();
     }
 

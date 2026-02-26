@@ -316,4 +316,54 @@ public class SystemCacheServiceImpl implements SystemCacheService {
             log.debug("批量删除字典选项: count={}", dictTypeCodes.size());
         }
     }
+
+    // ==================== Dashboard 统计缓存 ====================
+
+    @Override
+    public void cacheUserCount(Long count) {
+        cacheService.set(SystemCacheConstant.DASHBOARD_USER_COUNT, "value", count,
+                Duration.ofHours(SystemCacheConstant.DASHBOARD_STATS_EXPIRE_HOURS));
+        log.debug("缓存用户数统计: count={}", count);
+    }
+
+    @Override
+    public Long getUserCount() {
+        return cacheService.get(SystemCacheConstant.DASHBOARD_USER_COUNT, "value", Long.class);
+    }
+
+    @Override
+    public void cacheRoleCount(Long count) {
+        cacheService.set(SystemCacheConstant.DASHBOARD_ROLE_COUNT, "value", count,
+                Duration.ofHours(SystemCacheConstant.DASHBOARD_STATS_EXPIRE_HOURS));
+        log.debug("缓存角色数统计: count={}", count);
+    }
+
+    @Override
+    public Long getRoleCount() {
+        return cacheService.get(SystemCacheConstant.DASHBOARD_ROLE_COUNT, "value", Long.class);
+    }
+
+    @Override
+    public void cacheMenuCount(Long count) {
+        cacheService.set(SystemCacheConstant.DASHBOARD_MENU_COUNT, "value", count,
+                Duration.ofHours(SystemCacheConstant.DASHBOARD_STATS_EXPIRE_HOURS));
+        log.debug("缓存菜单数统计: count={}", count);
+    }
+
+    @Override
+    public Long getMenuCount() {
+        return cacheService.get(SystemCacheConstant.DASHBOARD_MENU_COUNT, "value", Long.class);
+    }
+
+    @Override
+    public void cacheMemberCount(Long count) {
+        cacheService.set(SystemCacheConstant.DASHBOARD_MEMBER_COUNT, "value", count,
+                Duration.ofHours(SystemCacheConstant.DASHBOARD_STATS_EXPIRE_HOURS));
+        log.debug("缓存会员数统计: count={}", count);
+    }
+
+    @Override
+    public Long getMemberCount() {
+        return cacheService.get(SystemCacheConstant.DASHBOARD_MEMBER_COUNT, "value", Long.class);
+    }
 }

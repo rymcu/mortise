@@ -245,6 +245,33 @@ public class SystemCacheConstant {
     public static final String STATISTICS_CACHE = "statistics:data";
     public static final long STATISTICS_EXPIRE_HOURS = 6;
 
+    // ==================== Dashboard 统计缓存 ====================
+
+    /**
+     * 用户数统计缓存
+     */
+    public static final String DASHBOARD_USER_COUNT = "dashboard:user:count";
+
+    /**
+     * 角色数统计缓存
+     */
+    public static final String DASHBOARD_ROLE_COUNT = "dashboard:role:count";
+
+    /**
+     * 菜单数统计缓存
+     */
+    public static final String DASHBOARD_MENU_COUNT = "dashboard:menu:count";
+
+    /**
+     * 会员数统计缓存
+     */
+    public static final String DASHBOARD_MEMBER_COUNT = "dashboard:member:count";
+
+    /**
+     * Dashboard 统计缓存过期时间（小时）
+     */
+    public static final long DASHBOARD_STATS_EXPIRE_HOURS = 1;
+
     /**
      * OAuth2 临时用户信息
      */
