@@ -1,0 +1,12 @@
+services:
+  mortise-jar:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: mortise-jar:latest
+    container_name: mortise-jar
+    restart: unless-stopped
+    ports:
+      - "9999:8080"
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}

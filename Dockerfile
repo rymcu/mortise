@@ -1,4 +1,12 @@
-FROM eclipse-temurin:21-jre-alpine
+FROM harbor.atdak.com/library/maven:3.9-eclipse-temurin-21-alpine AS builder
+
+WORKDIR /workspace
+
+COPY . .
+
+RUN mvn -pl mortise-app -am clean package -DskipTests
+
+FROM harbor.atdak.com/library/eclipse-temurin:21-jre-alpine
 
 LABEL maintainer="rymcu.com"
 
@@ -11,8 +19,7 @@ WORKDIR /app
 
 RUN mkdir -p /logs/mortise/data
 
-ARG JAR_FILE=mortise-app/target/mortise.jar
-COPY ${JAR_FILE} /app/mortise.jar
+COPY --from=builder /workspace/mortise-app/target/mortise.jar /app/mortise.jar
 
 EXPOSE 8080
 
