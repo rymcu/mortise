@@ -2,10 +2,11 @@
 /**
  * 个人设置页面
  */
-const auth = useAuthStore()
-const user = computed(
-  () => (auth.session?.user as Record<string, unknown> | undefined) ?? {}
-)
+const { profile, fetchProfile } = useProfile()
+
+onMounted(() => {
+  fetchProfile()
+})
 </script>
 
 <template>
@@ -33,9 +34,9 @@ const user = computed(
               </div>
               <div>
                 <div class="font-medium">
-                  {{ user.nickname || user.account || '-' }}
+                  {{ profile?.nickname || profile?.account || '-' }}
                 </div>
-                <div class="text-muted text-sm">{{ user.email || '-' }}</div>
+                <div class="text-muted text-sm">{{ profile?.email || '-' }}</div>
               </div>
             </div>
 

@@ -3,48 +3,31 @@
  * 资料设置页面
  */
 
-interface ProfileInfo {
-  nickname: string
-  avatar: string | null
-  email: string | null
-  account: string
-  bio: string | null
-}
+const { profile, loading, error, fetchProfile, updateProfile } = useProfile()
 
-const { $api } = useNuxtApp()
-const auth = useAuthStore()
+// 如果没数据则获取（支持直接刷新访问）
+if (!profile.value) {
+  await fetchProfile()
+}
 
 const state = reactive({
   nickname: '',
   email: ''
 })
 
-const loading = ref(false)
-const pageLoading = ref(true)
-const submitError = ref('')
 const submitSuccess = ref('')
 
-// 从后端获取用户资料
-async function fetchProfile() {
-  pageLoading.value = true
-  try {
-    const res = await $api<{ code: number; data: ProfileInfo }>(
-      '/api/v1/admin/auth/profile'
-    )
-    if (res?.data) {
-      state.nickname = res.data.nickname || ''
-      state.email = res.data.email || ''
+// 响应式同步 profile 数据到表单
+watch(
+  () => profile.value,
+  (newProfile) => {
+    if (newProfile) {
+      state.nickname = newProfile.nickname || ''
+      state.email = newProfile.email || ''
     }
-  } catch (error) {
-    submitError.value = error instanceof Error ? error.message : '获取资料失败'
-  } finally {
-    pageLoading.value = false
-  }
-}
-
-onMounted(() => {
-  fetchProfile()
-})
+  },
+  { immediate: true }
+)
 
 const canSubmit = computed(() => {
   const nickname = state.nickname.trim()
@@ -61,37 +44,22 @@ const canSubmit = computed(() => {
 })
 
 async function onSubmit() {
-  submitError.value = ''
   submitSuccess.value = ''
 
   if (!canSubmit.value) {
-    submitError.value = '请检查昵称和邮箱格式后再提交'
+    error.value = '请检查昵称和邮箱格式后再提交'
     return
   }
 
-  loading.value = true
-  try {
-    await $api('/api/v1/admin/auth/profile', {
-      method: 'PUT',
-      body: {
-        nickname: state.nickname.trim(),
-        email: state.email.trim() || null
-      }
-    })
-    // 刷新用户会话信息
-    await auth.fetchCurrentUser()
+  const success = await updateProfile({
+    nickname: state.nickname.trim(),
+    email: state.email.trim() || null
+  })
+
+  if (success) {
     submitSuccess.value = '资料保存成功'
-  } catch (error) {
-    submitError.value = error instanceof Error ? error.message : '资料保存失败'
-  } finally {
-    loading.value = false
   }
 }
-
-// 使用 auth store 中的用户信息显示只读字段
-const user = computed(
-  () => (auth.session?.user as Record<string, unknown> | undefined) ?? {}
-)
 </script>
 
 <template>
@@ -119,10 +87,10 @@ const user = computed(
               </div>
               <div>
                 <div class="font-medium">
-                  {{ user.nickname || user.account || '-' }}
+                  {{ profile?.nickname || profile?.account || '-' }}
                 </div>
                 <div class="text-muted text-sm">
-                  {{ user.email || '-' }}
+                  {{ profile?.email || '-' }}
                 </div>
               </div>
             </div>
@@ -131,13 +99,7 @@ const user = computed(
               <div>
                 <div class="text-muted">账号</div>
                 <div class="font-medium">
-                  {{ user.account || '-' }}
-                </div>
-              </div>
-              <div>
-                <div class="text-muted">用户 ID</div>
-                <div class="font-medium">
-                  {{ user.id || '-' }}
+                  {{ profile?.account || '-' }}
                 </div>
               </div>
             </div>
@@ -179,7 +141,7 @@ const user = computed(
           variant="soft"
           :title="submitSuccess"
         />
-        <UAlert v-if="submitError" color="error" variant="soft" :title="submitError" />
+        <UAlert v-if="error" color="error" variant="soft" :title="error" />
       </div>
     </template>
   </UDashboardPanel>

@@ -58,3 +58,11 @@ export interface Range {
   start: Date
   end: Date
 }
+
+export interface ProfileInfo {
+  nickname: string
+  avatar: string | null
+  email: string | null
+  account: string
+  bio: string | null
+}
