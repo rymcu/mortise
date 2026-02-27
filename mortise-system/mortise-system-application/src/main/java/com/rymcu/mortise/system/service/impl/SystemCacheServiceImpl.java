@@ -3,7 +3,7 @@ package com.rymcu.mortise.system.service.impl;
 import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
 import com.rymcu.mortise.cache.service.CacheService;
 import com.rymcu.mortise.system.constant.SystemCacheConstant;
-import com.rymcu.mortise.system.model.auth.TokenUser;
+import com.rymcu.mortise.system.model.TokenUser;
 import com.rymcu.mortise.system.service.SystemCacheService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -328,7 +328,8 @@ public class SystemCacheServiceImpl implements SystemCacheService {
 
     @Override
     public Long getUserCount() {
-        return cacheService.get(SystemCacheConstant.DASHBOARD_USER_COUNT, "value", Long.class);
+        Number count = cacheService.get(SystemCacheConstant.DASHBOARD_USER_COUNT, "value", Number.class);
+        return count != null ? count.longValue() : 0L;
     }
 
     @Override
@@ -340,7 +341,8 @@ public class SystemCacheServiceImpl implements SystemCacheService {
 
     @Override
     public Long getRoleCount() {
-        return cacheService.get(SystemCacheConstant.DASHBOARD_ROLE_COUNT, "value", Long.class);
+        Number count = cacheService.get(SystemCacheConstant.DASHBOARD_ROLE_COUNT, "value", Number.class);
+        return count != null ? count.longValue() : 0L;
     }
 
     @Override
@@ -352,7 +354,8 @@ public class SystemCacheServiceImpl implements SystemCacheService {
 
     @Override
     public Long getMenuCount() {
-        return cacheService.get(SystemCacheConstant.DASHBOARD_MENU_COUNT, "value", Long.class);
+        Number count = cacheService.get(SystemCacheConstant.DASHBOARD_MENU_COUNT, "value", Number.class);
+        return count != null ? count.longValue() : 0L;
     }
 
     @Override
@@ -364,6 +367,7 @@ public class SystemCacheServiceImpl implements SystemCacheService {
 
     @Override
     public Long getMemberCount() {
-        return cacheService.get(SystemCacheConstant.DASHBOARD_MEMBER_COUNT, "value", Long.class);
+        Number count = cacheService.get(SystemCacheConstant.DASHBOARD_MEMBER_COUNT, "value", Number.class);
+        return count != null ? count.longValue() : 0L;
     }
 }

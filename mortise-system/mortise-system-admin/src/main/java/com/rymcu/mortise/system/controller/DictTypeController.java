@@ -9,7 +9,7 @@ import com.rymcu.mortise.log.annotation.OperationLog;
 import com.rymcu.mortise.system.entity.DictType;
 import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.model.DictTypeSearch;
-import com.rymcu.mortise.system.model.auth.UserDetailInfo;
+import com.rymcu.mortise.system.model.UserDetailInfo;
 import com.rymcu.mortise.system.service.DictTypeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;

@@ -1,7 +1,7 @@
 package com.rymcu.mortise.system.service;
 
 import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
-import com.rymcu.mortise.system.model.auth.TokenUser;
+import com.rymcu.mortise.system.model.TokenUser;
 
 import java.time.Duration;
 import java.util.Set;

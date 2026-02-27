@@ -7,7 +7,7 @@ import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.mapper.UserMapper;
-import com.rymcu.mortise.system.model.auth.UserDetailInfo;
+import com.rymcu.mortise.system.model.UserDetailInfo;
 import com.rymcu.mortise.system.service.PermissionService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;

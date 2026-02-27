@@ -1,13 +1,5 @@
 package com.rymcu.mortise.system.controller;
 
-import com.rymcu.mortise.system.model.UserProfileInfo;
-import com.rymcu.mortise.system.model.auth.AuthInfo;
-import com.rymcu.mortise.system.model.auth.ForgetPasswordInfo;
-import com.rymcu.mortise.system.model.auth.RefreshTokenInfo;
-import com.rymcu.mortise.system.model.auth.TokenUser;
-import com.rymcu.mortise.system.model.auth.UserDetailInfo;
-import com.rymcu.mortise.system.service.UserService;
-import com.rymcu.mortise.web.annotation.AdminController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.rymcu.mortise.auth.service.TokenManager;
@@ -19,8 +11,16 @@ import com.rymcu.mortise.log.annotation.ApiLog;
 import com.rymcu.mortise.log.annotation.OperationLog;
 import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.exception.AccountExistsException;
+import com.rymcu.mortise.system.model.AuthInfo;
+import com.rymcu.mortise.system.model.UserProfileInfo;
 import com.rymcu.mortise.system.model.auth.*;
+import com.rymcu.mortise.system.model.ForgetPasswordInfo;
+import com.rymcu.mortise.system.model.RefreshTokenInfo;
+import com.rymcu.mortise.system.model.TokenUser;
+import com.rymcu.mortise.system.model.UserDetailInfo;
 import com.rymcu.mortise.system.service.AuthService;
+import com.rymcu.mortise.system.service.UserService;
+import com.rymcu.mortise.web.annotation.AdminController;
 import com.rymcu.mortise.web.annotation.RateLimit;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -70,8 +70,8 @@ public class AuthController {
     })
     @RateLimit(limitForPeriod = 5, refreshPeriodSeconds = 300, message = "登录请求过于频繁，请 5 分钟后再试")
     @PostMapping("/login")
-        @ApiLog(value = "用户登录", recordRequestBody = false, recordResponseBody = false)
-        @OperationLog(module = "认证管理", operation = "用户登录", recordParams = false)
+    @ApiLog(value = "用户登录", recordRequestBody = false, recordResponseBody = false)
+    @OperationLog(module = "认证管理", operation = "用户登录", recordParams = false)
     public GlobalResult<TokenUser> login(
             @Parameter(description = "登录请求", required = true)
             @Valid @RequestBody LoginInfo loginInfo) {
@@ -90,8 +90,8 @@ public class AuthController {
     })
     @RateLimit(limitForPeriod = 3, refreshPeriodSeconds = 600, message = "注册请求过于频繁，请 10 分钟后再试")
     @PostMapping("/register")
-        @ApiLog(value = "用户注册", recordRequestBody = false)
-        @OperationLog(module = "认证管理", operation = "用户注册", recordParams = false, recordResult = true)
+    @ApiLog(value = "用户注册", recordRequestBody = false)
+    @OperationLog(module = "认证管理", operation = "用户注册", recordParams = false, recordResult = true)
     public GlobalResult<Boolean> register(
             @Parameter(description = "注册请求", required = true)
             @Valid @RequestBody RegisterInfo registerInfo) throws AccountExistsException {
@@ -115,8 +115,8 @@ public class AuthController {
     })
     @PostMapping("/refresh-token")
     @RateLimit(limitForPeriod = 20, refreshPeriodSeconds = 300, message = "刷新 Token 请求过于频繁，请 5 分钟后再试")
-        @ApiLog(value = "刷新Token", recordRequestBody = false, recordResponseBody = false)
-        @OperationLog(module = "认证管理", operation = "刷新Token", recordParams = false)
+    @ApiLog(value = "刷新Token", recordRequestBody = false, recordResponseBody = false)
+    @OperationLog(module = "认证管理", operation = "刷新Token", recordParams = false)
     public GlobalResult<TokenUser> refreshToken(
             @Parameter(description = "刷新 Token 请求", required = true)
             @Valid @RequestBody RefreshTokenInfo refreshTokenInfo) {
@@ -133,8 +133,8 @@ public class AuthController {
             @ApiResponse(responseCode = "200", description = "登出成功")
     })
     @PostMapping("/logout")
-        @ApiLog(value = "用户登出", recordRequestBody = false, recordResponseBody = false)
-        @OperationLog(module = "认证管理", operation = "用户登出", recordParams = false)
+    @ApiLog(value = "用户登出", recordRequestBody = false, recordResponseBody = false)
+    @OperationLog(module = "认证管理", operation = "用户登出", recordParams = false)
     public GlobalResult<?> logout(
             @AuthenticationPrincipal UserDetailInfo userDetails,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
@@ -265,6 +265,7 @@ public class AuthController {
     public GlobalResult<UserProfileInfo> getProfile(@AuthenticationPrincipal UserDetailInfo userDetails) {
         User user = userDetails.getUser();
         UserProfileInfo profileInfo = new UserProfileInfo();
+        profileInfo.setId(user.getId());
         profileInfo.setNickname(user.getNickname());
         profileInfo.setAvatar(user.getAvatar());
         profileInfo.setEmail(user.getEmail());

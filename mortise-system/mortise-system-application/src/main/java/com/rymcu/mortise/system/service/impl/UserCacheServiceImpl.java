@@ -3,7 +3,7 @@ package com.rymcu.mortise.system.service.impl;
 import com.rymcu.mortise.common.util.BeanCopierUtil;
 import com.rymcu.mortise.system.constant.SystemCacheConstant;
 import com.rymcu.mortise.system.entity.User;
-import com.rymcu.mortise.system.model.auth.AuthInfo;
+import com.rymcu.mortise.system.model.AuthInfo;
 import com.rymcu.mortise.system.service.MenuService;
 import com.rymcu.mortise.system.service.SystemCacheService;
 import com.rymcu.mortise.system.service.UserService;

@@ -4,8 +4,8 @@ import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
 import com.rymcu.mortise.common.model.Link;
 import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.exception.AccountExistsException;
-import com.rymcu.mortise.system.model.auth.AuthInfo;
-import com.rymcu.mortise.system.model.auth.TokenUser;
+import com.rymcu.mortise.system.model.AuthInfo;
+import com.rymcu.mortise.system.model.TokenUser;
 import jakarta.mail.MessagingException;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
 

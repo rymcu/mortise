@@ -1,7 +1,7 @@
 package com.rymcu.mortise.system.service;
 
 import com.rymcu.mortise.system.entity.User;
-import com.rymcu.mortise.system.model.auth.UserDetailInfo;
+import com.rymcu.mortise.system.model.UserDetailInfo;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.util.Optional;

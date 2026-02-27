@@ -1,4 +1,4 @@
-package com.rymcu.mortise.system.model.auth;
+package com.rymcu.mortise.system.model;
 
 
 import lombok.Data;

@@ -12,6 +12,8 @@ import lombok.Data;
 @Data
 public class UserProfileInfo {
 
+    private Long id;
+
     private String nickname;
 
     private String avatar;

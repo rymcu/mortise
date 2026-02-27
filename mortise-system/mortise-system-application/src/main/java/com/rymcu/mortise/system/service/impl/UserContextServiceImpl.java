@@ -2,7 +2,7 @@ package com.rymcu.mortise.system.service.impl;
 
 import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.system.entity.User;
-import com.rymcu.mortise.system.model.auth.UserDetailInfo;
+import com.rymcu.mortise.system.model.UserDetailInfo;
 import com.rymcu.mortise.system.service.UserContextService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;

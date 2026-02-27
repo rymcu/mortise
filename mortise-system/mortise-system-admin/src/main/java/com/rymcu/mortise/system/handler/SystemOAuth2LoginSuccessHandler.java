@@ -8,7 +8,7 @@ import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
 import com.rymcu.mortise.common.util.Utils;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.system.entity.User;
-import com.rymcu.mortise.system.model.auth.TokenUser;
+import com.rymcu.mortise.system.model.TokenUser;
 import com.rymcu.mortise.system.service.AuthService;
 import io.micrometer.common.util.StringUtils;
 import jakarta.servlet.http.HttpServletRequest;

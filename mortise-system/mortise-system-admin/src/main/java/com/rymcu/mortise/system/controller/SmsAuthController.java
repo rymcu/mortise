@@ -8,7 +8,7 @@ import com.rymcu.mortise.auth.service.SmsCodeService;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.log.annotation.ApiLog;
 import com.rymcu.mortise.log.annotation.OperationLog;
-import com.rymcu.mortise.system.model.auth.TokenUser;
+import com.rymcu.mortise.system.model.TokenUser;
 import com.rymcu.mortise.system.service.AuthService;
 import com.rymcu.mortise.web.annotation.RateLimit;
 import io.swagger.v3.oas.annotations.Operation;
