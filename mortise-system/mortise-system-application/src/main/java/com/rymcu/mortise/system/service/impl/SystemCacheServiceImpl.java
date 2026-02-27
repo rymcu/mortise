@@ -329,7 +329,7 @@ public class SystemCacheServiceImpl implements SystemCacheService {
     @Override
     public Long getUserCount() {
         Number count = cacheService.get(SystemCacheConstant.DASHBOARD_USER_COUNT, "value", Number.class);
-        return count != null ? count.longValue() : 0L;
+        return count != null ? count.longValue() : null;
     }
 
     @Override
@@ -342,7 +342,7 @@ public class SystemCacheServiceImpl implements SystemCacheService {
     @Override
     public Long getRoleCount() {
         Number count = cacheService.get(SystemCacheConstant.DASHBOARD_ROLE_COUNT, "value", Number.class);
-        return count != null ? count.longValue() : 0L;
+        return count != null ? count.longValue() : null;
     }
 
     @Override
@@ -355,7 +355,7 @@ public class SystemCacheServiceImpl implements SystemCacheService {
     @Override
     public Long getMenuCount() {
         Number count = cacheService.get(SystemCacheConstant.DASHBOARD_MENU_COUNT, "value", Number.class);
-        return count != null ? count.longValue() : 0L;
+        return count != null ? count.longValue() : null;
     }
 
     @Override
@@ -368,6 +368,6 @@ public class SystemCacheServiceImpl implements SystemCacheService {
     @Override
     public Long getMemberCount() {
         Number count = cacheService.get(SystemCacheConstant.DASHBOARD_MEMBER_COUNT, "value", Number.class);
-        return count != null ? count.longValue() : 0L;
+        return count != null ? count.longValue() : null;
     }
 }
