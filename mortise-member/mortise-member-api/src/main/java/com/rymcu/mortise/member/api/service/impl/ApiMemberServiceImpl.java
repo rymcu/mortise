@@ -281,10 +281,6 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
     public Long createMemberFromOAuth2(Member member) {
         log.debug("从 OAuth2 用户信息创建会员: nickname={}", member.getNickname());
 
-        if (member == null) {
-            throw new IllegalArgumentException("Member cannot be null");
-        }
-
         // 确保有用户名，如果没有则生成一个
         if (StringUtils.isBlank(member.getUsername())) {
             String generatedUsername = generateUniqueUsername();
