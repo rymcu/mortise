@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.EnableCaching;
+import org.springframework.cache.interceptor.CacheErrorHandler;
+import org.springframework.cache.interceptor.CachingConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -39,7 +41,7 @@ import java.util.*;
 @Configuration
 @EnableCaching
 @ConditionalOnClass(RedisTemplate.class)
-public class BaseCacheConfig {
+public class BaseCacheConfig implements CachingConfigurer {
 
     private final List<CacheConfigurer> cacheConfigurers;
 
@@ -49,6 +51,17 @@ public class BaseCacheConfig {
     @Autowired
     public BaseCacheConfig(Optional<List<CacheConfigurer>> configurersOptional) {
         this.cacheConfigurers = configurersOptional.orElse(null);
+    }
+
+    /**
+     * 注册弹性缓存错误处理器
+     * <p>
+     * 当 Redis 中存有旧格式缓存数据（缺少 {@code @class} 类型标识）时，
+     * 将反序列化异常视为缓存未命中并主动驱逐旧条目，避免 500 错误。
+     */
+    @Override
+    public CacheErrorHandler errorHandler() {
+        return new ResilientCacheErrorHandler();
     }
 
     /**
