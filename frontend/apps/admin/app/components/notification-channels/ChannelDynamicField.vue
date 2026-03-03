@@ -11,6 +11,8 @@ defineProps<{
 }>()
 
 defineEmits<{ 'update:modelValue': [value: string] }>()
+
+const showPassword = ref(false)
 </script>
 
 <template>
@@ -34,12 +36,25 @@ defineEmits<{ 'update:modelValue': [value: string] }>()
     <UInput
       v-else-if="field.type === 'PASSWORD'"
       :model-value="modelValue"
-      type="password"
+      :type="showPassword ? 'text' : 'password'"
       :placeholder="field.placeholder"
       autocomplete="new-password"
+      :ui="{ trailing: 'pe-1' }"
       class="w-full"
       @update:model-value="$emit('update:modelValue', $event)"
-    />
+    >
+      <template #trailing>
+        <UButton
+          color="neutral"
+          variant="link"
+          size="sm"
+          :icon="showPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+          :aria-label="showPassword ? '隐藏密码' : '显示密码'"
+          :aria-pressed="showPassword"
+          @click="showPassword = !showPassword"
+        />
+      </template>
+    </UInput>
     <!-- TEXT / EMAIL / NUMBER -->
     <UInput
       v-else

@@ -103,6 +103,9 @@ async function resetPassword(_event: FormSubmitEvent<ResetSchema>) {
     resetLoading.value = false
   }
 }
+
+const showPassword = ref(false)
+const showPasswordConfirm = ref(false)
 </script>
 
 <template>
@@ -180,19 +183,45 @@ async function resetPassword(_event: FormSubmitEvent<ResetSchema>) {
         <UFormField label="新密码" name="password" required>
           <UInput
             v-model="resetState.password"
-            type="password"
+            :type="showPassword ? 'text' : 'password'"
             placeholder="请输入新密码（至少 8 位）"
+            :ui="{ trailing: 'pe-1' }"
             class="w-full"
-          />
+          >
+            <template #trailing>
+              <UButton
+                color="neutral"
+                variant="link"
+                size="sm"
+                :icon="showPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+                :aria-label="showPassword ? '隐藏密码' : '显示密码'"
+                :aria-pressed="showPassword"
+                @click="showPassword = !showPassword"
+              />
+            </template>
+          </UInput>
         </UFormField>
 
         <UFormField label="确认新密码" name="passwordConfirm" required>
           <UInput
             v-model="resetState.passwordConfirm"
-            type="password"
+            :type="showPasswordConfirm ? 'text' : 'password'"
             placeholder="请再次输入新密码"
+            :ui="{ trailing: 'pe-1' }"
             class="w-full"
-          />
+          >
+            <template #trailing>
+              <UButton
+                color="neutral"
+                variant="link"
+                size="sm"
+                :icon="showPasswordConfirm ? 'i-lucide-eye-off' : 'i-lucide-eye'"
+                :aria-label="showPasswordConfirm ? '隐藏密码' : '显示密码'"
+                :aria-pressed="showPasswordConfirm"
+                @click="showPasswordConfirm = !showPasswordConfirm"
+              />
+            </template>
+          </UInput>
         </UFormField>
 
         <UButton type="submit" block :loading="resetLoading">重置密码</UButton>
