@@ -45,8 +45,11 @@ export function usePublicSiteConfig() {
   /** 系统 Logo URL（为空时降级显示图标） */
   const siteLogo = computed(() => resolveUrl(data.value?.values?.['site.logo'] || ''))
 
-  /** Favicon URL（为空时使用默认 /favicon.ico） */
-  const siteFavicon = computed(() => resolveUrl(data.value?.values?.['site.favicon'] || '/favicon.ico'))
+  /** Favicon URL（为空时使用默认 /favicon.ico，不经过 resolveUrl 以避免被拼接 apiBase） */
+  const siteFavicon = computed(() => {
+    const raw = data.value?.values?.['site.favicon'] || ''
+    return raw ? resolveUrl(raw) : '/favicon.ico'
+  })
 
   /** 全局 SEO 关键词 */
   const seoKeywords = computed(() => data.value?.values?.['seo.keywords'] ?? '')
