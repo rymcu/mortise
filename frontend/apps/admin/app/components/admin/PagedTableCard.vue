@@ -14,6 +14,9 @@ const props = withDefaults(
     total: number
     pageNum: number
     pageSize: number
+    totalPage?: number
+    hasNext?: boolean
+    hasPrevious?: boolean
     keyword: string
     searchPlaceholder?: string
     emptyText?: string
@@ -55,13 +58,13 @@ function cellText(row: Record<string, unknown>, key: string): string {
 }
 
 function prevPage() {
-  if (props.pageNum > 1) {
+  if (props.hasPrevious) {
     emit('update:pageNum', props.pageNum - 1)
   }
 }
 
 function nextPage() {
-  if (props.rows.length >= props.pageSize) {
+  if (props.hasNext) {
     emit('update:pageNum', props.pageNum + 1)
   }
 }
@@ -167,7 +170,7 @@ function nextPage() {
           <UButton
             color="neutral"
             variant="ghost"
-            :disabled="pageNum <= 1"
+            :disabled="!hasPrevious"
             @click="prevPage"
             >上一页</UButton
           >
@@ -175,7 +178,7 @@ function nextPage() {
           <UButton
             color="neutral"
             variant="ghost"
-            :disabled="rows.length < pageSize"
+            :disabled="!hasNext"
             @click="nextPage"
             >下一页</UButton
           >

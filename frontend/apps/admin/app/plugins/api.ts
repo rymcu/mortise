@@ -1,15 +1,21 @@
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig()
-  const auth = useAuthStore()
 
   const api = async <T>(
     request: string,
     options: Record<string, unknown> = {}
   ) => {
-    const retried = Boolean(options._retried)
-    const skipAuth = Boolean(options.skipAuth)
+    // 在每次请求时获取 auth store，确保 cookie 已正确初始化
+    const auth = useAuthStore()
+
+    // 排除自定义属性，避免传递给 $fetch
+    const { _retried, skipAuth, ...fetchOptions } = options as Record<string, unknown> & {
+      _retried?: boolean
+      skipAuth?: boolean
+    }
+    const retried = Boolean(_retried)
     const headers = {
-      ...(options.headers as Record<string, string> | undefined)
+      ...(fetchOptions.headers as Record<string, string> | undefined)
     }
 
     if (auth.authHeader && !skipAuth) {
@@ -18,7 +24,7 @@ export default defineNuxtPlugin(() => {
 
     try {
       return await $fetch<T>(request, {
-        ...options,
+        ...fetchOptions,
         baseURL: config.public.apiBase,
         headers
       })
@@ -36,7 +42,7 @@ export default defineNuxtPlugin(() => {
       }
 
       return $fetch<T>(request, {
-        ...options,
+        ...fetchOptions,
         baseURL: config.public.apiBase,
         headers: {
           ...headers,

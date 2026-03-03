@@ -414,4 +414,32 @@ public interface SystemCacheService {
      * @return 会员数，不存在返回 null
      */
     Long getMemberCount();
+
+    // ==================== 邮箱更换验证码缓存 ====================
+
+    /**
+     * 存储邮箱更换验证码（有效期 10 分钟）
+     *
+     * @param userId   当前用户 ID
+     * @param newEmail 目标新邮箱
+     * @param code     验证码
+     */
+    void storeEmailUpdateCode(Long userId, String newEmail, String code);
+
+    /**
+     * 获取邮箱更换验证码
+     *
+     * @param userId   当前用户 ID
+     * @param newEmail 目标新邮箱
+     * @return 验证码，不存在或已过期返回 null
+     */
+    String getEmailUpdateCode(Long userId, String newEmail);
+
+    /**
+     * 删除邮箱更换验证码（验证成功或取消时调用）
+     *
+     * @param userId   当前用户 ID
+     * @param newEmail 目标新邮箱
+     */
+    void removeEmailUpdateCode(Long userId, String newEmail);
 }

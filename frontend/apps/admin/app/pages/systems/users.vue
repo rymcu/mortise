@@ -29,6 +29,9 @@ const {
   pageNum,
   pageSize,
   total,
+  totalPage,
+  hasNext,
+  hasPrevious,
   keyword,
   load: loadUsers
 } = usePagedAdminResource<UserInfo>({
@@ -67,6 +70,9 @@ function openRoleModal(row: Record<string, unknown>) {
         :total="total"
         :page-num="pageNum"
         :page-size="pageSize"
+        :total-page="totalPage"
+        :has-next="hasNext"
+        :has-previous="hasPrevious"
         :keyword="keyword"
         show-actions
         search-placeholder="搜索账号/昵称"

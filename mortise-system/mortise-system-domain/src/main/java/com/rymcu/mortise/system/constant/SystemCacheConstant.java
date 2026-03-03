@@ -284,6 +284,12 @@ public class SystemCacheConstant {
     public static final String STANDARD_AUTH_TOKEN_USER = "auth:standard:auth_token_user";
     public static final long STANDARD_AUTH_TOKEN_USER_EXPIRE_MINUTES = 5;
 
+    /**
+     * 邮箱更换验证码缓存（key = userId:newEmail）
+     */
+    public static final String EMAIL_UPDATE_CODE_CACHE = "auth:email_update_code";
+    public static final long EMAIL_UPDATE_CODE_EXPIRE_MINUTES = 10;
+
     private SystemCacheConstant() {
         // 工具类禁止实例化
     }

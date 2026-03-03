@@ -10,4 +10,12 @@ export interface PageResult<T> {
   pageSize: number
   totalPage: number
   totalRow: number
+  maxPageSize?: number
+  optimizeCountQuery?: boolean
+  hasNext?: boolean
+  hasPrevious?: boolean
+  hasRecords?: boolean
+  offset?: number
 }
+
+

@@ -370,4 +370,27 @@ public class SystemCacheServiceImpl implements SystemCacheService {
         Number count = cacheService.get(SystemCacheConstant.DASHBOARD_MEMBER_COUNT, "value", Number.class);
         return count != null ? count.longValue() : null;
     }
+
+    // ==================== 邮箱更换验证码缓存 ====================
+
+    @Override
+    public void storeEmailUpdateCode(Long userId, String newEmail, String code) {
+        String key = userId + ":" + newEmail;
+        cacheService.set(SystemCacheConstant.EMAIL_UPDATE_CODE_CACHE, key, code,
+                Duration.ofMinutes(SystemCacheConstant.EMAIL_UPDATE_CODE_EXPIRE_MINUTES));
+        log.debug("存储邮箱更换验证码: userId={}, newEmail={}", userId, newEmail);
+    }
+
+    @Override
+    public String getEmailUpdateCode(Long userId, String newEmail) {
+        String key = userId + ":" + newEmail;
+        return cacheService.get(SystemCacheConstant.EMAIL_UPDATE_CODE_CACHE, key, String.class);
+    }
+
+    @Override
+    public void removeEmailUpdateCode(Long userId, String newEmail) {
+        String key = userId + ":" + newEmail;
+        cacheService.delete(SystemCacheConstant.EMAIL_UPDATE_CODE_CACHE, key);
+        log.debug("删除邮箱更换验证码: userId={}, newEmail={}", userId, newEmail);
+    }
 }

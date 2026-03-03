@@ -48,7 +48,7 @@ async function loadData() {
     // 并行加载：所有角色列表 + 用户已绑定角色
     const [pageResult, userRoles] = await Promise.all([
       fetchAdminPage<RoleItem>($api, '/api/v1/admin/roles', {
-        pageNum: 1,
+        pageNumber: 1,
         pageSize: 999
       }),
       fetchAdminGet<RoleItem[]>(

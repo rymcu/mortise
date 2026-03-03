@@ -25,8 +25,10 @@ import com.rymcu.mortise.system.model.UserProfileInfo;
 import com.rymcu.mortise.system.model.UserSearch;
 import com.rymcu.mortise.system.service.PermissionService;
 import com.rymcu.mortise.system.service.SystemCacheService;
+import com.rymcu.mortise.system.service.SystemNotificationService;
 import com.rymcu.mortise.system.service.UserService;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -53,6 +55,7 @@ import static com.rymcu.mortise.system.entity.table.UserTableDef.USER;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.service.impl
  */
+@Slf4j
 @Service
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
@@ -60,6 +63,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private PermissionService permissionService;
     @Resource
     private SystemCacheService systemCacheService;
+    @Resource
+    private SystemNotificationService systemNotificationService;
     @Resource
     private UserRoleMapper userRoleMapper;
     @Resource
@@ -246,16 +251,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public Boolean updateUserInfo(UserInfo userInfo) {
-        User user = mapper.selectOneById(userInfo.getId());
-        user.setNickname(checkNickname(userInfo.getNickname()));
-        user.setAvatar(userInfo.getAvatar().getSrc());
-        user.setEmail(userInfo.getEmail());
-        user.setPhone(userInfo.getPhone());
-        return mapper.update(user) > 0;
-    }
-
-    @Override
     public Boolean bindUserRole(BindUserRoleInfo bindUserRoleInfo) {
         int num = 0;
         // 先删除原有关系
@@ -331,8 +326,47 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (!user.getNickname().equals(userProfileInfo.getNickname())) {
             u.setNickname(checkNickname(userProfileInfo.getNickname()));
         }
-        u.setAvatar(userProfileInfo.getAvatar());
+        // 仅在头像非空时更新，避免覆盖原有头像
+        if (StringUtils.isNotBlank(userProfileInfo.getAvatar())) {
+            u.setAvatar(userProfileInfo.getAvatar());
+        }
+        // 邮箱更换须通过独立的验证流程（sendEmailUpdateCode / confirmEmailUpdate），此处不更新
         return mapper.update(u) > 0;
+    }
+
+    @Override
+    public void sendEmailUpdateCode(Long userId, String newEmail) {
+        // 校验新邮箱未被其他账号使用
+        User existing = findByAccount(newEmail);
+        if (existing != null) {
+            throw new BusinessException(ResultCode.EMAIL_EXISTS.getMessage());
+        }
+        String code = String.valueOf(Utils.genCode());
+        systemCacheService.storeEmailUpdateCode(userId, newEmail, code);
+        boolean sent = systemNotificationService.sendVerificationCodeEmail(newEmail, code);
+        if (!sent) {
+            // 发送失败时清除已存储的验证码，避免残留无效数据
+            systemCacheService.removeEmailUpdateCode(userId, newEmail);
+            throw new BusinessException(ResultCode.SEND_EMAIL_FAIL.getMessage());
+        }
+        log.info("邮箱更换验证码已发送: userId={}, newEmail={}", userId, newEmail);
+    }
+
+    @Override
+    public Boolean confirmEmailUpdate(Long userId, String newEmail, String code) {
+        String cachedCode = systemCacheService.getEmailUpdateCode(userId, newEmail);
+        if (cachedCode == null || !cachedCode.equals(code)) {
+            throw new BusinessException(ResultCode.INVALID_VERIFICATION_CODE.getMessage());
+        }
+        boolean updated = UpdateChain.of(User.class)
+                .set(User::getEmail, newEmail)
+                .where(User::getId).eq(userId)
+                .update();
+        if (updated) {
+            systemCacheService.removeEmailUpdateCode(userId, newEmail);
+            log.info("邮箱更换成功: userId={}, newEmail={}", userId, newEmail);
+        }
+        return updated;
     }
 
     @Override

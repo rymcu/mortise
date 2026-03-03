@@ -37,8 +37,9 @@ const {
   errorMessage: typesError,
   records: typeRecords,
   pageNum: typesPageNum,
-  pageSize: typesPageSize,
   total: typesTotal,
+  hasNext: typesHasNext,
+  hasPrevious: typesHasPrevious,
   keyword: typesKeyword,
   load: loadTypes
 } = usePagedAdminResource<DictTypeInfo>({
@@ -64,6 +65,9 @@ const dictRecords = ref<DictInfo[]>([])
 const dictPageNum = ref(1)
 const dictPageSize = ref(10)
 const dictTotal = ref(0)
+const dictTotalPage = ref(0)
+const dictHasNext = ref(false)
+const dictHasPrevious = ref(false)
 
 async function loadDicts() {
   if (!selectedType.value?.typeCode) {
@@ -79,12 +83,24 @@ async function loadDicts() {
       '/api/v1/admin/dictionaries',
       {
         dictTypeCode: selectedType.value.typeCode,
-        pageNum: dictPageNum.value,
+        pageNumber: dictPageNum.value,
         pageSize: dictPageSize.value
       }
     )
     dictRecords.value = page.records || []
     dictTotal.value = page.totalRow || 0
+    dictTotalPage.value = page.totalPage || 0
+
+    if (
+      typeof page.pageNumber === 'number' &&
+      page.pageNumber > 0 &&
+      page.pageNumber !== dictPageNum.value
+    ) {
+      dictPageNum.value = page.pageNumber
+    }
+
+    dictHasPrevious.value = Boolean(page.hasPrevious)
+    dictHasNext.value = Boolean(page.hasNext)
   } catch (err) {
     dictsError.value = err instanceof Error ? err.message : '加载字典数据失败'
   } finally {
@@ -151,16 +167,20 @@ function openDictDeleteModal(row: Record<string, unknown>) {
 
 // 分页导航
 function dictPrevPage() {
-  if (dictPageNum.value > 1) dictPageNum.value--
+  if (dictHasPrevious.value) dictPageNum.value--
 }
 function dictNextPage() {
-  if (dictRecords.value.length >= dictPageSize.value) dictPageNum.value++
+  if (dictHasNext.value) {
+    dictPageNum.value++
+  }
 }
 function typesPrevPage() {
-  if (typesPageNum.value > 1) typesPageNum.value--
+  if (typesHasPrevious.value) typesPageNum.value--
 }
 function typesNextPage() {
-  if (typeRecords.value.length >= typesPageSize.value) typesPageNum.value++
+  if (typesHasNext.value) {
+    typesPageNum.value++
+  }
 }
 </script>
 
@@ -283,7 +303,7 @@ function typesNextPage() {
                   color="neutral"
                   variant="ghost"
                   size="xs"
-                  :disabled="typesPageNum <= 1"
+                  :disabled="!typesHasPrevious"
                   @click="typesPrevPage"
                 >
                   上一页
@@ -292,7 +312,7 @@ function typesNextPage() {
                   color="neutral"
                   variant="ghost"
                   size="xs"
-                  :disabled="typeRecords.length < typesPageSize"
+                  :disabled="!typesHasNext"
                   @click="typesNextPage"
                 >
                   下一页
@@ -461,7 +481,7 @@ function typesNextPage() {
                   <UButton
                     color="neutral"
                     variant="ghost"
-                    :disabled="dictPageNum <= 1"
+                    :disabled="!dictHasPrevious"
                     @click="dictPrevPage"
                   >
                     上一页
@@ -470,7 +490,7 @@ function typesNextPage() {
                   <UButton
                     color="neutral"
                     variant="ghost"
-                    :disabled="dictRecords.length < dictPageSize"
+                    :disabled="!dictHasNext"
                     @click="dictNextPage"
                   >
                     下一页

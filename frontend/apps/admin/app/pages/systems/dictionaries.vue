@@ -36,7 +36,7 @@ async function loadDictTypes() {
       $api,
       '/api/v1/admin/dictionary-types',
       {
-        pageNum: 1,
+        pageNumber: 1,
         pageSize: 999
       }
     )
@@ -65,6 +65,9 @@ const {
   pageNum,
   pageSize,
   total,
+  totalPage,
+  hasNext,
+  hasPrevious,
   keyword,
   load: loadData
 } = usePagedAdminResource<DictInfo>({
@@ -116,6 +119,9 @@ function openDeleteModal(row: Record<string, unknown>) {
         :total="total"
         :page-num="pageNum"
         :page-size="pageSize"
+        :total-page="totalPage"
+        :has-next="hasNext"
+        :has-previous="hasPrevious"
         :keyword="keyword"
         show-actions
         search-placeholder="搜索标签/值"

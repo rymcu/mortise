@@ -171,7 +171,9 @@ public class AuthController {
     @ApiLog(value = "获取当前用户信息", recordRequestBody = false, recordResponseBody = false)
     public GlobalResult<ObjectNode> getUserSession(@AuthenticationPrincipal UserDetailInfo userDetails) {
         log.info("获取用户会话信息: {}", userDetails.getUsername());
-        AuthInfo authInfo = authService.userSession(userDetails.getUser());
+        // 从数据库取最新用户数据，避免资料更新（头像、昵称等）后仍返回 Principal 中的旧值
+        User freshUser = userService.findByAccount(userDetails.getUsername());
+        AuthInfo authInfo = authService.userSession(freshUser);
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode object = objectMapper.createObjectNode();
         object.set("user", objectMapper.valueToTree(authInfo));
@@ -263,7 +265,7 @@ public class AuthController {
     @GetMapping("/profile")
     @ApiLog(value = "获取当前用户资料", recordRequestBody = false, recordResponseBody = false)
     public GlobalResult<UserProfileInfo> getProfile(@AuthenticationPrincipal UserDetailInfo userDetails) {
-        User user = userDetails.getUser();
+        User user = userService.getOneByEntityId(userDetails.getUser());
         UserProfileInfo profileInfo = new UserProfileInfo();
         profileInfo.setId(user.getId());
         profileInfo.setNickname(user.getNickname());
@@ -291,6 +293,49 @@ public class AuthController {
         User user = userDetails.getUser();
         log.info("更新用户资料请求: {}", user.getAccount());
         Boolean result = userService.updateUserProfileInfo(userProfileInfo, user);
+        return GlobalResult.success(result);
+    }
+
+    /**
+     * 发送邮箱更换验证码
+     */
+    @Operation(summary = "发送邮箱更换验证码", description = "向新邮箱发送 6 位验证码（有效期 10 分钟），新邮箱须未被其他账号注册")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "发送成功"),
+            @ApiResponse(responseCode = "400", description = "邮箱已被注册"),
+            @ApiResponse(responseCode = "401", description = "未认证")
+    })
+    @RateLimit(limitForPeriod = 3, refreshPeriodSeconds = 300, message = "发送过于频繁，请 5 分钟后再试")
+    @PostMapping("/email/send-code")
+    @ApiLog(value = "发送邮箱更换验证码", recordRequestBody = false, recordResponseBody = false)
+    @OperationLog(module = "认证管理", operation = "发送邮箱更换验证码", recordParams = false, recordResult = false)
+    public GlobalResult<String> sendEmailUpdateCode(
+            @AuthenticationPrincipal UserDetailInfo userDetails,
+            @Valid @RequestBody EmailUpdateCodeRequest request) {
+        User user = userDetails.getUser();
+        log.info("发送邮箱更换验证码请求: userId={}", user.getId());
+        userService.sendEmailUpdateCode(user.getId(), request.newEmail());
+        return GlobalResult.success(ResultCode.SUCCESS.getMessage());
+    }
+
+    /**
+     * 确认邮箱更换
+     */
+    @Operation(summary = "确认邮箱更换", description = "提交验证码完成邮箱更换，验证码匹配后立即生效")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "更换成功"),
+            @ApiResponse(responseCode = "400", description = "验证码错误或已失效"),
+            @ApiResponse(responseCode = "401", description = "未认证")
+    })
+    @PutMapping("/email/confirm")
+    @ApiLog(value = "确认邮箱更换", recordRequestBody = false, recordResponseBody = false)
+    @OperationLog(module = "认证管理", operation = "确认邮箱更换", recordParams = false, recordResult = true)
+    public GlobalResult<Boolean> confirmEmailUpdate(
+            @AuthenticationPrincipal UserDetailInfo userDetails,
+            @Valid @RequestBody EmailUpdateConfirmInfo confirmInfo) {
+        User user = userDetails.getUser();
+        log.info("确认邮箱更换请求: userId={}", user.getId());
+        Boolean result = userService.confirmEmailUpdate(user.getId(), confirmInfo.newEmail(), confirmInfo.code());
         return GlobalResult.success(result);
     }
 

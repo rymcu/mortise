@@ -41,6 +41,9 @@ const searchKeyword = ref('')
 const pageNum = ref(1)
 const pageSize = ref(10)
 const total = ref(0)
+const totalPage = ref(0)
+const hasNext = ref(false)
+const hasPrevious = ref(false)
 
 async function loadData() {
   if (!props.role?.id) return
@@ -49,7 +52,7 @@ async function loadData() {
   try {
     const [pageResult, roleUsers] = await Promise.all([
       fetchAdminPage<UserItem>($api, '/api/v1/admin/users', {
-        pageNum: pageNum.value,
+        pageNumber: pageNum.value,
         pageSize: pageSize.value,
         keyword: searchKeyword.value || undefined
       }),
@@ -60,6 +63,16 @@ async function loadData() {
     ])
     allUsers.value = pageResult.records || []
     total.value = pageResult.totalRow || 0
+    totalPage.value = pageResult.totalPage || 0
+    if (
+      typeof pageResult.pageNumber === 'number' &&
+      pageResult.pageNumber > 0 &&
+      pageResult.pageNumber !== pageNum.value
+    ) {
+      pageNum.value = pageResult.pageNumber
+    }
+    hasPrevious.value = Boolean(pageResult.hasPrevious)
+    hasNext.value = Boolean(pageResult.hasNext)
     // 仅首次打开时初始化选中状态
     if (checkedIds.value.size === 0) {
       checkedIds.value = new Set((roleUsers || []).map((u) => u.id))
@@ -79,13 +92,23 @@ async function loadUsers() {
       $api,
       '/api/v1/admin/users',
       {
-        pageNum: pageNum.value,
+        pageNumber: pageNum.value,
         pageSize: pageSize.value,
         keyword: searchKeyword.value || undefined
       }
     )
     allUsers.value = pageResult.records || []
     total.value = pageResult.totalRow || 0
+    totalPage.value = pageResult.totalPage || 0
+    if (
+      typeof pageResult.pageNumber === 'number' &&
+      pageResult.pageNumber > 0 &&
+      pageResult.pageNumber !== pageNum.value
+    ) {
+      pageNum.value = pageResult.pageNumber
+    }
+    hasPrevious.value = Boolean(pageResult.hasPrevious)
+    hasNext.value = Boolean(pageResult.hasNext)
   } catch (err) {
     errorMessage.value = err instanceof Error ? err.message : '加载用户失败'
   } finally {
@@ -109,14 +132,14 @@ function handleSearch() {
 }
 
 function prevPage() {
-  if (pageNum.value > 1) {
+  if (hasPrevious.value) {
     pageNum.value--
     loadUsers()
   }
 }
 
 function nextPage() {
-  if (allUsers.value.length >= pageSize.value) {
+  if (hasNext.value) {
     pageNum.value++
     loadUsers()
   }
@@ -235,7 +258,7 @@ watch(
               color="neutral"
               variant="ghost"
               size="xs"
-              :disabled="pageNum <= 1"
+              :disabled="!hasPrevious"
               @click="prevPage"
             >
               上一页
@@ -245,7 +268,7 @@ watch(
               color="neutral"
               variant="ghost"
               size="xs"
-              :disabled="allUsers.length < pageSize"
+              :disabled="!hasNext"
               @click="nextPage"
             >
               下一页

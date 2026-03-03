@@ -65,7 +65,7 @@ async function loadDictTypes() {
     const data = await fetchAdminPage<Record<string, unknown>>(
       $api,
       '/api/v1/admin/dictionary-types',
-      { pageSize: 100 }
+      { pageNumber: 1, pageSize: 100 }
     )
     dictTypeItems.value = (data.records || []).map(
       (item: Record<string, unknown>) => ({

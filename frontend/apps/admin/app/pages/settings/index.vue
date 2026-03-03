@@ -20,7 +20,7 @@ onMounted(() => {
     </template>
 
     <template #body>
-      <div class="mx-auto max-w-2xl space-y-6">
+      <div class="space-y-6 p-4">
         <UCard>
           <template #header>
             <h3 class="text-lg font-semibold">个人资料</h3>

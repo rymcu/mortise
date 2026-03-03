@@ -35,10 +35,30 @@ export function useProfile() {
     }
   }
 
+  /** 上传头像，返回头像 URL */
+  async function uploadAvatar(file: File): Promise<string | null> {
+    loading.value = true
+    error.value = ''
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await $api<{ code: number; data: { url: string } }>(
+        '/api/v1/admin/files',
+        { method: 'POST', body: formData }
+      )
+      return res?.data?.url ?? null
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : '头像上传失败'
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
   /** 更新用户资料 */
   async function updateProfile(data: {
     nickname: string
-    email: string | null
+    avatar?: string | null
   }): Promise<boolean> {
     loading.value = true
     error.value = ''
@@ -49,11 +69,52 @@ export function useProfile() {
       })
       // 同步刷新用户会话信息
       await auth.fetchCurrentUser()
-      // 刷新本地资料数据
+      // 刷新本地资料数据（强制重新获取）
+      profile.value = null
       await fetchProfile()
       return true
     } catch (e) {
       error.value = e instanceof Error ? e.message : '保存资料失败'
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /** 重读:发送邮箱更换验证码 */
+  async function sendEmailUpdateCode(newEmail: string): Promise<boolean> {
+    loading.value = true
+    error.value = ''
+    try {
+      await $api('/api/v1/admin/auth/email/send-code', {
+        method: 'POST',
+        body: { newEmail }
+      })
+      return true
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : '发送验证码失败'
+      return false
+    } finally {
+      loading.value = false
+    }
+  }
+
+  /** 确认邮箱更换 */
+  async function confirmEmailUpdate(newEmail: string, code: string): Promise<boolean> {
+    loading.value = true
+    error.value = ''
+    try {
+      await $api('/api/v1/admin/auth/email/confirm', {
+        method: 'PUT',
+        body: { newEmail, code }
+      })
+      // 刷新会话和资料
+      await auth.fetchCurrentUser()
+      profile.value = null
+      await fetchProfile()
+      return true
+    } catch (e) {
+      error.value = e instanceof Error ? e.message : '邮箱更换失败'
       return false
     } finally {
       loading.value = false
@@ -65,6 +126,10 @@ export function useProfile() {
     loading: readonly(loading),
     error: readonly(error),
     fetchProfile,
-    updateProfile
+    uploadAvatar,
+    updateProfile,
+    sendEmailUpdateCode,
+    confirmEmailUpdate
   }
 }
+

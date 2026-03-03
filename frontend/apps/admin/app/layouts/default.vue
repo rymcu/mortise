@@ -58,10 +58,7 @@ const navItems = computed<NavigationMenuItem[]>(() => {
   ]
 })
 
-async function logout() {
-  auth.logout()
-  await navigateTo('/auth/login')
-}
+
 </script>
 
 <template>
@@ -90,16 +87,8 @@ async function logout() {
         />
       </template>
 
-      <template #footer>
-        <UButton
-          color="neutral"
-          variant="ghost"
-          icon="i-lucide-log-out"
-          class="w-full justify-start"
-          @click="logout"
-        >
-          退出登录
-        </UButton>
+      <template #footer="{ collapsed }">
+        <UserMenu :collapsed="collapsed" />
       </template>
     </UDashboardSidebar>
 
