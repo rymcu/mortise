@@ -24,3 +24,8 @@
 ## Language
 
 - Code comments, commit messages, and documentation should be in **Chinese (简体中文)** unless specified otherwise.
+
+## Agent Skills
+
+- Frontend skill files are located in `frontend/.claude/skills/` directory.
+- When working on frontend code, read the relevant skill files before implementing.

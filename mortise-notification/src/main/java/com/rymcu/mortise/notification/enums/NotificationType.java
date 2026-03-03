@@ -2,6 +2,9 @@ package com.rymcu.mortise.notification.enums;
 
 import lombok.Getter;
 
+import java.util.Arrays;
+import java.util.Optional;
+
 /**
  * 通知类型枚举
  *
@@ -41,6 +44,18 @@ public enum NotificationType {
     NotificationType(String code, String description) {
         this.code = code;
         this.description = description;
+    }
+
+    /**
+     * 根据 code 查找通知类型
+     *
+     * @param code 类型代码（如 "email"、"sms"）
+     * @return 对应的枚举值
+     */
+    public static Optional<NotificationType> fromCode(String code) {
+        return Arrays.stream(values())
+                .filter(t -> t.code.equalsIgnoreCase(code))
+                .findFirst();
     }
 
 }

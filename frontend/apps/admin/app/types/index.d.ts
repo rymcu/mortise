@@ -66,3 +66,34 @@ export interface ProfileInfo {
   account: string
   bio: string | null
 }
+
+/** 表单字段 UI 渲染类型（与后端 FormFieldType 对应） */
+export type FormFieldType = 'TEXT' | 'PASSWORD' | 'NUMBER' | 'BOOLEAN' | 'EMAIL' | 'SELECT'
+
+export interface ChannelFieldOption {
+  label: string
+  value: string
+}
+
+export interface ChannelFieldDef {
+  key: string
+  label: string
+  type: FormFieldType
+  required: boolean
+  placeholder?: string
+  defaultValue?: string
+  options?: ChannelFieldOption[]
+}
+
+export interface ChannelConfigVO {
+  channel: string
+  label: string
+  enabled: boolean
+  schema: ChannelFieldDef[]
+  values: Record<string, string>
+}
+
+export interface ChannelConfigSaveRequest {
+  enabled: boolean
+  values: Record<string, string>
+}

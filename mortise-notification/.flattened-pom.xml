@@ -23,6 +23,10 @@
       <artifactId>mortise-common</artifactId>
     </dependency>
     <dependency>
+      <groupId>com.rymcu</groupId>
+      <artifactId>mortise-persistence</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-mail</artifactId>
     </dependency>

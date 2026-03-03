@@ -23,6 +23,12 @@
             <artifactId>mortise-common</artifactId>
         </dependency>
 
+        <!-- Mortise Persistence（提供 MyBatis-Flex 支持，用于渠道配置持久化） -->
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-persistence</artifactId>
+        </dependency>
+
         <!-- Spring Boot Mail -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
