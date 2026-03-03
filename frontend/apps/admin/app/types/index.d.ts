@@ -118,3 +118,98 @@ export interface SiteConfigSaveRequest {
 export interface SiteConfigPublicVO {
   values: Record<string, string>
 }
+
+// ─── 文件管理类型 ──────────────────────────────────────────────────────────────
+
+export interface FileDetail {
+  id: number
+  url: string
+  size?: number
+  filename?: string
+  originalFilename?: string
+  basePath?: string
+  path?: string
+  ext?: string
+  contentType?: string
+  platform?: string
+  thUrl?: string
+  createTime?: string
+}
+
+// ─── 日志类型 ─────────────────────────────────────────────────────────────────
+
+export interface OperationLog {
+  id: number
+  traceId?: string
+  clientType?: string
+  module?: string
+  operation?: string
+  operatorId?: number
+  operatorAccount?: string
+  operateTime?: string
+  requestUri?: string
+  requestMethod?: string
+  params?: string
+  result?: string
+  ip?: string
+  duration?: number
+  success?: boolean
+  errorMsg?: string
+}
+
+export interface ApiLog {
+  id: number
+  traceId?: string
+  clientType?: string
+  apiDescription?: string
+  className?: string
+  methodName?: string
+  userId?: number
+  username?: string
+  requestTime?: string
+  requestUri?: string
+  requestMethod?: string
+  queryString?: string
+  requestBody?: string
+  responseBody?: string
+  httpStatus?: number
+  clientIp?: string
+  userAgent?: string
+  duration?: number
+  success?: boolean
+  errorMsg?: string
+}
+
+// ─── 监控类型 ────────────────────────────────────────────────────────────────
+
+export interface HealthComponent {
+  status: string
+  details?: Record<string, unknown>
+}
+
+export interface HealthResponse {
+  status: string
+  components?: Record<string, HealthComponent>
+}
+
+export interface MetricMeasurement {
+  statistic: string
+  value: number
+}
+
+export interface MetricResponse {
+  name: string
+  measurements: MetricMeasurement[]
+}
+
+export interface InfoResponse {
+  app?: {
+    name?: string
+    version?: string
+    description?: string
+  }
+  java?: {
+    version?: string
+  }
+  [key: string]: unknown
+}
