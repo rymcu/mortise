@@ -12,6 +12,8 @@ export function usePublicSiteConfig() {
   const baseURL = config.public.apiBase as string | undefined
   const { resolveUrl } = useMediaUrl()
 
+  const nuxtApp = useNuxtApp()
+
   const { data, pending, error } = useAsyncData<SiteConfigPublicVO | null>(
     'site-config-public',
     async () => {
@@ -26,7 +28,12 @@ export function usePublicSiteConfig() {
         return null
       }
     },
-    { server: true, lazy: false }
+    {
+      server: true,
+      lazy: false,
+      // 有缓存时直接返回，避免客户端路由跳转时重复请求
+      getCachedData: (key) => nuxtApp.payload.data[key] ?? nuxtApp.static.data[key]
+    }
   )
 
   /** 系统名称，默认 Mortise */
