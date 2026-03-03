@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
          https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
@@ -17,16 +17,16 @@
     <description>Mortise Notification - 通知模块</description>
 
     <dependencies>
-        <!-- Mortise Common -->
-        <dependency>
-            <groupId>com.rymcu</groupId>
-            <artifactId>mortise-common</artifactId>
-        </dependency>
-
         <!-- Mortise Persistence（提供 MyBatis-Flex 支持，用于渠道配置持久化） -->
         <dependency>
             <groupId>com.rymcu</groupId>
             <artifactId>mortise-persistence</artifactId>
+        </dependency>
+
+        <!-- Mortise Core（提供 jasyptStringEncryptor，用于敏感配置加密存储） -->
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-core</artifactId>
         </dependency>
 
         <!-- Spring Boot Mail -->

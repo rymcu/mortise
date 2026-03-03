@@ -20,11 +20,11 @@
   <dependencies>
     <dependency>
       <groupId>com.rymcu</groupId>
-      <artifactId>mortise-common</artifactId>
+      <artifactId>mortise-persistence</artifactId>
     </dependency>
     <dependency>
       <groupId>com.rymcu</groupId>
-      <artifactId>mortise-persistence</artifactId>
+      <artifactId>mortise-core</artifactId>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>

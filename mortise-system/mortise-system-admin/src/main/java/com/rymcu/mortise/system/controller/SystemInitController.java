@@ -125,7 +125,7 @@ public class SystemInitController {
     @PostMapping("/initialize")
     @ApiLog(recordRequestBody = false, recordResponseBody = false, recordParams = false, value = "执行系统初始化")
     @OperationLog(module = "系统初始化", operation = "执行系统初始化", recordParams = false, recordResult = false)
-    public GlobalResult<String> initializeSystem(@org.springframework.web.bind.annotation.RequestBody SystemInitInfo initInfo) {
+    public GlobalResult<String> initializeSystem(@RequestBody SystemInitInfo initInfo) {
         // 检查是否已初始化
         if (systemInitService.isSystemInitialized()) {
             return GlobalResult.error("系统已经初始化，无法重复初始化");
