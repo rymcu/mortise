@@ -68,14 +68,15 @@ export interface ProfileInfo {
 }
 
 /** 表单字段 UI 渲染类型（与后端 FormFieldType 对应） */
-export type FormFieldType = 'TEXT' | 'PASSWORD' | 'NUMBER' | 'BOOLEAN' | 'EMAIL' | 'SELECT'
+export type FormFieldType = 'TEXT' | 'PASSWORD' | 'NUMBER' | 'BOOLEAN' | 'EMAIL' | 'SELECT' | 'IMAGE'
 
 export interface ChannelFieldOption {
   label: string
   value: string
 }
 
-export interface ChannelFieldDef {
+/** 通用动态表单字段定义（可复用于通知渠道、网站配置等场景） */
+export interface FormFieldDef {
   key: string
   label: string
   type: FormFieldType
@@ -85,15 +86,35 @@ export interface ChannelFieldDef {
   options?: ChannelFieldOption[]
 }
 
+/** @deprecated 使用 FormFieldDef 代替 */
+export interface ChannelFieldDef extends FormFieldDef {}
+
 export interface ChannelConfigVO {
   channel: string
   label: string
   enabled: boolean
-  schema: ChannelFieldDef[]
+  schema: FormFieldDef[]
   values: Record<string, string>
 }
 
 export interface ChannelConfigSaveRequest {
   enabled: boolean
+  values: Record<string, string>
+}
+
+// ─── 网站配置类型 ──────────────────────────────────────────────────────────
+
+export interface SiteConfigGroupVO {
+  group: string
+  label: string
+  schema: FormFieldDef[]
+  values: Record<string, string>
+}
+
+export interface SiteConfigSaveRequest {
+  values: Record<string, string>
+}
+
+export interface SiteConfigPublicVO {
   values: Record<string, string>
 }

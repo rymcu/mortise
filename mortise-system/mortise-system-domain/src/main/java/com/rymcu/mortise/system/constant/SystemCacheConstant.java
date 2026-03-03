@@ -290,6 +290,20 @@ public class SystemCacheConstant {
     public static final String EMAIL_UPDATE_CODE_CACHE = "auth:email_update_code";
     public static final long EMAIL_UPDATE_CODE_EXPIRE_MINUTES = 10;
 
+    // ==================== 网站配置缓存 ====================
+
+    /**
+     * 网站配置（按组）缓存，key = configGroup
+     */
+    public static final String SITE_CONFIG_GROUP_CACHE = "site:config:group";
+    public static final long SITE_CONFIG_GROUP_EXPIRE_HOURS = 1;
+
+    /**
+     * 网站公开配置缓存（聚合全部公开 key-value）
+     */
+    public static final String SITE_CONFIG_PUBLIC_CACHE = "site:config:public";
+    public static final long SITE_CONFIG_PUBLIC_EXPIRE_HOURS = 1;
+
     private SystemCacheConstant() {
         // 工具类禁止实例化
     }

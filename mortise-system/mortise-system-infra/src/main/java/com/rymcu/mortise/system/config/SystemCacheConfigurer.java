@@ -129,6 +129,13 @@ public class SystemCacheConfigurer implements CacheConfigurer {
         configs.put(SystemCacheConstant.ACCOUNT_LOCK_CACHE,
                 defaultConfig.entryTtl(Duration.ofHours(SystemCacheConstant.ACCOUNT_LOCK_EXPIRE_HOURS)));
 
+        // === 网站配置缓存 ===
+        configs.put(SystemCacheConstant.SITE_CONFIG_GROUP_CACHE,
+                defaultConfig.entryTtl(Duration.ofHours(SystemCacheConstant.SITE_CONFIG_GROUP_EXPIRE_HOURS)));
+
+        configs.put(SystemCacheConstant.SITE_CONFIG_PUBLIC_CACHE,
+                defaultConfig.entryTtl(Duration.ofHours(SystemCacheConstant.SITE_CONFIG_PUBLIC_EXPIRE_HOURS)));
+
         log.info("系统缓存配置已加载: {} 个缓存策略", configs.size());
 
         return configs;

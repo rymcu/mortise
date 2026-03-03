@@ -5,6 +5,8 @@ import type { MenuLink } from '~/stores/auth'
 const auth = useAuthStore()
 const open = ref(false)
 
+const { siteName, siteLogo } = usePublicSiteConfig()
+
 // 登录后自动加载菜单
 onMounted(async () => {
   if (auth.isAuthenticated && (auth.userMenus ?? []).length === 0) {
@@ -71,9 +73,29 @@ const navItems = computed<NavigationMenuItem[]>(() => {
       class="bg-elevated/25"
       :ui="{ footer: 'lg:border-t lg:border-default' }"
     >
-      <template #header>
-        <div class="text-highlighted px-2 py-1 text-sm font-semibold">
-          Mortise Admin
+      <template #header="{ collapsed }">
+        <div
+            class="flex w-full items-center"
+            :class="collapsed ? 'justify-center' : 'justify-between'"
+        >
+          <NuxtLink
+              to="/"
+              class="text-highlighted flex items-end gap-1.5"
+              @click="open = false"
+          >
+            <img
+                v-if="siteLogo"
+                :src="siteLogo"
+                :alt="siteName"
+                class="size-6 shrink-0 object-contain"
+            />
+            <UIcon
+                v-else
+                name="i-lucide-sparkles"
+                class="text-primary size-6 shrink-0"
+            />
+            <span v-if="!collapsed" class="text-lg font-bold">{{ siteName }}</span>
+          </NuxtLink>
         </div>
       </template>
 

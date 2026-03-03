@@ -36,5 +36,11 @@ public enum FormFieldType {
     EMAIL,
 
     /** 下拉选择框，字段定义中需提供 options 列表 */
-    SELECT
+    SELECT,
+
+    /**
+     * 图片上传控件，接口返回已存储的文件相对路径；
+     * 前端渲染为缩略图预览 + 上传按钮，上传成功后将文件 URL 写回 value
+     */
+    IMAGE
 }
