@@ -494,21 +494,33 @@ redis-server
 
 #### 4️⃣ 配置应用
 
-编辑配置文件 `mortise-app/src/main/resources/application-dev.yml`：
+**设置加密密钥**（必须，配置文件中使用了 `ENC(...)` 加密的敏感值均依赖此变量）：
+
+```bash
+# Linux / macOS
+export ENCRYPTION_KEY=your_secret_key
+
+# PowerShell
+$env:ENCRYPTION_KEY = "your_secret_key"
+```
+
+编辑配置文件 `mortise-app/src/main/resources/application-dev.yml`，将数据库/Redis 地址改为本地实际地址：
 
 ```yaml
 spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/mortise
     username: mortise
-    password: your_password
+    password: your_password    # 或使用 ENC(密文) 格式，见 Jasypt 加密说明
   
   data:
     redis:
       host: localhost
       port: 6379
-      # password: your_redis_password  # 如有密码
+      # password: your_redis_password
 ```
+
+> 📖 Jasypt 配置加密详见：[docs/quickstart/QUICK_START.md#5-jasypt-敏感配置加密](docs/quickstart/QUICK_START.md)
 
 #### 5️⃣ 编译项目
 
