@@ -1,6 +1,7 @@
 [
   { "label": "首页", "permission": "home", "icon": "i-lucide-house", "href": "/", "menuType": 1, "sortNo": 1, "parentPermission": null },
   { "label": "收件箱", "permission": "inbox", "icon": "i-lucide-inbox", "href": "/inbox", "menuType": 1, "sortNo": 2, "parentPermission": null },
+  { "label": "会员", "permission": "member", "icon": "i-lucide-users", "href": "/members", "menuType": 2, "sortNo": 3, "parentPermission": null },
   { "label": "系统", "permission": "system", "icon": "i-lucide-settings-2", "href": "/systems", "menuType": 0, "sortNo": 10, "parentPermission": null },
   { "label": "设置", "permission": "settings", "icon": "i-lucide-settings", "href": "/settings", "menuType": 0, "sortNo": 1000, "parentPermission": null },
 
@@ -36,9 +37,7 @@
   { "label": "编辑客户端", "permission": "system:oauth2-client:edit", "icon": "i-lucide-pencil", "href": "", "menuType": 2, "sortNo": 2, "parentPermission": "system:oauth2-client" },
   { "label": "删除客户端", "permission": "system:oauth2-client:delete", "icon": "i-lucide-trash-2", "href": "", "menuType": 2, "sortNo": 3, "parentPermission": "system:oauth2-client" },
 
-  { "label": "素材", "permission": "system:media", "icon": "i-lucide-file", "href": "/systems/media", "menuType": 1, "sortNo": 100, "parentPermission": "system" },
-  { "label": "上传素材", "permission": "system:media:upload", "icon": "i-lucide-upload", "href": "", "menuType": 2, "sortNo": 1, "parentPermission": "system:media" },
-  { "label": "删除素材", "permission": "system:media:delete", "icon": "i-lucide-trash-2", "href": "", "menuType": 2, "sortNo": 2, "parentPermission": "system:media" },
+  { "label": "通知渠道配置", "permission": "system:notification-channel", "icon": "i-lucide-bell", "href": "/systems/notification-channels", "menuType": 2, "sortNo": 7, "parentPermission": "system" },
 
   { "label": "资料", "permission": "settings:profile", "icon": "i-lucide-user", "href": "/settings", "menuType": 1, "sortNo": 1, "parentPermission": "settings" },
   { "label": "消息", "permission": "settings:notifications", "icon": "i-lucide-bell-ring", "href": "/settings/notifications", "menuType": 1, "sortNo": 2, "parentPermission": "settings" },
