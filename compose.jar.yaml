@@ -11,3 +11,5 @@ services:
     environment:
       TZ: ${TZ:-Asia/Shanghai}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+    volumes:
+      - ./app/files:/app/files
