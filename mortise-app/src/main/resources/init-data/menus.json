@@ -39,6 +39,17 @@
 
   { "label": "通知渠道配置", "permission": "system:notification-channel", "icon": "i-lucide-bell", "href": "/systems/notification-channels", "menuType": 2, "sortNo": 7, "parentPermission": "system" },
 
+  { "label": "操作日志", "permission": "system:operation-log", "icon": "i-lucide-scroll-text", "href": "/systems/operation-logs", "menuType": 2, "sortNo": 8, "parentPermission": "system" },
+  { "label": "删除操作日志", "permission": "system:operation-log:delete", "icon": "i-lucide-trash-2", "href": "", "menuType": 3, "sortNo": 1, "parentPermission": "system:operation-log" },
+
+  { "label": "API 日志", "permission": "system:api-log", "icon": "i-lucide-activity", "href": "/systems/api-logs", "menuType": 2, "sortNo": 9, "parentPermission": "system" },
+  { "label": "删除 API 日志", "permission": "system:api-log:delete", "icon": "i-lucide-trash-2", "href": "", "menuType": 3, "sortNo": 1, "parentPermission": "system:api-log" },
+
+  { "label": "缓存管理", "permission": "system:cache", "icon": "i-lucide-database-zap", "href": "/systems/cache", "menuType": 2, "sortNo": 10, "parentPermission": "system" },
+
+  { "label": "文件管理", "permission": "system:file", "icon": "i-lucide-folder-open", "href": "/systems/files", "menuType": 2, "sortNo": 11, "parentPermission": "system" },
+  { "label": "删除文件", "permission": "system:file:delete", "icon": "i-lucide-trash-2", "href": "", "menuType": 3, "sortNo": 1, "parentPermission": "system:file" },
+
   { "label": "网站配置", "permission": "system:website-config", "icon": "i-lucide-globe", "href": "/systems/website-config", "menuType": 2, "sortNo": 999, "parentPermission": "system" },
 
   { "label": "资料", "permission": "settings:profile", "icon": "i-lucide-user", "href": "/settings", "menuType": 1, "sortNo": 1, "parentPermission": "settings" },
@@ -49,5 +60,8 @@
   { "label": "微信账户", "permission": "wechat:account", "icon": "i-lucide-contact", "href": "/systems/wechat-accounts", "menuType": 1, "sortNo": 1, "parentPermission": "wechat" },
   { "label": "新增账户", "permission": "wechat:account:add", "icon": "i-lucide-plus", "href": "", "menuType": 2, "sortNo": 1, "parentPermission": "wechat:account" },
   { "label": "编辑账户", "permission": "wechat:account:edit", "icon": "i-lucide-pencil", "href": "", "menuType": 2, "sortNo": 2, "parentPermission": "wechat:account" },
-  { "label": "删除账户", "permission": "wechat:account:delete", "icon": "i-lucide-trash-2", "href": "", "menuType": 2, "sortNo": 3, "parentPermission": "wechat:account" }
+  { "label": "删除账户", "permission": "wechat:account:delete", "icon": "i-lucide-trash-2", "href": "", "menuType": 2, "sortNo": 3, "parentPermission": "wechat:account" },
+
+  { "label": "监控", "permission": "monitor", "icon": "i-lucide-monitor-dot", "href": "/monitor", "menuType": 1, "sortNo": 11, "parentPermission": null },
+  { "label": "系统监控", "permission": "monitor:system", "icon": "i-lucide-cpu", "href": "/monitor", "menuType": 2, "sortNo": 1, "parentPermission": "monitor" }
 ]

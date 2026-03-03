@@ -41,6 +41,11 @@ pnpm dev:admin
 | `/admin/systems/notification-channels` | 通知渠道配置 | ✅ |
 | `/admin/systems/wechat-accounts` | 微信公众号管理 | ✅ |
 | `/admin/systems/site-config` | 站点全局配置 | ✅ |
+| `/admin/systems/operation-logs` | 操作日志 | ✅ |
+| `/admin/systems/api-logs` | API 访问日志 | ✅ |
+| `/admin/systems/cache` | 缓存管理 | ✅ |
+| `/admin/systems/files` | 文件管理 | ✅ |
+| `/admin/monitor` | 系统监控（Actuator） | ✅ |
 | `/admin/settings` | 个人设置（资料/通知/安全） | ✅ |
 | `/admin/inbox` | 消息中心 | ✅ |
 | `/admin/setup` | 初始化引导 | ✅ |

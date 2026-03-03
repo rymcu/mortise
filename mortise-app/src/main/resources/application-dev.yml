@@ -109,7 +109,7 @@ management:
     web:
       exposure:
         # 暴露所有监控端点，生产环境建议只暴露必要的端点
-        include: "health,ratelimiters,info"
+        include: "health,ratelimiters,info,metrics"
         # 排除敏感端点（可根据需要调整）
         exclude: shutdown
       base-path: /actuator
