@@ -7,10 +7,11 @@ const open = ref(false)
 
 const { siteName, siteLogo } = usePublicSiteConfig()
 
-// 登录后自动加载菜单
+// sessionRestore.client.ts 插件在页面刷新/新标签页时已阻塞等待数据加载完成。
+// 此处 onMounted 仅兜底：SPA 内登录成功后首次进入 layout，无页面刷新的场景。
 onMounted(async () => {
   if (auth.isAuthenticated && (auth.userMenus ?? []).length === 0) {
-    await auth.fetchMenus()
+    await auth.restoreSession()
   }
 })
 

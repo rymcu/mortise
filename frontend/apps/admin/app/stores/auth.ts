@@ -242,6 +242,27 @@ export const useAuthStore = defineStore('admin-auth', () => {
     }
   }
 
+  /**
+   * 刷新页面或从后台恢复时重建 pinia 运行时状态：
+   * 1. 刷新后端用户信息（确保 cookie 中的用户数据最新）
+   * 2. 若菜单为空则重新加载（解决刷新页面 pinia 数据丢失问题）
+   *
+   * 注意：cookie 中的 token/user 数据在刷新后自动可用，无需额外操作。
+   * 此方法仅补充纯内存的 Pinia 响应式状态（如 userMenus）。
+   */
+  async function restoreSession() {
+    if (!isAuthenticated.value) return
+    // 并发执行：刷新用户信息 + 加载菜单
+    await Promise.all([
+      fetchCurrentUser({ noRetryOnUnauthorized: false }),
+      (async () => {
+        if ((userMenus.value ?? []).length === 0) {
+          await fetchMenus()
+        }
+      })()
+    ])
+  }
+
   return {
     // State
     loading,
@@ -260,6 +281,7 @@ export const useAuthStore = defineStore('admin-auth', () => {
     startOAuthLogin,
     fetchMenus,
     fetchCurrentUser,
+    restoreSession,
     setSessionUser,
     logout,
     buildClient

@@ -20,9 +20,10 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      // 优先用环境变量，默认本地开发地址
-      // apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://192.168.88.243:9999/mortise',
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:9999/mortise',
+      // 优先用环境变量；开发时使用相对路径 /mortise，经由 Vite 代理转发（消除 CORS）
+      // 生产部署时必须通过 NUXT_PUBLIC_API_BASE 指定后端完整地址，如：
+      //   NUXT_PUBLIC_API_BASE=https://api.example.com/mortise
+      apiBase: process.env.NUXT_PUBLIC_API_BASE ?? '/mortise',
       auth: {
         loginPath: '/api/v1/admin/auth/login',
         refreshPath: '/api/v1/admin/auth/refresh-token',
@@ -40,6 +41,21 @@ export default defineNuxtConfig({
   },
 
   compatibilityDate: '2024-07-11',
+
+  /**
+   * 开发时通过 Vite 代理将 /mortise/** 请求转发到后端，避免浏览器 CORS 限制。
+   * 生产环境无此代理，需通过 nginx 或 NUXT_PUBLIC_API_BASE 配置后端地址。
+   */
+  vite: {
+    server: {
+      proxy: {
+        '/mortise': {
+          target: 'http://localhost:9999',
+          changeOrigin: true
+        }
+      }
+    }
+  },
 
   eslint: {
     config: {
