@@ -34,6 +34,8 @@ public class SystemSecurityConfigurer implements SecurityConfigurer {
     ) {
         // 系统初始化 API - 无需认证（@AdminController 自动加 /api/v1/admin 前缀）
         registry.requestMatchers("/api/v1/admin/system-init/**").permitAll();
+        // 网站公开信息 API - 无需认证（@AdminController 自动加 /api/v1/admin 前缀）
+        registry.requestMatchers("/api/v1/admin/system/site-config/public").permitAll();
         // 认证相关 API - 无需认证
         registry.requestMatchers("/api/v1/admin/auth/login").permitAll();
         registry.requestMatchers("/api/v1/admin/auth/register").permitAll();
