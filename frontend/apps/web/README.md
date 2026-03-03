@@ -1,43 +1,48 @@
-# apps/web Plan
+# apps/web — 用户端 / 会员端
 
-用户端（会员端/H5），承载会员认证与个人业务操作。
+面向终端用户的 H5/Web 应用，提供会员认证与个人业务操作。
 
-## 业务范围（OSS）
+## 技术栈
 
-- 会员注册
-- 账号密码登录
-- 手机验证码登录（如启用）
-- OAuth2 登录（微信/GitHub/Google/Logto 按后端配置）
-- OAuth2 state 回调兑换 token
-- 个人中心
-- 文件相关用户能力（按后端开放接口）
+- **Nuxt 4**（SPA 模式，`ssr: false`）
+- **Nuxt UI 4.5**（TailwindCSS 4 + Reka UI）
+- **Pinia** 状态管理
+- **@mortise/auth** — 统一鉴权包
 
-## 路由约定
+## 快速启动
 
-- `/app/auth/login`
-- `/app/auth/register`
-- `/app/auth/callback`
-- `/app/profile`
-- `/app/files`
-- `/app/oauth2/qrcode-status`
+```bash
+# 在 frontend/ 目录下
+pnpm dev:web
+```
 
-## 鉴权流程计划
+访问：http://localhost:3001/
 
-1. **统一会话模型**
-   - 定义 accessToken/refreshToken/expiresAt/user。
-2. **密码登录流程**
-   - 调用 `/api/v1/app/auth/login`。
-   - 建立会话并跳转业务页。
-3. **OAuth2 流程**
-   - 调用 `/api/v1/app/oauth2/auth-url/{registrationId}` 获取跳转地址。
-   - 第三方登录后回到 `/app/auth/callback`。
-   - 使用 `state` 调用 `/api/v1/app/oauth2/callback` 兑换 token。
-4. **续期与容错**
-   - 401 场景触发单飞刷新。
-   - 刷新失败清理会话并回登录页。
+## 已实现页面
 
-## 完成标准
+| 路由 | 描述 | 状态 |
+|------|------|------|
+| `/app/auth/login` | 会员登录（账号密码 + OAuth2） | ✅ |
+| `/app/auth/register` | 会员注册 | ✅ |
+| `/app/auth/callback` | OAuth2 回调兑换 token | ✅ |
+| `/app/profile` | 个人中心（资料查看） | ✅ |
 
-- 两种登录方式统一进入同一会话状态。
-- 回调异常、state 过期、refresh 失败均有可感知反馈。
-- 不出现 admin/商业域页面耦合。
+## 鉴权流程
+
+1. **密码登录**：`POST /api/v1/app/auth/login` → 建立 session
+2. **OAuth2 登录**：获取 `/api/v1/app/oauth2/auth-url/{registrationId}` → 第三方跳转 → 回调至 `/app/auth/callback` → 兑换 token
+3. **Token 续期**：401 触发单飞刷新；刷新失败清理 session 跳登录页
+4. **注册**：`POST /api/v1/app/auth/register`
+
+## 配置说明
+
+| 变量 | 说明 | 默认值（开发） |
+|------|------|------|
+| `NUXT_PUBLIC_API_BASE` | 后端 API 基础地址 | `/mortise`（代理转发） |
+
+开发时 Vite 代理自动将 `/mortise/**` 转发至 `http://localhost:9999`。
+
+## 业务边界
+
+- 不出现任何 admin/商业域页面耦合
+- 仅通过 `@mortise/auth` 处理鉴权，不在页面层散落 token 逻辑

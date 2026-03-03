@@ -1,45 +1,66 @@
-# apps/admin Plan
+# apps/admin — 后台管理端
 
-后台管理端，基于 `nuxt-ui-templates/dashboard` 定制。
+基于 `nuxt-ui-templates/dashboard` 定制，面向系统管理员的后台管理界面。
 
-## 业务范围（OSS）
+## 技术栈
 
-- 管理员登录（账号密码 + OAuth2）
-- 用户管理
-- 角色管理
-- 菜单管理
-- 字典管理
-- OAuth2 客户端配置
-- 审计/日志视图（按后端现有能力接入）
+- **Nuxt 4**（SPA 模式，`ssr: false`）
+- **Nuxt UI 4.5**（TailwindCSS 4 + Reka UI）
+- **Pinia** 状态管理
+- **@mortise/auth** — 统一鉴权包
+- **@mortise/core-sdk** — 后端 API SDK
+- **TanStack Table** — 高性能数据表格
+- **Unovis** — 数据可视化图表
+- **Zod** — 表单校验
+- **date-fns** — 日期处理
 
-## 路由约定
+## 快速启动
 
-- `/admin/auth/login`
-- `/admin/auth/callback`
-- `/admin/dashboard`
-- `/admin/system/users`
-- `/admin/system/roles`
-- `/admin/system/menus`
-- `/admin/system/dicts`
-- `/admin/system/oauth2-clients`
+```bash
+# 在 frontend/ 目录下
+pnpm dev:admin
+```
 
-## 迭代计划
+访问：http://localhost:3000/admin/
 
-1. **骨架迁移**
-   - 迁移 dashboard 布局、侧栏、主题。
-   - 替换示例页面为 Mortise 菜单结构。
-2. **鉴权集成**
-   - 接入 `packages/auth`。
-   - 完成路由守卫、401 自动刷新、登出。
-3. **系统模块接入**
-   - 接入 `packages/core-sdk` 的 system API。
-   - 交付用户/角色/菜单/字典 CRUD。
-4. **运维能力增强**
-   - 接入日志查询页与异常提示规范。
-   - 完善权限按钮控制与空状态处理。
+## 已实现页面
 
-## 完成标准
+| 路由 | 描述 | 状态 |
+|------|------|------|
+| `/admin/auth/login` | 账号密码登录 + OAuth2 按钮 | ✅ |
+| `/admin/auth/callback` | OAuth2 回调兑换 token | ✅ |
+| `/admin/auth/forgot-password` | 忘记密码 | ✅ |
+| `/admin/dashboard` | 数据概览仪表盘 | ✅ |
+| `/admin/members` | 会员列表 | ✅ |
+| `/admin/systems/users` | 用户管理（CRUD） | ✅ |
+| `/admin/systems/roles` | 角色管理 | ✅ |
+| `/admin/systems/menus` | 菜单管理（树形） | ✅ |
+| `/admin/systems/dictionaries` | 字典项管理 | ✅ |
+| `/admin/systems/dict-types` | 字典类型管理 | ✅ |
+| `/admin/systems/oauth2-clients` | OAuth2 客户端配置 | ✅ |
+| `/admin/systems/notification-channels` | 通知渠道配置 | ✅ |
+| `/admin/systems/wechat-accounts` | 微信公众号管理 | ✅ |
+| `/admin/systems/site-config` | 站点全局配置 | ✅ |
+| `/admin/settings` | 个人设置（资料/通知/安全） | ✅ |
+| `/admin/inbox` | 消息中心 | ✅ |
+| `/admin/setup` | 初始化引导 | ✅ |
 
-- 管理端关键功能可闭环。
-- 所有请求统一通过 SDK 与鉴权拦截器。
-- 不出现任何商业模块菜单与路由。
+## 鉴权流程
+
+1. **密码登录**：`POST /api/v1/admin/auth/login` → 写入 session
+2. **OAuth2 登录**：跳转 `/oauth2/authorization/{registrationId}` → 回调至 `/admin/auth/callback` → 兑换 token
+3. **Token 续期**：请求 401 时触发单飞刷新（`POST /api/v1/admin/auth/refresh-token`）；刷新失败则跳登录页
+4. **登出**：清除 session，跳转登录页
+
+## 配置说明
+
+| 变量 | 说明 | 默认值（开发） |
+|------|------|------|
+| `NUXT_PUBLIC_API_BASE` | 后端 API 基础地址 | `/mortise`（代理转发） |
+
+开发时 Vite 代理自动将 `/mortise/**` 转发至 `http://localhost:9999`，无需额外配置。
+
+## 业务边界
+
+- 不出现任何商业模块（commerce/order/payment）的菜单与路由
+- 所有请求通过 `@mortise/core-sdk` + `@mortise/auth` 拦截器发起

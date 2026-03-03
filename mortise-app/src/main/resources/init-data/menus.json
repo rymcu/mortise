@@ -39,6 +39,8 @@
 
   { "label": "通知渠道配置", "permission": "system:notification-channel", "icon": "i-lucide-bell", "href": "/systems/notification-channels", "menuType": 2, "sortNo": 7, "parentPermission": "system" },
 
+  { "label": "网站配置", "permission": "system:website-config", "icon": "i-lucide-globe", "href": "/systems/website-config", "menuType": 2, "sortNo": 999, "parentPermission": "system" },
+
   { "label": "资料", "permission": "settings:profile", "icon": "i-lucide-user", "href": "/settings", "menuType": 1, "sortNo": 1, "parentPermission": "settings" },
   { "label": "消息", "permission": "settings:notifications", "icon": "i-lucide-bell-ring", "href": "/settings/notifications", "menuType": 1, "sortNo": 2, "parentPermission": "settings" },
   { "label": "安全", "permission": "settings:security", "icon": "i-lucide-shield", "href": "/settings/security", "menuType": 1, "sortNo": 3, "parentPermission": "settings" },

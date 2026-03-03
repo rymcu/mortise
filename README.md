@@ -117,6 +117,14 @@
 - **Lombok** - 简化 Java 代码
 - **ULID Creator** - 分布式唯一 ID 生成器
 
+**前端核心**
+- **Nuxt 4** - 基于 Vue 3 的全栈框架（SSR 关闭，纯 SPA）
+- **Nuxt UI 4.5** - 官方组件库（基于 TailwindCSS 4 + Reka UI）
+- **Pinia** - Vue 3 状态管理
+- **TypeScript 5** - 全量类型约束
+- **pnpm Workspace** - Monorepo 包管理
+- **VueUse** - 组合式工具函数集
+
 ## ✨ Features
 
 ### ✅ 已实现功能
@@ -198,6 +206,27 @@
 - [x] **详细文档** - 50+ 技术文档、最佳实践指南
 - [x] **Docker 支持** - 一键启动开发环境
 
+**前端管理端（apps/admin）**
+- [x] **管理员登录** - 账号密码登录、OAuth2 回调、忘记密码
+- [x] **仪表盘** - 数据概览与快速入口
+- [x] **用户管理** - 用户列表、搜索、CRUD
+- [x] **角色管理** - 角色定义、权限分配
+- [x] **菜单管理** - 动态菜单树形管理
+- [x] **字典管理** - 字典类型与字典项 CRUD
+- [x] **OAuth2 客户端管理** - 第三方登录配置
+- [x] **通知渠道配置** - 各渠道通知开关与参数
+- [x] **微信公众号管理** - 多账号接入与配置
+- [x] **站点配置** - 系统全局参数设置
+- [x] **个人设置** - 个人资料、通知偏好、安全设置
+- [x] **路由守卫** - 自动 401 刷新、Token 单飞续期、登出保障
+
+**前端用户端（apps/web）**
+- [x] **会员登录注册** - 账号密码、OAuth2 多平台登录
+- [x] **OAuth2 回调** - state 兑换 Token、错误兜底
+- [x] **个人中心** - 基础信息查看入口
+- [x] **统一鉴权包** - `packages/auth` 供 admin/web 复用
+- [x] **统一 API SDK** - `packages/core-sdk` 封装后端 OSS 接口
+
 ### 🚧 开发中 / 计划功能
 - [ ] **工作流引擎** - Flowable 集成
 - [ ] **多租户支持** - 租户隔离、数据隔离
@@ -220,7 +249,9 @@
 | **Maven** | 3.6.0+ | 3.9.x |
 | **数据库** | PostgreSQL 12+ / MySQL 8.0+ | PostgreSQL 17 |
 | **Redis** | 6.0+ | 7.x |
-| **IDE** | - | IntelliJ IDEA 2023+ |
+| **Node.js** | 20+ | 22.x LTS |
+| **pnpm** | 10+ | 10.29.x |
+| **IDE** | - | IntelliJ IDEA 2023+ / VS Code |
 | **Git** | 2.0+ | 最新版本 |
 
 ### 🐳 Docker 环境（推荐）
@@ -351,40 +382,58 @@ sudo ./update_hosts.sh
 127.0.0.1 logto.rymcu.local
 ```
 
-#### 3️⃣ 启动所有服务
+#### 3️⃣ 启动依赖服务
+
+根目录 `compose.yaml` 启动的是基础设施依赖（PostgreSQL、Redis、Logto、Nginx），**不含** Spring Boot 应用本身：
 
 ```bash
-# 启动服务（首次启动会下载镜像，需要几分钟）
-docker-compose up -d
+# 启动依赖服务（首次启动会下载镜像，需要几分钟）
+docker compose up -d
 
 # 查看启动日志
-docker-compose logs -f
+docker compose logs -f
 
 # 检查服务状态
-docker-compose ps
+docker compose ps
 ```
 
-#### 4️⃣ 访问服务
+#### 4️⃣ 启动 Spring Boot 应用
+
+依赖服务就绪后，单独启动后端应用：
+
+```bash
+# 方式 1：Maven（开发推荐）
+cd mortise-app
+mvn spring-boot:run
+
+# 方式 2：jar 包
+java -jar mortise-app/target/mortise-app-0.2.0.jar
+
+# 方式 3：指定 profile
+java -jar mortise-app/target/mortise-app-0.2.0.jar --spring.profiles.active=dev
+```
+
+#### 5️⃣ 访问服务
 
 | 服务 | 地址 | 说明 |
 |------|------|------|
-| 🌐 应用主页 | http://localhost:9999 | 主应用服务 |
+| 🌐 应用主页 | http://localhost:9999 | Spring Boot 应用 |
 | 📊 Actuator | http://localhost:9999/mortise/actuator | 监控端点 |
 | 🗄️ PostgreSQL | localhost:5432 | 数据库（用户: mortise, 密码: mortise） |
 | 🔴 Redis | localhost:6379 | 缓存服务 |
-| 🌐 Nginx | http://localhost:80 | 反向代理 |
+| 🌐 Nginx | http://localhost:80 | 反向代理（Logto 等） |
 
-#### 5️⃣ 停止服务
+#### 6️⃣ 停止依赖服务
 
 ```bash
 # 停止服务
-docker-compose stop
+docker compose stop
 
 # 停止并删除容器
-docker-compose down
+docker compose down
 
 # 停止并删除容器、网络、卷
-docker-compose down -v
+docker compose down -v
 ```
 
 ---
@@ -873,6 +922,7 @@ psql -U mortise mortise < backup.sql
 
 ### 🚀 快速开始
 - [快速开始指南](docs/quickstart/QUICK_START.md) - 三步快速启动项目
+- [前端快速上手](docs/quickstart/FRONTEND_QUICK_START.md) - 前端 Monorepo 开发指南
 - [系统迁移指南](docs/migration/mortise-system-migration-guide.md) - 模块迁移完整流程
 
 ### 🏗️ 架构设计
