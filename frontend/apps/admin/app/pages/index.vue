@@ -1,5 +1,7 @@
 <script setup lang="ts">
-await navigateTo('/dashboard')
+definePageMeta({
+  middleware: () => navigateTo('/dashboard', { replace: true })
+})
 </script>
 
 <template>
