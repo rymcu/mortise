@@ -1,6 +1,7 @@
 <script setup lang="ts">
 const route = useRoute()
 const { fetchArticle, fetchComments } = useArticles()
+const { public: { webUrl } } = useRuntimeConfig()
 
 const id = computed(() => route.params.id as string)
 
@@ -23,7 +24,7 @@ const { data: commentsData } = await useAsyncData(
 const comments = computed(() => commentsData.value?.data?.records || [])
 
 useSeoMeta({
-  title: () => `${article.value?.title} - Mortise 社区`,
+  title: () => article.value?.title,
   description: () => article.value?.summary || ''
 })
 </script>
@@ -102,7 +103,7 @@ useSeoMeta({
             <UButton
               label="去登录"
               size="sm"
-              to="http://localhost:3000/login"
+              :to="`${webUrl}/login`"
               target="_blank"
             />
           </template>

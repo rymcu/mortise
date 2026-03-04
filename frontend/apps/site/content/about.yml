@@ -1,10 +1,43 @@
 title: 关于 Mortise
-description: Mortise 是一款现代化、模块化的企业级后台管理脚手架，基于 Spring Boot 3.5.7 构建，开源免费，MIT 协议。
+description: Mortise 是一款现代化、模块化的企业级 Java 脚手架，基于 Spring Boot 3 构建。主仓库基础模块 MIT 协议永久免费开源，商业扩展模块单独定价授权。
 mission: 打造开箱即用的企业级 Java 脚手架，让开发者专注业务逻辑，告别重复的基础设施建设。
+
+highlights:
+  - icon: i-lucide-lock-open
+    title: 基础模块永久免费
+    description: 主仓库全部基础模块采用 MIT 协议开源，可用于个人与商业项目，无任何限制。
+  - icon: i-lucide-blocks
+    title: 商业模块按需选购
+    description: 电商、支付、社区、微信等高级业务模块单独定价、源码交付、永久授权，按需组合。
+  - icon: i-lucide-layers
+    title: 模块化分层架构
+    description: 6 层依赖矩阵、12 组 SPI 可扩展接口，模块间低耦合，按需引入，易于维护。
+  - icon: i-lucide-shield-check
+    title: 生产就绪
+    description: 集成 Spring Security、Flyway 数据库迁移、Resilience4j 限流、Prometheus 监控。
+
 license:
   type: MIT
   url: https://github.com/rymcu/mortise/blob/master/LICENSE
 github: https://github.com/rymcu/mortise
+
+contact:
+  title: 联系我们
+  description: 如需商业模块报价、企业技术服务或定制开发，欢迎通过以下方式与我们联系。
+  channels:
+    - icon: i-simple-icons-github
+      label: GitHub Issues
+      description: 技术问题与 Bug 反馈
+      to: https://github.com/rymcu/mortise/issues
+    - icon: i-lucide-mail
+      label: 邮件咨询
+      description: 商业合作与报价咨询
+      to: mailto:admin@rymcu.com
+    - icon: i-simple-icons-wechat
+      label: 微信
+      description: 扫码添加商务微信
+      wechat: true
+
 team:
   - name: rymcu
     role: 核心维护组织

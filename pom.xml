@@ -35,6 +35,7 @@
         <module>mortise-app</module>
         <module>mortise-persistence</module>
         <module>mortise-file</module>
+        <module>mortise-product</module>
     </modules>
 
     <properties>
@@ -180,7 +181,7 @@
                 <version>${revision}</version>
             </dependency>
 
-            <!-- Product 模块（商业版，通过 pro profile 按需引入） -->
+            <!-- Product 模块（通用产品目录基础，免费模块） -->
             <dependency>
                 <groupId>com.rymcu</groupId>
                 <artifactId>mortise-product-domain</artifactId>
@@ -516,7 +517,6 @@
                 </file>
             </activation>
             <modules>
-                <module>mortise-product</module>
                 <module>mortise-commerce</module>
                 <module>mortise-payment</module>
                 <module>mortise-community</module>

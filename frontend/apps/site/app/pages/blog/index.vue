@@ -26,7 +26,7 @@ function search() {
 }
 
 useSeoMeta({
-  title: '社区文章 - Mortise',
+  title: '社区文章',
   description: 'Mortise 开发者社区，分享技术文章和开发经验'
 })
 </script>
@@ -85,7 +85,7 @@ useSeoMeta({
         <NuxtLink
           v-for="article in articles"
           :key="article.id"
-          :to="`/articles/${article.id}`"
+          :to="`/blog/${article.id}`"
           class="group"
         >
           <UCard

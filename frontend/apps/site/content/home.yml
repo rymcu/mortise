@@ -11,7 +11,7 @@ hero:
       icon: i-lucide-users
       trailing: true
       color: primary
-      to: /articles
+      to: /blog
       size: xl
     - label: 快速开始
       icon: i-lucide-book-open
@@ -71,3 +71,53 @@ cta:
       color: neutral
       variant: outline
       icon: i-simple-icons-github
+
+pricing:
+  title: 透明定价，[按需选型]{.text-primary}
+  description: 主仓库基础模块永久免费开源（MIT），商业扩展模块单独定价，按需购买。
+  plans:
+    - title: 主仓库基础模块
+      description: 永久免费开源，MIT 协议，商用无限制。
+      price: 免费
+      billing_period: ""
+      billing_cycle: 永久免费开源
+      button:
+        label: 立即使用
+        color: neutral
+        variant: outline
+        to: /docs/getting-started
+      features:
+        - 全部基础模块完整源码
+        - MIT 协议，商用无限制
+        - 社区 Issue 支持
+        - 完整开发文档
+    - title: 商业扩展模块
+      description: 电商、支付、社区等高级业务模块，按模块单独授权，不捆绑订阅。
+      price: 单独定价
+      billing_period: ""
+      billing_cycle: 按模块授权
+      highlight: true
+      button:
+        label: 了解详情
+        variant: subtle
+        to: /pricing
+      features:
+        - 社区运营（独立部署）
+        - 聚合支付（可单独使用）
+        - 电商套件（依赖免费的资源目录 + 支付）
+        - 源码交付，永久授权
+    - title: 企业技术服务
+      description: 定制化开发与全方位技术保障。
+      price: 面议
+      billing_period: ""
+      billing_cycle: 定制报价
+      button:
+        label: 联系我们
+        color: neutral
+        variant: outline
+        to: /pricing
+      features:
+        - 包含全部商业模块授权
+        - 7×24 小时技术支持
+        - 定制模块开发
+        - 私有化部署方案

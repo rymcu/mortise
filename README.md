@@ -48,7 +48,7 @@
 
 ### 🎯 项目特点
 
-- 🏗️ **模块化设计** - 25 个模块、6 层依赖矩阵、12 组 SPI 可扩展接口
+- 🏗️ **模块化设计** - 25 个模块、6 层依赖矩阵、15 组 SPI 可扩展接口
 - 🚀 **开箱即用** - Docker Compose 一键启动完整环境
 - 🔒 **安全可靠** - Spring Security 6 + JWT + OAuth2 多平台 + SMS 验证码 + 扫码登录
 - 📊 **可观测性** - 集成 Prometheus + Grafana 监控体系、自定义 DB/Redis 指标
@@ -201,7 +201,7 @@
 
 **开发体验**
 - [x] **模块化架构** - 清晰的 15+ 模块划分，6 层依赖矩阵
-- [x] **SPI 可扩展** - 12 组 SPI 接口，支持模块化热插拔
+- [x] **SPI 可扩展** - 15 组 SPI 接口，支持模块化热插拔
 - [x] **JDK 21 虚拟线程** - 异步任务默认使用虚拟线程
 - [x] **详细文档** - 50+ 技术文档、最佳实践指南
 - [x] **Docker 支持** - 一键启动开发环境
@@ -324,11 +324,12 @@ git submodule update --init --recursive mortise-payment mortise-commerce
 如已执行过全量拉取，也可停用不需要的模块：
 
 ```bash
-# 示例：停用 product 模块
-git submodule deinit -f mortise-product
+# 示例：停用 community 模块
+git submodule deinit -f mortise-community
 ```
 
 > 提示：若账号无某私有模块权限，初始化该模块时会报 `repository not found` 或 `Permission denied`，属于预期行为。
+> `mortise-product` 为免费公共模块，已包含在主仓库中，无需作为子模块拉取。
 
 #### 1️⃣-扩展：开发人员如何维护并新增商业模块
 
@@ -1019,6 +1020,12 @@ mortise/                             # 父 POM，版本管理与模块聚合
 ├── mortise-file/                    # L3 文件模块 - x-file-storage 集成、阿里云 OSS、分片上传、文件元数据管理
 ├── mortise-wechat/                  # L3 微信模块 - 多账号公众号管理、消息路由、扫码登录、模板消息、开放平台接入
 ├── mortise-test-support/            # 测试支撑 - 共享测试配置与工具
+├── mortise-product/                 # 通用产品目录（DDD 分层）
+│   ├── mortise-product-domain/      # L4 领域层 - Product/ProductSku/ProductSkuTarget 实体、ProductType 枚举、SPI 接口
+│   ├── mortise-product-infra/       # L4 基础设施层 - Mapper 接口、Flyway 迁移
+│   ├── mortise-product-application/ # L4 应用层 - ProductService、SPI 集成
+│   ├── mortise-product-admin/       # L5 管理端 API - 产品目录管理 REST 接口
+│   └── mortise-product-api/         # L5 公共 API - 产品目录查询接口
 ├── mortise-system/                  # 系统域聚合（DDD 分层）
 │   ├── mortise-system-domain/       # L4 领域层 - User/Role/Menu/Dict/DictType 实体、@DictFormat 注解
 │   ├── mortise-system-infra/        # L4 基础设施层 - Mapper 接口、SystemCacheConfigurer、日志存储实现
@@ -1047,6 +1054,8 @@ flowchart TB
     sysApi[mortise-system-api]
     memAdmin[mortise-member-admin]
     memApi[mortise-member-api]
+    prodAdmin[mortise-product-admin]
+    prodApi[mortise-product-api]
   end
 
   subgraph L4[L4 业务域应用与基础设施]
@@ -1056,6 +1065,9 @@ flowchart TB
     memInfra[mortise-member-infra]
     sysDomain[mortise-system-domain]
     memDomain[mortise-member-domain]
+    prodApp[mortise-product-application]
+    prodInfra[mortise-product-infra]
+    prodDomain[mortise-product-domain<br/><i>SPI: TypeProvider · Validator · Lifecycle</i>]
   end
 
   subgraph L3[L3 应用基础层]
@@ -1078,19 +1090,23 @@ flowchart TB
     core[mortise-core<br/><i>GlobalResult · 虚拟线程</i>]
   end
 
-  app --> sysAdmin & sysApi & memAdmin & memApi
+  app --> sysAdmin & sysApi & memAdmin & memApi & prodAdmin & prodApi
   app --> auth & webSupport & monitor & file & wechat
 
   sysAdmin --> sysApp
   sysApi --> sysApp
   memAdmin --> memApp
   memApi --> memApp
+  prodAdmin --> prodApp
+  prodApi --> prodApp
 
   sysApp --> sysDomain & sysInfra
   memApp --> memDomain & memInfra
+  prodApp --> prodDomain & prodInfra
 
   sysInfra --> persistence & log & cache
   memInfra --> persistence
+  prodInfra --> persistence
 
   wechat --> auth & cache & notify & webSupport
   file --> auth
@@ -1119,7 +1135,7 @@ flowchart TB
 
 ### 技术特色
 
-**🎯 SPI 架构设计（12 组 SPI 接口）**
+**🎯 SPI 架构设计（15 组 SPI 接口）**
 
 项目全面采用 SPI（Service Provider Interface）机制，实现模块间松耦合与热插拔扩展：
 
@@ -1136,6 +1152,9 @@ flowchart TB
 | `OAuth2LoginSuccessHandlerProvider` | mortise-auth | OAuth2 登录成功处理 | System/Api 共 2 个实现 |
 | `NotificationSender` | mortise-notification | 通知渠道扩展 | EmailNotificationSender、WeChatNotificationSender |
 | `JacksonConfigurer` | mortise-web-support | Jackson 序列化扩展 | DictJacksonConfigurer |
+| `ProductTypeProvider` | mortise-product | 产品类型扩展注册 | CommerceProductTypeProvider |
+| `ProductValidator` | mortise-product | 产品校验规则扩展 | （可由业务模块实现） |
+| `ProductLifecycleListener` | mortise-product | 产品生命周期事件监听 | （可由业务模块实现） |
 | `CurrentUser` | mortise-core | 当前用户抽象 | UserDetailInfo、MemberDetailInfo |
 
 **🔄 缓存过期策略**
@@ -1369,7 +1388,7 @@ v0.2.0 (✅ 已完成)
 ├─ 微信公众号 & 开放平台集成
 ├─ 会员模块 (DDD 分层)
 ├─ Resilience4j @RateLimit 注解限流
-├─ 12 组 SPI 接口完整实现
+├─ 15 组 SPI 接口完整实现
 ├─ JDK 21 虚拟线程 & 性能优化
 ├─ Prometheus + Grafana 监控体系
 └─ PostgreSQL JSONB / Flyway 数据库迁移

@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@mortise/auth": "workspace:*",
+    "@mortise/nuxt-layer": "workspace:*",
     "@nuxt/ui": "^4.5.0",
     "@pinia/nuxt": "^0.11.2",
     "nuxt": "^4.3.1",

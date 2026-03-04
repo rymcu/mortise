@@ -1,0 +1,193 @@
+seo:
+  title: 模块总览 - Mortise
+  description: Mortise 主仓库基础模块完全免费开源（MIT），商业扩展模块单独定价，覆盖认证授权、社区运营、电商交易、文件管理、监控告警等核心业务场景。
+
+title: 模块总览
+description: 主仓库基础模块免费开源，商业扩展模块单独定价授权。全部模块共同构成 6 层依赖矩阵、15 组 SPI 可扩展接口，覆盖企业项目从零到一的全部核心需求。
+
+categories:
+  - title: 基础设施层
+    description: 提供框架运行的底层支撑能力，包括通用工具、数据持久化、缓存与日志等。
+    icon: i-lucide-layers
+    modules:
+      - name: mortise-common
+        description: 通用工具类、常量定义、基础异常、统一响应封装，全局共享基础能力。
+        icon: i-lucide-box
+        tags:
+          - 核心
+          - 基础
+        status: stable
+      - name: mortise-core
+        description: 框架核心抽象——SPI 接口定义、公共配置加载、全局 Bean 注册。
+        icon: i-lucide-cpu
+        tags:
+          - 核心
+          - SPI
+        status: stable
+      - name: mortise-persistence
+        description: 基于 MyBatis-Flex 的数据持久化层，集成 Flyway 数据库迁移、多数据源支持。
+        icon: i-lucide-database
+        tags:
+          - 数据库
+          - MyBatis-Flex
+        status: stable
+      - name: mortise-cache
+        description: 多级缓存抽象（本地 + Redis），支持 Spring Cache 注解与自定义 SPI 扩展。
+        icon: i-lucide-hard-drive
+        tags:
+          - 缓存
+          - Redis
+        status: stable
+      - name: mortise-log
+        description: 统一操作日志收集，注解驱动 + SPI 存储策略，支持数据库、文件、消息队列等多种持久化方式。
+        icon: i-lucide-scroll-text
+        tags:
+          - 日志
+          - 审计
+        status: stable
+
+  - title: 安全与认证层
+    description: JWT 无状态认证、OAuth2 多平台登录、RBAC 权限控制，企业级安全基座。
+    icon: i-lucide-shield
+    modules:
+      - name: mortise-auth
+        description: JWT 无状态认证与自动续期，Spring Security 深度集成，支持多租户隔离。
+        icon: i-lucide-key-round
+        tags:
+          - 认证
+          - JWT
+          - Spring Security
+        status: stable
+      - name: mortise-member
+        description: 会员体系——注册、登录、个人资料、OAuth2 多平台绑定（GitHub、Google、Logto、微信）。
+        icon: i-lucide-users
+        tags:
+          - 会员
+          - OAuth2
+        status: stable
+
+  - title: 业务能力层
+    description: 围绕社区运营、电商交易、支付结算等场景提供开箱即用的业务模块。
+    icon: i-lucide-briefcase
+    modules:
+      - name: mortise-product
+        description: 通用资源目录基础模块——通用分类树、条目注册表、多属性规格框架与生命周期状态机。商品、固件、课程、设备型号均可复用同一套基础数据。通过 ProductTypeProvider / ProductValidator / ProductLifecycleListener 三组 SPI 接口实现业务扩展。
+        icon: i-lucide-package
+        tags:
+          - 目录
+          - 通用基础
+          - SPI
+          - 免费
+        status: stable
+      - name: mortise-community
+        description: 社区运营模块——文章发布、评论互动、标签分类、内容审核、热度排行。
+        icon: i-lucide-message-square
+        tags:
+          - 社区
+          - 内容
+          - 商业模块
+        status: stable
+      - name: mortise-commerce
+        description: 电商交易套件——订单流转、库存扣减，依赖主仓库免费的 mortise-product 与商业模块 mortise-payment，DDD 分层架构。
+        icon: i-lucide-shopping-cart
+        tags:
+          - 电商
+          - DDD
+          - 商业模块
+        status: beta
+      - name: mortise-payment
+        description: 聚合支付模块——支持微信支付、支付宝，统一支付回调与对账。可单独使用，也是电商套件依赖。
+        icon: i-lucide-credit-card
+        tags:
+          - 支付
+          - 微信支付
+          - 支付宝
+          - 商业模块
+        status: beta
+
+  - title: 平台集成层
+    description: 微信生态、文件存储、消息通知等外部平台对接能力。
+    icon: i-lucide-plug
+    modules:
+      - name: mortise-wechat
+        description: 微信公众号管理、消息路由、扫码登录、模板消息推送，WxJava 多账号支持。
+        icon: i-simple-icons-wechat
+        tags:
+          - 微信
+          - 公众号
+          - 免费
+        status: stable
+      - name: mortise-file
+        description: 统一文件 API（x-file-storage），支持阿里云 OSS 等多种存储后端，分片上传与元数据持久化。
+        icon: i-lucide-folder-open
+        tags:
+          - 文件
+          - OSS
+        status: stable
+      - name: mortise-notification
+        description: 多渠道通知引擎——邮件、短信、站内信、微信模板消息，SPI 可扩展。
+        icon: i-lucide-bell
+        tags:
+          - 通知
+          - 邮件
+          - 短信
+        status: stable
+
+  - title: 运维与监控层
+    description: 系统管理、监控告警、健康检查，保障生产环境平稳运行。
+    icon: i-lucide-monitor
+    modules:
+      - name: mortise-system
+        description: 系统管理——菜单配置、字典管理、站点参数、全局开关，后台运营必备能力。
+        icon: i-lucide-settings
+        tags:
+          - 系统
+          - 配置
+        status: stable
+      - name: mortise-monitor
+        description: Prometheus + Micrometer + Grafana 监控集成，HikariCP 连接池与 Redis 健康等数据库级指标。
+        icon: i-lucide-activity
+        tags:
+          - 监控
+          - Prometheus
+        status: stable
+
+  - title: 测试与脚手架层
+    description: 应用入口、测试支持、Web 基础设施等工程化能力。
+    icon: i-lucide-flask-conical
+    modules:
+      - name: mortise-app
+        description: Spring Boot 应用入口，自动装配所有模块，提供统一启动与配置。
+        icon: i-lucide-rocket
+        tags:
+          - 启动器
+        status: stable
+      - name: mortise-web-support
+        description: MVC 基础设施——全局异常处理、统一响应包装、CORS 配置、Resilience4j 限流注解。
+        icon: i-lucide-globe
+        tags:
+          - Web
+          - 限流
+        status: stable
+      - name: mortise-test-support
+        description: 测试基础设施——TestContainers 集成、Mock 工具、数据工厂，快速编写集成测试。
+        icon: i-lucide-test-tubes
+        tags:
+          - 测试
+          - TestContainers
+        status: stable
+
+cta:
+  title: 立即开始使用 Mortise
+  description: 主仓库基础模块 MIT 协议永久免费开源，商业扩展模块单独定价按需购买，从 clone 到启动只需 3 分钟。
+  links:
+    - label: 快速开始
+      to: /docs/getting-started
+      color: primary
+      icon: i-lucide-book-open
+    - label: 查看源码
+      to: https://github.com/rymcu/mortise
+      target: _blank
+      color: neutral
+      variant: outline
+      icon: i-simple-icons-github

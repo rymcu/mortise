@@ -6,7 +6,7 @@ if (!page.value) {
 }
 
 useSeoMeta({
-  title: '下载 - Mortise',
+  title: '下载',
   description: '下载 Mortise 相关客户端和 SDK'
 })
 </script>

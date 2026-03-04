@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.rymcu</groupId>
+        <artifactId>mortise</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>mortise-product</artifactId>
+    <packaging>pom</packaging>
+    <name>mortise-product</name>
+    <description>Mortise Product - 通用产品目录基础模块（免费）</description>
+
+    <modules>
+        <module>mortise-product-domain</module>
+        <module>mortise-product-application</module>
+        <module>mortise-product-infra</module>
+        <module>mortise-product-admin</module>
+        <module>mortise-product-api</module>
+    </modules>
+</project>

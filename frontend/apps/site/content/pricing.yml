@@ -1,0 +1,128 @@
+seo:
+  title: 定价方案 - Mortise
+  description: Mortise 主仓库基础模块完全免费开源（MIT 协议），商业扩展模块单独定价授权，按需购买。
+
+title: 透明定价，按需选型
+description: 主仓库基础模块永久免费开源，商业扩展模块单独定价，按需购买，无捆绑订阅。
+
+cards:
+  - title: 主仓库基础模块
+    description: 主仓库内全部基础模块（含微信生态），MIT 协议，永久免费开源，可自由用于个人与商业项目。
+    icon: i-lucide-box
+    price: 免费
+    billing_cycle: 永久免费开源
+    button:
+      label: 立即使用
+      color: neutral
+      variant: subtle
+      to: /docs/getting-started
+    features:
+      - mortise-core 框架核心
+      - mortise-auth 认证授权
+      - mortise-member 会员体系
+      - mortise-product 通用资源目录（分类树 + 条目注册表）
+      - mortise-wechat 微信生态集成
+      - mortise-file 文件存储
+      - mortise-notification 消息通知
+      - mortise-log 操作日志
+      - mortise-monitor 监控集成
+      - mortise-system 系统管理
+      - mortise-persistence / mortise-cache 基础设施
+      - MIT 协议，商用无限制
+
+  - title: 社区运营模块
+    name: mortise-community
+    description: 适合内容社区与知识平台，可独立部署，无其他商业模块依赖。
+    icon: i-lucide-message-square
+    price: 按需报价
+    billing_cycle: 源码交付 · 永久授权
+    button:
+      label: 咨询报价
+      to: /about#contact
+    features:
+      - 文章发布与富文本编辑
+      - 评论、点赞、收藏互动
+      - 标签分类与内容审核
+      - 热度算法与排行榜
+      - 无外部商业模块依赖
+
+  - title: 聚合支付模块
+    name: mortise-payment
+    description: 电商套件基础依赖，也可单独集成到任意需要收款的业务场景。
+    icon: i-lucide-credit-card
+    price: 按需报价
+    billing_cycle: 源码交付 · 永久授权
+    button:
+      label: 咨询报价
+      to: /about#contact
+    features:
+      - 微信支付（JSAPI / Native / H5）
+      - 支付宝（PC / WAP / App）
+      - 统一回调与幂等保障
+      - 退款与自动对账
+      - 可单独使用，也是电商套件依赖
+
+  - title: 电商交易模块
+    name: mortise-commerce
+    description: 完整电商交易套件，依赖 mortise-product 与 mortise-payment，库存、订单全流程，开箱即用。
+    icon: i-lucide-shopping-cart
+    highlight: true
+    price: 按需报价
+    billing_cycle: 源码交付 · 永久授权
+    button:
+      label: 咨询套件报价
+      to: /about#contact
+    features:
+      - 订单全流程（下单 → 发货 → 完成）
+      - 库存自动扣减与回滚
+      - DDD 分层 + 领域事件
+      - 依赖 mortise-product（主仓库免费）
+      - 依赖 mortise-payment（商业模块）
+      - 套件购买含支付模块可享优惠
+
+  - title: 企业技术服务
+    description: 定制化开发与全方位技术保障，适合有私有化部署或深度定制需求的企业客户。
+    icon: i-lucide-building-2
+    price: 面议
+    billing_cycle: 定制报价
+    button:
+      label: 联系销售
+      color: neutral
+      variant: subtle
+      to: /about#contact
+    features:
+      - 包含全部商业模块授权
+      - 7×24 小时专属技术支持
+      - 不限时一对一技术咨询
+      - 定制模块开发
+      - 私有化部署方案
+      - 安全审计与合规支持
+      - 多租户架构定制
+      - 专属客户成功经理
+
+logos:
+  title: 技术栈实力支撑
+  icons:
+    - i-simple-icons-springboot
+    - i-simple-icons-postgresql
+    - i-simple-icons-redis
+    - i-simple-icons-docker
+    - i-simple-icons-prometheus
+    - i-simple-icons-grafana
+
+faq:
+  title: 常见问题
+  description: 关于 Mortise 定价方案的常见问题解答。
+  items:
+    - label: 主仓库基础模块真的完全免费吗？
+      content: 是的。Mortise 主仓库采用 MIT 开源协议，全部基础模块源码永久免费，可用于个人与商业项目，无任何限制。
+    - label: 哪些属于商业扩展模块？
+      content: 商业扩展模块目前包括 mortise-community（社区运营）、mortise-payment（聚合支付）、mortise-commerce（电商交易套件）。mortise-wechat 与 mortise-product 均为主仓库免费模块。
+    - label: 电商套件如何定价？
+      content: mortise-commerce 依赖主仓库免费的 mortise-product（通用资源目录）和商业模块 mortise-payment。可单独购买两者，也可套件组合购买 commerce + payment 享报价优惠。如需报价请联系我们。
+    - label: 购买商业模块是否包含技术支持？
+      content: 购买商业模块时提供基础集成文档与示例。如需专属技术支持、一对一咨询或优先 Bug 修复，请选择企业技术服务方案。
+    - label: 如何获取发票？
+      content: 购买商业模块或企业服务后，我们提供增值税专用/普通发票，请在下单时说明开票需求。
+    - label: 退款政策是什么？
+      content: 商业模块交付后如存在严重质量问题，支持 7 天内协商退款。企业服务合同以合同条款为准。

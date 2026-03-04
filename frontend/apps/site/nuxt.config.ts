@@ -1,4 +1,6 @@
 export default defineNuxtConfig({
+  extends: ['../../packages/nuxt-layer'],
+
   modules: ['@nuxt/eslint', '@nuxt/ui', '@pinia/nuxt', '@nuxt/content', '@nuxt/image'],
   
   devtools: { enabled: true },
@@ -14,7 +16,9 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       // 优先用环境变量，默认本地开发地址
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:9999/mortise'
+      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:9999/mortise',
+      // web 用户端地址，生产环境通过 NUXT_PUBLIC_WEB_URL 覆盖
+      webUrl: process.env.NUXT_PUBLIC_WEB_URL || 'http://localhost:3000'
     }
   },
 
@@ -35,7 +39,8 @@ export default defineNuxtConfig({
 
   mdc: {
     highlight: {
-      noApiRoute: false
+      noApiRoute: false,
+      langs: ['diff', 'ts', 'vue', 'css', 'java', 'xml', 'yaml', 'json', 'bash', 'sql']
     }
   },
 

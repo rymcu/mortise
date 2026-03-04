@@ -113,6 +113,45 @@ useSeoMeta({
 
     <USeparator :ui="{ border: 'border-primary/30' }" />
 
+    <!-- 定价方案区域 -->
+    <UPageSection
+      v-if="page.pricing"
+      id="pricing"
+      :description="page.pricing.description"
+    >
+      <template #title>
+        <MDC :value="page.pricing.title" />
+      </template>
+
+      <UPricingPlans scale>
+        <UPricingPlan
+          v-for="(plan, index) in page.pricing.plans"
+          :key="index"
+          :title="plan.title"
+          :description="plan.description"
+          :price="plan.price"
+          :billing-period="plan.billing_period"
+          :billing-cycle="plan.billing_cycle"
+          :highlight="plan.highlight"
+          :scale="plan.highlight"
+          variant="soft"
+          :features="plan.features"
+          :button="plan.button"
+        />
+      </UPricingPlans>
+
+      <div class="text-center mt-6">
+        <UButton
+          label="查看完整定价方案"
+          to="/pricing"
+          variant="link"
+          trailing-icon="i-lucide-arrow-right"
+        />
+      </div>
+    </UPageSection>
+
+    <USeparator :ui="{ border: 'border-primary/30' }" />
+
     <!-- CTA 区域 -->
     <UPageSection
       v-if="page.cta"

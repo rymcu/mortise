@@ -4,7 +4,7 @@ const { data: docs } = await useAsyncData('docs-nav', () =>
 )
 
 useSeoMeta({
-  title: '文档中心 - Mortise',
+  title: '文档中心',
   description: 'Mortise 开发文档，包含快速开始、架构介绍、API 参考等内容'
 })
 </script>

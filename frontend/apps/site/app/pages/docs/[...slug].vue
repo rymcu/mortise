@@ -21,7 +21,7 @@ const { data: navDocs } = await useAsyncData('docs-nav-side', () =>
 )
 
 useSeoMeta({
-  title: () => `${page.value?.title} - Mortise 文档`,
+  title: () => page.value?.title,
   description: () => page.value?.description || ''
 })
 </script>

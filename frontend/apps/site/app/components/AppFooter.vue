@@ -12,13 +12,22 @@ const columns = [{
     to: '/docs/architecture'
   }]
 }, {
-  label: '社区',
+  label: '产品',
   children: [{
-    label: '文章',
-    to: '/articles'
+    label: '模块总览',
+    to: '/modules'
+  }, {
+    label: '定价方案',
+    to: '/pricing'
   }, {
     label: '下载',
     to: '/download'
+  }]
+}, {
+  label: '社区',
+  children: [{
+    label: '文章',
+    to: '/blog'
   }, {
     label: '关于我们',
     to: '/about'
@@ -34,7 +43,7 @@ const columns = [{
     to: '/about#license'
   }, {
     label: '更新日志',
-    to: '/docs/changelog'
+    to: '/changelog'
   }]
 }]
 </script>
@@ -52,7 +61,7 @@ const columns = [{
                 开源协议
               </p>
               <p class="text-sm text-muted">
-                Mortise 采用 MIT 开源协议，欢迎贡献代码。
+                主仓库基础模块 MIT 协议永久免费开源，商业扩展模块单独定价授权。
               </p>
             </div>
           </template>

@@ -3,14 +3,20 @@ const items = [{
   label: '首页',
   to: '/'
 }, {
-  label: '社区',
-  to: '/articles'
+  label: '模块',
+  to: '/modules'
+}, {
+  label: '定价',
+  to: '/pricing'
+}, {
+  label: '博客',
+  to: '/blog'
 }, {
   label: '文档',
   to: '/docs'
 }, {
-  label: '下载',
-  to: '/download'
+  label: '更新日志',
+  to: '/changelog'
 }, {
   label: '关于',
   to: '/about'
@@ -34,7 +40,7 @@ const items = [{
 
       <UButton
         label="进入社区"
-        to="/articles"
+        to="/blog"
         variant="subtle"
         class="hidden lg:block"
       />
@@ -51,7 +57,7 @@ const items = [{
       <UButton
         class="mt-4"
         label="进入社区"
-        to="/articles"
+        to="/"
         variant="subtle"
         block
       />
