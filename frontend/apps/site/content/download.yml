@@ -1,0 +1,28 @@
+title: 下载
+description: 下载 Mortise 相关客户端和 SDK
+items:
+  - platform: macOS
+    icon: i-simple-icons-apple
+    version: v1.0.0
+    url: '#'
+    description: 适用于 macOS 10.15 及以上版本
+  - platform: Windows
+    icon: i-simple-icons-windows
+    version: v1.0.0
+    url: '#'
+    description: 适用于 Windows 10 及以上版本（x64）
+  - platform: Linux
+    icon: i-simple-icons-linux
+    version: v1.0.0
+    url: '#'
+    description: 适用于 Ubuntu 20.04+ / CentOS 7+（x64）
+  - platform: Docker
+    icon: i-simple-icons-docker
+    version: latest
+    url: 'https://hub.docker.com/r/mortise/mortise'
+    description: 使用 Docker 快速部署，推荐生产环境使用
+  - platform: Maven
+    icon: i-simple-icons-apachemaven
+    version: 1.0.0
+    url: '#'
+    description: 在 Maven 项目中引入 Mortise 核心依赖

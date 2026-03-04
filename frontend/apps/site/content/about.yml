@@ -1,0 +1,11 @@
+title: 关于 Mortise
+description: Mortise 是一款现代化、模块化的企业级后台管理脚手架，基于 Spring Boot 3.5.7 构建，开源免费，MIT 协议。
+mission: 打造开箱即用的企业级 Java 脚手架，让开发者专注业务逻辑，告别重复的基础设施建设。
+license:
+  type: MIT
+  url: https://github.com/rymcu/mortise/blob/master/LICENSE
+github: https://github.com/rymcu/mortise
+team:
+  - name: rymcu
+    role: 核心维护组织
+    github: https://github.com/rymcu

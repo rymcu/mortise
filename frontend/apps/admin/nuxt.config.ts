@@ -40,7 +40,7 @@ export default defineNuxtConfig({
     }
   },
 
-  compatibilityDate: '2024-07-11',
+  compatibilityDate: '2025-01-15',
 
   /**
    * 开发时通过 Vite 代理将 /mortise/** 请求转发到后端，避免浏览器 CORS 限制。

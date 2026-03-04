@@ -26,7 +26,7 @@ services:
     container_name: mortise-frontend-web
     restart: unless-stopped
     ports:
-      - "3102:3000"
+      - "3102:3001"
     # 后端 API 地址，优先取 .env 文件 NUXT_PUBLIC_API_BASE
     environment:
       NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-http://host.docker.internal:9999/mortise}
@@ -43,7 +43,7 @@ services:
     container_name: mortise-frontend-site
     restart: unless-stopped
     ports:
-      - "3103:3000"
+      - "3103:3002"
     # 后端 API 地址，优先取 .env 文件 NUXT_PUBLIC_API_BASE
     environment:
       NUXT_PUBLIC_API_BASE: ${NUXT_PUBLIC_API_BASE:-http://host.docker.internal:9999/mortise}
