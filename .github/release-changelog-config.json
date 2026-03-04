@@ -1,0 +1,42 @@
+{
+  "categories": [
+    {
+      "title": "## 🚀 新功能",
+      "labels": ["feat", "feature", "enhancement"]
+    },
+    {
+      "title": "## 🐛 Bug 修复",
+      "labels": ["fix", "bug", "bugfix"]
+    },
+    {
+      "title": "## 📝 文档",
+      "labels": ["docs", "documentation"]
+    },
+    {
+      "title": "## ♻️ 重构",
+      "labels": ["refactor", "refactoring"]
+    },
+    {
+      "title": "## ⚡ 性能优化",
+      "labels": ["perf", "performance"]
+    },
+    {
+      "title": "## 🔧 其他改进",
+      "labels": []
+    }
+  ],
+  "template": "#{{CHANGELOG}}\n\n**完整变更**: #{{RELEASE_DIFF}}",
+  "pr_template": "- #{{TITLE}} (#{{NUMBER}}) @#{{AUTHOR}}",
+  "empty_template": "本次发布无关联的 Pull Request。",
+  "label_extractor": [
+    {
+      "pattern": "^(feat|fix|docs|refactor|perf|chore|style|test|build|ci)(\\(.*\\))?:",
+      "target": "$1",
+      "on_property": "title"
+    }
+  ],
+  "sort": {
+    "order": "ASC",
+    "on_property": "mergedAt"
+  }
+}
