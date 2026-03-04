@@ -4,8 +4,28 @@ import type { MenuLink } from '~/stores/auth'
 
 const auth = useAuthStore()
 const open = ref(false)
+const route = useRoute()
 
 const { siteName, siteLogo } = usePublicSiteConfig()
+
+/** 从菜单树中递归查找与当前路径精确匹配的菜单项标签 */
+function findMenuLabel(links: MenuLink[], path: string): string | undefined {
+  for (const link of links) {
+    if (link.to === path) return link.label
+    if (link.children?.length) {
+      const found = findMenuLabel(link.children, path)
+      if (found) return found
+    }
+  }
+  return undefined
+}
+
+/** 当前页面标题，随路由变化自动更新 */
+const currentPageTitle = computed(() =>
+  findMenuLabel(auth.userMenus ?? [], route.path)
+)
+
+useHead({ title: currentPageTitle })
 
 // sessionRestore.client.ts 插件在页面刷新/新标签页时已阻塞等待数据加载完成。
 // 此处 onMounted 仅兜底：SPA 内登录成功后首次进入 layout，无页面刷新的场景。

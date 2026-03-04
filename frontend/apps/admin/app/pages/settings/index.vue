@@ -4,9 +4,10 @@
  */
 const { profile, fetchProfile } = useProfile()
 
-onMounted(() => {
-  fetchProfile()
-})
+// 顶层 await，保证 token 刷新 + 重试在组件渲染前完成
+if (!profile.value) {
+  await fetchProfile()
+}
 </script>
 
 <template>

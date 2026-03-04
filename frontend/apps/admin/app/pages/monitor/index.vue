@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { HealthComponent, HealthResponse, MetricMeasurement, MetricResponse, InfoResponse } from '~/types'
+import type { HealthResponse, MetricResponse, InfoResponse } from '~/types'
 
 const { $api } = useNuxtApp()
 
@@ -91,15 +91,8 @@ function statusColor(status: string): 'success' | 'error' | 'warning' | 'neutral
   }
 }
 
-function cpuProgressColor(val: number | null): 'success' | 'warning' | 'error' {
-  if (val == null) return 'success'
-  if (val > 0.8) return 'error'
-  if (val > 0.5) return 'warning'
-  return 'success'
-}
-
 onMounted(() => {
-  loadData()
+  // 不重复调用 loadData()，顶层 await 已完成首次加载
   refreshTimer = setInterval(loadData, 30_000)
 })
 

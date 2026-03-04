@@ -17,21 +17,20 @@ const stats = ref<DashboardStats>({
 
 const loading = ref(true)
 
-// 尝试加载统计数据（接口可选，失败时保持默认值）
-onMounted(async () => {
-  try {
-    const res = await $api<{ code: number; data: DashboardStats }>(
-      '/api/v1/admin/dashboard/stats'
-    )
-    if (res?.data) {
-      stats.value = res.data
-    }
-  } catch {
-    // 统计接口暂未实现时忽略
-  } finally {
-    loading.value = false
+// 在 setup 顶层 await，确保 $api 的 token 刷新 + 重试在组件渲染前完成
+// （与 members.vue、roles.vue 等页面保持一致的取数模式）
+try {
+  const res = await $api<{ code: number; data: DashboardStats }>(
+    '/api/v1/admin/dashboard/stats'
+  )
+  if (res?.data) {
+    stats.value = res.data
   }
-})
+} catch {
+  // 统计接口暂未实现时忽略
+} finally {
+  loading.value = false
+}
 
 const statCards = computed(() => [
   {
