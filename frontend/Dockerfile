@@ -27,7 +27,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 
 # 构建时给 Node 预留更充足内存
-ENV NODE_OPTIONS=--max-old-space-size=2048
+ENV NODE_OPTIONS=--max-old-space-size=4096
 
 RUN pnpm --filter @mortise/${APP_NAME} build
 
