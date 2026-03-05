@@ -71,7 +71,7 @@ public interface UserService extends IService<User> {
 
     Boolean batchDeleteUsers(List<Long> idUserList);
 
-    Boolean updateUserProfileInfo(UserProfileInfo userProfileInfo, User user);
+    Boolean updateUserProfileInfo(UserProfileInfo userProfileInfo, Long userId);
 
     void updateLastLoginTimeByAccount(String account);
 

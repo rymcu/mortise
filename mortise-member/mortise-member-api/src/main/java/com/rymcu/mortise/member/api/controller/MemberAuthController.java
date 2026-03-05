@@ -19,8 +19,8 @@ import com.rymcu.mortise.member.api.model.ResetPasswordRequest;
 import com.rymcu.mortise.member.api.model.SendCodeRequest;
 import com.rymcu.mortise.member.api.model.TokenRefreshResponse;
 import com.rymcu.mortise.member.api.model.VerifyCodeRequest;
+import com.rymcu.mortise.core.model.CurrentUser;
 import com.rymcu.mortise.member.api.service.ApiMemberService;
-import com.rymcu.mortise.member.api.service.MemberContextService;
 import com.rymcu.mortise.member.api.service.VerificationCodeService;
 import com.rymcu.mortise.member.entity.Member;
 import com.rymcu.mortise.web.annotation.ApiController;
@@ -29,6 +29,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -54,7 +55,6 @@ public class MemberAuthController {
     private final ApiMemberService memberService;
     private final JwtTokenUtil jwtTokenUtil;
     private final VerificationCodeService verificationCodeService;
-    private final MemberContextService memberContextService;
     private final AuthCacheService authCacheService;
 
     @PostMapping("/register")
@@ -245,8 +245,11 @@ public class MemberAuthController {
     @GetMapping("/profile")
     @Operation(summary = "获取当前会员信息")
     @ApiLog(recordParams = false, recordResponseBody = false, value = "获取当前会员信息")
-    public GlobalResult<Member> getProfile() {
-        Member member = memberService.getMemberById(memberContextService.getCurrentMemberId());
+    public GlobalResult<Member> getProfile(@AuthenticationPrincipal CurrentUser currentUser) {
+        if (currentUser == null) {
+            return GlobalResult.error("未登录");
+        }
+        Member member = memberService.getMemberById(currentUser.getUserId());
         if (member == null) {
             return GlobalResult.error("未登录");
         }
@@ -260,11 +263,12 @@ public class MemberAuthController {
     @Operation(summary = "更新会员信息")
     @ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "更新会员信息")
     @OperationLog(module = "会员信息", operation = "更新会员信息", recordParams = false, recordResult = true)
-    public GlobalResult<Boolean> updateProfile(@Valid @RequestBody MemberUpdateRequest request) {
-        Long memberId = memberContextService.getCurrentMemberId();
-        if (memberId == null) {
+    public GlobalResult<Boolean> updateProfile(@AuthenticationPrincipal CurrentUser currentUser,
+                                               @Valid @RequestBody MemberUpdateRequest request) {
+        if (currentUser == null) {
             return GlobalResult.error("未登录");
         }
+        Long memberId = currentUser.getUserId();
 
         log.info("更新会员信息请求: memberId={}", memberId);
 
@@ -283,11 +287,12 @@ public class MemberAuthController {
     @Operation(summary = "修改密码")
     @ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "修改密码")
     @OperationLog(module = "会员信息", operation = "修改密码", recordParams = false, recordResult = false)
-    public GlobalResult<Boolean> updatePassword(@Valid @RequestBody MemberPasswordRequest request) {
-        Long memberId = memberContextService.getCurrentMemberId();
-        if (memberId == null) {
+    public GlobalResult<Boolean> updatePassword(@AuthenticationPrincipal CurrentUser currentUser,
+                                                @Valid @RequestBody MemberPasswordRequest request) {
+        if (currentUser == null) {
             return GlobalResult.error("未登录");
         }
+        Long memberId = currentUser.getUserId();
 
         log.info("修改密码请求: memberId={}", memberId);
 
@@ -306,11 +311,12 @@ public class MemberAuthController {
     @Operation(summary = "修改用户名")
     @ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "修改用户名")
     @OperationLog(module = "会员信息", operation = "修改用户名", recordParams = false, recordResult = true)
-    public GlobalResult<Boolean> updateUsername(@Valid @RequestBody MemberUsernameRequest request) {
-        Long memberId = memberContextService.getCurrentMemberId();
-        if (memberId == null) {
+    public GlobalResult<Boolean> updateUsername(@AuthenticationPrincipal CurrentUser currentUser,
+                                                @Valid @RequestBody MemberUsernameRequest request) {
+        if (currentUser == null) {
             return GlobalResult.error("未登录");
         }
+        Long memberId = currentUser.getUserId();
 
         log.info("修改用户名请求: memberId={}, newUsername={}", memberId, request.newUsername());
 

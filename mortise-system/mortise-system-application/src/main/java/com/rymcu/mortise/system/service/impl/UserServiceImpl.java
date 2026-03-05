@@ -321,9 +321,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public Boolean updateUserProfileInfo(UserProfileInfo userProfileInfo, User user) {
-        User u = UpdateEntity.of(User.class, user.getId());
-        if (!user.getNickname().equals(userProfileInfo.getNickname())) {
+    public Boolean updateUserProfileInfo(UserProfileInfo userProfileInfo, Long userId) {
+        User u = UpdateEntity.of(User.class, userId);
+        User current = getById(userId);
+        if (current == null || !current.getNickname().equals(userProfileInfo.getNickname())) {
             u.setNickname(checkNickname(userProfileInfo.getNickname()));
         }
         // 仅在头像非空时更新，避免覆盖原有头像

@@ -17,7 +17,7 @@ import com.rymcu.mortise.system.model.auth.*;
 import com.rymcu.mortise.system.model.ForgetPasswordInfo;
 import com.rymcu.mortise.system.model.RefreshTokenInfo;
 import com.rymcu.mortise.system.model.TokenUser;
-import com.rymcu.mortise.system.model.UserDetailInfo;
+import com.rymcu.mortise.core.model.CurrentUser;
 import com.rymcu.mortise.system.service.AuthService;
 import com.rymcu.mortise.system.service.UserService;
 import com.rymcu.mortise.web.annotation.AdminController;
@@ -36,7 +36,6 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.security.auth.login.AccountNotFoundException;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * 认证授权控制器
@@ -136,10 +135,10 @@ public class AuthController {
     @ApiLog(value = "用户登出", recordRequestBody = false, recordResponseBody = false)
     @OperationLog(module = "认证管理", operation = "用户登出", recordParams = false)
     public GlobalResult<?> logout(
-            @AuthenticationPrincipal UserDetailInfo userDetails,
+            @AuthenticationPrincipal CurrentUser currentUser,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
-        User user = userDetails.getUser();
-        if (Objects.nonNull(user)) {
+        String account = currentUser.getUsername();
+        if (account != null) {
             // 从 Authorization 头中提取 Token
             String token = null;
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
@@ -148,12 +147,12 @@ public class AuthController {
 
             if (token != null) {
                 // 使用带黑名单的注销方法
-                tokenManager.revokeToken(user.getAccount(), token);
-                log.info("用户登出成功（Token 已加入黑名单）: {}", user.getAccount());
+                tokenManager.revokeToken(account, token);
+                log.info("用户登出成功（Token 已加入黑名单）: {}", account);
             } else {
                 // 回退到简单删除
-                tokenManager.deleteToken(user.getAccount());
-                log.info("用户登出成功: {}", user.getAccount());
+                tokenManager.deleteToken(account);
+                log.info("用户登出成功: {}", account);
             }
         }
         return GlobalResult.success();
@@ -169,10 +168,10 @@ public class AuthController {
     })
     @GetMapping("/me")
     @ApiLog(value = "获取当前用户信息", recordRequestBody = false, recordResponseBody = false)
-    public GlobalResult<ObjectNode> getUserSession(@AuthenticationPrincipal UserDetailInfo userDetails) {
-        log.info("获取用户会话信息: {}", userDetails.getUsername());
+    public GlobalResult<ObjectNode> getUserSession(@AuthenticationPrincipal CurrentUser currentUser) {
+        log.info("获取用户会话信息: {}", currentUser.getUsername());
         // 从数据库取最新用户数据，避免资料更新（头像、昵称等）后仍返回 Principal 中的旧值
-        User freshUser = userService.findByAccount(userDetails.getUsername());
+        User freshUser = userService.findByAccount(currentUser.getUsername());
         AuthInfo authInfo = authService.userSession(freshUser);
         ObjectMapper objectMapper = new ObjectMapper();
         ObjectNode object = objectMapper.createObjectNode();
@@ -190,8 +189,8 @@ public class AuthController {
     })
     @GetMapping("/menus")
     @ApiLog(value = "获取当前用户菜单", recordRequestBody = false)
-    public GlobalResult<List<Link>> menus(@AuthenticationPrincipal UserDetailInfo userDetails) {
-        List<Link> menus = authService.userMenus(userDetails.getUser());
+    public GlobalResult<List<Link>> menus(@AuthenticationPrincipal CurrentUser currentUser) {
+        List<Link> menus = authService.userMenus(currentUser.getUserId());
         return GlobalResult.success(menus);
     }
 
@@ -264,8 +263,8 @@ public class AuthController {
     })
     @GetMapping("/profile")
     @ApiLog(value = "获取当前用户资料", recordRequestBody = false, recordResponseBody = false)
-    public GlobalResult<UserProfileInfo> getProfile(@AuthenticationPrincipal UserDetailInfo userDetails) {
-        User user = userService.getOneByEntityId(userDetails.getUser());
+    public GlobalResult<UserProfileInfo> getProfile(@AuthenticationPrincipal CurrentUser currentUser) {
+        User user = userService.getById(currentUser.getUserId());
         UserProfileInfo profileInfo = new UserProfileInfo();
         profileInfo.setId(user.getId());
         profileInfo.setNickname(user.getNickname());
@@ -288,11 +287,10 @@ public class AuthController {
     @ApiLog(value = "更新当前用户资料", recordRequestBody = false, recordResponseBody = false)
     @OperationLog(module = "认证管理", operation = "更新用户资料", recordParams = false, recordResult = true)
     public GlobalResult<Boolean> updateProfile(
-            @AuthenticationPrincipal UserDetailInfo userDetails,
+            @AuthenticationPrincipal CurrentUser currentUser,
             @Valid @RequestBody UserProfileInfo userProfileInfo) {
-        User user = userDetails.getUser();
-        log.info("更新用户资料请求: {}", user.getAccount());
-        Boolean result = userService.updateUserProfileInfo(userProfileInfo, user);
+        log.info("更新用户资料请求: {}", currentUser.getUsername());
+        Boolean result = userService.updateUserProfileInfo(userProfileInfo, currentUser.getUserId());
         return GlobalResult.success(result);
     }
 
@@ -310,11 +308,10 @@ public class AuthController {
     @ApiLog(value = "发送邮箱更换验证码", recordRequestBody = false, recordResponseBody = false)
     @OperationLog(module = "认证管理", operation = "发送邮箱更换验证码", recordParams = false, recordResult = false)
     public GlobalResult<String> sendEmailUpdateCode(
-            @AuthenticationPrincipal UserDetailInfo userDetails,
+            @AuthenticationPrincipal CurrentUser currentUser,
             @Valid @RequestBody EmailUpdateCodeRequest request) {
-        User user = userDetails.getUser();
-        log.info("发送邮箱更换验证码请求: userId={}", user.getId());
-        userService.sendEmailUpdateCode(user.getId(), request.newEmail());
+        log.info("发送邮箱更换验证码请求: userId={}", currentUser.getUserId());
+        userService.sendEmailUpdateCode(currentUser.getUserId(), request.newEmail());
         return GlobalResult.success(ResultCode.SUCCESS.getMessage());
     }
 
@@ -331,11 +328,10 @@ public class AuthController {
     @ApiLog(value = "确认邮箱更换", recordRequestBody = false, recordResponseBody = false)
     @OperationLog(module = "认证管理", operation = "确认邮箱更换", recordParams = false, recordResult = true)
     public GlobalResult<Boolean> confirmEmailUpdate(
-            @AuthenticationPrincipal UserDetailInfo userDetails,
+            @AuthenticationPrincipal CurrentUser currentUser,
             @Valid @RequestBody EmailUpdateConfirmInfo confirmInfo) {
-        User user = userDetails.getUser();
-        log.info("确认邮箱更换请求: userId={}", user.getId());
-        Boolean result = userService.confirmEmailUpdate(user.getId(), confirmInfo.newEmail(), confirmInfo.code());
+        log.info("确认邮箱更换请求: userId={}", currentUser.getUserId());
+        Boolean result = userService.confirmEmailUpdate(currentUser.getUserId(), confirmInfo.newEmail(), confirmInfo.code());
         return GlobalResult.success(result);
     }
 

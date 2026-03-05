@@ -92,7 +92,7 @@ public interface AuthService {
 
     AuthInfo userSession(User user);
 
-    List<Link> userMenus(User user);
+    List<Link> userMenus(Long userId);
 
     boolean forgetPassword(String code, String password);
 

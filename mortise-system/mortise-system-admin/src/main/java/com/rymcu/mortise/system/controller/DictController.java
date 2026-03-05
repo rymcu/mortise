@@ -4,13 +4,12 @@ import com.rymcu.mortise.web.annotation.AdminController;
 import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.common.model.BaseOption;
 import com.rymcu.mortise.common.model.BatchUpdateInfo;
+import com.rymcu.mortise.core.model.CurrentUser;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.log.annotation.ApiLog;
 import com.rymcu.mortise.log.annotation.OperationLog;
 import com.rymcu.mortise.system.entity.Dict;
-import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.model.DictSearch;
-import com.rymcu.mortise.system.model.UserDetailInfo;
 import com.rymcu.mortise.system.service.DictService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -78,9 +77,8 @@ public class DictController {
         @ApiLog("创建字典")
         @OperationLog(module = "字典管理", operation = "创建字典", recordParams = true, recordResult = true)
     public GlobalResult<Long> createDict(@Parameter(description = "字典信息", required = true) @Valid @RequestBody Dict dict,
-                                            @AuthenticationPrincipal UserDetailInfo userDetails) {
-        User user = userDetails.getUser();
-        dict.setCreatedBy(user.getId());
+                                            @AuthenticationPrincipal CurrentUser currentUser) {
+        dict.setCreatedBy(currentUser.getUserId());
         Long result = dictService.createDict(dict);
         return GlobalResult.success(result);
     }
@@ -97,10 +95,9 @@ public class DictController {
         @OperationLog(module = "字典管理", operation = "更新字典", recordParams = true)
     public GlobalResult<Boolean> updateDict(@Parameter(description = "字典ID", required = true) @PathVariable("id") Long idDict,
                                             @Parameter(description = "字典信息", required = true) @Valid @RequestBody Dict dict,
-                                            @AuthenticationPrincipal UserDetailInfo userDetails) {
-        User user = userDetails.getUser();
+                                            @AuthenticationPrincipal CurrentUser currentUser) {
         dict.setId(idDict);
-        dict.setUpdatedBy(user.getId());
+        dict.setUpdatedBy(currentUser.getUserId());
         Boolean result = dictService.updateDict(dict);
         return GlobalResult.success(result);
     }

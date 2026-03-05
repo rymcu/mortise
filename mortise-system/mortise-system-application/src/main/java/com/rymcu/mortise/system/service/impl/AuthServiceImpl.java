@@ -482,13 +482,13 @@ public class AuthServiceImpl implements AuthService {
         BeanCopierUtil.copy(user, authInfo);
         authInfo.setScope(userService.findUserPermissionsByIdUser(user.getId()));
         authInfo.setRole(userService.findUserRoleListByIdUser(user.getId()));
-        authInfo.setLinks(userMenus(user));
+        authInfo.setLinks(userMenus(user.getId()));
         return authInfo;
     }
 
     @Override
-    public List<Link> userMenus(User user) {
-        return menuService.findLinksByIdUser(user.getId());
+    public List<Link> userMenus(Long userId) {
+        return menuService.findLinksByIdUser(userId);
     }
 
     /**
