@@ -10,3 +10,7 @@
 	path = mortise-community
 	url = git@github.com:rymcu/mortise-community.git
 	branch = master
+[submodule "mortise-im"]
+	path = mortise-im
+	url = git@github.com:rymcu/mortise-im.git
+	branch = master
