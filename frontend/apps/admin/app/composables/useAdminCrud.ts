@@ -1,6 +1,7 @@
 import {
   fetchAdminPost,
   fetchAdminPut,
+  fetchAdminPatch,
   fetchAdminDelete,
   fetchAdminBatchDelete
 } from '@mortise/core-sdk'
@@ -111,6 +112,23 @@ export function useAdminCrud(basePath: string) {
     }
   }
 
+  /** 自定义 PATCH 操作（如状态更新等） */
+  async function patchAction<T = unknown>(
+    subPath: string,
+    query?: Record<string, unknown>
+  ): Promise<T | null> {
+    loading.value = true
+    errorMessage.value = ''
+    try {
+      return await fetchAdminPatch<T>($api, `${basePath}/${subPath}`, query)
+    } catch (error) {
+      errorMessage.value = error instanceof Error ? error.message : '操作失败'
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     loading,
     errorMessage,
@@ -119,6 +137,7 @@ export function useAdminCrud(basePath: string) {
     remove,
     batchRemove,
     postAction,
-    putAction
+    putAction,
+    patchAction
   }
 }

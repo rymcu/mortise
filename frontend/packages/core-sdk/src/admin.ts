@@ -67,6 +67,22 @@ export async function fetchAdminPut<T>(
   return response.data
 }
 
+/** 局部更新（PATCH） */
+export async function fetchAdminPatch<T>(
+  api: ApiInvoker,
+  path: string,
+  query?: Record<string, unknown>
+): Promise<T> {
+  const response = await api<GlobalResult<T>>(path, {
+    method: 'PATCH',
+    query
+  })
+  if (!response || response.code !== 200) {
+    throw new Error(response?.message || '操作失败')
+  }
+  return response.data
+}
+
 /** 删除 */
 export async function fetchAdminDelete<T = void>(
   api: ApiInvoker,
