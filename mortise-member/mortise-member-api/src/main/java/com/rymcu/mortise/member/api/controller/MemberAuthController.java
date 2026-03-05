@@ -15,6 +15,7 @@ import com.rymcu.mortise.member.api.model.MemberUpdateRequest;
 import com.rymcu.mortise.member.api.model.MemberUsernameRequest;
 import com.rymcu.mortise.member.api.model.PhoneLoginRequest;
 import com.rymcu.mortise.member.api.model.RefreshTokenRequest;
+import com.rymcu.mortise.member.api.model.ResetPasswordRequest;
 import com.rymcu.mortise.member.api.model.SendCodeRequest;
 import com.rymcu.mortise.member.api.model.TokenRefreshResponse;
 import com.rymcu.mortise.member.api.model.VerifyCodeRequest;
@@ -344,6 +345,35 @@ public class MemberAuthController {
             return GlobalResult.error("不支持的验证码类型: " + request.type());
         }
 
+        return GlobalResult.success(success);
+    }
+
+    @PostMapping("/reset-password")
+    @Operation(summary = "重置密码", description = "验证验证码后重置密码")
+    @ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "重置密码")
+    public GlobalResult<Boolean> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        boolean isValid;
+
+        if ("sms".equalsIgnoreCase(request.type())) {
+            if (request.account() == null || request.account().trim().isEmpty()) {
+                return GlobalResult.error("手机号不能为空");
+            }
+            isValid = verificationCodeService.verifySmsCode(request.account(), request.code());
+        } else if ("email".equalsIgnoreCase(request.type())) {
+            if (request.account() == null || request.account().trim().isEmpty()) {
+                return GlobalResult.error("邮箱不能为空");
+            }
+            isValid = verificationCodeService.verifyEmailCode(request.account(), request.code());
+        } else {
+            return GlobalResult.error("不支持的验证码类型: " + request.type());
+        }
+
+        if (!isValid) {
+            return GlobalResult.error("验证码错误或已过期");
+        }
+
+        Boolean success = memberService.resetPassword(request.account(), request.newPassword(), request.code());
+        log.info("密码重置成功: account={}", request.account());
         return GlobalResult.success(success);
     }
 

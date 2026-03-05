@@ -188,7 +188,8 @@ public class WebSecurityConfig {
         authenticationFailureHandlerProvider.ifAvailable(verificationCodeAuthenticationFilter::setAuthenticationFailureHandler);
 
         // 基础配置 (总是应用)
-        http.csrf(AbstractHttpConfigurer::disable)
+        http.cors(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(jwtAuthenticationEntryPoint)
