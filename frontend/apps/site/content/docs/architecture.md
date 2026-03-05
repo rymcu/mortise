@@ -6,9 +6,14 @@ order: 2
 
 # 架构介绍
 
-Mortise 采用 **分层架构 + 多模块** 设计，25 个 Maven 模块、6 层依赖矩阵、12 组 SPI 可扩展接口。
+Mortise 采用 **分层架构 + 多模块** 设计，25 个 Maven 模块、6 层依赖矩阵、15 组 SPI 可扩展接口。
 
-## 后端模块划分
+后端模块分为两类：
+
+- **主仓开源模块** — 包含在主仓库，MIT 协议开源，直接 `git clone` 即可使用。
+- **商用模块** — 以 Git Submodule 挂载的私有仓库，需单独购买授权后拉取。
+
+## 主仓开源模块
 
 | 模块 | 说明 |
 |------|------|
@@ -21,14 +26,33 @@ Mortise 采用 **分层架构 + 多模块** 设计，25 个 Maven 模块、6 层
 | `mortise-persistence` | 数据访问（MyBatis-Flex 1.11.0） |
 | `mortise-system` | 系统模块（用户、角色、菜单、字典） |
 | `mortise-member` | 会员模块 |
-| `mortise-community` | 社区模块（文章、评论） |
-| `mortise-commerce` | 电商模块（商品、订单） |
-| `mortise-payment` | 支付模块 |
+| `mortise-product` | 通用产品目录基础模块（免费，已内置主仓） |
 | `mortise-notification` | 通知模块（邮件/微信模板消息） |
 | `mortise-file` | 文件模块（x-file-storage） |
 | `mortise-log` | 操作日志（`@OperationLog` AOP） |
 | `mortise-monitor` | 监控告警（Prometheus + Actuator） |
 | `mortise-wechat` | 微信生态（WxJava 多账号公众号管理） |
+| `mortise-test-support` | 测试支持工具类 |
+
+## 商用模块（Git Submodule）
+
+商用模块以 Git Submodule 方式挂载，购买授权后通过以下命令拉取：
+
+```bash
+# 拉取全部商用模块（需所有模块权限）
+git clone --recurse-submodules git@github.com:rymcu/mortise.git
+
+# 仅初始化已购买的指定模块
+git submodule update --init --recursive mortise-payment mortise-commerce
+```
+
+| 模块 | 说明 | 激活方式 |
+|------|------|----------|
+| `mortise-commerce` | 电商模块（商品、订单） | Maven `pro` Profile 自动激活 |
+| `mortise-payment` | 支付模块（微信支付 / 支付宝） | Maven `pro` Profile 自动激活 |
+| `mortise-community` | 社区模块（文章、评论） | Maven `pro` Profile 自动激活 |
+
+> `pro` Profile 通过检测 `mortise-payment/pom.xml` 是否存在来自动激活，无需手动指定。未购买模块直接忽略，不影响主仓编译。
 
 ## 后端技术栈
 
@@ -52,18 +76,68 @@ Mortise 采用 **分层架构 + 多模块** 设计，25 个 Maven 模块、6 层
 
 ## 前端架构
 
-前端采用 **pnpm Workspace Monorepo** 管理三个独立应用：
+前端位于 `frontend/` 目录，采用 **pnpm Workspace Monorepo** 架构，基于 **Nuxt 4 + Nuxt UI 4.5 + Pinia + TypeScript 5** 构建。
 
-| 应用 | 路径 | 模式 | 端口 |
-|------|------|------|------|
-| admin - 管理端 | `apps/admin` | SPA | localhost:3000/admin/ |
-| web - 用户端 | `apps/web` | SSR | localhost:3001/ |
-| site - 官网 | `apps/site` | SSR | localhost:3103/ |
+### 应用（apps/）
 
-三端共享内部包：
+| 应用 | 包名 | 路径 | 渲染模式 | 开发端口 | Docker 端口 |
+|------|------|------|----------|----------|------------|
+| 管理端 | `@mortise/admin` | `apps/admin` | SPA | `localhost:3000/admin/` | `3101/admin/` |
+| 用户端 | `@mortise/web` | `apps/web` | SSR | `localhost:3001/` | `3102/` |
+| 官网 | `@mortise/site` | `apps/site` | SSR | `localhost:3103/` | `3103/` |
 
-- **`@mortise/auth`** — 统一鉴权包（Token 注入、401 自动刷新、70 单飞续期）
-- **`@mortise/core-sdk`** — 后端 API 封装 SDK
+### 共享包（packages/）
+
+| 包名 | 路径 | 说明 |
+|------|------|------|
+| `@mortise/auth` | `packages/auth` | 统一鉴权：Token 注入、401 单飞刷新、Token 持久化存储 |
+| `@mortise/core-sdk` | `packages/core-sdk` | 后端 API SDK（管理端/用户端接口封装，OSS 边界内） |
+| `@mortise/ui` | `packages/ui` | 共享业务 UI 组件（基于 Nuxt UI 4.5 二次封装） |
+| `@mortise/config` | `packages/config` | 共享工程配置（ESLint / TypeScript / Prettier 规则） |
+
+### 前端技术栈
+
+| 层次 | 技术选型 |
+|------|----------|
+| 框架 | Nuxt 4（基于 Vue 3） |
+| 组件库 | Nuxt UI 4.5（TailwindCSS 4 + Reka UI） |
+| 状态管理 | Pinia |
+| 语言 | TypeScript 5 |
+| 包管理 | pnpm 10+ Workspace Monorepo |
+| 工具函数 | VueUse |
+
+### 已实现页面一览
+
+**管理端（apps/admin）**
+
+| 路由 | 说明 |
+|------|------|
+| `/admin/auth/login` | 管理员登录（账号密码 + OAuth2） |
+| `/admin/auth/callback` | OAuth2 回调 |
+| `/admin/auth/forgot-password` | 忘记密码 |
+| `/admin/dashboard` | 数据仪表盘 |
+| `/admin/members` | 会员列表 |
+| `/admin/systems/users` | 用户管理 |
+| `/admin/systems/roles` | 角色管理 |
+| `/admin/systems/menus` | 菜单管理 |
+| `/admin/systems/dictionaries` | 字典管理 |
+| `/admin/systems/dict-types` | 字典类型管理 |
+| `/admin/systems/oauth2-clients` | OAuth2 客户端配置 |
+| `/admin/systems/notification-channels` | 通知渠道配置 |
+| `/admin/systems/wechat-accounts` | 微信公众号管理 |
+| `/admin/systems/site-config` | 站点配置 |
+| `/admin/settings` | 个人设置（资料 / 通知 / 安全） |
+| `/admin/inbox` | 消息中心 |
+| `/admin/setup` | 初始引导 |
+
+**用户端（apps/web）**
+
+| 路由 | 说明 |
+|------|------|
+| `/app/auth/login` | 会员登录 |
+| `/app/auth/register` | 会员注册 |
+| `/app/auth/callback` | OAuth2 回调 |
+| `/app/profile` | 个人中心 |
 
 ## SPI 可扩展架构
 
@@ -86,58 +160,4 @@ Mortise 支持四种登录方式：
 4. **OAuth2 多平台** — GitHub / Google / Logto / 微信，Strategy 模式可扩展
 
 
-## 后端架构
 
-### 模块划分
-
-```
-mortise/
-├── mortise-app          # 应用启动模块（入口）
-├── mortise-core         # 核心框架（异常、响应封装）
-├── mortise-common       # 公共工具类
-├── mortise-web-support  # Web 支持（过滤器、拦截器）
-├── mortise-auth         # 认证授权（OAuth2 + Spring Security）
-├── mortise-cache        # 缓存抽象（Redis）
-├── mortise-persistence  # 数据访问（MyBatis-Flex）
-├── mortise-system       # 系统模块（用户、角色、权限）
-├── mortise-member       # 会员模块
-├── mortise-community    # 社区模块（文章、评论）
-├── mortise-commerce     # 电商模块（商品、订单）
-├── mortise-payment      # 支付模块
-├── mortise-notification # 通知模块（短信、邮件）
-├── mortise-file         # 文件模块
-├── mortise-log          # 操作日志
-└── mortise-monitor      # 监控告警
-```
-
-### 技术栈
-
-| 层次 | 技术选型 |
-|------|----------|
-| Web 框架 | Spring Boot 3.x |
-| ORM | MyBatis-Flex |
-| 数据库 | PostgreSQL 15+ |
-| 缓存 | Redis 7+ |
-| 认证 | Spring Authorization Server |
-| 数据库迁移 | Flyway |
-| API 文档 | Knife4j (OpenAPI 3) |
-| 限流/熔断 | Resilience4j |
-
-## 前端架构
-
-前端采用 **pnpm monorepo** 管理三个独立应用：
-
-- **web** - 用户端（SSR，Vue 3 + Nuxt 4）
-- **admin** - 管理端（SPA，Vue 3 + Nuxt 4）
-- **site** - 官网（SSR，Vue 3 + Nuxt 4）
-
-三端共享 `@mortise/ui` 组件包和 `@mortise/auth` 认证包。
-
-## API 设计规范
-
-所有 API 遵循统一规范：
-
-- 路径：`/mortise/api/v1/{模块}/{资源}`
-- 响应格式：`{ code, message, data }`
-- 分页参数：`pageNum`, `pageSize`
-- 认证：Bearer Token (JWT)

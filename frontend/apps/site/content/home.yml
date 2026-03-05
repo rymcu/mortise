@@ -1,9 +1,9 @@
 seo:
-  title: Mortise - 现代化企业级后台管理脚手架
-  description: Mortise 基于 Spring Boot 3.5.7 + MyBatis-Flex 构建，集成 JWT、OAuth2 多平台登录、Resilience4j 限流、Prometheus 监控、微信生态等企业级能力，开箱即用。
+  title: Mortise - 现代化企业级全栈业务开发平台
+  description: Mortise 基于 Spring Boot 3.5.7 + MyBatis-Flex + JDK 21 构建的企业级全栈开发平台，涵盖认证授权、电商交易、聚合支付、社区运营、会员体系等核心业务域，15 组 SPI 可扩展接口，开箱即用。
 
-title: 现代化[企业级]{.text-primary}后台管理脚手架
-description: 基于 Spring Boot 3.5.7 + MyBatis-Flex + JDK 21，25 个模块、12 组 SPI 可扩展接口，集成认证授权、监控告警、微信生态等企业级能力，开箱即用。
+title: 现代化[企业级]{.text-primary}全栈业务开发平台
+description: 基于 Spring Boot 3.5.7 + MyBatis-Flex + JDK 21，25 个模块、15 组 SPI 可扩展接口，涵盖认证授权、电商交易、聚合支付、社区运营等核心业务域，前后端全栈，开箱即用、按需扩展。
 
 hero:
   links:
@@ -22,7 +22,7 @@ hero:
 
 features:
   title: 生产就绪，开箱即用
-  description: 25 个模块、6 层依赖矩阵、12 组 SPI 可扩展接口，覆盖企业项目核心需求。
+  description: 25 个模块、6 层依赖矩阵、15 组 SPI 可扩展接口，覆盖认证授权、电商支付、社区运营等企业项目核心业务域。
   items:
     - title: 多平台 OAuth2 登录
       description: 支持 GitHub、Google、Logto、微信等多平台登录，Strategy 模式可扩展，内置 JWT 无状态认证与自动续期。
@@ -40,8 +40,14 @@ features:
       description: 基于 x-file-storage 的统一文件 API，支持阿里云 OSS 等多种存储后端，内置分片上传与文件元数据持久化。
       icon: i-lucide-folder-open
     - title: SPI 可扩展架构
-      description: 12 组 SPI 接口覆盖缓存、日志、通知、认证等核心模块，热插拔设计让业务扩展无需修改框架代码。
+      description: 15 组 SPI 接口覆盖缓存、日志、通知、认证等核心模块，热插拔设计让业务扩展无需修改框架代码。
       icon: i-lucide-puzzle
+    - title: 前端 Monorepo 全栈
+      description: pnpm Workspace Monorepo 管理三个独立应用（管理端 / 用户端 / 官网），共享 @mortise/auth 、@mortise/core-sdk 、@mortise/nuxt-layer 等内部包，免重复建轮。
+      icon: i-lucide-layout-dashboard
+    - title: Vue 3 + Nuxt 4 现代前端
+      description: 三端均基于 Vue 3 + Nuxt 4 + Nuxt UI 4 + Tailwind CSS v4 构建，管理端 SPA、用户端和官网 SSR，Pinia 状态管理，TipTap 富文本编辑、Unovis 图表可视化。
+      icon: i-simple-icons-vuedotjs
 
 steps:
   title: 三步快速上手
