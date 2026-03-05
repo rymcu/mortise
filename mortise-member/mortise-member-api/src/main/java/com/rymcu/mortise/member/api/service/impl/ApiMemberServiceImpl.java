@@ -195,7 +195,7 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean resetPassword(String account, String newPassword, String verificationCode) {
-        // TODO: 实现验证码验证逻辑
+        // 注意：验证码校验已在 Controller 层完成，此处直接执行密码重置
         Member member = findByUsername(account);
         if (member == null) {
             member = findByEmail(account);
@@ -216,10 +216,18 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean verifyEmail(Long memberId, String code) {
-        // TODO: 实现验证码验证逻辑
         Member member = getById(memberId);
         if (member == null) {
             throw new IllegalArgumentException("会员不存在");
+        }
+
+        String email = member.getEmail();
+        if (StringUtils.isBlank(email)) {
+            throw new IllegalArgumentException("该会员未绑定邮箱");
+        }
+
+        if (!verificationCodeService.verifyEmailCode(email, code)) {
+            throw new IllegalArgumentException("邮箱验证码错误或已过期");
         }
 
         member.setEmailVerifiedTime(LocalDateTime.now());
@@ -230,10 +238,18 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean verifyPhone(Long memberId, String code) {
-        // TODO: 实现验证码验证逻辑
         Member member = getById(memberId);
         if (member == null) {
             throw new IllegalArgumentException("会员不存在");
+        }
+
+        String phone = member.getPhone();
+        if (StringUtils.isBlank(phone)) {
+            throw new IllegalArgumentException("该会员未绑定手机号");
+        }
+
+        if (!verificationCodeService.verifySmsCode(phone, code)) {
+            throw new IllegalArgumentException("手机验证码错误或已过期");
         }
 
         member.setPhoneVerifiedTime(LocalDateTime.now());
