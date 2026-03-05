@@ -14,6 +14,23 @@ useSeoMeta({
   description,
   ogDescription: description
 })
+
+const { open } = useChatWidget()
+
+/** 咨询类按钮（to 指向 /about#contact）转换为打开聊天窗口 */
+function getCardButton(card: Record<string, unknown>) {
+  const btn = card.button as Record<string, unknown> | undefined
+  if (!btn) return btn
+  const to = btn.to as string | undefined
+  if (to?.includes('/about#contact') || to?.includes('#contact')) {
+    return {
+      ...btn,
+      to: undefined,
+      onClick: () => open({ subject: card.title as string })
+    }
+  }
+  return btn
+}
 </script>
 
 <template>
@@ -41,7 +58,7 @@ useSeoMeta({
           :billing-cycle="card.billing_cycle"
           :highlight="card.highlight"
           :features="card.features"
-          :button="card.button"
+          :button="getCardButton(card)"
         >
           <template
             v-if="card.name"

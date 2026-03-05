@@ -262,6 +262,33 @@
                 <version>${revision}</version>
             </dependency>
 
+            <!-- IM 模块（收费私有模块，通过 pro profile 按需引入） -->
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-im-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-im-application</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-im-infra</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-im-admin</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-im-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
             <!-- Community 模块（商业版，通过 pro profile 按需引入） -->
             <dependency>
                 <groupId>com.rymcu</groupId>
@@ -520,6 +547,7 @@
                 <module>mortise-commerce</module>
                 <module>mortise-payment</module>
                 <module>mortise-community</module>
+                <module>mortise-im</module>
             </modules>
         </profile>
     </profiles>

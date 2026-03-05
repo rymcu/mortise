@@ -9,6 +9,20 @@ useSeoMeta({
   title: '关于 Mortise',
   description: page.value.description
 })
+
+const { open } = useChatWidget()
+
+/** 在原有渠道末尾追加「在线咨询」入口 */
+const allChannels = computed(() => [
+  ...(page.value?.contact?.channels ?? []),
+  { icon: 'i-lucide-message-circle', label: '在线咨询', description: '与客服实时沟通', chat: true }
+])
+
+function handleChannelClick(ch: Record<string, unknown>) {
+  if (ch.chat) {
+    open({ subject: '商业咨询' })
+  }
+}
 </script>
 
 <template>
@@ -137,13 +151,14 @@ useSeoMeta({
       :title="page.contact.title"
       :description="page.contact.description"
     >
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 max-w-4xl mx-auto">
         <UCard
-          v-for="ch in page.contact.channels"
+          v-for="ch in allChannels"
           :key="ch.label"
-          :as="ch.wechat ? 'div' : 'a'"
-          v-bind="ch.wechat ? {} : { href: ch.to, target: '_blank' }"
+          :as="(ch.wechat || ch.chat) ? 'div' : 'a'"
+          v-bind="(ch.wechat || ch.chat) ? {} : { href: ch.to, target: '_blank' }"
           class="flex flex-col items-center text-center gap-3 p-6 hover:bg-accented/30 transition-colors cursor-pointer"
+          @click="handleChannelClick(ch as Record<string, unknown>)"
         >
           <UIcon :name="ch.icon" class="size-8 text-primary" />
           <p class="font-semibold text-highlighted">{{ ch.label }}</p>

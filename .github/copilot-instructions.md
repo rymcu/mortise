@@ -32,6 +32,21 @@
 
 ## Frontend UI Constraints
 
+### TypeScript 类型定义 (TypeScript Types)
+
+- **禁止在 `.vue` 文件的 `<script setup>` 中定义 `interface` 或 `type`。**
+- 所有 `interface`、`type` 必须提取到对应的 `.ts` 类型文件（通常放在 `app/types/` 目录）并通过 `import type` 引入。
+- `.vue` 文件中只允许使用通过 `import type` 引入的类型。
+
+```ts
+// ❌ 禁止：直接在 .vue 文件中定义 interface
+// <script setup lang="ts">
+// interface User { id: number; name: string }
+
+// ✅ 正确：提取到 app/types/user.ts，然后在 .vue 中引入
+// import type { User } from '~/types/user'
+```
+
 ### 密码输入 (Password Input)
 
 - **所有 `type="password"` 的 `UInput` 必须实现显示/隐藏密码切换功能**，不得使用静态 `type="password"`。
