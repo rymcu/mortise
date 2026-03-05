@@ -7,7 +7,7 @@ import type { ConsultContext } from '~/types/im'
  * 通过 useChatWidget().open(ctx) 唤起。
  * 对接后端 /api/v1/app/im 接口，需用户已登录。
  */
-const { isOpen, context, close } = useChatWidget()
+const { isOpen, context, open, close } = useChatWidget()
 const config = useRuntimeConfig()
 const webUrl = (config.public as { webUrl?: string }).webUrl ?? ''
 
