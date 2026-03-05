@@ -16,6 +16,13 @@ const errorMessage = ref('')
 
 const fields = [
   {
+    name: 'username',
+    type: 'text' as const,
+    label: '用户名',
+    placeholder: '请设置用户名（8-20 位字母、数字或下划线）',
+    required: true
+  },
+  {
     name: 'email',
     type: 'text' as const,
     label: '邮箱',
@@ -40,6 +47,11 @@ const fields = [
 
 const schema = z
   .object({
+    username: z
+      .string()
+      .min(8, '用户名至少为 8 个字符')
+      .max(20, '用户名最多为 20 个字符')
+      .regex(/^[a-zA-Z0-9_]+$/, '用户名只能包含字母、数字和下划线'),
     email: z.string().email('请输入有效的邮箱地址'),
     password: z.string().min(6, '密码至少为 6 个字符'),
     confirmPassword: z.string().min(1, '请确认密码')
@@ -72,6 +84,7 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   errorMessage.value = ''
   try {
     await apiPost('/api/v1/app/auth/register', {
+      username: event.data.username,
       email: event.data.email,
       password: event.data.password
     })
