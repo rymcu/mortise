@@ -36,7 +36,7 @@ const columns = [{
   label: '项目',
   children: [{
     label: 'GitHub',
-    to: 'https://github.com/mortise-framework',
+    to: 'https://github.com/rymcu/mortise',
     target: '_blank'
   }, {
     label: '开源协议',
@@ -77,7 +77,7 @@ const columns = [{
 
     <template #right>
       <UButton
-        to="https://github.com/mortise-framework"
+        to="https://github.com/rymcu/mortise"
         target="_blank"
         icon="i-simple-icons-github"
         color="neutral"
