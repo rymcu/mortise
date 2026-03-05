@@ -10,7 +10,7 @@ const tag = ref('')
 
 const searchKeyword = ref('')
 
-const { data, pending, refresh } = await useAsyncData(
+const { data, pending, refresh: _refresh } = await useAsyncData(
   'articles',
   () => fetchArticles({ pageNum: page.value, pageSize, keyword: keyword.value, tag: tag.value }),
   { watch: [page, keyword, tag] }

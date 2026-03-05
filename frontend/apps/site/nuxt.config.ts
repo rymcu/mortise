@@ -1,57 +1,65 @@
 export default defineNuxtConfig({
-  extends: ['../../packages/nuxt-layer'],
+    extends: ['../../packages/nuxt-layer'],
 
-  modules: ['@nuxt/eslint', '@nuxt/ui', '@pinia/nuxt', '@nuxt/content', '@nuxt/image'],
+    modules: ['@nuxt/eslint', '@nuxt/ui', '@pinia/nuxt', '@nuxt/content', '@nuxt/image'],
 
-  devtools: { enabled: true },
+    ssr: true,
 
-  ssr: true,
+    devtools: {enabled: true},
 
-  css: ['~/assets/css/main.css'],
+    css: ['~/assets/css/main.css'],
 
-  ui: {
-    fonts: false
-  },
-
-  runtimeConfig: {
-    public: {
-      // 优先用环境变量，默认本地开发地址
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:9999/mortise',
-      // web 用户端地址，生产环境通过 NUXT_PUBLIC_WEB_URL 覆盖
-      webUrl: process.env.NUXT_PUBLIC_WEB_URL || 'http://localhost:3001'
-    }
-  },
-
-  devServer: {
-    port: 3002
-  },
-
-  vite: {
-    server: {
-      proxy: {
-        '/mortise': {
-          target: 'http://localhost:9999',
-          changeOrigin: true
+    mdc: {
+        highlight: {
+            noApiRoute: false,
+            langs: ['diff', 'ts', 'vue', 'css', 'java', 'xml', 'yaml', 'json', 'bash', 'sql']
         }
-      }
-    }
-  },
+    },
 
-  mdc: {
-    highlight: {
-      noApiRoute: false,
-      langs: ['diff', 'ts', 'vue', 'css', 'java', 'xml', 'yaml', 'json', 'bash', 'sql']
-    }
-  },
+    ui: {
+        fonts: false
+    },
 
-  compatibilityDate: '2025-01-15',
+    runtimeConfig: {
+        public: {
+            // 优先用环境变量，默认本地开发地址
+            apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:9999/mortise',
+            auth: {
+                loginPath: '/api/v1/app/auth/login',
+                refreshPath: '/api/v1/app/auth/refresh-token',
+                callbackPath: '/api/v1/app/oauth2/callback',
+                mePath: '/api/v1/app/auth/profile',
+                oauthAuthUrlPath: '/api/v1/app/oauth2/auth-url'
+            }
+        }
+    },
 
-  eslint: {
-    config: {
-      stylistic: {
-        commaDangle: 'never',
-        braceStyle: '1tbs'
-      }
-    }
-  }
+    devServer: {
+        port: 3001
+    },
+
+    compatibilityDate: '2025-01-15',
+
+    vite: {
+        optimizeDeps: {
+            exclude: ['@nuxtjs/mdc']
+        },
+        server: {
+            proxy: {
+                '/mortise': {
+                    target: 'http://localhost:9999',
+                    changeOrigin: true
+                }
+            }
+        }
+    },
+
+    eslint: {
+        config: {
+            stylistic: {
+                commaDangle: 'never',
+                braceStyle: '1tbs'
+            }
+        }
+    },
 })

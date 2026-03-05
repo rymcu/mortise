@@ -155,8 +155,8 @@ function handleChannelClick(ch: Record<string, unknown>) {
         <UCard
           v-for="ch in allChannels"
           :key="ch.label"
-          :as="(ch.wechat || ch.chat) ? 'div' : 'a'"
-          v-bind="(ch.wechat || ch.chat) ? {} : { href: ch.to, target: '_blank' }"
+          :as="('wechat' in ch && ch.wechat) || ('chat' in ch && ch.chat) ? 'div' : 'a'"
+          v-bind="('wechat' in ch && ch.wechat) || ('chat' in ch && ch.chat) ? {} : { href: (ch as { to?: string }).to, target: '_blank' }"
           class="flex flex-col items-center text-center gap-3 p-6 hover:bg-accented/30 transition-colors cursor-pointer"
           @click="handleChannelClick(ch as Record<string, unknown>)"
         >

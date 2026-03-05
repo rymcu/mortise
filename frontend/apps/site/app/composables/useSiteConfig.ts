@@ -45,7 +45,13 @@ export const useSiteConfig = () => {
   const siteDescription = computed(() => data.value?.values?.['site.description'] ?? '')
 
   /** Logo URL（为空时降级显示图标） */
-  const siteLogo = computed(() => data.value?.values?.['site.logo'] || null)
+  const siteLogo = computed(() => resolveUrl(data.value?.values?.['site.logo'] || '') || null)
+
+  /** Favicon URL（为空时使用默认 /favicon.ico） */
+  const siteFavicon = computed(() => {
+    const raw = data.value?.values?.['site.favicon'] || ''
+    return raw ? resolveUrl(raw) : '/favicon.ico'
+  })
 
   /** ICP 备案号 */
   const icp = computed(() => data.value?.values?.['site.icp'] || null)
@@ -65,6 +71,7 @@ export const useSiteConfig = () => {
     siteName,
     siteDescription,
     siteLogo,
+    siteFavicon,
     icp,
     titleTemplate
   }

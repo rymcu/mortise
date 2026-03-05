@@ -11,6 +11,7 @@
     "typecheck": "nuxt typecheck"
   },
   "dependencies": {
+    "@mortise/auth": "workspace:*",
     "@mortise/nuxt-layer": "workspace:*",
     "@iconify-json/lucide": "^1.2.95",
     "@iconify-json/simple-icons": "^1.2.72",
@@ -22,7 +23,8 @@
     "nuxt": "^4.3.1",
     "pinia": "^3.0.3",
     "tailwindcss": "^4.1.18",
-    "vue": "^3.5.28"
+    "vue": "^3.5.28",
+    "zod": "^3.24.0"
   },
   "devDependencies": {
     "@nuxt/eslint": "^1.15.1",

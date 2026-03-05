@@ -8,8 +8,6 @@ import type { ConsultContext } from '~/types/im'
  * 对接后端 /api/v1/app/im 接口，需用户已登录。
  */
 const { isOpen, context, open, close } = useChatWidget()
-const config = useRuntimeConfig()
-const webUrl = (config.public as { webUrl?: string }).webUrl ?? ''
 
 const {
   messages,
@@ -42,8 +40,7 @@ function handleClose() {
 
 function retryOrLogin() {
   if (error.value === 'auth') {
-    const loginUrl = `${webUrl}/auth/login?redirect=/`
-    window.open(loginUrl, '_blank')
+    navigateTo('/auth/login?returnToChat=1')
   } else {
     reset()
     initialized.value = false
@@ -158,6 +155,8 @@ onUnmounted(() => {
               <!-- 欢迎语 -->
               <div v-if="messages.length === 0" class="mb-3">
                 <UChatMessage
+                  id="welcome"
+                  role="assistant"
                   :parts="[{ type: 'text', text: '您好，欢迎咨询！请描述您的需求，客服将尽快回复。' }]"
                   side="left"
                   :avatar="{ icon: 'i-lucide-headset', alt: '客服' }"
@@ -176,6 +175,8 @@ onUnmounted(() => {
                   {{ msg.time }}
                 </p>
                 <UChatMessage
+                  :id="msg.id"
+                  :role="msg.role"
                   :parts="msg.parts"
                   :side="msg.role === 'assistant' ? 'right' : 'left'"
                   :avatar="

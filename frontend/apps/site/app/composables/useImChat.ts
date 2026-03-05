@@ -32,7 +32,8 @@ export function useImChat() {
   }
 
   function buildHeaders(): Record<string, string> {
-    return {}
+    const auth = useAuthStore()
+    return auth.authHeader ? { Authorization: auth.authHeader } : {}
   }
 
   // ── 会话创建 ─────────────────────────────────────────────────────────────
@@ -90,6 +91,7 @@ export function useImChat() {
           method: 'GET',
           baseURL,
           query: { pageNum: 1, pageSize: 100 },
+          headers: buildHeaders(),
           credentials: 'include'
         }
       )
@@ -121,6 +123,7 @@ export function useImChat() {
           method: 'POST',
           baseURL,
           body: { content: content.trim() },
+          headers: buildHeaders(),
           credentials: 'include'
         }
       )
