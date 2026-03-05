@@ -3,16 +3,17 @@ export default defineNuxtRouteMiddleware((to) => {
 
   const publicRoutes = new Set([
     '/',
-    '/app/auth/login',
-    '/app/auth/register',
-    '/app/auth/callback'
+    '/auth/login',
+    '/auth/register',
+    '/auth/callback',
+    '/auth/forgot-password'
   ])
 
   if (publicRoutes.has(to.path)) {
     return
   }
 
-  if (to.path.startsWith('/app') && !auth.isAuthenticated) {
-    return navigateTo('/app/auth/login')
+  if (!auth.isAuthenticated) {
+    return navigateTo('/auth/login')
   }
 })

@@ -2,8 +2,15 @@ export default defineNuxtConfig({
   extends: ['../../packages/nuxt-layer'],
 
   modules: ['@nuxt/eslint', '@nuxt/ui', '@pinia/nuxt'],
+
   devtools: { enabled: true },
+
   css: ['~/assets/css/main.css'],
+
+  ui: {
+    fonts: false
+  },
+
   runtimeConfig: {
     public: {
       // 优先用环境变量，默认本地开发地址

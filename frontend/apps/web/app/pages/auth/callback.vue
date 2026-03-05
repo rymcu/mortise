@@ -18,7 +18,7 @@ onMounted(async () => {
 
   try {
     await auth.exchangeOAuthState(state)
-    await navigateTo('/app/profile')
+    await navigateTo('/profile')
   } catch (error) {
     hasError.value = true
     statusText.value =
@@ -41,7 +41,7 @@ onMounted(async () => {
 
     <template v-if="hasError">
       <div class="mt-4">
-        <UButton to="/app/auth/login" block>返回登录</UButton>
+        <UButton to="/auth/login" block>返回登录</UButton>
       </div>
     </template>
   </UCard>

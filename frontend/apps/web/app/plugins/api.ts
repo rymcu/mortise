@@ -31,7 +31,7 @@ export default defineNuxtPlugin(() => {
 
       const renewed = await auth.refresh()
       if (!renewed?.token) {
-        await navigateTo('/app/auth/login')
+        await navigateTo('/auth/login')
         throw error
       }
 
