@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.Map;
 
 /**
- * 商品SKU目标关联实体
+ * 产品SKU目标关联实体
  *
  * @author ronger
  */
@@ -27,7 +27,7 @@ public class ProductSkuTarget implements Serializable {
     @Id(keyType = KeyType.Generator, value = KeyGenerators.flexId)
     private Long id;
 
-    @NotNull(message = "商品SKU ID 不能为空")
+    @NotNull(message = "产品SKU ID 不能为空")
     private Long productSkuId;
 
     @NotBlank(message = "目标类型不能为空")

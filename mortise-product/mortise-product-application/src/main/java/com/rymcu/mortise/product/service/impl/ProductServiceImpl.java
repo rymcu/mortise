@@ -1,8 +1,10 @@
 package com.rymcu.mortise.product.service.impl;
 
+import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.util.UpdateEntity;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
+import com.rymcu.mortise.product.dto.ProductQueryParam;
 import com.rymcu.mortise.product.entity.Product;
 import com.rymcu.mortise.product.enums.ProductType;
 import com.rymcu.mortise.product.mapper.ProductMapper;
@@ -10,6 +12,8 @@ import com.rymcu.mortise.product.service.ProductService;
 import com.rymcu.mortise.product.spi.ProductLifecycleListener;
 import com.rymcu.mortise.product.spi.ProductTypeProvider;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -35,6 +39,44 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             Optional<List<ProductLifecycleListener>> lifecycleListeners) {
         this.typeProviders = typeProviders.orElse(List.of());
         this.lifecycleListeners = lifecycleListeners.orElse(List.of());
+    }
+
+    @Override
+    public Page<Product> pageByParam(Page<Product> page, ProductQueryParam param) {
+        QueryWrapper qw = QueryWrapper.create();
+        if (param != null) {
+            if (StringUtils.hasText(param.keyword())) {
+                qw.and(PRODUCT.TITLE.like(param.keyword())
+                        .or(PRODUCT.SUBTITLE.like(param.keyword())));
+            }
+            if (StringUtils.hasText(param.productType())) {
+                qw.and(PRODUCT.PRODUCT_TYPE.eq(param.productType()));
+            }
+            if (param.categoryId() != null) {
+                qw.and(PRODUCT.CATEGORY_ID.eq(param.categoryId()));
+            }
+            if (param.status() != null) {
+                qw.and(PRODUCT.STATUS.eq(param.status()));
+            }
+            if (param.isFeatured() != null) {
+                qw.and(PRODUCT.IS_FEATURED.eq(param.isFeatured()));
+            }
+        }
+        qw.orderBy(PRODUCT.SORT_NO.asc(), PRODUCT.CREATED_TIME.desc());
+        return mapper.paginate(page, qw);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int batchUpdateStatus(List<Long> ids, Integer status) {
+        if (ids == null || ids.isEmpty()) {
+            return 0;
+        }
+        Product product = new Product();
+        product.setStatus(status);
+        product.setUpdatedTime(LocalDateTime.now());
+        return mapper.updateByQuery(product,
+                QueryWrapper.create().where(PRODUCT.ID.in(ids)));
     }
 
     @Override
