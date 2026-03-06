@@ -14,3 +14,6 @@
 	path = mortise-im
 	url = git@github.com:rymcu/mortise-im.git
 	branch = master
+[submodule "frontend/layers/community"]
+	path = frontend/layers/community
+	url = git@github.com:rymcu/community.git
