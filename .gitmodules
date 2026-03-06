@@ -16,4 +16,4 @@
 	branch = master
 [submodule "frontend/layers/community"]
 	path = frontend/layers/community
-	url = git@github.com:rymcu/community.git
+	url = git@github.com:rymcu/community.git        branch = master
