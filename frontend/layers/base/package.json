@@ -1,5 +1,5 @@
 {
-  "name": "@mortise/nuxt-layer",
+  "name": "@mortise/base-layer",
   "private": true,
   "version": "0.1.0",
   "type": "module"

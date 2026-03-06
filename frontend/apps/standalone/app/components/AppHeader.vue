@@ -25,51 +25,35 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => [
     {
       type: 'label' as const,
       label: displayName.value,
-      avatar: { src: avatarSrc.value, alt: displayName.value }
-    }
+      avatar: { src: avatarSrc.value, alt: displayName.value },
+    },
   ],
   [
-    { label: '个人中心', icon: 'i-lucide-user', to: '/profile' }
+    { label: '个人中心', icon: 'i-lucide-user', to: '/profile' },
   ],
   [
     {
       label: '退出登录',
       icon: 'i-lucide-log-out',
       color: 'error' as const,
-      onSelect: handleLogout
-    }
-  ]
+      onSelect: handleLogout,
+    },
+  ],
 ])
 
-const items = [{
-  label: '首页',
-  to: '/'
-}, {
-  label: '模块',
-  to: '/modules'
-}, {
-  label: '定价',
-  to: '/pricing'
-}, {
-  label: '博客',
-  to: '/blog'
-}, {
-  label: '文档',
-  to: '/docs'
-}, {
-  label: '更新日志',
-  to: '/changelog'
-}, {
-  label: '关于',
-  to: '/about'
-}]
+// ★ 自定义导航菜单
+const items = [
+  { label: '首页', to: '/' },
+]
 </script>
 
 <template>
   <UHeader>
     <template #left>
-      <NuxtLink to="/">
-        <AppLogo class="shrink-0" />
+      <!-- ★ 自定义品牌 Logo 和名称 -->
+      <NuxtLink to="/" class="flex items-center gap-2">
+        <UIcon name="i-lucide-box" class="size-6 text-primary-500" />
+        <span class="font-bold text-lg">Mortise</span>
       </NuxtLink>
     </template>
 
@@ -80,14 +64,7 @@ const items = [{
         class="hidden lg:block"
       />
 
-      <UButton
-        label="进入社区"
-        to="/community"
-        variant="subtle"
-        class="hidden lg:block"
-      />
-
-      <!-- Auth state -->
+      <!-- 用户状态 -->
       <template v-if="auth.isAuthenticated">
         <UDropdownMenu :items="userMenuItems">
           <UButton variant="ghost" color="neutral" class="gap-2">
@@ -114,13 +91,6 @@ const items = [{
         :items="items"
         orientation="vertical"
         class="-mx-2.5"
-      />
-      <UButton
-        class="mt-4"
-        label="进入社区"
-        to="/"
-        variant="subtle"
-        block
       />
     </template>
   </UHeader>

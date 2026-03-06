@@ -16,12 +16,24 @@
     "typecheck:core-sdk": "pnpm --filter @mortise/site exec tsc -p ../../packages/core-sdk/tsconfig.json --noEmit",
     "typecheck:ui": "pnpm --filter @mortise/site exec tsc -p ../../packages/ui/tsconfig.json --noEmit",
     "typecheck:config": "pnpm --filter @mortise/site exec tsc -p ../../packages/config/tsconfig.json --noEmit",
-    "typecheck:packages": "pnpm typecheck:auth && pnpm typecheck:core-sdk && pnpm typecheck:ui && pnpm typecheck:config"
+    "typecheck:packages": "pnpm typecheck:auth && pnpm typecheck:core-sdk && pnpm typecheck:ui && pnpm typecheck:config",
+    "create:standalone": "node scripts/create-standalone.mjs",
+    "layer:add": "node scripts/layer.mjs add",
+    "layer:remove": "node scripts/layer.mjs remove",
+    "layer:list": "node scripts/layer.mjs list"
   },
   "devDependencies": {
     "@types/node": "^24.9.1",
     "eslint-config-prettier": "^10.1.8",
     "prettier": "^3.7.4",
     "prettier-plugin-tailwindcss": "^0.7.2"
+  },
+  "pnpm": {
+    "peerDependencyRules": {
+      "allowedVersions": {
+        "citty": ">=0.1.6",
+        "eslint": ">=10.0.0"
+      }
+    }
   }
 }

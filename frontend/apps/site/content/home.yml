@@ -11,7 +11,7 @@ hero:
       icon: i-lucide-users
       trailing: true
       color: primary
-      to: /blog
+      to: /community
       size: xl
     - label: 快速开始
       icon: i-lucide-book-open
@@ -43,7 +43,7 @@ features:
       description: 15 组 SPI 接口覆盖缓存、日志、通知、认证等核心模块，热插拔设计让业务扩展无需修改框架代码。
       icon: i-lucide-puzzle
     - title: 前端 Monorepo 全栈
-      description: pnpm Workspace Monorepo 管理三个独立应用（管理端 / 用户端 / 官网），共享 @mortise/auth 、@mortise/core-sdk 、@mortise/nuxt-layer 等内部包，免重复建轮。
+      description: pnpm Workspace Monorepo 管理三个独立应用（管理端 / 用户端 / 官网），共享 @mortise/auth 、@mortise/core-sdk 、@mortise/base-layer 等内部包，免重复建轮。
       icon: i-lucide-layout-dashboard
     - title: Vue 3 + Nuxt 4 现代前端
       description: 三端均基于 Vue 3 + Nuxt 4 + Nuxt UI 4 + Tailwind CSS v4 构建，管理端 SPA、用户端和官网 SSR，Pinia 状态管理，TipTap 富文本编辑、Unovis 图表可视化。

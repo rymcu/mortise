@@ -8,12 +8,20 @@
 frontend/
 ├── apps/
 │   ├── admin/          # 后台管理端（@mortise/admin）
-│   └── site/           # 官网 + 用户端（@mortise/site）
+│   ├── site/           # 官网 + 用户端（@mortise/site）
+│   └── standalone/     # 独立部署模板（参考 create:standalone）
+├── layers/
+│   ├── base/           # 公共基础层（@mortise/base-layer，始终加载）
+│   ├── community/      # 社区模块层（@mortise/community-layer，付费，submodule）
+│   └── commerce/       # 商城模块层（@mortise/commerce-layer，付费，submodule）
 ├── packages/
 │   ├── auth/           # 统一鉴权包（@mortise/auth）
 │   ├── core-sdk/       # 后端 API SDK（@mortise/core-sdk）
 │   ├── ui/             # 共享业务 UI 组件（@mortise/ui）
 │   └── config/         # 共享工程配置（@mortise/config）
+├── scripts/
+│   ├── layer.mjs           # Layer 管理脚本（add/remove/list）
+│   └── create-standalone.mjs  # 独立部署应用生成脚本
 ├── package.json        # Monorepo 根配置
 └── pnpm-workspace.yaml # pnpm 工作区声明
 ```
@@ -133,7 +141,68 @@ pnpm typecheck
 
 # TypeScript 类型检查（所有 packages）
 pnpm typecheck:packages
+
+# 创建独立部署应用（交互式向导）
+pnpm create:standalone
+
+# Layer 管理（添加/移除付费模块）
+pnpm layer:list                         # 列出已克隆的可用 Layer
+pnpm layer:add community                # 向 site 添加 community layer
+pnpm layer:add commerce                 # 向 site 添加 commerce layer
+pnpm layer:remove community             # 从 site 移除 community layer
+pnpm layer:add community --app my-shop  # 向指定应用添加 layer
 ```
+
+---
+
+## 付费 Layer 管理
+
+Mortise 通过 **Nuxt Layer + Git Submodule** 机制提供可按需激活的付费功能模块，所有 Layer 统一存放在 `layers/` 目录。
+
+### 接入 Layer（以 community 为例）
+
+**1. 克隆私有 submodule**
+
+```bash
+cd frontend
+git submodule add git@github.com:rymcu/mortise-community-frontend.git layers/community
+```
+
+> 需先购买并获得对应私有仓库的 SSH 访问权限。
+
+**2. 激活到应用**
+
+```bash
+pnpm layer:add community
+# 等价于：手动在 apps/site/package.json dependencies 中添加
+# "@mortise/community-layer": "workspace:*"
+# 然后 pnpm install
+```
+
+执行后重启开发服务器，访问 `http://localhost:3001/community` 即可。
+
+**3. 停用 Layer**
+
+```bash
+pnpm layer:remove community
+# 等价于：从 apps/site/package.json 删除依赖并 pnpm install
+```
+
+### Layer 自动加载原理
+
+`apps/site/nuxt.config.ts` 在构建时扫描 `layers/` 目录，仅加载同时满足以下两个条件的 Layer：
+
+- 在 `apps/site/package.json` 的 `dependencies` 中声明
+- 已安装到 `node_modules`（即 `pnpm install` 已执行）
+
+`base` layer 无条件加载。
+
+### 可用 Layer
+
+| Layer | 包名 | 功能 | 默认路由前缀 |
+|-------|------|------|--------------|
+| `community` | `@mortise/community-layer` | 社区、文章、话题 | `/community` |
+| `commerce` | `@mortise/commerce-layer` | 商城、订单、支付 | `/commerce` |
 
 ---
 
