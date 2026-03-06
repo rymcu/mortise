@@ -27,3 +27,20 @@ export interface ConsultContext {
   /** 前端展示用的预设问题 */
   subject?: string
 }
+
+/** 历史会话列表项 */
+export interface SiteSessionItem {
+  id: number
+  status: number
+  lastMessage: string | null
+  updatedTime: string
+  contextType: string | null
+  contextId: number | null
+}
+
+/** 会话状态常量 */
+export const SESSION_STATUS = {
+  OPEN: 0,
+  CLOSED: 1,
+  WAITING: 2,
+} as const
