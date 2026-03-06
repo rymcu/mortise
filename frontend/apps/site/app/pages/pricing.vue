@@ -31,6 +31,18 @@ function getCardButton(card: Record<string, unknown>) {
   }
   return btn
 }
+
+/**
+ * UPricingPlan 布局修正：
+ * - titleWrapper: 改为 flex-col，badge 另起一行，title 独占全宽不换行
+ * - priceWrapper: flex-wrap，billing-cycle 另起一行显示
+ */
+const planUi = {
+  titleWrapper: 'flex flex-col gap-2 items-start',
+  title: 'text-highlighted text-2xl sm:text-3xl font-semibold whitespace-nowrap',
+  priceWrapper: 'flex flex-wrap items-baseline gap-x-2 mt-6',
+  billing: 'basis-full mt-1'
+}
 </script>
 
 <template>
@@ -55,16 +67,33 @@ function getCardButton(card: Record<string, unknown>) {
           :description="card.description"
           :icon="card.icon"
           :price="card.price"
+          :discount="card.discount"
           :billing-cycle="card.billing_cycle"
           :highlight="card.highlight"
           :features="card.features"
           :button="getCardButton(card)"
+          :ui="planUi"
         >
           <template
-            v-if="card.name"
+            v-if="card.name || card.badge"
             #badge
           >
-            <code class="text-xs font-mono text-muted bg-accented px-1.5 py-0.5 rounded">{{ card.name }}</code>
+            <div class="flex items-center gap-2">
+              <UBadge
+                v-if="card.badge"
+                color="primary"
+                variant="subtle"
+                size="sm"
+              >
+                {{ card.badge }}
+              </UBadge>
+              <code
+                v-if="card.name"
+                class="text-xs font-mono text-muted bg-accented px-1.5 py-0.5 rounded"
+              >
+                {{ card.name }}
+              </code>
+            </div>
           </template>
         </UPricingPlan>
       </div>
@@ -77,7 +106,7 @@ function getCardButton(card: Record<string, unknown>) {
           v-for="icon in page.logos.icons"
           :key="icon"
           :name="icon"
-          class="w-10 h-10 flex-shrink-0 text-muted"
+          class="w-10 h-10 shrink-0 text-muted"
         />
       </UPageLogos>
     </UPageSection>

@@ -6,7 +6,7 @@
 
 1. **完善 `frontend/apps/site/nuxt.config.ts` 配置**
    - 添加 `@nuxt/content`、`@nuxt/image` 模块（参考旧模板 package.json）
-   - 添加 vite proxy（`/mortise` → `http://localhost:9999`，与 web/admin 一致）
+   - 添加 vite proxy（`/mortise` → `http://localhost:9999`，与 admin 一致）
    - 保持 SSR: true（SEO 友好，官网需要 SEO）
 
 2. **创建全局 Layout**
@@ -28,7 +28,7 @@
 5. **创建社区文章页**
    - `app/pages/articles/index.vue`：分页文章列表，顶部专题 `UBadge` 过滤、标签过滤，调用 `useArticles()`；卡片展示标题 / 摘要 / 作者 / 时间
    - `app/pages/articles/[id].vue`：文章详情，使用 `UPageHeader` 展示标题 / 作者信息，`ContentRenderer` 或自定义渲染 MD 内容，底部评论列表（`GET /community/articles/{id}/comments`）
-   - 未登录用户只读；评论框提示"登录后发表评论" → 跳转至 `apps/web` 登录页
+   - 未登录用户只读；评论框提示“登录后发表评论” → 跳转至 `apps/site` 登录页
 
 6. **创建文档中心（@nuxt/content 驱动）**
    - 在 `frontend/apps/site/` 下创建 `content/docs/` 目录，初始结构：`getting-started.md`、`architecture.md`、`api.md`（内容可从 `docs/` 目录迁移）
@@ -62,6 +62,5 @@
 ## Decisions
 
 - 颜色主题沿用当前 green/zinc（已配置），不改为旧模板的 orange
-- 官网不引入 `@mortise/auth` 包，登录统一跳转到 `apps/web`，保持解耦
 - 文档内容复用 `docs/` 目录已有资料（架构文档等），迁移为 Markdown 放入 `content/docs/`
 - SSR 保持开启（SEO 优先），与 admin（SPA）不同

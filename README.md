@@ -220,11 +220,11 @@
 - [x] **个人设置** - 个人资料、通知偏好、安全设置
 - [x] **路由守卫** - 自动 401 刷新、Token 单飞续期、登出保障
 
-**前端用户端（apps/web）**
+**前端官网 + 用户端（apps/site）**
 - [x] **会员登录注册** - 账号密码、OAuth2 多平台登录
 - [x] **OAuth2 回调** - state 兑换 Token、错误兜底
 - [x] **个人中心** - 基础信息查看入口
-- [x] **统一鉴权包** - `packages/auth` 供 admin/web 复用
+- [x] **统一鉴权包** - `packages/auth` 供 admin/site 复用
 - [x] **统一 API SDK** - `packages/core-sdk` 封装后端 OSS 接口
 
 ### 🚧 开发中 / 计划功能

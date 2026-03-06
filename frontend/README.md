@@ -8,8 +8,7 @@
 frontend/
 ├── apps/
 │   ├── admin/          # 后台管理端（@mortise/admin）
-│   ├── web/            # 用户端/会员端（@mortise/web）
-│   └── site/           # 官网（@mortise/site，预留）
+│   └── site/           # 官网 + 用户端（@mortise/site）
 ├── packages/
 │   ├── auth/           # 统一鉴权包（@mortise/auth）
 │   ├── core-sdk/       # 后端 API SDK（@mortise/core-sdk）
@@ -41,7 +40,7 @@ pnpm install
 
 ### 2. 配置环境变量
 
-**本地开发无需任何配置**，两个应用均已内置可用的默认值（admin 通过 Vite proxy 转发，web 直连 `localhost:9999`）。
+**本地开发无需任何配置**，两个应用均已内置可用的默认值（admin 通过 Vite proxy 转发，site 直连 `localhost:9999`）。
 
 仅当后端不在 `localhost:9999` 时，才需要创建 `frontend/.env.local` 并覆盖：
 
@@ -58,11 +57,11 @@ NUXT_PUBLIC_API_BASE=https://api.your-domain.com/mortise
 # 启动管理端（访问 http://localhost:3000/admin/）
 pnpm dev:admin
 
-# 启动用户端（访问 http://localhost:3001/）
-pnpm dev:web
+# 启动官网/用户端（访问 http://localhost:3103/）
+pnpm dev:site
 ```
 
-> **开发代理说明**：管理端和用户端均配置了 Vite 代理，将 `/mortise/**` 请求自动转发至 `http://localhost:9999`，无跨域问题。
+> **开发代理说明**：管理端和官网/用户端均配置了 Vite 代理，将 `/mortise/**` 请求自动转发至 `http://localhost:9999`，无跨域问题。
 
 ### 4. 登录管理端
 
@@ -94,7 +93,7 @@ pnpm dev:web
 | `/admin/inbox` | 消息中心 |
 | `/admin/setup` | 初始引导 |
 
-### 用户端（apps/web）
+### 官网 + 用户端（apps/site）
 
 | 路由 | 描述 |
 |------|------|
@@ -111,8 +110,8 @@ pnpm dev:web
 # 启动管理端开发服务器
 pnpm dev:admin
 
-# 启动用户端开发服务器
-pnpm dev:web
+# 启动官网/用户端开发服务器
+pnpm dev:site
 
 # 构建所有应用
 pnpm build
@@ -142,7 +141,7 @@ pnpm typecheck:packages
 
 ### @mortise/auth
 
-统一鉴权能力包，供 `apps/admin` 与 `apps/web` 复用：
+统一鉴权能力包，供 `apps/admin` 与 `apps/site` 复用：
 
 - `src/client.ts`：请求客户端，内置 Token 注入与 401 单飞刷新
 - `src/result.ts`：API 响应结果标准化
@@ -182,7 +181,6 @@ docker compose -f compose.yaml up -d --build
 | 应用 | 地址 |
 |------|------|
 | 管理端 | http://localhost:3101/admin/ |
-| 用户端 | http://localhost:3102/ |
 | 官网 | http://localhost:3103/ |
 
 ### 自定义后端地址

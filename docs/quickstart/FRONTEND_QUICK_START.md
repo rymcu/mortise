@@ -60,7 +60,7 @@ pnpm install
 frontend/
 ├── apps/
 │   ├── admin/      # 后台管理端
-│   └── web/        # 用户端/会员端
+│   └── site/       # 官网 + 用户端
 └── packages/
     ├── auth/       # 鉴权逻辑
     ├── core-sdk/   # API SDK
@@ -103,10 +103,10 @@ pnpm dev:admin
 
 启动后访问：**http://localhost:3000/admin/**
 
-### 4.2 用户端
+### 4.2 官网 + 用户端
 
 ```bash
-pnpm dev:web
+pnpm dev:site
 ```
 
 启动后访问：**http://localhost:3001/**
@@ -133,8 +133,8 @@ pnpm dev:web
 
 ### 用户端登录
 
-1. 打开 http://localhost:3001/app/auth/login
-2. 可先注册一个测试账号：http://localhost:3001/app/auth/register
+1. 打开 http://localhost:3001/auth/login
+2. 可先注册一个测试账号：http://localhost:3001/auth/register
 3. 注册成功后使用账号密码登录
 
 ---
@@ -157,12 +157,20 @@ frontend/
 │   │   │   └── types/          # 类型定义
 │   │   ├── nuxt.config.ts
 │   │   └── package.json
-│   └── web/                    # @mortise/web
+│   └── site/                   # @mortise/site（官网 + 用户端）
 │       ├── app/
-│       │   ├── pages/
-│       │   ├── layouts/
-│       │   ├── middleware/
-│       │   └── stores/
+│       │   ├── pages/          # 路由页面（含 /app/auth、/docs 等）
+│       │   ├── layouts/        # 页面布局
+│       │   ├── components/     # 业务组件
+│       │   ├── composables/    # 组合式函数
+│       │   ├── middleware/     # 路由守卫
+│       │   └── stores/         # Pinia 状态
+│       ├── content/            # @nuxt/content 静态内容
+│       │   ├── docs/           # 文档（Markdown）
+│       │   ├── home.yml        # 首页文案
+│       │   ├── pricing.yml     # 定价方案
+│       │   └── ...
+│       ├── content.config.ts
 │       ├── nuxt.config.ts
 │       └── package.json
 └── packages/
@@ -207,7 +215,7 @@ frontend/
 ```bash
 # 开发
 pnpm dev:admin          # 启动管理端
-pnpm dev:web            # 启动用户端
+pnpm dev:site           # 启动官网 + 用户端
 
 # 构建
 pnpm build              # 构建所有应用
@@ -240,8 +248,7 @@ docker compose -f compose.yaml up -d --build
 | 应用 | 地址 |
 |------|------|
 | 管理端 | http://localhost:3101/admin/ |
-| 用户端 | http://localhost:3102/ |
-| 官网（预留） | http://localhost:3103/ |
+| 官网 + 用户端 | http://localhost:3103/ |
 
 自定义后端地址：
 

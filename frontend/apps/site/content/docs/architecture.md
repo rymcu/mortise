@@ -83,8 +83,7 @@ git submodule update --init --recursive mortise-payment mortise-commerce
 | 应用 | 包名 | 路径 | 渲染模式 | 开发端口 | Docker 端口 |
 |------|------|------|----------|----------|------------|
 | 管理端 | `@mortise/admin` | `apps/admin` | SPA | `localhost:3000/admin/` | `3101/admin/` |
-| 用户端 | `@mortise/web` | `apps/web` | SSR | `localhost:3001/` | `3102/` |
-| 官网 | `@mortise/site` | `apps/site` | SSR | `localhost:3103/` | `3103/` |
+| 官网 + 用户端 | `@mortise/site` | `apps/site` | SSR | `localhost:3001/` | `3103/` |
 
 ### 共享包（packages/）
 
@@ -130,7 +129,7 @@ git submodule update --init --recursive mortise-payment mortise-commerce
 | `/admin/inbox` | 消息中心 |
 | `/admin/setup` | 初始引导 |
 
-**用户端（apps/web）**
+**官网 + 用户端（apps/site）**
 
 | 路由 | 说明 |
 |------|------|

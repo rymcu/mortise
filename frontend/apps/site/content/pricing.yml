@@ -34,10 +34,12 @@ cards:
     name: mortise-community
     description: 适合内容社区与知识平台，可独立部署，无其他商业模块依赖。
     icon: i-lucide-message-square
-    price: 按需报价
+    badge: 早鸟内测
+    price: ￥7,999
+    discount: ￥2,999
     billing_cycle: 源码交付 · 永久授权
     button:
-      label: 咨询报价
+      label: 立即购买
       to: /about#contact
     features:
       - 文章发布与富文本编辑
@@ -50,10 +52,12 @@ cards:
     name: mortise-payment
     description: 电商套件基础依赖，也可单独集成到任意需要收款的业务场景。
     icon: i-lucide-credit-card
-    price: 按需报价
+    badge: 首发特惠
+    price: ￥19,999
+    discount: ￥3,999
     billing_cycle: 源码交付 · 永久授权
     button:
-      label: 咨询报价
+      label: 立即购买
       to: /about#contact
     features:
       - 微信支付（JSAPI / Native / H5）
@@ -64,13 +68,15 @@ cards:
 
   - title: 电商交易模块
     name: mortise-commerce
-    description: 完整电商交易套件，依赖 mortise-product 与 mortise-payment，库存、订单全流程，开箱即用。
+    description: 完整电商交易套件，依赖 mortise-payment，库存、订单全流程，开箱即用。
     icon: i-lucide-shopping-cart
     highlight: true
-    price: 按需报价
+    badge: 早鸟套餐
+    price: ￥29,999
+    discount: ￥5,999
     billing_cycle: 源码交付 · 永久授权
     button:
-      label: 咨询套件报价
+      label: 立即购买
       to: /about#contact
     features:
       - 订单全流程（下单 → 发货 → 完成）

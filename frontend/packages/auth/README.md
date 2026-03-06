@@ -1,6 +1,6 @@
 # packages/auth Plan
 
-统一鉴权能力包，供 `apps/admin` 与 `apps/web` 复用。
+统一鉴权能力包，供 `apps/admin` 与 `apps/site` 复用。
 
 ## 责任范围
 

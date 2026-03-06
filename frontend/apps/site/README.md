@@ -1,6 +1,5 @@
-# apps/site Plan (Reserved)
-
-官网应用预留目录，当前不是首期交付范围。
+# apps/site — 官网 + 用户端
+官网应用，同时承载品牌展示、产品介绍、文档中心，以及会员登录、注册、个人中心等用户端功能（已由 `apps/web` 合并过来）。
 
 ## 目标定位
 
@@ -8,21 +7,34 @@
 - 产品介绍
 - 文档与公告
 - 下载与社区入口
+- 会员认证与个人中心
 
-## 与用户端边界
+## 技术栈
 
-- `apps/site` 不承载登录后业务流程。
-- 登录后业务统一跳转到 `apps/web`。
+- **Nuxt 4**（SSR 模式）
+- **Nuxt UI 4.5**（TailwindCSS 4 + Reka UI）
+- **@nuxt/content** 内容驱动
+- **Pinia** 状态管理
+- **@mortise/auth** — 统一鉴权包
 
-## 启动条件
+## 快速启动
 
-满足以下条件后再启动：
+```bash
+# 在 frontend/ 目录下
+pnpm dev:site
+```
 
-1. `apps/admin` 与 `apps/web` 完成 MVP。
-2. 明确官网信息架构与内容来源（CMS/markdown）。
-3. 确认 SEO 与部署域名策略。
+访问：http://localhost:3001/
 
-## 初始技术建议
+## 已实现页面
 
-- 可基于 `old-code/landing` 模板二次开发。
-- 与其余应用共享 `packages/ui` 与 `packages/config`。
+| 路由 | 描述 |
+|------|------|
+| `/app/auth/login` | 会员登录（账号密码 + OAuth2） |
+| `/app/auth/register` | 会员注册 |
+| `/app/auth/callback` | OAuth2 回调兑换 token |
+| `/app/profile` | 个人中心（资料查看） |
+| `/docs` | 文档中心 |
+| `/pricing` | 定价方案 |
+| `/download` | 下载页 |
+| `/about` | 关于我们 |
