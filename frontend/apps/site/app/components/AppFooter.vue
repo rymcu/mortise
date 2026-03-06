@@ -26,7 +26,7 @@ const columns = [{
 }, {
   label: '社区',
   children: [{
-    label: '文章',
+    label: '博客',
     to: '/blog'
   }, {
     label: '关于我们',
