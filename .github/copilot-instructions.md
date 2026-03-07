@@ -32,6 +32,28 @@
 
 ## Frontend UI Constraints
 
+### ID 类型约定 (ID Types)
+
+- **前端所有 ID 字段（包括路由参数、接口请求/响应中的 `id`、`articleId`、`userId` 等）一律使用 `string` 类型，禁止使用 `number`。**
+- 后端返回的雪花 ID 超出 JavaScript `Number.MAX_SAFE_INTEGER`，使用 `number` 会导致精度丢失。
+- 路由参数（`route.params.xxx`）本身即为 `string`，无需转换。
+
+```ts
+// ❌ 禁止：将 ID 定义为 number
+interface Article { id: number; authorId: number }
+
+// ✅ 正确：ID 一律为 string
+interface Article { id: string; authorId: string }
+```
+
+```ts
+// ❌ 禁止：将路由参数转为 number
+const articleId = computed(() => Number(route.params.id))
+
+// ✅ 正确：直接使用 string
+const articleId = computed(() => route.params.id as string)
+```
+
 ### TypeScript 类型定义 (TypeScript Types)
 
 - **禁止在 `.vue` 文件的 `<script setup>` 中定义 `interface` 或 `type`。**

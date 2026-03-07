@@ -88,7 +88,9 @@ export const useAuthStore = defineStore('web-auth', () => {
     tokenCookie.value = payload.token
     refreshTokenCookie.value = payload.refreshToken ?? null
     tokenTypeCookie.value = payload.tokenType ?? 'Bearer'
+    // 保留已存在的用户字段（如 fetchCurrentUser 拉取的 id），避免 token 刷新后丢失
     userCookie.value = {
+      ...(userCookie.value ?? {}),
       memberId: payload.memberId,
       username: payload.username,
       nickname: payload.nickname,

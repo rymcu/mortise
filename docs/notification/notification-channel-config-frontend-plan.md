@@ -204,7 +204,7 @@ defineEmits<{ 'update:modelValue': [value: string] }>()
 <template>
   <UFormField :label="field.label" :required="field.required">
     <!-- 布尔开关 -->
-    <UToggle
+    <USwitch
       v-if="field.type === 'BOOLEAN'"
       :model-value="modelValue === 'true'"
       @update:model-value="$emit('update:modelValue', $event ? 'true' : 'false')"
@@ -273,7 +273,7 @@ function handleSave() {
         <span class="font-semibold text-base">{{ channel.label }}</span>
         <div class="flex items-center gap-2">
           <span class="text-muted text-sm">{{ localEnabled ? '已启用' : '已禁用' }}</span>
-          <UToggle v-model="localEnabled" />
+          <USwitch v-model="localEnabled" />
         </div>
       </div>
     </template>

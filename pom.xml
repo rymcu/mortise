@@ -431,6 +431,7 @@
                         <source>21</source>
                         <target>21</target>
                         <release>21</release>
+                        <parameters>true</parameters>
                         <encoding>UTF-8</encoding>
                     </configuration>
                 </plugin>

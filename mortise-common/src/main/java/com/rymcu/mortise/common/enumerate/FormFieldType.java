@@ -11,7 +11,7 @@ package com.rymcu.mortise.common.enumerate;
  *   <li>{@link #TEXT}     → {@code <UInput type="text" />}</li>
  *   <li>{@link #PASSWORD} → {@code <UInput type="password" />}，接口返回值脱敏为 "***"</li>
  *   <li>{@link #NUMBER}   → {@code <UInput type="number" />}</li>
- *   <li>{@link #BOOLEAN}  → {@code <UToggle />}</li>
+ *   <li>{@link #BOOLEAN}  → {@code <USwitch />}</li>
  *   <li>{@link #EMAIL}    → {@code <UInput type="email" />}</li>
  *   <li>{@link #SELECT}   → {@code <USelect />}，字段定义中附带 options 列表</li>
  * </ul>
