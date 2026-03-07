@@ -1,0 +1,10 @@
+{
+    "java.compile.nullAnalysis.mode": "automatic",
+    "chat.tools.terminal.autoApprove": {
+        "pnpm": true,
+        "/^Get-ChildItem -Path \"e:\\\\workspace\\\\mortise\\\\mortise-system\" -Recurse -Filter \"\\*\\.java\" \\| ForEach-Object \\{ \\$_\\.FullName \\} \\| Select-Object -First 30$/": {
+            "approve": true,
+            "matchCommandLine": true
+        }
+    }
+}

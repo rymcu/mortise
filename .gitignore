@@ -32,7 +32,6 @@ build/
 !**/src/test/**/build/
 
 ### VS Code ###
-.vscode/
 /data/
 /logs/
 /redis/
