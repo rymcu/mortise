@@ -20,3 +20,6 @@
 [submodule "frontend/layers/admin/community"]
 	path = frontend/layers/admin/community
 	url = git@github.com:rymcu/admin-community.git
+[submodule "frontend/frontend/layers/admin/community"]
+	path = frontend/frontend/layers/admin/community
+	url = git@github.com:rymcu/admin-community.git
