@@ -9,7 +9,6 @@ frontend/
 ├── apps/
 │   ├── admin/          # 后台管理端（@mortise/admin）
 │   ├── site/           # 官网 + 用户端（@mortise/site）
-│   └── standalone/     # 独立部署模板（参考 create:standalone）
 ├── layers/
 │   ├── base/           # 公共基础层（@mortise/base-layer，始终加载）
 │   ├── community/      # 社区模块层（@mortise/community-layer，付费，submodule）
@@ -19,6 +18,8 @@ frontend/
 │   ├── core-sdk/       # 后端 API SDK（@mortise/core-sdk）
 │   ├── ui/             # 共享业务 UI 组件（@mortise/ui）
 │   └── config/         # 共享工程配置（@mortise/config）
+├── templates/
+│   └── standalone/     # 独立部署模板（不参与默认 build/typecheck）
 ├── scripts/
 │   ├── layer.mjs           # Layer 管理脚本（add/remove/list）
 │   └── create-standalone.mjs  # 独立部署应用生成脚本
@@ -70,6 +71,8 @@ pnpm dev:site
 ```
 
 > **开发代理说明**：管理端和官网/用户端均配置了 Vite 代理，将 `/mortise/**` 请求自动转发至 `http://localhost:9999`，无跨域问题。
+
+> **模板目录说明**：`templates/` 下的模板项目不属于默认 pnpm workspace 应用集合，因此不会参与 `pnpm build`、`pnpm lint`、`pnpm typecheck` 的常规扫描。
 
 ### 4. 登录管理端
 
@@ -212,16 +215,20 @@ pnpm layer:remove community
 
 统一鉴权能力包，供 `apps/admin` 与 `apps/site` 复用：
 
-- `src/client.ts`：请求客户端，内置 Token 注入与 401 单飞刷新
+- `src/client.ts`：登录、回调、刷新认证客户端
+- `src/runtime.ts`：Nuxt 认证运行时工厂（API、token 刷新、会话恢复）
 - `src/result.ts`：API 响应结果标准化
 - `src/storage.ts`：Token 持久化存储
 - `src/types.ts`：鉴权相关类型定义
+
+应用侧原则：`packages/auth` 提供基础能力，`apps/*` 基于这些能力扩展自己的 cookie key、登录跳转、菜单恢复等业务逻辑。
 
 ### @mortise/core-sdk
 
 后端 API SDK（仅 OSS 范围），供页面层调用：
 
 - `src/admin.ts`：管理端 API（system/member/file/wechat）
+- `src/auth.ts`：通用鉴权相关接口（当前用户、后台菜单等）
 - `src/types.ts`：DTO/VO 类型定义
 - 约束：禁止引入 commerce/order/payment 相关接口
 

@@ -74,11 +74,6 @@ const items = [{
     </template>
 
     <template #right>
-      <UNavigationMenu
-        :items="items"
-        variant="link"
-        class="hidden lg:block"
-      />
 
       <UButton
         label="进入社区"
@@ -109,19 +104,11 @@ const items = [{
       <UColorModeButton />
     </template>
 
-    <template #body>
-      <UNavigationMenu
-        :items="items"
-        orientation="vertical"
-        class="-mx-2.5"
-      />
-      <UButton
-        class="mt-4"
-        label="进入社区"
-        to="/"
-        variant="subtle"
-        block
-      />
-    </template>
+    
+    <UNavigationMenu
+      :items="items"
+      variant="link"
+      class="hidden lg:block"
+    />
   </UHeader>
 </template>

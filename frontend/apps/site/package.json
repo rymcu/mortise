@@ -14,6 +14,7 @@
     "@mortise/auth": "workspace:*",
     "@mortise/base-layer": "workspace:*",
     "@mortise/community-layer": "workspace:*",
+    "@mortise/core-sdk": "workspace:*",
     "@iconify-json/lucide": "^1.2.95",
     "@iconify-json/simple-icons": "^1.2.72",
     "@nuxt/content": "^3.12.0",

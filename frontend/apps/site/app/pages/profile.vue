@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import type { ProfileNavItem, ProfileSection } from '~/types/profile'
+
 definePageMeta({
   middleware: 'auth'
 })
@@ -8,13 +10,11 @@ useSeoMeta({
   description: '查看和编辑您的个人资料'
 })
 
-// ── 左侧菜单 ──────────────────────────────────────────────────────────────────
-type Section = 'info' | 'security'
-const activeSection = ref<Section>('info')
+const activeSection = ref<ProfileSection>('info')
 
-const navItems: { key: Section; label: string; icon: string }[] = [
-  { key: 'info', label: '个人资料', icon: 'i-lucide-user' },
-  { key: 'security', label: '修改密码', icon: 'i-lucide-lock' }
+const navItems: ProfileNavItem[] = [
+  { key: 'info', label: '个人资料', icon: 'i-lucide-user', description: '维护昵称、头像和基础档案' },
+  { key: 'security', label: '修改密码', icon: 'i-lucide-lock', description: '更新登录密码与安全设置' }
 ]
 
 const { profile, loading, error, fetchProfile, uploadAvatar, updateProfile, updatePassword } = useProfile()
@@ -37,6 +37,21 @@ const pendingAvatar = ref<string | null>(null)
 const avatarPreview = ref<string | null>(null)
 const fileInput = ref<HTMLInputElement | null>(null)
 const profileSuccess = ref('')
+const profileHint = ref('')
+const hiddenGenderValue = '__hidden__'
+
+const genderItems = [
+  { label: '保密', value: hiddenGenderValue },
+  { label: '男', value: 'male' },
+  { label: '女', value: 'female' }
+]
+
+const selectedGender = computed({
+  get: () => profileState.gender || hiddenGenderValue,
+  set: (value: string) => {
+    profileState.gender = value === hiddenGenderValue ? '' : value
+  }
+})
 
 // watch 同步：profile 加载后填入表单
 watch(
@@ -55,6 +70,33 @@ const displayAvatar = computed(
   () => avatarPreview.value || resolveUrl(profile.value?.avatarUrl) || null
 )
 
+const displayName = computed(() => profile.value?.nickname || profile.value?.username || '用户')
+
+const profileSummary = computed(() => [
+  { label: '账号', value: profile.value?.username || '-', icon: 'i-lucide-at-sign' },
+  { label: '邮箱', value: profile.value?.email || '未绑定', icon: 'i-lucide-mail' },
+  { label: '手机号', value: profile.value?.phone || '未绑定', icon: 'i-lucide-smartphone' },
+])
+
+const completionCount = computed(() => {
+  const fields = [
+    profileState.nickname.trim(),
+    profileState.gender,
+    profileState.birthDate,
+    profile.value?.email,
+    profile.value?.phone,
+    displayAvatar.value,
+  ]
+  return fields.filter(Boolean).length
+})
+
+const strengthSummary = computed(() => {
+  if (score.value === 0) return '待设置'
+  if (score.value <= 2) return '较弱'
+  if (score.value === 3) return '中等'
+  return '较强'
+})
+
 const canSaveProfile = computed(() => {
   const nick = profileState.nickname.trim()
   return nick.length > 0 && nick.length <= 32
@@ -68,10 +110,12 @@ async function onFileChange(event: Event) {
   const input = event.target as HTMLInputElement
   const file = input.files?.[0]
   if (!file) return
+  profileHint.value = ''
   avatarPreview.value = URL.createObjectURL(file)
   const url = await uploadAvatar(file)
   if (url) {
     pendingAvatar.value = url
+    profileHint.value = '新头像已上传，记得点击“保存资料”后生效。'
   }
   else {
     avatarPreview.value = null
@@ -82,6 +126,7 @@ async function onFileChange(event: Event) {
 
 async function onProfileSubmit() {
   profileSuccess.value = ''
+  profileHint.value = ''
   if (!canSaveProfile.value) return
   const ok = await updateProfile({
     nickname: profileState.nickname.trim(),
@@ -166,83 +211,145 @@ async function onPasswordSubmit() {
 </script>
 
 <template>
-  <UContainer class="max-w-5xl py-10">
-    <div class="flex flex-col gap-6 md:flex-row md:items-start">
-
-      <!-- ── 左侧侧边栏 ──────────────────────────────────────────── -->
-      <aside class="mx-auto w-full max-w-xs shrink-0 md:mx-0 md:sticky md:top-20 md:w-56">
-        <!-- 用户信息卡 -->
-        <div class="mb-4 flex flex-col items-center gap-3 rounded-xl border border-default bg-default p-4">
-          <button
-            type="button"
-            style="width: 5rem; height: 5rem;"
-            class="group relative shrink-0 cursor-pointer overflow-hidden rounded-full"
-            :disabled="loading"
-            title="点击更换头像"
-            @click="triggerAvatarUpload"
-          >
-            <img
-              v-if="displayAvatar"
-              :src="displayAvatar"
-              alt="头像"
-              style="width: 5rem; height: 5rem;"
-              class="rounded-full object-cover"
-            />
-            <div
-              v-else
-              class="bg-primary/10 flex h-full w-full items-center justify-center"
-            >
-              <UIcon name="i-lucide-user" class="text-primary text-3xl" />
-            </div>
-            <div
-              class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
-            >
-              <UIcon name="i-lucide-camera" class="text-xl text-white" />
-            </div>
-          </button>
-          <input
-            ref="fileInput"
-            type="file"
-            accept="image/*"
-            class="hidden"
-            @change="onFileChange"
-          />
-          <div class="text-center">
-            <div class="font-semibold">{{ profile?.nickname || profile?.username || '用户' }}</div>
-            <div class="text-muted text-xs">@{{ profile?.username }}</div>
-            <div class="text-muted mt-1 text-xs">点击头像可更换图片</div>
+  <UContainer class="max-w-6xl py-8 sm:py-10">
+    <UCard class="mb-6 overflow-hidden border-default/70 bg-[linear-gradient(135deg,rgba(15,23,42,0.98),rgba(8,47,73,0.94))] text-white">
+      <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+        <div class="max-w-3xl">
+          <div class="mb-3 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/8 px-3 py-1 text-xs tracking-[0.18em] text-white/72 uppercase">
+            <UIcon name="i-lucide-user-cog" class="size-3.5" />
+            Site Profile
           </div>
+          <h1 class="text-2xl font-semibold tracking-tight sm:text-3xl">个人中心</h1>
+          <p class="mt-3 max-w-2xl text-sm leading-7 text-white/78 sm:text-base">
+            这里应该是一个维护工作台，不是信息堆叠页。你可以集中处理头像、昵称、基础档案和账户安全。
+          </p>
         </div>
 
-        <!-- 导航菜单 -->
-        <nav class="overflow-hidden rounded-xl border border-default bg-default">
+        <div class="grid gap-3 sm:grid-cols-3 lg:w-[26rem] lg:grid-cols-1">
+          <div class="rounded-2xl border border-white/10 bg-white/8 p-4">
+            <div class="text-xs text-white/62">当前用户</div>
+            <div class="mt-3 flex items-center gap-3">
+              <UAvatar :src="displayAvatar || undefined" :alt="displayName" size="lg" class="ring-2 ring-white/20" />
+              <div class="min-w-0">
+                <div class="truncate text-sm font-medium">{{ displayName }}</div>
+                <div class="truncate text-xs text-white/62">@{{ profile?.username || 'unknown' }}</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border border-white/10 bg-white/8 p-4">
+            <div class="text-xs text-white/62">资料完成度</div>
+            <div class="mt-3 text-2xl font-semibold">{{ completionCount }}/6</div>
+            <div class="mt-1 text-xs text-white/62">头像、昵称、性别、生日、邮箱、手机号</div>
+          </div>
+
+          <div class="rounded-2xl border border-white/10 bg-white/8 p-4">
+            <div class="text-xs text-white/62">密码强度</div>
+            <div class="mt-3 text-2xl font-semibold">{{ strengthSummary }}</div>
+            <div class="mt-1 text-xs text-white/62">当前表单会实时评估新密码强度</div>
+          </div>
+        </div>
+      </div>
+    </UCard>
+
+    <div class="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)] xl:items-start">
+      <aside class="space-y-4 xl:sticky xl:top-20">
+        <UCard>
+          <div class="flex flex-col items-center gap-4 text-center">
+            <button
+              type="button"
+              style="width: 5.5rem; height: 5.5rem;"
+              class="group relative shrink-0 cursor-pointer overflow-hidden rounded-full ring-4 ring-primary/10"
+              :disabled="loading"
+              title="点击更换头像"
+              @click="triggerAvatarUpload"
+            >
+              <img
+                v-if="displayAvatar"
+                :src="displayAvatar"
+                alt="头像"
+                style="width: 5.5rem; height: 5.5rem;"
+                class="rounded-full object-cover"
+              />
+              <div
+                v-else
+                class="bg-primary/10 flex h-full w-full items-center justify-center"
+              >
+                <UIcon name="i-lucide-user" class="text-primary text-3xl" />
+              </div>
+              <div
+                class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
+              >
+                <UIcon name="i-lucide-camera" class="text-xl text-white" />
+              </div>
+            </button>
+            <input
+              ref="fileInput"
+              type="file"
+              accept="image/*"
+              class="hidden"
+              @change="onFileChange"
+            />
+
+            <div>
+              <div class="font-semibold">{{ displayName }}</div>
+              <div class="text-muted mt-1 text-xs">@{{ profile?.username || 'unknown' }}</div>
+            </div>
+
+            <div class="w-full space-y-2">
+              <div
+                v-for="item in profileSummary"
+                :key="item.label"
+                class="flex items-center justify-between gap-3 rounded-xl bg-elevated/60 px-3 py-2 text-sm"
+              >
+                <div class="flex items-center gap-2 text-muted">
+                  <UIcon :name="item.icon" class="size-4 shrink-0" />
+                  <span>{{ item.label }}</span>
+                </div>
+                <span class="max-w-[10rem] truncate text-right font-medium text-highlighted">{{ item.value }}</span>
+              </div>
+            </div>
+
+            <p class="text-muted text-xs">点击头像后需保存资料才会正式生效。</p>
+          </div>
+        </UCard>
+
+        <nav class="overflow-hidden rounded-2xl border border-default bg-default">
           <button
             v-for="item in navItems"
             :key="item.key"
             type="button"
-            class="flex w-full items-center gap-3 px-4 py-3 text-sm transition-colors"
+            class="flex w-full items-start gap-3 px-4 py-4 text-left transition-colors"
             :class="activeSection === item.key
-              ? 'bg-primary/10 text-primary font-medium'
+              ? 'bg-primary/10 text-primary'
               : 'text-default hover:bg-elevated'"
             @click="activeSection = item.key"
           >
-            <UIcon :name="item.icon" class="size-4 shrink-0" />
-            {{ item.label }}
+            <UIcon :name="item.icon" class="mt-0.5 size-4 shrink-0" />
+            <div>
+              <div class="text-sm font-medium">{{ item.label }}</div>
+              <div class="mt-1 text-xs" :class="activeSection === item.key ? 'text-primary/80' : 'text-muted'">
+                {{ item.description }}
+              </div>
+            </div>
           </button>
         </nav>
       </aside>
 
-      <!-- ── 右侧内容区 ──────────────────────────────────────────── -->
-      <div class="min-w-0 flex-1">
-
-        <!-- 个人资料 -->
+      <div class="min-w-0 space-y-6">
         <UCard v-if="activeSection === 'info'">
           <template #header>
-            <h2 class="text-lg font-semibold">个人资料</h2>
+            <div class="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 class="text-lg font-semibold">个人资料</h2>
+                <p class="text-muted mt-1 text-sm">维护站点侧的基础身份信息，影响站内展示与账号识别。</p>
+              </div>
+              <UBadge color="neutral" variant="soft">基础档案</UBadge>
+            </div>
           </template>
 
-          <div class="space-y-4">
-            <div class="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
+          <div class="space-y-6">
+            <div class="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2 xl:grid-cols-3">
               <div>
                 <div class="text-muted">账号</div>
                 <div class="font-medium">{{ profile?.username || '-' }}</div>
@@ -251,40 +358,58 @@ async function onPasswordSubmit() {
                 <div class="text-muted">邮箱</div>
                 <div class="font-medium">{{ profile?.email || '-' }}</div>
               </div>
+              <div>
+                <div class="text-muted">手机号</div>
+                <div class="font-medium">{{ profile?.phone || '-' }}</div>
+              </div>
             </div>
 
             <USeparator />
 
-            <UFormField label="昵称" required>
-              <UInput
-                v-model="profileState.nickname"
-                placeholder="请输入昵称"
-                :disabled="loading"
-                class="w-full"
-              />
-            </UFormField>
+            <div class="grid gap-4 lg:grid-cols-2">
+              <UFormField label="昵称" required>
+                <UInput
+                  v-model="profileState.nickname"
+                  placeholder="请输入昵称"
+                  :disabled="loading"
+                  class="w-full"
+                />
+              </UFormField>
 
-            <UFormField label="性别">
-              <USelect
-                v-model="profileState.gender"
-                :options="[
-                  { label: '保密', value: '' },
-                  { label: '男', value: 'male' },
-                  { label: '女', value: 'female' }
-                ]"
-                :disabled="loading"
-                class="w-full"
-              />
-            </UFormField>
+              <UFormField label="性别">
+                <USelect
+                  v-model="selectedGender"
+                  :items="genderItems"
+                  value-key="value"
+                  label-key="label"
+                  :disabled="loading"
+                  class="w-full"
+                />
+              </UFormField>
 
-            <UFormField label="生日">
-              <UInput
-                v-model="profileState.birthDate"
-                type="date"
-                :disabled="loading"
-                class="w-full"
-              />
-            </UFormField>
+              <UFormField label="生日">
+                <UInput
+                  v-model="profileState.birthDate"
+                  type="date"
+                  :disabled="loading"
+                  class="w-full"
+                />
+              </UFormField>
+
+              <UCard class="border-dashed">
+                <div class="space-y-2 text-sm">
+                  <div class="font-medium text-highlighted">维护提示</div>
+                  <p class="text-muted leading-6">昵称会直接影响评论、文章作者名等公开展示；头像变更后需要点击保存资料才会更新到站点资料。</p>
+                </div>
+              </UCard>
+            </div>
+
+            <UAlert
+              v-if="profileHint"
+              color="info"
+              variant="soft"
+              :title="profileHint"
+            />
 
             <div class="flex justify-end">
               <UButton :loading="loading" :disabled="!canSaveProfile" @click="onProfileSubmit">
@@ -312,10 +437,16 @@ async function onPasswordSubmit() {
         <!-- 修改密码 -->
         <UCard v-else-if="activeSection === 'security'">
           <template #header>
-            <h2 class="text-lg font-semibold">修改密码</h2>
+            <div class="flex flex-col gap-1 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <h2 class="text-lg font-semibold">修改密码</h2>
+                <p class="text-muted mt-1 text-sm">使用更强的密码组合来提升账户安全性。</p>
+              </div>
+              <UBadge color="error" variant="soft">安全设置</UBadge>
+            </div>
           </template>
 
-          <div class="space-y-4">
+          <div class="space-y-5">
             <UFormField label="当前密码" required>
               <UInput
                 v-model="passwordState.currentPassword"
@@ -364,17 +495,26 @@ async function onPasswordSubmit() {
 
             <UProgress :color="color" :indicator="strengthText" :model-value="score" :max="4" size="sm" />
 
-            <ul class="space-y-1">
-              <li
-                v-for="(rule, i) in strength"
-                :key="i"
-                class="flex items-center gap-1"
-                :class="rule.met ? 'text-success' : 'text-muted'"
-              >
-                <UIcon :name="rule.met ? 'i-lucide-circle-check' : 'i-lucide-circle-x'" class="size-4 shrink-0" />
-                <span class="text-xs">{{ rule.text }}</span>
-              </li>
-            </ul>
+            <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_240px] lg:items-start">
+              <ul class="space-y-1">
+                <li
+                  v-for="(rule, i) in strength"
+                  :key="i"
+                  class="flex items-center gap-1"
+                  :class="rule.met ? 'text-success' : 'text-muted'"
+                >
+                  <UIcon :name="rule.met ? 'i-lucide-circle-check' : 'i-lucide-circle-x'" class="size-4 shrink-0" />
+                  <span class="text-xs">{{ rule.text }}</span>
+                </li>
+              </ul>
+
+              <UCard class="border-dashed">
+                <div class="space-y-2 text-sm">
+                  <div class="font-medium text-highlighted">安全建议</div>
+                  <p class="text-muted leading-6">避免和其他站点复用密码。修改成功后系统会要求你重新登录。</p>
+                </div>
+              </UCard>
+            </div>
 
             <UFormField label="确认新密码" required>
               <UInput
@@ -428,7 +568,6 @@ async function onPasswordSubmit() {
             class="mt-4"
           />
         </UCard>
-
       </div>
     </div>
   </UContainer>

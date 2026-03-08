@@ -46,8 +46,8 @@ useSeoMeta({
       :description="page.features.description"
       class="relative overflow-hidden"
     >
-      <div class="absolute rounded-full -left-10 top-10 size-[300px] z-10 bg-primary opacity-20 blur-[200px]" />
-      <div class="absolute rounded-full -right-10 -bottom-10 size-[300px] z-10 bg-primary opacity-20 blur-[200px]" />
+      <div class="absolute rounded-full -left-10 top-10 size-75 z-10 bg-primary opacity-20 blur-[200px]" />
+      <div class="absolute rounded-full -right-10 -bottom-10 size-75 z-10 bg-primary opacity-20 blur-[200px]" />
 
       <template #title>
         <MDC

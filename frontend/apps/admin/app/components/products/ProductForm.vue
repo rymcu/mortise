@@ -221,35 +221,25 @@ defineExpose({ validate, state })
 
     <div class="grid grid-cols-2 gap-4">
       <UFormField label="产品类型" name="productType" required>
-        <select
+        <USelect
           v-model="state.productType"
-          class="border-default bg-default w-full rounded-md border px-3 py-2 text-sm"
-        >
-          <option value="">请选择产品类型</option>
-          <option
-            v-for="item in productTypeItems"
-            :key="item.value"
-            :value="item.value"
-          >
-            {{ item.label }}
-          </option>
-        </select>
+          :items="productTypeItems"
+          value-key="value"
+          label-key="label"
+          placeholder="请选择产品类型"
+          class="w-full"
+        />
       </UFormField>
 
       <UFormField label="所属分类" name="categoryId" required>
-        <select
+        <USelect
           v-model="state.categoryId"
-          class="border-default bg-default w-full rounded-md border px-3 py-2 text-sm"
-        >
-          <option value="">请选择分类</option>
-          <option
-            v-for="opt in categoryOptions"
-            :key="opt.value"
-            :value="opt.value"
-          >
-            {{ opt.label }}
-          </option>
-        </select>
+          :items="categoryOptions"
+          value-key="value"
+          label-key="label"
+          placeholder="请选择分类"
+          class="w-full"
+        />
       </UFormField>
     </div>
 
@@ -347,13 +337,8 @@ defineExpose({ validate, state })
       </UFormField>
 
       <UFormField label="是否推荐" name="isFeatured">
-        <div class="flex items-center gap-2 pt-2">
-          <input
-            v-model="state.isFeatured"
-            type="checkbox"
-            class="accent-primary"
-          />
-          <span class="text-sm">推荐展示</span>
+        <div class="pt-2">
+          <UCheckbox v-model="state.isFeatured" label="推荐展示" />
         </div>
       </UFormField>
     </div>

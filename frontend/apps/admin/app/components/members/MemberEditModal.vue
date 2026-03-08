@@ -66,22 +66,11 @@ async function handleConfirm() {
 
         <div>
           <label class="mb-2 block text-sm font-medium">状态</label>
-          <div class="flex gap-4">
-            <label
-              v-for="opt in statusOptions"
-              :key="opt.value"
-              class="flex cursor-pointer items-center gap-1.5"
-            >
-              <input
-                type="radio"
-                :value="opt.value"
-                :checked="selectedStatus === opt.value"
-                class="accent-primary"
-                @change="selectedStatus = opt.value"
-              />
-              <span class="text-sm">{{ opt.label }}</span>
-            </label>
-          </div>
+          <URadioGroup
+            v-model="selectedStatus"
+            :items="statusOptions"
+            orientation="horizontal"
+          />
         </div>
       </div>
     </template>

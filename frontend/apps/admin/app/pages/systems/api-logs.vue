@@ -4,12 +4,13 @@ import type { ApiLog } from '~/types'
 
 const { $api } = useNuxtApp()
 const toast = useToast()
+const allClientTypeValue = '__all__'
 
 // 查询参数
 const pageNum = ref(1)
 const pageSize = ref(10)
 const query = ref('')
-const clientType = ref('')
+const clientType = ref(allClientTypeValue)
 const startDate = ref('')
 const endDate = ref('')
 
@@ -42,7 +43,7 @@ const columns = [
 ]
 
 const clientTypeOptions = [
-  { label: '全部', value: '' },
+  { label: '全部', value: allClientTypeValue },
   { label: '后台管理', value: 'system' },
   { label: 'App 端', value: 'app' },
   { label: 'Web 端', value: 'web' },
@@ -57,7 +58,7 @@ async function loadLogs() {
       pageNumber: pageNum.value,
       pageSize: pageSize.value,
       query: query.value || undefined,
-      clientType: clientType.value || undefined,
+      clientType: clientType.value === allClientTypeValue ? undefined : clientType.value,
       startDate: startDate.value || undefined,
       endDate: endDate.value || undefined
     })
@@ -142,9 +143,9 @@ await loadLogs()
           />
           <USelect
             v-model="clientType"
-            :options="clientTypeOptions"
-            value-attribute="value"
-            option-attribute="label"
+            :items="clientTypeOptions"
+            value-key="value"
+            label-key="label"
             class="w-36"
           />
           <UInput

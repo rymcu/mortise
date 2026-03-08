@@ -16,10 +16,11 @@
  *   pnpm layer:list
  */
 
-import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { resolve, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { execSync } from 'node:child_process'
+import { collectLayerEntries, resolveLayerEntry } from './layer-discovery.mjs'
 
 // ── 路径常量 ──────────────────────────────────────────────────────────────
 const __dirname = fileURLToPath(new URL('.', import.meta.url))
@@ -59,30 +60,6 @@ function parseArgs() {
   return { command, layerName, appName }
 }
 
-/**
- * 将 layer 目录名转为包名，支持两种输入：
- *   'community'              → '@mortise/community-layer'
- *   '@mortise/community-layer' → '@mortise/community-layer'
- */
-function resolvePackageName(input) {
-  if (!input) return null
-  if (input.startsWith('@mortise/') && input.endsWith('-layer')) return input
-  return `@mortise/${input}-layer`
-}
-
-/**
- * 将 layer 包名转为目录名：
- *   '@mortise/community-layer' → 'community'
- *   'community'                → 'community'
- */
-function resolveDirName(input) {
-  if (!input) return null
-  if (input.startsWith('@mortise/') && input.endsWith('-layer')) {
-    return input.replace('@mortise/', '').replace('-layer', '')
-  }
-  return input
-}
-
 // ── 读写 package.json ─────────────────────────────────────────────────────
 
 function readPkg(pkgPath) {
@@ -107,19 +84,9 @@ function cmdList() {
     error('layers/ 目录不存在')
   }
 
-  const layers = []
-  for (const entry of readdirSync(LAYERS_DIR, { withFileTypes: true })) {
-    if (!entry.isDirectory() || entry.name === 'base') continue
-    const pkgPath = join(LAYERS_DIR, entry.name, 'package.json')
-    const nuxtCfg = join(LAYERS_DIR, entry.name, 'nuxt.config.ts')
-    if (!existsSync(pkgPath) || !existsSync(nuxtCfg)) continue
-    try {
-      const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
-      layers.push({ dir: entry.name, packageName: pkg.name || `@mortise/${entry.name}-layer` })
-    } catch {
-      // skip
-    }
-  }
+  const layers = collectLayerEntries(LAYERS_DIR)
+    .filter(layer => layer.relativeDir !== 'base')
+    .map(layer => ({ dir: layer.relativeDir, packageName: layer.packageName || `@mortise/${layer.relativeDir.replace(/\//g, '-')}-layer` }))
 
   if (layers.length === 0) {
     info('暂无可用的业务 Layer（layers/ 下除 base 外无有效 Layer）')
@@ -141,11 +108,15 @@ function cmdList() {
  * add：向指定 app 的 package.json 添加 layer 依赖
  */
 function cmdAdd(layerName, appName) {
-  const packageName = resolvePackageName(layerName)
-  const dirName = resolveDirName(layerName)
+  const layerEntry = resolveLayerEntry(layerName, appName, LAYERS_DIR)
+  if (!layerEntry) {
+    error(`未找到 Layer "${layerName}"，请先通过 git submodule 添加对应目录后再运行本命令`)
+  }
+  const packageName = layerEntry.packageName
+  const dirName = layerEntry.relativeDir
 
   // 校验 layer 目录存在
-  const layerDir = join(LAYERS_DIR, dirName)
+  const layerDir = join(LAYERS_DIR, ...dirName.split('/'))
   if (!existsSync(join(layerDir, 'package.json')) || !existsSync(join(layerDir, 'nuxt.config.ts'))) {
     error(`Layer "${dirName}" 不存在（${layerDir} 缺少 package.json 或 nuxt.config.ts）\n  请先通过 git submodule 添加该 Layer 再运行本命令`)
   }
@@ -194,8 +165,12 @@ function cmdAdd(layerName, appName) {
  * remove：从指定 app 的 package.json 移除 layer 依赖
  */
 function cmdRemove(layerName, appName) {
-  const packageName = resolvePackageName(layerName)
-  const dirName = resolveDirName(layerName)
+  const layerEntry = resolveLayerEntry(layerName, appName, LAYERS_DIR)
+  if (!layerEntry) {
+    error(`未找到 Layer "${layerName}"，无法移除`)
+  }
+  const packageName = layerEntry.packageName
+  const dirName = layerEntry.relativeDir
 
   const appPkgPath = join(APPS_DIR, appName, 'package.json')
   if (!existsSync(appPkgPath)) {
@@ -257,6 +232,7 @@ switch (command) {
     print()
     print('示例：')
     print('  pnpm layer:add community')
+    print('  pnpm layer:add admin/community --app admin')
     print('  pnpm layer:add commerce')
     print('  pnpm layer:remove community')
     print('  pnpm layer:add community --app my-shop')

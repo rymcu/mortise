@@ -127,11 +127,11 @@ watch(
             class="hover:bg-elevated/50 flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 transition-colors"
             @click="toggleRole(role.id)"
           >
-            <input
-              type="checkbox"
-              :checked="checkedIds.has(role.id)"
-              class="border-default rounded"
-              @click.stop="toggleRole(role.id)"
+            <UCheckbox
+              :model-value="checkedIds.has(role.id)"
+              aria-label="选择角色"
+              @click.stop
+              @update:model-value="toggleRole(role.id)"
             />
             <div class="flex-1">
               <span class="text-sm font-medium">{{ role.label }}</span>

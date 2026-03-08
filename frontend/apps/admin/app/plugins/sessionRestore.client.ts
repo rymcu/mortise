@@ -1,3 +1,5 @@
+import { restoreSessionSafely } from '@mortise/auth'
+
 /**
  * 页面刷新后 Pinia 内存状态恢复插件（客户端，阻塞式）
  *
@@ -10,14 +12,5 @@
  * - 保证组件首次渲染时，菜单和用户信息均已就绪，消除"菜单空白/无头像"闪烁
  */
 export default defineNuxtPlugin(async () => {
-  const auth = useAuthStore()
-
-  if (!auth.isAuthenticated) return
-
-  // 阻塞等待：并发拉取用户信息 + 菜单，保证组件挂载时数据已就绪
-  try {
-    await auth.restoreSession()
-  } catch {
-    // 静默忽略（如网络断开），由 api.ts 的 401 拦截兜底
-  }
+  await restoreSessionSafely(useAuthStore())
 })

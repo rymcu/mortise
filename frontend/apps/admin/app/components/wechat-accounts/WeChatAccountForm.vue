@@ -124,60 +124,27 @@ defineExpose({ validate, state })
       </UFormField>
 
       <UFormField label="是否默认" name="isDefault">
-        <div class="flex gap-4">
-          <label
-            v-for="opt in yesNoOptions"
-            :key="opt.value"
-            class="flex cursor-pointer items-center gap-1.5"
-          >
-            <input
-              type="radio"
-              :value="opt.value"
-              :checked="state.isDefault === opt.value"
-              class="accent-primary"
-              @change="state.isDefault = opt.value"
-            />
-            <span class="text-sm">{{ opt.label }}</span>
-          </label>
-        </div>
+        <URadioGroup
+          v-model="state.isDefault"
+          :items="yesNoOptions"
+          orientation="horizontal"
+        />
       </UFormField>
 
       <UFormField label="是否启用" name="isEnabled">
-        <div class="flex gap-4">
-          <label
-            v-for="opt in enabledOptions"
-            :key="opt.value"
-            class="flex cursor-pointer items-center gap-1.5"
-          >
-            <input
-              type="radio"
-              :value="opt.value"
-              :checked="state.isEnabled === opt.value"
-              class="accent-primary"
-              @change="state.isEnabled = opt.value"
-            />
-            <span class="text-sm">{{ opt.label }}</span>
-          </label>
-        </div>
+        <URadioGroup
+          v-model="state.isEnabled"
+          :items="enabledOptions"
+          orientation="horizontal"
+        />
       </UFormField>
 
       <UFormField label="状态" name="status">
-        <div class="flex gap-4">
-          <label
-            v-for="opt in statusOptions"
-            :key="opt.value"
-            class="flex cursor-pointer items-center gap-1.5"
-          >
-            <input
-              type="radio"
-              :value="opt.value"
-              :checked="state.status === opt.value"
-              class="accent-primary"
-              @change="state.status = opt.value"
-            />
-            <span class="text-sm">{{ opt.label }}</span>
-          </label>
-        </div>
+        <URadioGroup
+          v-model="state.status"
+          :items="statusOptions"
+          orientation="horizontal"
+        />
       </UFormField>
     </div>
 

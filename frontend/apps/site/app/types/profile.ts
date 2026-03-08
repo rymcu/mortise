@@ -1,5 +1,5 @@
 export interface MemberProfile {
-  id?: number
+  id?: string
   username?: string
   nickname?: string
   avatarUrl?: string | null
@@ -7,6 +7,15 @@ export interface MemberProfile {
   birthDate?: string | null
   email?: string | null
   phone?: string | null
+}
+
+export type ProfileSection = 'info' | 'security'
+
+export interface ProfileNavItem {
+  key: ProfileSection
+  label: string
+  icon: string
+  description: string
 }
 
 export interface ProfileUpdateForm {

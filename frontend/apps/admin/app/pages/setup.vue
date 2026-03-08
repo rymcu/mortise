@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import * as z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
-import type { SystemInitInfo } from '~/composables/useSystemInit'
+import type { SystemInitInfo } from '~/types/system-init'
 
 definePageMeta({
   layout: 'auth'

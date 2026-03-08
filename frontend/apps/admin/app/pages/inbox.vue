@@ -186,11 +186,12 @@ const replying = ref(false)
 async function sendReply() {
   const content = replyText.value.trim()
   if (!content || selectedSessionId.value === null || replying.value) return
+  const currentSessionId = selectedSessionId.value
 
   replying.value = true
   try {
     const res = await $api<GlobalResult<BackendMessage>>(
-      `/api/v1/admin/im/sessions/${selectedSessionId.value}/reply`,
+      `/api/v1/admin/im/sessions/${currentSessionId}/reply`,
       { method: 'POST', body: { content } }
     )
     if (res.code === 200 && res.data) {
@@ -202,13 +203,13 @@ async function sendReply() {
         time: formatTime(res.data.createdTime),
         senderId: res.data.senderId
       }
-      if (!messagesMap.value[selectedSessionId.value]) {
-        messagesMap.value[selectedSessionId.value] = []
+      if (!messagesMap.value[currentSessionId]) {
+        messagesMap.value[currentSessionId] = []
       }
-      messagesMap.value[selectedSessionId.value].push(msg)
+      messagesMap.value[currentSessionId]?.push(msg)
 
       // 更新会话最后一条消息
-      const session = sessions.value.find((s) => s.id === selectedSessionId.value)
+      const session = sessions.value.find((s) => s.id === currentSessionId)
       if (session) {
         session.lastMessage = content
         session.updatedTime = res.data.createdTime

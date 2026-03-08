@@ -71,11 +71,11 @@ export async function fetchAdminPut<T>(
 export async function fetchAdminPatch<T>(
   api: ApiInvoker,
   path: string,
-  query?: Record<string, unknown>
+  options?: Record<string, unknown>
 ): Promise<T> {
   const response = await api<GlobalResult<T>>(path, {
     method: 'PATCH',
-    query
+    ...options
   })
   if (!response || response.code !== 200) {
     throw new Error(response?.message || '操作失败')

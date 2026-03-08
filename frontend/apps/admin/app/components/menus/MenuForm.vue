@@ -58,6 +58,22 @@ const state = reactive({
 const parentMenuItems = ref<Array<{ label: string; value: string | number }>>(
   []
 )
+const noneParentValue = '__none__'
+
+const parentMenuSelectItems = computed(() => [
+  { label: '无', value: noneParentValue },
+  ...parentMenuItems.value.map(item => ({
+    label: item.label,
+    value: String(item.value)
+  }))
+])
+
+const selectedParentId = computed({
+  get: () => (state.parentId == null || state.parentId === '' ? noneParentValue : String(state.parentId)),
+  set: (value: string) => {
+    state.parentId = value === noneParentValue ? undefined : value
+  }
+})
 
 async function loadMenuTree() {
   try {
@@ -142,57 +158,29 @@ defineExpose({ validate, state })
     </UFormField>
 
     <UFormField label="菜单类型" name="menuType">
-      <div class="flex gap-4">
-        <label
-          v-for="opt in menuTypeOptions"
-          :key="opt.value"
-          class="flex cursor-pointer items-center gap-1.5"
-        >
-          <input
-            type="radio"
-            :value="opt.value"
-            :checked="state.menuType === opt.value"
-            class="accent-primary"
-            @change="state.menuType = opt.value"
-          />
-          <span class="text-sm">{{ opt.label }}</span>
-        </label>
-      </div>
+      <URadioGroup
+        v-model="state.menuType"
+        :items="menuTypeOptions"
+        orientation="horizontal"
+      />
     </UFormField>
 
     <UFormField label="状态" name="status">
-      <div class="flex gap-4">
-        <label
-          v-for="opt in statusOptions"
-          :key="opt.value"
-          class="flex cursor-pointer items-center gap-1.5"
-        >
-          <input
-            type="radio"
-            :value="opt.value"
-            :checked="state.status === opt.value"
-            class="accent-primary"
-            @change="state.status = opt.value"
-          />
-          <span class="text-sm">{{ opt.label }}</span>
-        </label>
-      </div>
+      <URadioGroup
+        v-model="state.status"
+        :items="statusOptions"
+        orientation="horizontal"
+      />
     </UFormField>
 
     <UFormField label="上级菜单" name="parentId">
-      <select
-        v-model="state.parentId"
-        class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800"
-      >
-        <option :value="undefined">无</option>
-        <option
-          v-for="item in parentMenuItems"
-          :key="item.value"
-          :value="item.value"
-        >
-          {{ item.label }}
-        </option>
-      </select>
+      <USelect
+        v-model="selectedParentId"
+        :items="parentMenuSelectItems"
+        value-key="value"
+        label-key="label"
+        class="w-full"
+      />
     </UFormField>
 
     <UFormField label="排序号" name="sortNo">

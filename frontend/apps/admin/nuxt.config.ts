@@ -1,6 +1,18 @@
+import { resolve } from 'node:path'
+import { resolveAppLayerExtends } from '../../scripts/layer-discovery.mjs'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
+const appRoot = __dirname
+const layersRoot = resolve(__dirname, '../../layers')
+const layers = resolveAppLayerExtends({
+  appRoot,
+  layersRoot,
+  localLayersBase: '../../layers',
+  appKind: 'admin'
+})
+
 export default defineNuxtConfig({
-  extends: ['../../layers/base'],
+  extends: layers,
   modules: ['@nuxt/eslint', '@nuxt/ui', '@pinia/nuxt', '@vueuse/nuxt'],
 
   ssr: false,

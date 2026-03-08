@@ -57,6 +57,19 @@ const state = reactive({
   ...props.data
 })
 
+const emptyColorValue = '__none__'
+const colorItems = [
+  { label: '无', value: emptyColorValue },
+  ...colorOptions
+]
+
+const selectedColor = computed({
+  get: () => state.color || emptyColorValue,
+  set: (value: string) => {
+    state.color = value === emptyColorValue ? '' : value
+  }
+})
+
 // 加载字典类型列表
 const dictTypeItems = ref<Array<{ label: string; value: string }>>([])
 
@@ -101,19 +114,14 @@ defineExpose({ validate, state })
 <template>
   <UForm ref="formRef" :schema="schema" :state="state" class="space-y-4">
     <UFormField label="字典类型" name="dictTypeCode" required>
-      <select
+      <USelect
         v-model="state.dictTypeCode"
-        class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800"
-      >
-        <option value="">请选择字典类型</option>
-        <option
-          v-for="item in dictTypeItems"
-          :key="item.value"
-          :value="item.value"
-        >
-          {{ item.label }}
-        </option>
-      </select>
+        :items="dictTypeItems"
+        value-key="value"
+        label-key="label"
+        placeholder="请选择字典类型"
+        class="w-full"
+      />
     </UFormField>
 
     <UFormField label="字典标签" name="label" required>
@@ -138,22 +146,11 @@ defineExpose({ validate, state })
     </UFormField>
 
     <UFormField label="状态" name="status">
-      <div class="flex gap-4">
-        <label
-          v-for="opt in statusOptions"
-          :key="opt.value"
-          class="flex cursor-pointer items-center gap-1.5"
-        >
-          <input
-            type="radio"
-            :value="opt.value"
-            :checked="state.status === opt.value"
-            class="accent-primary"
-            @change="state.status = opt.value"
-          />
-          <span class="text-sm">{{ opt.label }}</span>
-        </label>
-      </div>
+      <URadioGroup
+        v-model="state.status"
+        :items="statusOptions"
+        orientation="horizontal"
+      />
     </UFormField>
 
     <UFormField label="图标" name="icon">
@@ -169,15 +166,13 @@ defineExpose({ validate, state })
     </UFormField>
 
     <UFormField label="颜色" name="color">
-      <select
-        v-model="state.color"
-        class="w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm dark:border-gray-600 dark:bg-gray-800"
-      >
-        <option value="">无</option>
-        <option v-for="opt in colorOptions" :key="opt.value" :value="opt.value">
-          {{ opt.label }}
-        </option>
-      </select>
+      <USelect
+        v-model="selectedColor"
+        :items="colorItems"
+        value-key="value"
+        label-key="label"
+        class="w-full"
+      />
     </UFormField>
   </UForm>
 </template>

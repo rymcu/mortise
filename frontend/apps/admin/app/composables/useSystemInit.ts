@@ -2,26 +2,8 @@
  * 系统初始化相关 API 组合式函数
  */
 
-/** 系统初始化信息 */
-export interface SystemInitInfo {
-  /** 管理员密码 */
-  adminPassword: string
-  /** 管理员昵称 */
-  adminNickname: string
-  /** 管理员邮箱 */
-  adminEmail: string
-  /** 系统名称 */
-  systemName: string
-  /** 系统描述 */
-  systemDescription?: string
-}
-
-/** API 统一返回格式 */
-interface GlobalResult<T> {
-  code: number
-  message: string
-  data: T
-}
+import type { GlobalResult } from '@mortise/core-sdk'
+import type { SystemInitInfo } from '../types/system-init'
 
 export function useSystemInit() {
   const config = useRuntimeConfig()

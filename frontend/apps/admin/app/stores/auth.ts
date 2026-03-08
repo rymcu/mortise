@@ -1,34 +1,19 @@
 import { defineStore } from 'pinia'
-import { createAuthClient, type AuthSession } from '@mortise/auth'
-
-interface AdminLoginResponse {
-  id?: number
-  account?: string
-  token?: string
-  refreshToken?: string
-}
-
-interface AuthSessionResponse {
-  user?: Record<string, unknown>
-}
-
-interface FetchCurrentUserOptions {
-  noRetryOnUnauthorized?: boolean
-}
+import { createAdminAuthStore } from '@mortise/auth'
+import type { AuthApiInvoker } from '@mortise/auth'
+import {
+  fetchAdminAuthMenus,
+  fetchAdminCurrentUser,
+  type AdminMenuLink,
+} from '@mortise/core-sdk'
 
 /** 后端菜单 Link 结构 */
-export interface MenuLink {
-  id: string
-  label: string
-  icon?: string
-  to?: string
-  status?: number
-  sortNo?: number
-  parentId?: string | null
-  tooltip?: string | null
-  children?: MenuLink[]
-  defaultOpen?: boolean
-}
+export type MenuLink = AdminMenuLink
+
+const setupAdminAuthStore = createAdminAuthStore<MenuLink>({
+  fetchCurrentUserRemote: fetchAdminCurrentUser,
+  fetchMenusRemote: fetchAdminAuthMenus
+})
 
 /**
  * Cookie 存储的管理端认证 store（SSR 安全）
@@ -36,254 +21,20 @@ export interface MenuLink {
  * 参考 old-code/design-mobile 的 useToken 方案，使用 useCookie 替代 localStorage，
  * 保证刷新页面时服务端也能读取到 token，不再被中间件重定向到登录页。
  */
-export const useAuthStore = defineStore('admin-auth', () => {
-  // ─── Cookie 持久化（SSR 安全） ───
-  const tokenCookie = useCookie<string | null>('mortise-admin-token', {
-    sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60 // 7 天
-  })
-  const refreshTokenCookie = useCookie<string | null>(
-    'mortise-admin-refresh-token',
-    {
-      sameSite: 'lax',
-      maxAge: 30 * 24 * 60 * 60 // 30 天
-    }
-  )
-  const tokenTypeCookie = useCookie<string | null>('mortise-admin-token-type', {
-    sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60
-  })
-  const userCookie = useCookie<Record<string, unknown> | null>(
-    'mortise-admin-user',
-    {
-      sameSite: 'lax',
-      maxAge: 7 * 24 * 60 * 60
-    }
-  )
-
-  // ─── 响应式状态 ───
-  const loading = ref(false)
-  const refreshPromise = shallowRef<Promise<AuthSession | null> | null>(null)
-  const userMenus = ref<MenuLink[]>([])
-
-  // ─── Getters ───
-  const isAuthenticated = computed(() => Boolean(tokenCookie.value))
-
-  const authHeader = computed(() => {
-    if (!tokenCookie.value) return ''
-    return `${tokenTypeCookie.value ?? 'Bearer'} ${tokenCookie.value}`
-  })
-
-  /** 兼容旧接口，返回只读 session 对象 */
-  const session = computed<AuthSession | null>(() => {
-    if (!tokenCookie.value) return null
-    return {
-      token: tokenCookie.value,
-      refreshToken: refreshTokenCookie.value ?? undefined,
-      tokenType: tokenTypeCookie.value ?? 'Bearer',
-      user: userCookie.value ?? undefined
-    }
-  })
-
-  // ─── 内部工具 ───
-  function buildClient() {
-    const config = useRuntimeConfig()
-    return createAuthClient({
-      baseURL: config.public.apiBase,
-      endpoints: {
-        loginPath: config.public.auth.loginPath,
-        refreshPath: config.public.auth.refreshPath,
-        callbackPath: config.public.auth.callbackPath,
-        mePath: config.public.auth.mePath
+export const useAuthStore = defineStore(
+  'admin-auth',
+  (): ReturnType<typeof setupAdminAuthStore> =>
+    setupAdminAuthStore({
+      createCookie: useCookie,
+      getRuntimeConfig: useRuntimeConfig,
+      getApi: (): AuthApiInvoker => useNuxtApp().$api as AuthApiInvoker,
+      navigateTo: async (url, options) => {
+        await navigateTo(url, options)
+      },
+      clearLegacySession: () => {
+        if (import.meta.client && typeof localStorage !== 'undefined') {
+          localStorage.removeItem('mortise.auth.session')
+        }
       }
     })
-  }
-
-  function saveTokens(payload: AdminLoginResponse) {
-    if (!payload?.token) {
-      throw new Error('登录响应缺少 token')
-    }
-    tokenCookie.value = payload.token
-    refreshTokenCookie.value = payload.refreshToken ?? null
-    tokenTypeCookie.value = 'Bearer'
-    userCookie.value = { id: payload.id, account: payload.account }
-  }
-
-  function clearTokens() {
-    tokenCookie.value = null
-    refreshTokenCookie.value = null
-    tokenTypeCookie.value = null
-    userCookie.value = null
-  }
-
-  function setSessionUser(user: Record<string, unknown> | null) {
-    userCookie.value = user
-  }
-
-  // ─── Actions ───
-
-  /** 兼容旧调用（cookie 始终可读，无需手动恢复） */
-  function restore() {
-    /* no-op: cookie 在 SSR/CSR 均自动可用 */
-  }
-
-  /** 兼容旧调用 */
-  function persist() {
-    /* no-op: cookie 自动持久化 */
-  }
-
-  async function login(account: string, password: string) {
-    loading.value = true
-    try {
-      const payload = await buildClient().login<AdminLoginResponse>({
-        account,
-        password
-      })
-      saveTokens(payload)
-      await fetchCurrentUser()
-    } finally {
-      loading.value = false
-    }
-  }
-
-  async function exchangeOAuthState(state: string) {
-    const payload = await buildClient().callback<AdminLoginResponse>(state)
-    saveTokens(payload)
-    await fetchCurrentUser()
-  }
-
-  async function refresh(): Promise<AuthSession | null> {
-    if (!refreshTokenCookie.value) {
-      logout()
-      return null
-    }
-
-    // 防止并发刷新
-    if (refreshPromise.value) {
-      return refreshPromise.value
-    }
-
-    refreshPromise.value = (async () => {
-      try {
-        const payload = await buildClient().refresh<AdminLoginResponse>(
-          refreshTokenCookie.value!
-        )
-        saveTokens(payload)
-        await fetchCurrentUser({ noRetryOnUnauthorized: true })
-        return session.value
-      } catch {
-        logout()
-        return null
-      } finally {
-        refreshPromise.value = null
-      }
-    })()
-
-    return refreshPromise.value
-  }
-
-  async function startOAuthLogin(registrationId: string) {
-    const config = useRuntimeConfig()
-    const base = config.public.auth.oauthAuthorizeBasePath
-    const url = `${config.public.apiBase}${base}/${encodeURIComponent(registrationId)}`
-    await navigateTo(url, { external: true })
-  }
-
-  /** 从后端加载当前用户的菜单树 */
-  async function fetchMenus() {
-    if (!isAuthenticated.value) return
-    const { $api } = useNuxtApp()
-    try {
-      const res = await $api<{ code: number; data: MenuLink[] }>(
-        '/api/v1/admin/auth/menus'
-      )
-      userMenus.value = res?.data ?? []
-    } catch {
-      userMenus.value = []
-    }
-  }
-
-  async function fetchCurrentUser(options: FetchCurrentUserOptions = {}) {
-    if (!isAuthenticated.value) {
-      return null
-    }
-
-    const { $api } = useNuxtApp()
-    try {
-      const requestOptions = options.noRetryOnUnauthorized
-        ? { _retried: true }
-        : undefined
-      const res = await $api<{ code: number; data?: AuthSessionResponse }>(
-        '/api/v1/admin/auth/me',
-        requestOptions
-      )
-      const remoteUser = res?.data?.user
-      if (!remoteUser) {
-        return null
-      }
-
-      const merged = {
-        ...(userCookie.value ?? {}),
-        ...remoteUser
-      }
-      userCookie.value = merged
-      return merged
-    } catch {
-      return null
-    }
-  }
-
-  function logout() {
-    clearTokens()
-    userMenus.value = []
-    // 同时清理旧 localStorage 数据（如果存在）
-    if (import.meta.client && typeof localStorage !== 'undefined') {
-      localStorage.removeItem('mortise.auth.session')
-    }
-  }
-
-  /**
-   * 刷新页面或从后台恢复时重建 pinia 运行时状态：
-   * 1. 刷新后端用户信息（确保 cookie 中的用户数据最新）
-   * 2. 若菜单为空则重新加载（解决刷新页面 pinia 数据丢失问题）
-   *
-   * 注意：cookie 中的 token/user 数据在刷新后自动可用，无需额外操作。
-   * 此方法仅补充纯内存的 Pinia 响应式状态（如 userMenus）。
-   */
-  async function restoreSession() {
-    if (!isAuthenticated.value) return
-    // 并发执行：刷新用户信息 + 加载菜单
-    await Promise.all([
-      fetchCurrentUser({ noRetryOnUnauthorized: false }),
-      (async () => {
-        if ((userMenus.value ?? []).length === 0) {
-          await fetchMenus()
-        }
-      })()
-    ])
-  }
-
-  return {
-    // State
-    loading,
-    session,
-    userMenus,
-    refreshPromise,
-    // Getters
-    isAuthenticated,
-    authHeader,
-    // Actions
-    restore,
-    persist,
-    login,
-    exchangeOAuthState,
-    refresh,
-    startOAuthLogin,
-    fetchMenus,
-    fetchCurrentUser,
-    restoreSession,
-    setSessionUser,
-    logout,
-    buildClient
-  }
-})
+)

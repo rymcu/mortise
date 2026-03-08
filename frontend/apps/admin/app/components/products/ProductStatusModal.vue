@@ -61,30 +61,11 @@ async function handleConfirm() {
           product.title
         }}</span>
       </p>
-      <div class="grid grid-cols-2 gap-3">
-        <label
-          v-for="opt in statusOptions"
-          :key="opt.value"
-          class="border-default flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors"
-          :class="
-            selectedStatus === opt.value
-              ? 'border-primary bg-primary/5'
-              : 'hover:bg-elevated/50'
-          "
-        >
-          <input
-            v-model.number="selectedStatus"
-            type="radio"
-            :value="opt.value"
-            class="accent-primary"
-          />
-          <div>
-            <UBadge :color="opt.color as any" variant="subtle" size="sm">
-              {{ opt.label }}
-            </UBadge>
-          </div>
-        </label>
-      </div>
+      <URadioGroup
+        v-model="selectedStatus"
+        :items="statusOptions"
+        orientation="horizontal"
+      />
     </template>
     <template #footer>
       <div class="flex justify-end gap-2">

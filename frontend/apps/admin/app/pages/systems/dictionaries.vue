@@ -25,10 +25,19 @@ interface DictInfo {
 }
 
 const { $api } = useNuxtApp()
+const allDictTypeValue = '__all__'
 
 // 加载字典类型下拉选项
 const dictTypes = ref<DictTypeOption[]>([])
-const selectedTypeCode = ref('')
+const selectedTypeCode = ref(allDictTypeValue)
+
+const dictTypeFilterItems = computed(() => [
+  { label: '全部类型', value: allDictTypeValue },
+  ...dictTypes.value.map(item => ({
+    label: `${item.label}（${item.typeCode}）`,
+    value: item.typeCode
+  }))
+])
 
 async function loadDictTypes() {
   try {
@@ -72,7 +81,10 @@ const {
   load: loadData
 } = usePagedAdminResource<DictInfo>({
   path: '/api/v1/admin/dictionaries',
-  errorMessage: '加载字典失败'
+  errorMessage: '加载字典失败',
+  buildQuery: () => ({
+    dictTypeCode: selectedTypeCode.value === allDictTypeValue ? undefined : selectedTypeCode.value
+  })
 })
 
 await loadData()
@@ -132,20 +144,13 @@ function openDeleteModal(row: Record<string, unknown>) {
         @search-enter="loadData"
       >
         <template #toolbar>
-          <!-- 字典类型筛选 -->
-          <select
+          <USelect
             v-model="selectedTypeCode"
-            class="border-default bg-default focus:ring-primary h-8 rounded-md border px-2 text-sm focus:ring-2 focus:outline-none"
-          >
-            <option value="">全部类型</option>
-            <option
-              v-for="dt in dictTypes"
-              :key="dt.typeCode"
-              :value="dt.typeCode"
-            >
-              {{ dt.label }}（{{ dt.typeCode }}）
-            </option>
-          </select>
+            :items="dictTypeFilterItems"
+            value-key="value"
+            label-key="label"
+            class="w-48"
+          />
           <UButton
             icon="i-lucide-plus"
             color="primary"

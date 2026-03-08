@@ -2,6 +2,7 @@ packages:
   - apps/*
   - packages/*
   - layers/*
+  - layers/**
 
 onlyBuiltDependencies:
   - '@parcel/watcher'

@@ -2,7 +2,7 @@
 /**
  * create-standalone.mjs — 独立部署应用一键生成脚本
  *
- * 基于 apps/standalone 模板，自动检测可用 Layer 并生成配置完备的独立应用。
+ * 基于 templates/standalone 模板，自动检测可用 Layer 并生成配置完备的独立应用。
  *
  * 用法：
  *   node scripts/create-standalone.mjs
@@ -19,7 +19,7 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url))
 const ROOT = resolve(__dirname, '..')
 const LAYERS_DIR = resolve(ROOT, 'layers')
 const APPS_DIR = resolve(ROOT, 'apps')
-const TEMPLATE_DIR = resolve(APPS_DIR, 'standalone')
+const TEMPLATE_DIR = resolve(ROOT, 'templates', 'standalone')
 
 // ── Nuxt UI 可用主色 ─────────────────────────────────────────────────────
 const COLORS = [
@@ -43,7 +43,7 @@ function printBanner() {
   print()
   print('╔══════════════════════════════════════════════╗')
   print('║   Mortise 独立部署应用生成器                 ║')
-  print('║   基于 apps/standalone 模板自动创建          ║')
+  print('║   基于 templates/standalone 模板自动创建     ║')
   print('╚══════════════════════════════════════════════╝')
   print()
 }
@@ -176,7 +176,7 @@ function generateApp(appName, selectedLayers, params) {
   print()
 
   // 4.1 复制模板目录
-  print('  📁 复制模板 apps/standalone → apps/' + appName)
+  print('  📁 复制模板 templates/standalone → apps/' + appName)
   cpSync(TEMPLATE_DIR, targetDir, { recursive: true })
 
   // 4.2 修改 package.json
@@ -309,7 +309,7 @@ async function main() {
 
   // 校验模板存在
   if (!existsSync(TEMPLATE_DIR)) {
-    print('❌ 模板目录 apps/standalone 不存在，请确认项目结构完整。')
+    print('❌ 模板目录 templates/standalone 不存在，请确认项目结构完整。')
     process.exit(1)
   }
 

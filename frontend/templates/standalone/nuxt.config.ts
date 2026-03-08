@@ -5,7 +5,7 @@
  * 无需官网（site）即可单独运行。
  *
  * ── 使用方式 ──────────────────────────────────────
- * 1. cp -r apps/standalone apps/<your-app>
+ * 1. cp -r templates/standalone apps/<your-app>
  * 2. 修改下方 ★ 标记的配置项
  * 3. 修改 package.json 的 name 和 layer 依赖
  * 4. 修改 app/app.config.ts 中的 basePath 覆盖

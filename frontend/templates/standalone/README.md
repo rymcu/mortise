@@ -1,4 +1,4 @@
-# @mortise/standalone — 独立部署模板
+# standalone 模板 — 独立部署模板
 
 通用模板应用，将任意 Nuxt Layer 独立部署为根路径应用（无需官网）。
 
@@ -22,7 +22,7 @@ pnpm create:standalone
 
 ```bash
 # 1. 复制模板到新目录
-cp -r apps/standalone apps/<your-app>
+cp -r templates/standalone apps/<your-app>
 
 # 2. 修改 package.json
 #    - name → "@mortise/<your-app>"
@@ -83,7 +83,7 @@ standalone/
 ## 示例：独立部署 community
 
 ```bash
-cp -r apps/standalone apps/my-community
+cp -r templates/standalone apps/my-community
 ```
 
 [apps/my-community/nuxt.config.ts](apps/my-community/nuxt.config.ts)：
@@ -103,7 +103,7 @@ export default defineAppConfig({
 ## 示例：独立部署 commerce
 
 ```bash
-cp -r apps/standalone apps/my-shop
+cp -r templates/standalone apps/my-shop
 ```
 
 ```typescript

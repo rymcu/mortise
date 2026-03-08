@@ -1,8 +1,19 @@
 import { fetchAdminPage } from '@mortise/core-sdk'
+import type { UsePagedAdminResourceOptions } from '../types/resource'
 
-interface UsePagedAdminResourceOptions {
-  path: string
-  errorMessage: string
+function toNumber(value: unknown, fallback = 0) {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    return value
+  }
+
+  if (typeof value === 'string' && value.trim()) {
+    const parsed = Number(value)
+    if (Number.isFinite(parsed)) {
+      return parsed
+    }
+  }
+
+  return fallback
 }
 
 export function usePagedAdminResource<T>(
@@ -29,19 +40,18 @@ export function usePagedAdminResource<T>(
       const page = await fetchAdminPage<T>($api, options.path, {
         pageNumber: pageNum.value,
         pageSize: pageSize.value,
-        keyword: keyword.value || undefined
+        keyword: keyword.value || undefined,
+        ...options.buildQuery?.()
       })
 
       records.value = page.records || []
-      total.value = page.totalRow || 0
-      totalPage.value = page.totalPage || 0
+      total.value = toNumber(page.totalRow)
+      totalPage.value = toNumber(page.totalPage)
 
-      if (
-        typeof page.pageNumber === 'number' &&
-        page.pageNumber > 0 &&
-        page.pageNumber !== pageNum.value
-      ) {
-        pageNum.value = page.pageNumber
+      const currentPageNumber = toNumber(page.pageNumber, pageNum.value)
+
+      if (currentPageNumber > 0 && currentPageNumber !== pageNum.value) {
+        pageNum.value = currentPageNumber
       }
 
       hasPrevious.value = Boolean(page.hasPrevious)

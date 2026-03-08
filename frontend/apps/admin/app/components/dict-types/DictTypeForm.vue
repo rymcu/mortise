@@ -94,22 +94,11 @@ defineExpose({ validate, state })
     </UFormField>
 
     <UFormField label="状态" name="status">
-      <div class="flex gap-4">
-        <label
-          v-for="opt in statusOptions"
-          :key="opt.value"
-          class="flex cursor-pointer items-center gap-1.5"
-        >
-          <input
-            type="radio"
-            :value="opt.value"
-            :checked="state.status === opt.value"
-            class="accent-primary"
-            @change="state.status = opt.value"
-          />
-          <span class="text-sm">{{ opt.label }}</span>
-        </label>
-      </div>
+      <URadioGroup
+        v-model="state.status"
+        :items="statusOptions"
+        orientation="horizontal"
+      />
     </UFormField>
   </UForm>
 </template>

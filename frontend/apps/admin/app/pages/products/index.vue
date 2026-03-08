@@ -66,7 +66,7 @@ async function loadCategoryTree() {
 
 await loadCategoryTree()
 
-function toggleExpand(id: number) {
+function toggleExpand(id: string) {
   const s = new Set(expandedIds.value)
   if (s.has(id)) s.delete(id)
   else s.add(id)
@@ -444,18 +444,13 @@ const productColumns = [
 
               <div class="flex items-center gap-2">
                 <!-- 状态筛选 -->
-                <select
-                  v-model.number="productStatusFilter"
-                  class="border-default bg-default rounded-md border px-2 py-1.5 text-sm"
-                >
-                  <option
-                    v-for="opt in productStatusOptions"
-                    :key="opt.value"
-                    :value="opt.value"
-                  >
-                    {{ opt.label }}
-                  </option>
-                </select>
+                <USelect
+                  v-model="productStatusFilter"
+                  :items="productStatusOptions"
+                  value-key="value"
+                  label-key="label"
+                  class="w-32"
+                />
 
                 <!-- 关键字搜索 -->
                 <UInput
