@@ -30,4 +30,6 @@ public class BaseSearch {
 
     private Integer status;
 
+    private Long currentUserId;
+
 }

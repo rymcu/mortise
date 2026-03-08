@@ -26,10 +26,13 @@ import java.util.List;
  *   auth:
  *     user-type:
  *       header-name: x-client-type
+ *       system-paths:
+ *         - /api/v1/admin
  *       member-paths:
  *         - /api/app
  *         - /api/member
  *         - /api/v1/app
+ *         - /api/v1/community
  * </pre>
  *
  * @author ronger
@@ -46,9 +49,15 @@ public class DefaultUserTypeResolver implements UserTypeResolver {
     private String headerName;
 
     /**
+     * 系统用户路径前缀列表
+     */
+    @Value("#{'${mortise.auth.user-type.system-paths:/api/v1/admin}'.split(',')}")
+    private List<String> systemPaths;
+
+    /**
      * 会员用户路径前缀列表
      */
-    @Value("#{'${mortise.auth.user-type.member-paths:/api/app,/api/member,/api/v1/app}'.split(',')}")
+    @Value("#{'${mortise.auth.user-type.member-paths:/api/app,/api/member,/api/v1/app,/api/v1/community}'.split(',')}")
     private List<String> memberPaths;
 
     /**
@@ -90,6 +99,13 @@ public class DefaultUserTypeResolver implements UserTypeResolver {
         String path = requestUri;
         if (StringUtils.hasText(contextPath) && path.startsWith(contextPath)) {
             path = path.substring(contextPath.length());
+        }
+
+        for (String systemPath : systemPaths) {
+            if (path.startsWith(systemPath)) {
+                log.debug("根据请求路径判断用户类型: {} (raw: {}) -> {}", path, requestUri, UserType.SYSTEM.getCode());
+                return UserType.SYSTEM.getCode();
+            }
         }
 
         for (String memberPath : memberPaths) {

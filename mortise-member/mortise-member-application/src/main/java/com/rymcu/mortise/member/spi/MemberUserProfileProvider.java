@@ -1,6 +1,7 @@
 package com.rymcu.mortise.member.spi;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.rymcu.mortise.common.enumerate.DelFlag;
 import com.rymcu.mortise.core.model.UserProfile;
 import com.rymcu.mortise.core.spi.UserProfileProvider;
 import com.rymcu.mortise.member.entity.Member;

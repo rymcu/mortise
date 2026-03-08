@@ -2,8 +2,15 @@
   { "label": "首页", "permission": "home", "icon": "i-lucide-house", "href": "/", "menuType": 1, "sortNo": 1, "parentPermission": null },
   { "label": "收件箱", "permission": "inbox", "icon": "i-lucide-inbox", "href": "/inbox", "menuType": 1, "sortNo": 2, "parentPermission": null },
   { "label": "会员", "permission": "member", "icon": "i-lucide-users", "href": "/members", "menuType": 2, "sortNo": 3, "parentPermission": null },
+  { "label": "社区", "permission": "community", "icon": "i-lucide-panels-top-left", "href": "/community", "menuType": 0, "sortNo": 8, "parentPermission": null },
   { "label": "系统", "permission": "system", "icon": "i-lucide-settings-2", "href": "/systems", "menuType": 0, "sortNo": 10, "parentPermission": null },
   { "label": "设置", "permission": "settings", "icon": "i-lucide-settings", "href": "/settings", "menuType": 0, "sortNo": 1000, "parentPermission": null },
+
+  { "label": "社区概览", "permission": "community:dashboard", "icon": "i-lucide-layout-dashboard", "href": "/community", "menuType": 1, "sortNo": 1, "parentPermission": "community" },
+  { "label": "文章管理", "permission": "community:article", "icon": "i-lucide-file-text", "href": "/community/articles", "menuType": 1, "sortNo": 2, "parentPermission": "community" },
+  { "label": "专题管理", "permission": "community:topic", "icon": "i-lucide-layout-grid", "href": "/community/topics", "menuType": 1, "sortNo": 3, "parentPermission": "community" },
+  { "label": "标签管理", "permission": "community:tag", "icon": "i-lucide-tags", "href": "/community/tags", "menuType": 1, "sortNo": 4, "parentPermission": "community" },
+  { "label": "合集管理", "permission": "community:collection", "icon": "i-lucide-library", "href": "/community/collections", "menuType": 1, "sortNo": 5, "parentPermission": "community" },
 
   { "label": "用户", "permission": "system:user", "icon": "i-lucide-users", "href": "/systems/users", "menuType": 1, "sortNo": 1, "parentPermission": "system" },
   { "label": "新增用户", "permission": "system:user:add", "icon": "i-lucide-user-plus", "href": "", "menuType": 2, "sortNo": 1, "parentPermission": "system:user" },
