@@ -18,6 +18,18 @@ export function useMediaUrl() {
   const config = useRuntimeConfig()
   const base = (config.public.apiBase as string ?? '').replace(/\/$/, '')
 
+  function normalizeLegacyMarkdownUrls(markdown: string | null | undefined): string {
+    if (!markdown) return ''
+
+    return markdown
+      .replace(/(!?\[[^\]]*\])\(\[(https?:\/\/[^\]\s)]+)\]\(\2\)\)/g, (_match, label: string, url: string) => {
+        return `${label}(${url})`
+      })
+      .replace(/(\[[^\]]+\])\(\[(https?:\/\/[^)\]]+)\)([^\]]+)\]\(\2\)\3\)/g, (_match, label: string, url: string, suffix: string) => {
+        return `${label}(${url})${suffix}`
+      })
+  }
+
   function resolveUrl(url: string | null | undefined): string | null {
     if (!url) return null
     // 已是完整 URL，直接返回
@@ -33,5 +45,55 @@ export function useMediaUrl() {
     return url
   }
 
-  return { resolveUrl }
+  function toStoredUrl(url: string | null | undefined): string | null {
+    if (!url) return null
+    if (!base) return url
+
+    if (url === base) {
+      return '/'
+    }
+
+    if (url.startsWith(base + '/')) {
+      return url.slice(base.length)
+    }
+
+    return url
+  }
+
+  function transformMarkdownImageUrls(markdown: string | null | undefined, mapper: (url: string) => string): string {
+    if (!markdown) return ''
+
+    return markdown.replace(/!\[([^\]]*)\]\(([^)\s]+)([^)]*)\)/g, (_match, altText: string, url: string, suffix: string) => {
+      return `![${altText}](${mapper(url)}${suffix})`
+    })
+  }
+
+  function transformHtmlImageUrls(html: string | null | undefined, mapper: (url: string) => string): string {
+    if (!html) return ''
+
+    return html.replace(/(<img\b[^>]*\bsrc=(['"]))([^'"]+)((?:\2)[^>]*>)/gi, (_match, prefix: string, quote: string, url: string, suffix: string) => {
+      return `${prefix}${mapper(url)}${suffix}`
+    })
+  }
+
+  function resolveMarkdownMediaUrls(markdown: string | null | undefined): string {
+    return transformMarkdownImageUrls(markdown, url => resolveUrl(url) ?? url)
+  }
+
+  function toStoredMarkdownMediaUrls(markdown: string | null | undefined): string {
+    return transformMarkdownImageUrls(markdown, url => toStoredUrl(url) ?? url)
+  }
+
+  function resolveHtmlMediaUrls(html: string | null | undefined): string {
+    return transformHtmlImageUrls(html, url => resolveUrl(url) ?? url)
+  }
+
+  return {
+    normalizeLegacyMarkdownUrls,
+    resolveUrl,
+    toStoredUrl,
+    resolveMarkdownMediaUrls,
+    toStoredMarkdownMediaUrls,
+    resolveHtmlMediaUrls,
+  }
 }
