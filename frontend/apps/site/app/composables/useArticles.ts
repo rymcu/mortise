@@ -1,8 +1,15 @@
+export interface Author {
+  id: number
+  name: string
+  avatarUrl: string | null
+}
+
 export interface Article {
   id: number
   title: string
   summary: string
   content: string
+  author?: Author
   authorName: string
   authorAvatar: string | null
   viewCount: number
@@ -30,6 +37,7 @@ export interface ArticlesQuery {
 export interface Comment {
   id: number
   content: string
+  author?: Author
   authorName: string
   authorAvatar: string | null
   createdAt: string

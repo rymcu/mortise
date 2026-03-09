@@ -41,11 +41,11 @@ useSeoMeta({
           <div class="flex flex-wrap items-center gap-4 text-sm text-muted mt-2">
             <span class="flex items-center gap-1.5">
               <UAvatar
-                :src="article.authorAvatar || ''"
-                :alt="article.authorName"
+                :src="article.author?.avatarUrl || article.authorAvatar || ''"
+                :alt="article.author?.name || article.authorName"
                 size="xs"
               />
-              {{ article.authorName }}
+              {{ article.author?.name || article.authorName }}
             </span>
             <span class="flex items-center gap-1">
               <UIcon name="i-lucide-calendar" class="size-4" />
@@ -120,13 +120,13 @@ useSeoMeta({
           >
             <div class="flex items-start gap-3">
               <UAvatar
-                :src="comment.authorAvatar || ''"
-                :alt="comment.authorName"
+                :src="comment.author?.avatarUrl || comment.authorAvatar || ''"
+                :alt="comment.author?.name || comment.authorName"
                 size="sm"
               />
               <div class="flex-1 min-w-0">
                 <div class="flex items-center gap-2 mb-1">
-                  <span class="text-sm font-medium">{{ comment.authorName }}</span>
+                  <span class="text-sm font-medium">{{ comment.author?.name || comment.authorName }}</span>
                   <span class="text-xs text-muted">
                     {{ new Date(comment.createdAt).toLocaleDateString('zh-CN') }}
                   </span>

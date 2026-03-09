@@ -54,7 +54,8 @@ export default defineNuxtConfig({
 
     vite: {
         optimizeDeps: {
-            include: ['debug']
+            exclude: ['@nuxtjs/mdc'],
+            include: ['extend']
         },
         server: {
             proxy: {
