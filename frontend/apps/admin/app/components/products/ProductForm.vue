@@ -4,6 +4,7 @@
  * 仅包含描述型元数据，不含定价/库存等交易属性
  */
 import * as z from 'zod'
+import { useAppFileUpload } from '../../../../../layers/base/composables/useAppFileUpload'
 import { fetchAdminGet } from '@mortise/core-sdk'
 
 interface CategoryOption {
@@ -32,6 +33,7 @@ const emit = defineEmits<{
 const { $api } = useNuxtApp()
 const { resolveUrl } = useMediaUrl()
 const toast = useToast()
+const { uploadFile } = useAppFileUpload()
 
 const schema = z.object({
   title: z.string().min(1, '请输入产品标题'),
@@ -58,7 +60,7 @@ const state = reactive({
 const formRef = ref()
 
 // ─── 封面图片上传 ──────────────────────────────────────────────────────────────
-const coverFileInputRef = ref<HTMLInputElement | null>(null)
+const coverImageFile = ref<File | null>(null)
 const coverImagePreview = ref<string | null>(null)
 const coverUploading = ref(false)
 
@@ -66,39 +68,30 @@ const displayCoverUrl = computed(
   () => coverImagePreview.value || resolveUrl(state.coverImageUrl) || null
 )
 
-function triggerCoverUpload() {
-  coverFileInputRef.value?.click()
-}
-
-async function onCoverFileChange(event: Event) {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
+async function onCoverFileChange(file: File | null | undefined) {
   if (!file) return
   coverImagePreview.value = URL.createObjectURL(file)
   coverUploading.value = true
   try {
-    const formData = new FormData()
-    formData.append('file', file)
-    const res = await $api<{ code: number; data: { url: string } }>(
-      '/api/v1/admin/files',
-      { method: 'POST', body: formData }
-    )
-    if (res?.data?.url) {
-      state.coverImageUrl = res.data.url
-      coverImagePreview.value = null
-    } else {
-      throw new Error('上传响应中缺少文件 URL')
-    }
+    state.coverImageUrl = await uploadFile(file, {
+      endpoint: '/api/v1/admin/files',
+      fallbackMessage: '封面上传失败',
+      accept: 'image/*',
+      maxSize: 10 * 1024 * 1024,
+      fileKindLabel: '封面图片',
+    })
+    coverImagePreview.value = null
   } catch (e) {
     coverImagePreview.value = null
     toast.add({ title: '封面上传失败', description: e instanceof Error ? e.message : '请重试', color: 'error' })
   } finally {
     coverUploading.value = false
-    input.value = ''
+    coverImageFile.value = null
   }
 }
 
 function clearCoverImage() {
+  coverImageFile.value = null
   state.coverImageUrl = ''
   coverImagePreview.value = null
 }
@@ -244,14 +237,6 @@ defineExpose({ validate, state })
     </div>
 
     <UFormField label="封面图片" name="coverImageUrl">
-      <!-- 隐藏文件输入 -->
-      <input
-        ref="coverFileInputRef"
-        type="file"
-        accept="image/*"
-        class="hidden"
-        @change="onCoverFileChange"
-      />
       <div v-if="displayCoverUrl" class="relative mb-2 w-fit">
         <img
           :src="displayCoverUrl"
@@ -267,16 +252,23 @@ defineExpose({ validate, state })
           @click="clearCoverImage"
         />
       </div>
-      <UButton
-        :icon="coverUploading ? 'i-lucide-loader-circle' : 'i-lucide-upload'"
+
+      <UFileUpload
+        v-model="coverImageFile"
+        accept="image/*"
+        :disabled="coverUploading"
+        :reset="true"
+        :preview="false"
         color="neutral"
-        variant="outline"
+        variant="button"
         size="sm"
-        :loading="coverUploading"
-        @click="triggerCoverUpload"
+        icon="i-lucide-upload"
+        :label="displayCoverUrl ? '更换封面' : '上传封面'"
+        description="支持 PNG、JPG、WEBP 等常见图片格式"
+        @update:model-value="onCoverFileChange"
       >
-        {{ displayCoverUrl ? '更换封面' : '上传封面' }}
-      </UButton>
+        <template #actions />
+      </UFileUpload>
     </UFormField>
 
     <UFormField label="简短描述" name="shortDescription">

@@ -62,9 +62,13 @@ function menuTypeColor(type?: number): BadgeColor {
       @click="emit('toggle-check', node)"
     >
       <!-- 展开/折叠按钮 -->
-      <button
+      <UButton
         v-if="hasChildren"
-        class="text-muted hover:text-default flex h-5 w-5 items-center justify-center rounded transition-colors"
+        color="neutral"
+        variant="ghost"
+        size="xs"
+        square
+        class="h-5 w-5"
         @click.stop="emit('toggle-expand', node)"
       >
         <UIcon
@@ -73,7 +77,7 @@ function menuTypeColor(type?: number): BadgeColor {
           "
           class="text-sm"
         />
-      </button>
+      </UButton>
       <span v-else class="w-5" />
 
       <!-- 复选框 -->

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useAppFileUpload } from '../../../../../layers/base/composables/useAppFileUpload'
 import type { FormFieldDef } from '~/types'
 
 /**
@@ -22,12 +23,13 @@ const emit = defineEmits<{
 const { $api } = useNuxtApp()
 const { resolveUrl } = useMediaUrl()
 const toast = useToast()
+const { uploadFile } = useAppFileUpload()
 
 // ─── PASSWORD 显示/隐藏 ────────────────────────────────────────────────────
 const showPassword = ref(false)
 
 // ─── IMAGE 上传 ───────────────────────────────────────────────────────────
-const fileInputRef = ref<HTMLInputElement | null>(null)
+const imageFile = ref<File | null>(null)
 const imagePreview = ref<string | null>(null)
 const uploading = ref(false)
 
@@ -36,40 +38,32 @@ const displayImageUrl = computed(
   () => imagePreview.value || resolveUrl(props.modelValue) || null
 )
 
-function triggerImageUpload() {
-  fileInputRef.value?.click()
-}
-
-async function onImageFileChange(event: Event) {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
+async function onImageFileChange(file: File | null | undefined) {
   if (!file) return
 
   // 本地预览
   imagePreview.value = URL.createObjectURL(file)
   uploading.value = true
   try {
-    const formData = new FormData()
-    formData.append('file', file)
-    const res = await $api<{ code: number; data: { url: string } }>(
-      '/api/v1/admin/files',
-      { method: 'POST', body: formData }
-    )
-    if (res?.data?.url) {
-      emit('update:modelValue', res.data.url)
-    } else {
-      throw new Error('上传响应中缺少文件 URL')
-    }
+    const url = await uploadFile(file, {
+      endpoint: '/api/v1/admin/files',
+      fallbackMessage: '图片上传失败',
+      accept: 'image/*',
+      maxSize: 10 * 1024 * 1024,
+      fileKindLabel: '图片',
+    })
+    emit('update:modelValue', url)
   } catch (e) {
     imagePreview.value = null
     toast.add({ title: '图片上传失败', description: e instanceof Error ? e.message : '请重试', color: 'error' })
   } finally {
     uploading.value = false
-    input.value = ''
+    imageFile.value = null
   }
 }
 
 function clearImage() {
+  imageFile.value = null
   imagePreview.value = null
   emit('update:modelValue', '')
 }
@@ -133,14 +127,16 @@ function clearImage() {
           :alt="field.label"
           class="size-full object-contain"
         />
-        <button
+        <UButton
           type="button"
-          class="absolute right-0.5 top-0.5 flex size-4 items-center justify-center rounded-full bg-black/50 text-white hover:bg-black/70"
+          color="neutral"
+          variant="ghost"
+          square
+          icon="i-lucide-x"
+          class="absolute right-0.5 top-0.5 size-4 rounded-full bg-black/50 p-0 text-white hover:bg-black/70"
           aria-label="清除图片"
           @click="clearImage"
-        >
-          <UIcon name="i-lucide-x" class="size-3" />
-        </button>
+        />
       </div>
 
       <!-- 未上传时的占位框 -->
@@ -152,27 +148,23 @@ function clearImage() {
       </div>
 
       <div class="flex flex-col gap-1.5">
-        <UButton
+        <UFileUpload
+          v-model="imageFile"
+          accept="image/*"
+          :disabled="uploading"
+          :reset="true"
+          :preview="false"
           color="neutral"
-          variant="outline"
+          variant="button"
           size="sm"
           icon="i-lucide-upload"
-          :loading="uploading"
-          @click="triggerImageUpload"
+          :label="displayImageUrl ? '重新上传' : '选择图片'"
+          description="支持 PNG、JPG、SVG、ICO 格式"
+          @update:model-value="onImageFileChange"
         >
-          {{ displayImageUrl ? '重新上传' : '选择图片' }}
-        </UButton>
-        <p class="text-xs text-muted">支持 PNG、JPG、SVG、ICO 格式</p>
+          <template #actions />
+        </UFileUpload>
       </div>
-
-      <!-- 隐藏的 file input -->
-      <input
-        ref="fileInputRef"
-        type="file"
-        accept="image/*"
-        class="hidden"
-        @change="onImageFileChange"
-      />
     </div>
 
     <!-- TEXT / EMAIL / NUMBER（默认） -->

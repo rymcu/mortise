@@ -202,10 +202,13 @@ onUnmounted(() => {
               <p class="text-muted text-sm">暂无历史咨询记录</p>
             </div>
             <div v-else class="divide-default flex-1 divide-y overflow-y-auto">
-              <button
+              <UButton
                 v-for="item in sessions"
                 :key="item.id"
-                class="hover:bg-muted/50 w-full px-4 py-3 text-left transition-colors"
+                block
+                color="neutral"
+                variant="ghost"
+                class="justify-start rounded-none px-4 py-3 text-left transition-colors hover:bg-muted/50"
                 @click="handleOpenDetail(item)"
               >
                 <div class="mb-1 flex items-center justify-between">
@@ -218,7 +221,7 @@ onUnmounted(() => {
                   <span class="text-muted text-xs">{{ formatDate(item.updatedTime) }}</span>
                 </div>
                 <p class="text-muted truncate text-sm">{{ item.lastMessage || '（无消息）' }}</p>
-              </button>
+              </UButton>
             </div>
           </template>
 

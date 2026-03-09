@@ -51,9 +51,13 @@ const isExpanded = computed(() => props.expandedIds.has(props.node.id))
         :style="{ paddingLeft: `${depth * 1.25}rem` }"
       >
         <!-- 展开/折叠按钮 -->
-        <button
+        <UButton
           v-if="hasChildren"
-          class="text-muted hover:text-default flex h-5 w-5 shrink-0 items-center justify-center rounded transition-colors"
+          color="neutral"
+          variant="ghost"
+          size="xs"
+          square
+          class="h-5 w-5 shrink-0"
           @click="emit('toggle-expand', node.id)"
         >
           <UIcon
@@ -62,7 +66,7 @@ const isExpanded = computed(() => props.expandedIds.has(props.node.id))
             "
             class="text-sm"
           />
-        </button>
+        </UButton>
         <span v-else class="w-5 shrink-0" />
 
         <!-- 图标 -->

@@ -7,6 +7,7 @@ import type { ProfileInfo } from '~/types'
 export function useProfile() {
   const { $api } = useNuxtApp()
   const auth = useAuthStore()
+  const { uploadFile } = useAppFileUpload()
 
   const profile = useState<ProfileInfo | null>('admin-profile', () => null)
   const loading = useState('admin-profile-loading', () => false)
@@ -40,13 +41,13 @@ export function useProfile() {
     loading.value = true
     error.value = ''
     try {
-      const formData = new FormData()
-      formData.append('file', file)
-      const res = await $api<{ code: number; data: { url: string } }>(
-        '/api/v1/admin/files',
-        { method: 'POST', body: formData }
-      )
-      return res?.data?.url ?? null
+      return await uploadFile(file, {
+        endpoint: '/api/v1/admin/files',
+        fallbackMessage: '头像上传失败',
+        accept: 'image/*',
+        maxSize: 10 * 1024 * 1024,
+        fileKindLabel: '头像图片',
+      })
     } catch (e) {
       error.value = e instanceof Error ? e.message : '头像上传失败'
       return null

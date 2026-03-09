@@ -18,9 +18,9 @@ const state = reactive({
 const pendingAvatar = ref<string | null>(null)
 // 头像本地预览 URL
 const avatarPreview = ref<string | null>(null)
+const avatarUploadFile = ref<File | null>(null)
 const submitSuccess = ref('')
 const submitError = ref('')
-const fileInput = ref<HTMLInputElement | null>(null)
 
 // 响应式同步 profile 数据到表单
 watch(
@@ -44,15 +44,8 @@ const canSubmit = computed(() => {
   return !(!nickname || nickname.length > 30)
 })
 
-/** 触发文件选择框 */
-function triggerAvatarUpload() {
-  fileInput.value?.click()
-}
-
 /** 选择文件后立即上传 */
-async function onFileChange(event: Event) {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
+async function onAvatarFileChange(file: File | null | undefined) {
   if (!file) return
 
   // 本地预览
@@ -68,8 +61,14 @@ async function onFileChange(event: Event) {
     pendingAvatar.value = null
   }
 
-  // 重置 input，允许再次选同一文件
-  input.value = ''
+  avatarUploadFile.value = null
+}
+
+function clearPendingAvatar(removeFile?: () => void) {
+  avatarUploadFile.value = null
+  avatarPreview.value = null
+  pendingAvatar.value = null
+  removeFile?.()
 }
 
 async function onSubmit() {
@@ -111,54 +110,73 @@ async function onSubmit() {
             <h3 class="text-lg font-semibold">个人资料</h3>
           </template>
           <div class="space-y-4">
-            <div class="flex items-center gap-4">
-              <!-- 头像区域，点击上传 -->
-              <button
-                type="button"
-                class="group relative h-16 w-16 shrink-0 cursor-pointer overflow-hidden rounded-full"
-                :disabled="loading"
-                title="点击更换头像"
-                @click="triggerAvatarUpload"
-              >
-                <img
-                  v-if="displayAvatar"
-                  :src="displayAvatar"
-                  alt="头像"
-                  class="h-full w-full object-cover"
-                />
-                <div
-                  v-else
-                  class="bg-primary/10 flex h-full w-full items-center justify-center"
+            <UFileUpload
+              v-slot="{ open, removeFile }"
+              v-model="avatarUploadFile"
+              accept="image/*"
+              :preview="false"
+              :interactive="false"
+              :reset="true"
+              :disabled="loading"
+              class="w-full"
+              @update:model-value="onAvatarFileChange"
+            >
+              <div class="flex items-center gap-4">
+                <!-- 头像区域，点击上传 -->
+                <UButton
+                  type="button"
+                  variant="ghost"
+                  color="neutral"
+                  class="group relative h-16 w-16 shrink-0 overflow-hidden rounded-full p-0"
+                  :disabled="loading"
+                  title="点击更换头像"
+                  @click="open()"
                 >
-                  <UIcon name="i-lucide-user" class="text-primary text-2xl" />
-                </div>
-                <!-- 悬浮上传提示遮罩 -->
-                <div
-                  class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
-                >
-                  <UIcon name="i-lucide-camera" class="text-xl text-white" />
-                </div>
-              </button>
+                  <img
+                    v-if="displayAvatar"
+                    :src="displayAvatar"
+                    alt="头像"
+                    class="h-full w-full object-cover"
+                  />
+                  <div
+                    v-else
+                    class="bg-primary/10 flex h-full w-full items-center justify-center"
+                  >
+                    <UIcon name="i-lucide-user" class="text-primary text-2xl" />
+                  </div>
+                  <!-- 悬浮上传提示遮罩 -->
+                  <div
+                    class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
+                  >
+                    <UIcon name="i-lucide-camera" class="text-xl text-white" />
+                  </div>
+                </UButton>
 
-              <!-- 隐藏的文件输入框 -->
-              <input
-                ref="fileInput"
-                type="file"
-                accept="image/*"
-                class="hidden"
-                @change="onFileChange"
-              />
-
-              <div>
-                <div class="font-medium">
-                  {{ profile?.nickname || profile?.account || '-' }}
+                <div>
+                  <div class="font-medium">
+                    {{ profile?.nickname || profile?.account || '-' }}
+                  </div>
+                  <div class="text-muted text-sm">
+                    {{ profile?.email || '-' }}
+                  </div>
+                  <div class="mt-1 flex flex-wrap items-center gap-2">
+                    <UButton color="neutral" variant="outline" size="sm" icon="i-lucide-upload" @click="open()">
+                      {{ pendingAvatar ? '重新选择头像' : '上传头像' }}
+                    </UButton>
+                    <UButton
+                      v-if="pendingAvatar"
+                      color="error"
+                      variant="link"
+                      size="sm"
+                      class="px-0"
+                      @click="clearPendingAvatar(removeFile)"
+                    >
+                      移除本次更改
+                    </UButton>
+                  </div>
                 </div>
-                <div class="text-muted text-sm">
-                  {{ profile?.email || '-' }}
-                </div>
-                <div class="text-muted mt-1 text-xs">点击头像可更换图片</div>
               </div>
-            </div>
+            </UFileUpload>
 
             <div class="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
               <div>

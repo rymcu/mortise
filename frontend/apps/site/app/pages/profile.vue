@@ -35,7 +35,7 @@ const profileState = reactive({
 
 const pendingAvatar = ref<string | null>(null)
 const avatarPreview = ref<string | null>(null)
-const fileInput = ref<HTMLInputElement | null>(null)
+const avatarUploadFile = ref<File | null>(null)
 const profileSuccess = ref('')
 const profileHint = ref('')
 const hiddenGenderValue = '__hidden__'
@@ -102,13 +102,7 @@ const canSaveProfile = computed(() => {
   return nick.length > 0 && nick.length <= 32
 })
 
-function triggerAvatarUpload() {
-  fileInput.value?.click()
-}
-
-async function onFileChange(event: Event) {
-  const input = event.target as HTMLInputElement
-  const file = input.files?.[0]
+async function onAvatarFileChange(file: File | null | undefined) {
   if (!file) return
   profileHint.value = ''
   avatarPreview.value = URL.createObjectURL(file)
@@ -121,7 +115,15 @@ async function onFileChange(event: Event) {
     avatarPreview.value = null
     pendingAvatar.value = null
   }
-  input.value = ''
+  avatarUploadFile.value = null
+}
+
+function clearPendingAvatar(removeFile?: () => void) {
+  avatarUploadFile.value = null
+  avatarPreview.value = null
+  pendingAvatar.value = null
+  profileHint.value = ''
+  removeFile?.()
 }
 
 async function onProfileSubmit() {
@@ -255,71 +257,97 @@ async function onPasswordSubmit() {
     <div class="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)] xl:items-start">
       <aside class="space-y-4 xl:sticky xl:top-20">
         <UCard>
-          <div class="flex flex-col items-center gap-4 text-center">
-            <button
-              type="button"
-              style="width: 5.5rem; height: 5.5rem;"
-              class="group relative shrink-0 cursor-pointer overflow-hidden rounded-full ring-4 ring-primary/10"
-              :disabled="loading"
-              title="点击更换头像"
-              @click="triggerAvatarUpload"
-            >
-              <img
-                v-if="displayAvatar"
-                :src="displayAvatar"
-                alt="头像"
+          <UFileUpload
+            v-slot="{ open, removeFile }"
+            v-model="avatarUploadFile"
+            accept="image/*"
+            :preview="false"
+            :interactive="false"
+            :reset="true"
+            :disabled="loading"
+            class="w-full"
+            @update:model-value="onAvatarFileChange"
+          >
+            <div class="flex flex-col items-center gap-4 text-center">
+              <UButton
+                type="button"
+                variant="ghost"
+                color="neutral"
                 style="width: 5.5rem; height: 5.5rem;"
-                class="rounded-full object-cover"
-              />
-              <div
-                v-else
-                class="bg-primary/10 flex h-full w-full items-center justify-center"
+                class="group relative shrink-0 overflow-hidden rounded-full p-0 ring-4 ring-primary/10"
+                :disabled="loading"
+                title="点击更换头像"
+                @click="open()"
               >
-                <UIcon name="i-lucide-user" class="text-primary text-3xl" />
-              </div>
-              <div
-                class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
-              >
-                <UIcon name="i-lucide-camera" class="text-xl text-white" />
-              </div>
-            </button>
-            <input
-              ref="fileInput"
-              type="file"
-              accept="image/*"
-              class="hidden"
-              @change="onFileChange"
-            />
-
-            <div>
-              <div class="font-semibold">{{ displayName }}</div>
-              <div class="text-muted mt-1 text-xs">@{{ profile?.username || 'unknown' }}</div>
-            </div>
-
-            <div class="w-full space-y-2">
-              <div
-                v-for="item in profileSummary"
-                :key="item.label"
-                class="flex items-center justify-between gap-3 rounded-xl bg-elevated/60 px-3 py-2 text-sm"
-              >
-                <div class="flex items-center gap-2 text-muted">
-                  <UIcon :name="item.icon" class="size-4 shrink-0" />
-                  <span>{{ item.label }}</span>
+                <img
+                  v-if="displayAvatar"
+                  :src="displayAvatar"
+                  alt="头像"
+                  style="width: 5.5rem; height: 5.5rem;"
+                  class="rounded-full object-cover"
+                />
+                <div
+                  v-else
+                  class="bg-primary/10 flex h-full w-full items-center justify-center"
+                >
+                  <UIcon name="i-lucide-user" class="text-primary text-3xl" />
                 </div>
-                <span class="max-w-[10rem] truncate text-right font-medium text-highlighted">{{ item.value }}</span>
-              </div>
-            </div>
+                <div
+                  class="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 transition-opacity group-hover:opacity-100"
+                >
+                  <UIcon name="i-lucide-camera" class="text-xl text-white" />
+                </div>
+              </UButton>
 
-            <p class="text-muted text-xs">点击头像后需保存资料才会正式生效。</p>
-          </div>
+              <div>
+                <div class="font-semibold">{{ displayName }}</div>
+                <div class="text-muted mt-1 text-xs">@{{ profile?.username || 'unknown' }}</div>
+              </div>
+
+              <div class="flex flex-wrap items-center justify-center gap-2">
+                <UButton color="neutral" variant="outline" size="sm" icon="i-lucide-upload" @click="open()">
+                  {{ pendingAvatar ? '重新选择头像' : '上传头像' }}
+                </UButton>
+                <UButton
+                  v-if="pendingAvatar"
+                  color="error"
+                  variant="link"
+                  size="sm"
+                  class="px-0"
+                  @click="clearPendingAvatar(removeFile)"
+                >
+                  移除本次更改
+                </UButton>
+              </div>
+
+              <div class="w-full space-y-2">
+                <div
+                  v-for="item in profileSummary"
+                  :key="item.label"
+                  class="flex items-center justify-between gap-3 rounded-xl bg-elevated/60 px-3 py-2 text-sm"
+                >
+                  <div class="flex items-center gap-2 text-muted">
+                    <UIcon :name="item.icon" class="size-4 shrink-0" />
+                    <span>{{ item.label }}</span>
+                  </div>
+                  <span class="max-w-[10rem] truncate text-right font-medium text-highlighted">{{ item.value }}</span>
+                </div>
+              </div>
+
+              <p class="text-muted text-xs">点击头像后需保存资料才会正式生效。</p>
+            </div>
+          </UFileUpload>
         </UCard>
 
         <nav class="overflow-hidden rounded-2xl border border-default bg-default">
-          <button
+          <UButton
             v-for="item in navItems"
             :key="item.key"
+            block
+            color="neutral"
+            variant="ghost"
             type="button"
-            class="flex w-full items-start gap-3 px-4 py-4 text-left transition-colors"
+            class="justify-start rounded-none px-4 py-4 text-left transition-colors"
             :class="activeSection === item.key
               ? 'bg-primary/10 text-primary'
               : 'text-default hover:bg-elevated'"
@@ -332,7 +360,7 @@ async function onPasswordSubmit() {
                 {{ item.description }}
               </div>
             </div>
-          </button>
+          </UButton>
         </nav>
       </aside>
 
