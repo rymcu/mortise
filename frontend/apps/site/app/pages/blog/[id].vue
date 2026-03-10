@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const route = useRoute()
-const { fetchArticle, fetchComments } = useArticles()
+const { fetchArticle, fetchComments, trackArticleView } = useArticles()
 const { public: { webUrl } } = useRuntimeConfig()
 
 const id = computed(() => route.params.id as string)
@@ -22,6 +22,12 @@ const { data: commentsData } = await useAsyncData(
 )
 
 const comments = computed(() => commentsData.value?.data?.records || [])
+
+if (import.meta.client) {
+  watch(id, (currentId) => {
+    void trackArticleView(currentId)
+  }, { immediate: true })
+}
 
 useSeoMeta({
   title: () => article.value?.title,

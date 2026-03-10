@@ -60,6 +60,12 @@ export const useArticles = () => {
     return await $fetch<{ data: Article }>(`/mortise/api/v1/community/articles/${id}`)
   }
 
+  const trackArticleView = async (id: number | string) => {
+    return await $fetch<{ data: boolean }>(`/mortise/api/v1/community/articles/${id}/views`, {
+      method: 'POST'
+    })
+  }
+
   const fetchComments = async (articleId: number | string, pageNum = 1, pageSize = 20) => {
     return await $fetch<{ data: { records: Comment[], total: number } }>(
       `/mortise/api/v1/community/articles/${articleId}/comments`,
@@ -70,6 +76,7 @@ export const useArticles = () => {
   return {
     fetchArticles,
     fetchArticle,
+    trackArticleView,
     fetchComments
   }
 }
