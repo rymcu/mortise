@@ -5,28 +5,34 @@
 重点覆盖：
 
 1. 安全规则接入
-2. 通知能力接入
-3. 日志与审计接入
-4. 监控与指标接入
-5. 后端模块脚手架与验证清单
+2. 用户信息获取
+3. 通知能力接入
+4. 日志与审计接入
+5. 监控与指标接入
+6. 后端模块脚手架与验证清单
 
 ## 目录
 
 - [5 分钟速查表](#5-分钟速查表)
 - [1. 先明确边界](#1-先明确边界)
 - [2. 后端如何配置 Security](#2-后端如何配置-security)
-- [3. 后端如何接入 Notify](#3-后端如何接入-notify)
-- [4. 后端如何接入日志](#4-后端如何接入日志)
-- [5. 后端如何接入监控](#5-后端如何接入监控)
-- [6. 后端脚手架清单](#6-后端脚手架清单)
-- [7. 真实示例索引](#7-真实示例索引)
-- [8. 完成定义](#8-完成定义)
+- [3. 后端如何获取用户信息](#3-后端如何获取用户信息)
+- [4. 后端如何接入 Notify](#4-后端如何接入-notify)
+- [5. 后端如何接入日志](#5-后端如何接入日志)
+- [6. 后端如何接入监控](#6-后端如何接入监控)
+- [7. 后端脚手架清单](#7-后端脚手架清单)
+- [8. 真实示例索引](#8-真实示例索引)
+- [9. 完成定义](#9-完成定义)
 
 ## 5 分钟速查表
 
 | 需求 | 推荐落点 | 不推荐做法 |
 |------|----------|------------|
 | 新增公开/鉴权/管理接口权限 | `api/admin` 模块实现 `SecurityConfigurer` | 直接改 `mortise-auth` 统一规则 |
+| 获取当前登录用户 ID、账号、昵称 | `@AuthenticationPrincipal CurrentUser` 或 `CurrentUserUtils` | 直接把 `principal` 强转为某个具体 `UserDetailInfo` |
+| 按 userId 查询公开资料 | 注入 `UserProfileProvider` | 业务模块直接依赖 `mortise-member` 的 Service / Entity |
+| 判断是否具备会员资格 | 注入 `MemberCapabilityProvider` | 把会员资格混进 `UserProfile` 或业务模块自己查 member 状态 |
+| 获取已验证邮箱等联系信息 | 注入 `MemberContactProvider` | 把敏感联系信息塞进公开资料模型 |
 | 发站内信、邮件、微信通知 | `application` 注入 `NotificationService` | 在 Controller 里直接组装并发送 |
 | 新增一种通知通道 | `application/infra` 实现 `NotificationSender` | 在业务代码里到处写第三方发送调用 |
 | 记录接口审计 | Controller 上标 `@ApiLog` / `@OperationLog` | 在 Service 里散落手写日志 |
@@ -124,7 +130,199 @@ public class CommerceSecurityConfigurer implements SecurityConfigurer {
 
 ---
 
-## 3. 后端如何接入 Notify
+## 3. 后端如何获取用户信息
+
+后端子模块里，“获取用户信息”通常分成四类，不要混用：
+
+1. **获取当前登录人**：用 `CurrentUser`。
+2. **按 userId 查询任意用户公开资料**：用 `UserProfileProvider`。
+3. **判断某个用户是否具备会员资格**：用 `MemberCapabilityProvider`。
+4. **获取已验证联系方式等敏感联系信息**：用 `MemberContactProvider`。
+
+### 3.1 什么时候用 CurrentUser
+
+适用场景：
+
+1. 当前操作人是谁。
+2. 当前登录用户的资源过滤。
+3. 当前用户发起的写操作、审计、数据权限判断。
+4. 只需要当前会话内的用户 ID、账号、昵称、邮箱、手机号。
+
+推荐方式一：在 Controller 上直接注入。
+
+```java
+@GetMapping("/me/orders")
+@PreAuthorize("isAuthenticated()")
+public GlobalResult<List<OrderVO>> myOrders(@AuthenticationPrincipal CurrentUser currentUser) {
+    return GlobalResult.success(orderQueryService.listByUserId(currentUser.getUserId()));
+}
+```
+
+推荐方式二：在非 Controller 场景使用 `CurrentUserUtils`。
+
+```java
+Long currentUserId = CurrentUserUtils.getUserId();
+
+String nickname = CurrentUserUtils.findCurrentUser()
+        .map(CurrentUser::getNickname)
+        .orElse("游客");
+```
+
+设计准则：
+
+1. **Controller 可以接 `CurrentUser`，应用层优先传 `userId` 而不是继续往下传完整用户对象**。
+2. **匿名可访问接口必须考虑 `currentUser == null`**。
+3. **不要把 `principal` 强转成某个具体实现**，例如 `UserDetailInfo`、`MemberDetailInfo`；业务模块只依赖 `CurrentUser` 抽象。
+4. **`CurrentUser` 解决的是“我是谁”**，不负责查任意用户资料列表。
+
+### 3.2 什么时候用 UserProfileProvider
+
+适用场景：
+
+1. 文章、订单、评论、会话等列表里补充作者/买家/咨询者展示信息。
+2. 用户主页、用户卡片、头像昵称回填。
+3. 按一批 userId 聚合昵称和头像，避免 N+1 查询。
+
+最小用法：
+
+```java
+@RequiredArgsConstructor
+public class OrderProfileAssembler {
+
+    private final UserProfileProvider userProfileProvider;
+
+    public OrderOwnerVO build(Long userId) {
+        UserProfile profile = userProfileProvider.getUserProfile(userId);
+        if (profile == null) {
+            return new OrderOwnerVO(userId, "用户不存在", null);
+        }
+        return new OrderOwnerVO(profile.userId(), profile.nickname(), profile.avatarUrl());
+    }
+}
+```
+
+批量聚合：
+
+```java
+List<Long> userIds = orders.stream()
+        .map(Order::getUserId)
+        .distinct()
+        .toList();
+
+Map<Long, UserProfile> profileMap = userProfileProvider.getUserProfiles(userIds);
+```
+
+设计准则：
+
+1. **业务模块只依赖 `mortise-core` 中的 SPI 接口，不直接依赖 `mortise-member` 具体实现**。
+2. **`UserProfileProvider` 返回的是公开展示资料**，适合昵称、头像、简介、社交链接，不要拿它替代鉴权。
+3. **列表场景优先用批量方法 `getUserProfiles`**，避免循环单查。
+4. **资料不存在时自行兜底**，例如“已注销用户”或默认头像。
+
+### 3.3 什么时候用 MemberCapabilityProvider
+
+适用场景：
+
+1. 某个功能是否只允许会员使用。
+2. 某类内容是否只有会员可见、可评论、可收藏。
+3. 需要根据会员等级决定配额、权益或价格。
+
+最常见用法是直接判断资格：
+
+```java
+if (!memberCapabilityProvider.hasActiveMembership(userId)) {
+    throw new IllegalArgumentException("当前功能仅会员可用");
+}
+```
+
+如果还需要读取等级等扩展信息，用快照对象：
+
+```java
+MemberCapability capability = memberCapabilityProvider.getMemberCapability(userId)
+    .orElseThrow(() -> new IllegalArgumentException("用户不存在或无会员信息"));
+
+if (!capability.active()) {
+    throw new IllegalArgumentException("当前内容仅会员可见");
+}
+
+String memberLevel = capability.memberLevel();
+```
+
+设计准则：
+
+1. **会员资格是能力语义，不是公开档案语义**，不要把 `active`、`memberLevel` 塞进 `UserProfile`。
+2. **优先在应用层做资格判断**，不要在 Controller 里散落重复逻辑。
+3. **只需要布尔判断时优先用 `hasActiveMembership`**，可读性更高。
+4. **涉及复杂权益时再读取完整 `MemberCapability` 快照**。
+
+### 3.4 什么时候用 MemberContactProvider
+
+适用场景：
+
+1. 给用户发送邮件通知前，拿到已验证邮箱。
+2. 订单、售后、回执等场景读取受控联系信息。
+3. 只允许对“已验证联系方式”执行后续动作。
+
+最小用法：
+
+```java
+memberContactProvider.getVerifiedEmail(recipientUserId)
+    .ifPresent(email -> notificationService.sendAsync(NotificationMessage.builder()
+        .type(NotificationType.EMAIL)
+        .receiver(email)
+        .subject(subject)
+        .content(content)
+        .build()));
+```
+
+如果需要更完整的联系信息快照：
+
+```java
+memberContactProvider.getMemberContact(userId)
+    .filter(MemberContact::emailVerified)
+    .ifPresent(contact -> auditService.recordReachableUser(contact.userId(), contact.email()));
+```
+
+设计准则：
+
+1. **联系信息属于敏感信息，不要经由 `UserProfileProvider` 暴露给公开接口**。
+2. **优先使用默认方法 `getVerifiedEmail`**，避免每个业务模块重复写邮箱校验逻辑。
+3. **通知发送前再读取联系方式**，不要把邮箱长期复制到业务表里当缓存真相。
+4. **对 Optional 做显式兜底**，没有已验证联系方式时允许降级到站内信等其他通道。
+
+### 3.5 这些 SPI 如何配合
+
+典型组合是：
+
+1. 用 `CurrentUser` 判断当前访问者是谁。
+2. 用 `UserProfileProvider` 查询页面里其他用户的公开资料。
+3. 用 `MemberCapabilityProvider` 判断目标用户或当前用户是否具备会员资格。
+4. 用 `MemberContactProvider` 在通知或回执场景下获取已验证联系方式。
+5. 需要比较“当前人是否就是目标人”时，只比较 `currentUser.getUserId()` 与目标 `userId`。
+
+```java
+@GetMapping("/{userId}")
+public GlobalResult<MemberPublicProfileVO> profile(
+        @PathVariable Long userId,
+        @AuthenticationPrincipal CurrentUser currentUser) {
+    UserProfile profile = userProfileProvider.getUserProfile(userId);
+    boolean self = currentUser != null && Objects.equals(currentUser.getUserId(), userId);
+    return GlobalResult.success(MemberPublicProfileVO.from(profile, self));
+}
+```
+
+### 3.6 常见反模式
+
+1. **在社区、商城、IM 模块里直接注入 `MemberService` 查昵称头像**。
+2. **在业务代码里直接从 `SecurityContextHolder` 强转具体登录实现**。
+3. **把 `CurrentUser` 当成任意用户资料查询入口**。
+4. **列表循环里反复调用 `getUserProfile` 导致 N+1**。
+5. **把会员资格字段或邮箱字段塞进 `UserProfile` 这种公开模型**。
+6. **业务模块自己解析 member 状态码、验证时间，绕过 `MemberCapabilityProvider` / `MemberContactProvider`**。
+
+---
+
+## 4. 后端如何接入 Notify
 
 通知接入分两层理解：
 
@@ -184,7 +382,7 @@ public class CommerceSystemNotificationSender implements NotificationSender {
 
 ---
 
-## 4. 后端如何接入日志
+## 5. 后端如何接入日志
 
 日志接入分两层：
 
@@ -245,7 +443,7 @@ public class CommerceAuditLogStorage implements LogStorage {
 
 ---
 
-## 5. 后端如何接入监控
+## 6. 后端如何接入监控
 
 监控接入通常有三类：
 
@@ -297,7 +495,7 @@ public class CommerceGatewayHealthIndicator implements HealthIndicator {
 
 ---
 
-## 6. 后端脚手架清单
+## 7. 后端脚手架清单
 
 ### 6.1 新建后端商业模块时
 
@@ -437,7 +635,7 @@ mortise-xxx/
 
 ---
 
-## 7. 真实示例索引
+## 8. 真实示例索引
 
 ### 7.1 Security SPI 示例
 
@@ -447,14 +645,32 @@ mortise-xxx/
 - [mortise-system/mortise-system-admin/src/main/java/com/rymcu/mortise/system/config/SystemSecurityConfigurer.java](../../mortise-system/mortise-system-admin/src/main/java/com/rymcu/mortise/system/config/SystemSecurityConfigurer.java)
 - [mortise-monitor/src/main/java/com/rymcu/mortise/monitor/config/MonitorSecurityConfigurer.java](../../mortise-monitor/src/main/java/com/rymcu/mortise/monitor/config/MonitorSecurityConfigurer.java)
 
-### 7.2 Notify 示例
+### 8.2 用户信息获取示例
+
+- [mortise-core/src/main/java/com/rymcu/mortise/core/model/CurrentUser.java](../../mortise-core/src/main/java/com/rymcu/mortise/core/model/CurrentUser.java)
+- [mortise-core/src/main/java/com/rymcu/mortise/core/model/UserProfile.java](../../mortise-core/src/main/java/com/rymcu/mortise/core/model/UserProfile.java)
+- [mortise-core/src/main/java/com/rymcu/mortise/core/model/MemberCapability.java](../../mortise-core/src/main/java/com/rymcu/mortise/core/model/MemberCapability.java)
+- [mortise-core/src/main/java/com/rymcu/mortise/core/model/MemberContact.java](../../mortise-core/src/main/java/com/rymcu/mortise/core/model/MemberContact.java)
+- [mortise-core/src/main/java/com/rymcu/mortise/core/spi/UserProfileProvider.java](../../mortise-core/src/main/java/com/rymcu/mortise/core/spi/UserProfileProvider.java)
+- [mortise-core/src/main/java/com/rymcu/mortise/core/spi/MemberCapabilityProvider.java](../../mortise-core/src/main/java/com/rymcu/mortise/core/spi/MemberCapabilityProvider.java)
+- [mortise-core/src/main/java/com/rymcu/mortise/core/spi/MemberContactProvider.java](../../mortise-core/src/main/java/com/rymcu/mortise/core/spi/MemberContactProvider.java)
+- [mortise-auth/src/main/java/com/rymcu/mortise/auth/util/CurrentUserUtils.java](../../mortise-auth/src/main/java/com/rymcu/mortise/auth/util/CurrentUserUtils.java)
+- [mortise-member/mortise-member-application/src/main/java/com/rymcu/mortise/member/spi/MemberUserProfileProvider.java](../../mortise-member/mortise-member-application/src/main/java/com/rymcu/mortise/member/spi/MemberUserProfileProvider.java)
+- [mortise-member/mortise-member-application/src/main/java/com/rymcu/mortise/member/spi/MemberCapabilityProviderImpl.java](../../mortise-member/mortise-member-application/src/main/java/com/rymcu/mortise/member/spi/MemberCapabilityProviderImpl.java)
+- [mortise-member/mortise-member-application/src/main/java/com/rymcu/mortise/member/spi/MemberContactProviderImpl.java](../../mortise-member/mortise-member-application/src/main/java/com/rymcu/mortise/member/spi/MemberContactProviderImpl.java)
+- [mortise-community/mortise-community-api/src/main/java/com/rymcu/mortise/community/api/controller/ProfileController.java](../../mortise-community/mortise-community-api/src/main/java/com/rymcu/mortise/community/api/controller/ProfileController.java)
+- [mortise-community/mortise-community-application/src/main/java/com/rymcu/mortise/community/service/impl/CommentServiceImpl.java](../../mortise-community/mortise-community-application/src/main/java/com/rymcu/mortise/community/service/impl/CommentServiceImpl.java)
+- [mortise-community/mortise-community-application/src/main/java/com/rymcu/mortise/community/listener/CommunityEventListener.java](../../mortise-community/mortise-community-application/src/main/java/com/rymcu/mortise/community/listener/CommunityEventListener.java)
+- [mortise-im/mortise-im-api/src/main/java/com/rymcu/mortise/im/api/controller/ImApiController.java](../../mortise-im/mortise-im-api/src/main/java/com/rymcu/mortise/im/api/controller/ImApiController.java)
+
+### 8.3 Notify 示例
 
 - [mortise-notification/src/main/java/com/rymcu/mortise/notification/spi/NotificationSender.java](../../mortise-notification/src/main/java/com/rymcu/mortise/notification/spi/NotificationSender.java)
 - [mortise-notification/src/main/java/com/rymcu/mortise/notification/service/impl/NotificationServiceImpl.java](../../mortise-notification/src/main/java/com/rymcu/mortise/notification/service/impl/NotificationServiceImpl.java)
 - [mortise-community/mortise-community-application/src/main/java/com/rymcu/mortise/community/sender/CommunitySystemNotificationSender.java](../../mortise-community/mortise-community-application/src/main/java/com/rymcu/mortise/community/sender/CommunitySystemNotificationSender.java)
 - [mortise-wechat/src/main/java/com/rymcu/mortise/wechat/integration/WeChatNotificationSender.java](../../mortise-wechat/src/main/java/com/rymcu/mortise/wechat/integration/WeChatNotificationSender.java)
 
-### 7.3 日志与审计示例
+### 8.4 日志与审计示例
 
 - [mortise-log/src/main/java/com/rymcu/mortise/log/annotation/ApiLog.java](../../mortise-log/src/main/java/com/rymcu/mortise/log/annotation/ApiLog.java)
 - [mortise-log/src/main/java/com/rymcu/mortise/log/annotation/OperationLog.java](../../mortise-log/src/main/java/com/rymcu/mortise/log/annotation/OperationLog.java)
@@ -463,7 +679,7 @@ mortise-xxx/
 - [mortise-community/mortise-community-admin/src/main/java/com/rymcu/mortise/community/admin/controller/ArticleAdminController.java](../../mortise-community/mortise-community-admin/src/main/java/com/rymcu/mortise/community/admin/controller/ArticleAdminController.java)
 - [mortise-commerce/mortise-commerce-admin/src/main/java/com/rymcu/mortise/commerce/admin/controller/OrderAdminController.java](../../mortise-commerce/mortise-commerce-admin/src/main/java/com/rymcu/mortise/commerce/admin/controller/OrderAdminController.java)
 
-### 7.4 监控示例
+### 8.5 监控示例
 
 - [mortise-monitor/src/main/java/com/rymcu/mortise/monitor/config/MetricsConfig.java](../../mortise-monitor/src/main/java/com/rymcu/mortise/monitor/config/MetricsConfig.java)
 - [mortise-monitor/src/main/java/com/rymcu/mortise/monitor/config/ApplicationPerformanceConfig.java](../../mortise-monitor/src/main/java/com/rymcu/mortise/monitor/config/ApplicationPerformanceConfig.java)
@@ -472,7 +688,7 @@ mortise-xxx/
 - [mortise-monitor/src/main/java/com/rymcu/mortise/monitor/health/RedisHealthIndicator.java](../../mortise-monitor/src/main/java/com/rymcu/mortise/monitor/health/RedisHealthIndicator.java)
 - [mortise-web-support/src/main/java/com/rymcu/mortise/web/health/Resilience4jRateLimiterHealthIndicator.java](../../mortise-web-support/src/main/java/com/rymcu/mortise/web/health/Resilience4jRateLimiterHealthIndicator.java)
 
-### 7.5 模块聚合与依赖示例
+### 8.6 模块聚合与依赖示例
 
 - [mortise-community/pom.xml](../../mortise-community/pom.xml)
 - [mortise-community/mortise-community-application/pom.xml](../../mortise-community/mortise-community-application/pom.xml)
@@ -483,13 +699,14 @@ mortise-xxx/
 
 ---
 
-## 8. 完成定义
+## 9. 完成定义
 
 一个新的商业后端模块在进入联调或提测前，至少应满足下面这些条件：
 
 1. 目录层次清晰，职责没有混层。
 2. 路由权限通过 `SecurityConfigurer` 或既有鉴权方式注册完成。
-3. 查询接口与变更接口的日志策略已经补齐。
-4. 有通知需求的流程已经统一收口到应用层或通知发送器。
-5. 有关键外部依赖时，已经补了至少一种可观测性手段：指标、健康检查或日志存储扩展。
-6. 至少完成一次最小编译校验和一次本地联调验证。
+3. 涉及“当前登录人”“公开资料”“会员资格”“敏感联系信息”的地方，分别使用 `CurrentUser`、`UserProfileProvider`、`MemberCapabilityProvider`、`MemberContactProvider`，没有直接依赖 `mortise-member` 具体实现。
+4. 查询接口与变更接口的日志策略已经补齐。
+5. 有通知需求的流程已经统一收口到应用层或通知发送器。
+6. 有关键外部依赖时，已经补了至少一种可观测性手段：指标、健康检查或日志存储扩展。
+7. 至少完成一次最小编译校验和一次本地联调验证。

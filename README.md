@@ -1196,6 +1196,9 @@ flowchart TB
 | `ProductValidator` | mortise-product | 产品校验规则扩展 | （可由业务模块实现） |
 | `ProductLifecycleListener` | mortise-product | 产品生命周期事件监听 | （可由业务模块实现） |
 | `CurrentUser` | mortise-core | 当前用户抽象 | UserDetailInfo、MemberDetailInfo |
+| `UserProfileProvider` | mortise-core | 跨模块用户公开资料查询抽象 | MemberUserProfileProvider |
+| `MemberCapabilityProvider` | mortise-core | 跨模块会员资格与等级判断抽象 | MemberCapabilityProviderImpl |
+| `MemberContactProvider` | mortise-core | 跨模块受控联系信息读取抽象 | MemberContactProviderImpl |
 
 **🔄 缓存过期策略**
 - 统一过期时间管理（`CacheConfigurer` SPI 每模块独立注册）
