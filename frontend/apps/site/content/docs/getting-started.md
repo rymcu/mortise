@@ -1,48 +1,98 @@
 ---
 title: 快速开始
-description: 从环境准备到应用运行的完整流程
+description: 从依赖启动、加密配置到前后端联调的最短路径
 order: 1
 ---
 
 # 快速开始
 
-Mortise 是一款现代化、模块化的企业级全栈业务开发平台，基于 **Spring Boot 3.5.7** + **MyBatis-Flex 1.11.0** + **JDK 21** 构建，涵盖认证授权、电商交易、聚合支付、社区运营等核心业务域，前后端全栈，开箱即用。
+本页覆盖本地开发最常用的启动顺序，目标是尽快跑通 Mortise 的后端、管理端和站点端联调。
 
 ## 环境要求
 
-| 工具 | 版本要求 | 推荐版本 |
-|------|----------|----------|
-| **JDK** | 21+ | Eclipse Temurin 21 |
-| **Maven** | 3.9+ | 3.9.x |
-| **Docker** | 20.10+ | 用于启动依赖服务 |
-| **Docker Compose** | 2.0+ | - |
-| **Node.js** | 20+ | 22.x LTS |
-| **pnpm** | 10+ | 10.29.x |
-| **PostgreSQL** | 12+（提供 Docker） | PostgreSQL 17 |
-| **Redis** | 6.0+（提供 Docker） | 7.x |
+| 工具 | 版本要求 | 说明 |
+|------|----------|------|
+| **JDK** | 21+ | 推荐 Eclipse Temurin 21 |
+| **Maven** | 3.9+ | 后端统一使用系统安装的 `mvn` |
+| **Node.js** | 20+ | 推荐 22.x LTS |
+| **pnpm** | 10.29+ | 前端工作区唯一支持的包管理器 |
+| **Docker** | 20.10+ | 推荐用于启动 PostgreSQL / Redis / Logto |
+| **Docker Compose** | 2.0+ | 使用 `docker compose` 命令 |
+| **Git** | 2.30+ | 商业模块场景需配置 SSH Key |
 
-## 第一步：克隆项目
+## 克隆项目
 
 ```bash
 git clone https://github.com/rymcu/mortise.git
 cd mortise
 ```
 
-如需拉取商业子模块（需权限）：
+如需包含商业子模块：
 
 ```bash
 git clone --recurse-submodules git@github.com:rymcu/mortise.git
 ```
 
-## 第二步：启动依赖服务
-
-根目录的 `compose.yaml` 启动**基础设施依赖**（PostgreSQL、Redis、Logto、Nginx），不含 Spring Boot 应用本身：
+已有仓库补拉子模块：
 
 ```bash
-# 启动依赖（首次会下载镜像，需几分钟）
+git submodule update --init --recursive
+```
+
+## 开发模式最短路径
+
+### 只改后端
+
+```powershell
+# 终端 1：仓库根目录启动依赖
+docker compose up -d postgresql redis
+
+# 终端 2：设置当前会话加密密钥并启动后端
+Set-Location mortise-app
+$env:ENCRYPTION_KEY = "your_secret_key"
+mvn spring-boot:run
+```
+
+最小验证：
+
+```powershell
+Invoke-RestMethod http://localhost:9999/mortise/actuator/health
+```
+
+### 前后端联调
+
+```powershell
+# 终端 1：仓库根目录启动依赖
 docker compose up -d
 
-# 检查服务状态
+# 终端 2：启动后端
+Set-Location mortise-app
+$env:ENCRYPTION_KEY = "your_secret_key"
+mvn spring-boot:run
+
+# 终端 3：启动管理端
+Set-Location ..\frontend
+pnpm install
+pnpm dev:admin
+
+# 终端 4：按需启动站点端
+pnpm dev:site
+```
+
+默认访问地址：
+
+| 进程 | 地址 | 说明 |
+|------|------|------|
+| 后端 API | `http://localhost:9999/mortise` | Spring Boot 应用 |
+| 管理端 | `http://localhost:3000/admin/` | `pnpm dev:admin` |
+| 站点端 | `http://localhost:3001/` | `pnpm dev:site` |
+
+## 启动依赖服务
+
+根目录 `compose.yaml` 只负责基础设施依赖，不会启动 Spring Boot 应用本身：
+
+```bash
+docker compose up -d
 docker compose ps
 ```
 
@@ -52,12 +102,13 @@ docker compose ps
 |------|------|------|
 | PostgreSQL | `localhost:5432` | 主数据库 |
 | Redis | `localhost:6379` | 缓存服务 |
-| Logto (OIDC) | `http://localhost:3001` | OAuth2 身份证书服务 |
+| Logto | `http://localhost:3001` | OIDC 服务 |
+| Logto Admin | `http://localhost:3002` | 管理入口 |
 | Nginx | `http://localhost:80` | 反向代理 |
 
-## 第三步：设置加密密钥
+## 设置加密密钥
 
-项目使用 **Jasypt** 加密配置文件中的数据库密码、Redis 密码等敏感信息。启动前**必须**设置 `ENCRYPTION_KEY` 环境变量，否则应用启动即报错。
+项目使用 Jasypt 解密配置文件中的 `ENC(...)` 敏感配置。当前 Shell 启动后端前必须设置 `ENCRYPTION_KEY`：
 
 ```bash
 # Linux / macOS
@@ -67,66 +118,65 @@ export ENCRYPTION_KEY=your_secret_key
 $env:ENCRYPTION_KEY = "your_secret_key"
 ```
 
-> ⚠️ 未设置此变量将导致 `ENC(...)` 加密配置无法解密，常见错误表现：`dataSource required`、`password authentication failed` 等。
+常见未配置表现：
 
-## 第四步：启动应用
+- `dataSource or DataSourceTransactionManager are required`
+- `Failed to determine a suitable driver class`
+- `password authentication failed`
+- 其他因数据库、Redis 等配置为空导致的启动异常
+
+## 启动后端
 
 ```bash
-# Maven 插件（开发推荐）
 cd mortise-app
 mvn spring-boot:run
 ```
 
-验证启动：
+## 启动前端
 
-```bash
-curl http://localhost:9999/mortise/actuator/health
-# 返回 {"status":"UP"} 表示启动成功
-```
-
-## 第五步：启动前端
+前端命令必须在 `frontend/` 目录执行，并且只能使用 `pnpm`：
 
 ```bash
 cd frontend
 pnpm install
-
-# 管理端（localhost:3000/admin/）
 pnpm dev:admin
-
-# 用户端（localhost:3001/）
-pnpm dev:web
-
-# 官网（localhost:3002/）
 pnpm dev:site
 ```
 
-## 访问地址
+## 日常开发建议
 
-| 服务 | 地址 |
-|------|------|
-| 后端 API | http://localhost:9999/mortise |
-| Swagger UI | http://localhost:9999/mortise/swagger-ui/index.html |
-| Actuator | http://localhost:9999/mortise/actuator |
-| 管理端 | http://localhost:3000/admin/ |
-| 用户端 | http://localhost:3001/ |
+| 你的任务 | 最少需要启动的进程 |
+|------|--------------------|
+| 只改后端接口 / Flyway / 权限逻辑 | PostgreSQL + Redis + 后端 |
+| 只改管理端页面 | 后端 + `pnpm dev:admin` |
+| 只改站点页面 | 后端 + `pnpm dev:site` |
+| 完整联调 | PostgreSQL + Redis + 后端 + 对应前端应用 |
 
 ## 常见问题
 
-**Q: 启动报 `dataSource required` / 数据库密码为空**
+### Flyway 报权限错误
 
-配置文件包含 `ENC(...)` 加密値，但 `ENCRYPTION_KEY` 环境变量未设置或不正确，导致 Jasypt 无法解密。先确认当前 Shell 中变量是否已生效：
+Windows 下优先执行根目录脚本：
+
+```powershell
+.\fix-postgresql-permissions.ps1
+```
+
+### 后端启动报数据库或解密异常
+
+优先确认当前会话中环境变量是否生效：
 
 ```bash
 echo $ENCRYPTION_KEY          # Linux/macOS
 echo $env:ENCRYPTION_KEY      # PowerShell
 ```
 
-**Q: 切换分支后子模块目录为空**
+### 切换分支后子模块目录为空
 
 ```bash
 git submodule update --init --recursive
 ```
 
-**Q: Docker 启动慢或镜像下载失败**
+### 管理端接口全失败
 
-配置国内 Docker 镜像加速器，或者耐心等待首次镇像下载完成。
+确认后端仍监听 `http://localhost:9999/mortise`，本地开发不要把管理端 API 基地址改成完整远端 URL。
