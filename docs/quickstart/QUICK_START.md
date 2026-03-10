@@ -3,6 +3,7 @@
 本指南覆盖从环境准备到应用运行的完整流程，包括：
 
 - 本地开发环境搭建
+- 前后端联调的最短开发路径
 - Docker Compose 一键启动依赖
 - 敏感配置加密（Jasypt）
 - 商业模块的按需拉取与维护
@@ -15,6 +16,8 @@
 |------|----------|------|
 | **JDK** | 21+ | 推荐 Eclipse Temurin 21 |
 | **Maven** | 3.9+ | `mvn -version` 验证 |
+| **Node.js** | 20+ | 前端开发必需，推荐 22.x LTS |
+| **pnpm** | 10.29+ | 前端工作区唯一支持的包管理器 |
 | **Docker** | 20.10+ | 可选，推荐用于启动依赖服务 |
 | **Docker Compose** | 2.0+ | `docker compose version` 验证 |
 | **Git** | 2.30+ | SSH Key 需配置好 |
@@ -70,7 +73,151 @@ git submodule deinit -f mortise-product
 
 ---
 
-## 3. 启动依赖服务
+## 3. 开发模式最短路径
+
+如果你的目标是尽快进入本地开发，按下面顺序执行即可。
+
+### 3.1 后端开发最短路径
+
+适合只修改 Java / SQL / Flyway / 后端接口：
+
+```powershell
+# 1. 在仓库根目录启动依赖
+docker compose up -d postgresql redis
+
+# 2. 设置当前 PowerShell 会话的加密密钥
+$env:ENCRYPTION_KEY = "your_secret_key"
+
+# 3. 启动后端
+Set-Location mortise-app
+mvn spring-boot:run
+```
+
+最小验证：
+
+```powershell
+Invoke-RestMethod http://localhost:9999/mortise/actuator/health
+```
+
+### 3.2 全栈联调最短路径
+
+适合同时修改后端和前端页面：
+
+```powershell
+# 终端 1：仓库根目录启动依赖
+docker compose up -d
+
+# 终端 2：启动后端
+Set-Location mortise-app
+$env:ENCRYPTION_KEY = "your_secret_key"
+mvn spring-boot:run
+
+# 终端 3：启动管理端前端
+Set-Location frontend
+pnpm install
+pnpm dev:admin
+
+# 终端 4：按需启动站点前端
+Set-Location frontend
+pnpm dev:site
+```
+
+启动成功后默认访问地址：
+
+| 进程 | 地址 | 说明 |
+|------|------|------|
+| 后端 API | `http://localhost:9999/mortise` | Spring Boot 应用 |
+| 管理端 | `http://localhost:3000/admin/` | `pnpm dev:admin` |
+| 站点端 | `http://localhost:3001/` | `pnpm dev:site` |
+
+### 3.3 日常开发建议
+
+| 你的任务 | 最少需要启动的进程 |
+|----------|--------------------|
+| 只改后端接口 / Flyway / 权限逻辑 | PostgreSQL + Redis + 后端 |
+| 只改管理端页面 | 后端 + `pnpm dev:admin` |
+| 只改站点页面 | 后端 + `pnpm dev:site` |
+| 做完整联调 | PostgreSQL + Redis + 后端 + 对应前端应用 |
+
+说明：
+
+1. 根目录 `compose.yaml` 只负责基础设施依赖，不会启动 Spring Boot 应用。
+2. 后端统一使用系统安装的 `mvn`，不要使用 `mvnw` 或 `mvnw.cmd`。
+3. 前端必须在 `frontend/` 目录使用 `pnpm`，不要使用 npm / yarn。
+4. 管理端本地开发默认走代理，请保持后端监听 `localhost:9999` 以避免额外 CORS 配置。
+
+### 3.4 首次开发排障清单
+
+如果你是第一次在本机启动 Mortise，优先按这个顺序排查：
+
+1. **后端没起来先看 `ENCRYPTION_KEY`**：当前 Shell 必须先设置环境变量，否则 `ENC(...)` 配置无法解密。
+2. **Flyway 报数据库或 schema 权限错误先修权限**：Windows 下直接执行仓库根目录的 `fix-postgresql-permissions.ps1`。
+3. **管理端接口全红先确认后端地址**：本地开发默认依赖 `http://localhost:9999/mortise`，不要把管理端 API 基地址改成远端完整 URL。
+4. **前端命令必须在 `frontend/` 目录执行**：`pnpm install`、`pnpm dev:admin`、`pnpm dev:site` 都只在该目录运行。
+5. **根目录 `compose.yaml` 不启动 Java 应用**：`docker compose up -d` 之后还需要单独执行 `mvn spring-boot:run`。
+6. **最小验证顺序**：先通 `actuator/health`，再打开管理端登录页，最后再看业务页面。
+
+常用快速命令：
+
+```powershell
+# 检查当前 PowerShell 会话的加密密钥
+echo $env:ENCRYPTION_KEY
+
+# 修复 PostgreSQL 权限
+.\fix-postgresql-permissions.ps1
+
+# 检查后端健康状态
+Invoke-RestMethod http://localhost:9999/mortise/actuator/health
+```
+
+### 3.5 Windows 开发者速查
+
+仓库默认终端是 PowerShell，Windows 下优先使用下面这些命令：
+
+```powershell
+# 设置当前会话的 Jasypt 密钥
+$env:ENCRYPTION_KEY = "your_secret_key"
+
+# 查看环境变量是否已生效
+echo $env:ENCRYPTION_KEY
+
+# 启动后端
+Set-Location mortise-app
+mvn spring-boot:run
+
+# 启动管理端
+Set-Location ..\frontend
+pnpm dev:admin
+
+# 启动站点端
+pnpm dev:site
+```
+
+常用排障命令：
+
+```powershell
+# 查看 9999 端口占用
+Get-NetTCPConnection -LocalPort 9999 -ErrorAction SilentlyContinue
+
+# 查看 Docker 服务状态
+docker compose ps
+
+# 查看 PostgreSQL 日志
+docker compose logs postgresql
+
+# 修复 PostgreSQL 权限
+.\fix-postgresql-permissions.ps1
+```
+
+说明：
+
+1. PowerShell 中 `$env:变量名 = "值"` 只对当前终端会话生效。
+2. 如果你是从 IDE 启动后端，需要在 IDE 的运行配置里单独设置 `ENCRYPTION_KEY`。
+3. 若 `Get-NetTCPConnection` 不可用，可退回使用 `netstat -ano | findstr 9999`。
+
+---
+
+## 4. 启动依赖服务
 
 根目录的 `compose.yaml` 启动的是**基础设施依赖**（PostgreSQL、Redis、Logto、Nginx），**不含** Spring Boot 应用本身。
 
@@ -97,9 +244,9 @@ docker compose logs -f postgresql
 
 ---
 
-## 4. 配置应用
+## 5. 配置应用
 
-### 4.1 配置文件说明
+### 5.1 配置文件说明
 
 | 文件 | 用途 |
 |------|------|
@@ -107,7 +254,7 @@ docker compose logs -f postgresql
 | `mortise-app/src/main/resources/application-dev.yml` | 开发环境配置（数据库、Redis、邮件等） |
 | `mortise-app/src/main/resources/application-prod.yml` | 生产环境配置 |
 
-### 4.2 设置加密密钥环境变量
+### 5.2 设置加密密钥环境变量
 
 项目使用 Jasypt 加密配置文件中的敏感信息（数据库密码、邮件密码、OSS Key 等），**启动前必须设置 `ENCRYPTION_KEY` 环境变量**。
 
@@ -132,9 +279,9 @@ set ENCRYPTION_KEY=your_secret_key
 
 ---
 
-## 5. Jasypt 敏感配置加密
+## 6. Jasypt 敏感配置加密
 
-### 5.1 原理
+### 6.1 原理
 
 Spring Boot 启动时，Jasypt 自动解密配置文件中形如 `ENC(密文)` 的值，解密密钥来自环境变量 `ENCRYPTION_KEY`。
 
@@ -150,7 +297,7 @@ spring:
 
 算法：`PBEWithMD5AndDES`，输出格式：Base64。
 
-### 5.2 生成密文
+### 6.2 生成密文
 
 **推荐方式**：使用项目内置的 `JasyptUtils` 工具类，先设置 `ENCRYPTION_KEY` 环境变量，然后在任意测试类或 main 方法中调用 `encryptPassword()`（自动读取环境变量中的主密钥）：
 
@@ -170,7 +317,7 @@ System.out.println("ENC(" + cipher + ")");
 
 将输出的密文包裹在 `ENC(...)` 中填入配置文件。
 
-### 5.3 需要加密的典型配置项
+### 6.3 需要加密的典型配置项
 
 | 配置项 | 对应 YAML Key |
 |--------|--------------|
@@ -180,7 +327,7 @@ System.out.println("ENC(" + cipher + ")");
 | 阿里云 OSS AccessKey | `mortise.file.oss.access-key-id` / `access-key-secret` |
 | 微信相关密钥 | 各微信配置项 |
 
-### 5.4 生产环境强制加密
+### 6.4 生产环境强制加密
 
 > ⚠️ **强烈建议生产环境所有敏感配置均使用 `ENC(...)` 加密**，绝不将明文凭据提交至版本库或写入生产配置文件。
 
@@ -202,9 +349,9 @@ spring:
 
 ---
 
-## 6. 编译与启动
+## 7. 编译与启动
 
-### 6.1 编译
+### 7.1 编译
 
 ```bash
 # 全量编译（跳过测试）
@@ -214,7 +361,7 @@ mvn clean package -DskipTests
 mvn -pl mortise-app -am clean compile -DskipTests
 ```
 
-### 6.2 启动 Spring Boot 应用
+### 7.2 启动 Spring Boot 应用
 
 ```bash
 # 方式 A：Maven 插件（开发推荐，支持热重载）
@@ -230,7 +377,7 @@ java -jar mortise-app/target/mortise-app-*.jar --spring.profiles.active=dev
 
 > 需确保 `ENCRYPTION_KEY` 环境变量已在当前 Shell 中设置。
 
-### 6.3 验证启动
+### 7.3 验证启动
 
 ```bash
 # 健康检查（无需认证）
@@ -241,15 +388,15 @@ curl http://localhost:9999/mortise/actuator/health
 
 ---
 
-## 7. 商业模块日常维护
+## 8. 商业模块日常维护
 
-### 7.1 更新子模块到远端最新
+### 8.1 更新子模块到远端最新
 
 ```bash
 git submodule update --remote --merge
 ```
 
-### 7.2 提交子模块指针到主仓
+### 8.2 提交子模块指针到主仓
 
 ```bash
 git add .gitmodules mortise-product mortise-commerce mortise-payment
@@ -259,7 +406,7 @@ git push origin master
 
 > 主仓提交的是 gitlink（子模块引用），不是商业源码本体。
 
-### 7.3 新增商业模块（维护流程）
+### 8.3 新增商业模块（维护流程）
 
 以 `mortise-xxx` 为例：
 
@@ -282,7 +429,7 @@ git push origin master
 
 ---
 
-## 8. 常见问题
+## 9. 常见问题
 
 ### Q: `Permission denied (publickey)`
 
@@ -323,9 +470,12 @@ docker compose logs postgresql
 
 ---
 
-## 9. 推荐阅读
+## 10. 推荐阅读
 
 - [前端快速上手](FRONTEND_QUICK_START.md)
+- [商业子模块开发上手手册](COMMERCIAL_MODULE_DEVELOPMENT.md)
+- [商业子模块开发手册（后端版）](COMMERCIAL_MODULE_BACKEND_DEVELOPMENT.md)
+- [商业子模块开发手册（前端 Layer 版）](COMMERCIAL_MODULE_FRONTEND_LAYER.md)
 - 商业模块说明：各模块目录下的 `README.md`
 - [架构说明](../architecture/architecture.md)
 - [安全配置文档](../security/)

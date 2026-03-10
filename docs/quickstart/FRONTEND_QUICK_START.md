@@ -41,6 +41,45 @@ java -jar mortise-app/target/mortise-app-*.jar
 
 后端启动后，API 默认监听 `http://localhost:9999/mortise`。
 
+### 1.4 前后端联调最短路径
+
+如果你的目标是尽快进入页面开发，建议直接按这个顺序启动：
+
+```powershell
+# 终端 1：仓库根目录启动依赖
+docker compose up -d
+
+# 终端 2：启动后端
+Set-Location ..\mortise-app
+$env:ENCRYPTION_KEY = "your_secret_key"
+mvn spring-boot:run
+
+# 终端 3：返回前端目录启动管理端
+Set-Location ..\frontend
+pnpm install
+pnpm dev:admin
+```
+
+按需再启动站点端：
+
+```powershell
+pnpm dev:site
+```
+
+最小验证顺序：
+
+1. 先访问 `http://localhost:9999/mortise/actuator/health`，确认后端是 `UP`。
+2. 再打开 `http://localhost:3000/admin/`，确认管理端页面能加载。
+3. 最后再检查业务接口和登录流程。
+
+### 1.5 前端首次排障
+
+1. **页面能打开但接口全失败**：先确认后端仍监听 `http://localhost:9999/mortise`。
+2. **管理端出现 CORS 问题**：通常是把 `NUXT_PUBLIC_API_BASE` 设成了完整 URL，导致绕过本地代理。
+3. **`pnpm dev:*` 命令报错**：确认当前目录是 `frontend/`，且已先执行 `pnpm install`。
+4. **后端启动失败但前端无报错**：优先检查当前 Shell 是否设置了 `ENCRYPTION_KEY`。
+5. **登录页正常但数据为空**：先看浏览器网络请求，再检查后端是否完成数据库迁移和权限初始化。
+
 ---
 
 ## 2. 克隆与安装
@@ -357,3 +396,13 @@ pnpm typecheck:packages
 ```
 
 packages 中的类型错误不会阻止 app 运行，但需要修复以保证代码质量。
+
+---
+
+## 11. 相关文档
+
+- [总快速入门](./QUICK_START.md)
+- [商业子模块开发上手手册](./COMMERCIAL_MODULE_DEVELOPMENT.md)
+- [商业子模块开发手册（后端版）](./COMMERCIAL_MODULE_BACKEND_DEVELOPMENT.md)
+- [商业子模块开发手册（前端 Layer 版）](./COMMERCIAL_MODULE_FRONTEND_LAYER.md)
+- [frontend/README.md](../../frontend/README.md)

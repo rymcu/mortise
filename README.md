@@ -282,6 +282,46 @@
 
 📖 详细快速开始文档：[docs/quickstart/QUICK_START.md](docs/quickstart/QUICK_START.md)
 
+### 首次开发最短路径
+
+如果目标是先把本地开发环境跑通，建议直接按下面顺序执行：
+
+```powershell
+# 终端 1：仓库根目录启动依赖
+docker compose up -d
+
+# 终端 2：启动后端
+Set-Location mortise-app
+$env:ENCRYPTION_KEY = "your_secret_key"
+mvn spring-boot:run
+
+# 终端 3：启动管理端前端
+Set-Location frontend
+pnpm install
+pnpm dev:admin
+```
+
+按需再启动站点端：
+
+```powershell
+Set-Location frontend
+pnpm dev:site
+```
+
+默认访问地址：
+
+| 进程 | 地址 |
+|------|------|
+| 后端 API | `http://localhost:9999/mortise` |
+| 管理端 | `http://localhost:3000/admin/` |
+| 站点端 | `http://localhost:3001/` |
+
+首次排障优先级：
+
+1. 启动报解密或数据源异常，先检查当前 Shell 是否设置了 `ENCRYPTION_KEY`。
+2. Flyway 报 `permission denied for database postgres` 或 `schema mortise`，先执行根目录的 `fix-postgresql-permissions.ps1`。
+3. 管理端请求失败，先确认后端仍监听 `localhost:9999`，且前端命令在 `frontend/` 目录使用 `pnpm` 执行。
+
 ### 方式一：Docker Compose（推荐）⭐
 
 适合快速体验和开发环境，一键启动包含数据库、Redis、Nginx 等完整服务。
