@@ -65,8 +65,6 @@
 ### 明确尚未开始
 
 - `@` 提及解析与通知
-- 积分 / 排行榜 / 积分历史
-- 徽章 / 成就系统
 - 教育版块、活动竞赛、认证体系
 
 ---
@@ -216,13 +214,17 @@
 - 排行榜页面
 - 积分明细页面
 
-#### 当前落地进展（MVP 已完成）
+#### 当前落地进展（写回闭环已完成）
 
 - 社区公开接口已新增 `GET /api/v1/community/profiles/leaderboard`
-- 当前排行榜通过 `UserProfileProvider` SPI 读取 member 模块中的 `points / memberLevel` 快照，避免社区直接依赖会员实现
+- 社区受保护接口已新增 `GET /api/v1/community/profiles/me/points-history`
+- 当前排行榜通过 `UserProfileProvider` SPI 读取 member 模块中的积分榜快照，避免社区直接依赖会员实现
+- `mortise-core` 已新增 `UserPointProvider` SPI，由 `mortise-member` 落地积分写回、等级映射与历史读取
+- `mortise-member` 已新增 `mortise_member_point_history` 历史表，并通过 `bizKey` 做幂等去重，避免同一业务重复发分
+- 社区已在文章首次发布、文章获赞、文章被收藏、发表评论四类稳定事件上接入积分写回
+- 用户主页已展示当前积分与等级徽章，用户菜单已补“积分明细”入口
 - 前端已新增公开 `community/leaderboard` 页面，展示前 20 名用户的排名、积分与等级标识
-- 顶部导航与用户菜单已补“积分榜”入口，读侧闭环已具备
-- 当前版本仍是只读 MVP，后续再补 `GamificationService` 做积分写入与 `points-history` 明细
+- 前端已新增受保护 `community/points-history` 页面，可查看个人积分变化记录
 
 ### 6. 徽章/成就系统
 
@@ -244,6 +246,59 @@
 
 - 用户主页"徽章墙"展示
 - 获得新徽章时的 Toast / 弹窗庆祝动画
+
+#### 当前落地进展（foundation 已完成）
+
+- `mortise-core` 已新增 `UserBadgeProvider` SPI 与徽章模型，保持 community 与 member 的模块边界
+- `mortise-member` 已新增 `mortise_badge` / `mortise_user_badge` 两张表，并预置 3 枚社区徽章：
+  - `community_first_article`：首篇文章
+  - `community_article_ten_likes`：单篇 10 赞达人
+  - `community_author_hundred_likes`：累计百赞作者
+- 社区事件监听器已在文章首次发布、文章获赞时自动判定并发放徽章
+- 徽章发放已通过 `user_id + badge_id` 做幂等约束，避免重复授予
+- 社区通知中心已新增“获得新徽章”系统通知
+- 用户主页已新增“徽章墙”展示，公开资料接口会直接返回该用户已获得徽章列表
+- 当前先落地社区内可稳定判定的 3 枚徽章；教材贡献、开源贡献、连续签到等跨域徽章暂未接入
+
+#### 当前落地进展（体验打磨已完成）
+
+- 徽章规则已新增 `community_first_comment`，用户发表首条评论时会自动获得“首条评论”徽章
+- 顶部通知预览在读取到新的 `badge_awarded` 未读通知时，会弹出一次 toast 提示，避免用户只能被动进入通知中心查看
+- `badge_awarded` 通知点击后会直接跳转到当前用户主页的“徽章墙”区域，减少查找路径
+- 通知列表页同样已支持新徽章通知直达徽章墙
+
+#### 当前落地进展（规则扩展已完成）
+
+- 徽章规则已继续扩展两枚成长型徽章：
+  - `community_five_articles`：累计发布 5 篇社区文章
+  - `community_ten_comments`：累计发表 10 条社区评论
+- 这两枚徽章继续沿用现有文章发布 / 评论发布事件判定，不引入新的跨模块依赖
+- 用户主页徽章墙无需额外改造，达到条件后会自动展示新增徽章
+- 当前阶段已覆盖“首次创作 / 持续创作 / 首次互动 / 持续互动 / 质量反馈”几类基础社区成就
+
+#### 当前落地进展（数据库规则解释执行已完成）
+
+- 徽章触发逻辑已从“代码硬编码徽章编码 + 阈值”改为“数据库定义规则，代码解释执行”
+- `mortise_badge` 中的 `condition_type / condition_value` 现在是实际生效的规则来源
+- `community` 模块只负责在文章发布、评论发布、点赞等事件里计算当前指标值，并按 `condition_type` 调用统一解释逻辑
+- `member` 模块通过 `UserBadgeProvider.listBadgeDefinitions()` SPI 提供启用中的徽章定义，保持模块边界不变
+- 现在新增同类社区徽章时，通常只需要插入新的 `mortise_badge` 规则数据，无需再修改 Java 中的阈值常量
+- 当前解释器已支持的规则类型包括：
+  - `article_publish_count`
+  - `comment_publish_count`
+  - `article_like_count`
+  - `author_total_likes`
+
+#### 当前落地进展（跨域徽章契约已完成）
+
+- `UserBadgeProvider` 已新增按指标批量判定的入口：`awardBadges(UserBadgeMetricCommand)`
+- 徽章解释执行进一步下沉到 `member` 模块：`community` 不再自行遍历徽章定义，而是只上报 `condition_type -> metricValue`
+- 这使得其他业务模块后续也能复用同一入口：只要计算出指标并调用 SPI，即可按数据库规则自动发放徽章
+- 已新增跨域徽章种子规则示例：
+  - `product_reference_count`
+  - `curriculum_citation_count`
+  - `checkin_streak_days`
+- 当前这三类规则已具备数据库定义与 SPI 承载能力，待对应模块补指标上报后即可生效
 
 ### 7. 产品关联内容体系增强
 

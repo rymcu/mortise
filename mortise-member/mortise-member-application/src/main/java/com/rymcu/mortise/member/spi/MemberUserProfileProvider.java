@@ -7,6 +7,7 @@ import com.rymcu.mortise.core.model.UserProfile;
 import com.rymcu.mortise.core.spi.UserProfileProvider;
 import com.rymcu.mortise.member.entity.Member;
 import com.rymcu.mortise.member.service.MemberService;
+import com.rymcu.mortise.member.support.MemberPointLevelResolver;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -110,7 +111,7 @@ public class MemberUserProfileProvider implements UserProfileProvider {
                         member.getNickname(),
                         member.getAvatarUrl(),
                         member.getPoints(),
-                        member.getMemberLevel()
+                        MemberPointLevelResolver.resolveLabel(member.getPoints())
                 ))
                 .toList();
     }
