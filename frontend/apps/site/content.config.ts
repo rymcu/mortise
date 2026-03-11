@@ -193,7 +193,9 @@ export const collections = {
           description: z.string(),
           icon: z.string().optional(),
           tags: z.array(z.string()).optional(),
-          status: z.enum(['stable', 'beta', 'planned']).optional()
+          status: z.enum(['stable', 'beta', 'planned']).optional(),
+          productId: z.string().optional(),
+          productKeyword: z.string().optional()
         }))
       })),
       cta: z.object({

@@ -2,12 +2,14 @@ package com.rymcu.mortise.member.spi;
 
 import com.mybatisflex.core.query.QueryWrapper;
 import com.rymcu.mortise.common.enumerate.DelFlag;
+import com.rymcu.mortise.core.model.UserLeaderboardEntry;
 import com.rymcu.mortise.core.model.UserProfile;
 import com.rymcu.mortise.core.spi.UserProfileProvider;
 import com.rymcu.mortise.member.entity.Member;
 import com.rymcu.mortise.member.service.MemberService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StringUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -58,6 +60,59 @@ public class MemberUserProfileProvider implements UserProfileProvider {
                                 .and(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
                 ).stream()
                 .collect(Collectors.toMap(Member::getId, this::toUserProfile, (a, b) -> a));
+    }
+
+    @Override
+    public List<UserProfile> searchUserProfiles(String keyword, int limit) {
+        if (!StringUtils.hasText(keyword)) {
+            return List.of();
+        }
+        var normalizedKeyword = keyword.trim();
+        var safeLimit = limit > 0 ? Math.min(limit, 20) : 8;
+        var query = QueryWrapper.create()
+                .select(MEMBER.ID, MEMBER.NICKNAME, MEMBER.AVATAR_URL, MEMBER.PROFILE)
+                .where(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
+                .and(MEMBER.STATUS.eq(0));
+        if (normalizedKeyword.chars().allMatch(Character::isDigit)) {
+            query.and(MEMBER.ID.eq(Long.parseLong(normalizedKeyword))
+                    .or(MEMBER.NICKNAME.like(normalizedKeyword))
+                    .or(MEMBER.USERNAME.like(normalizedKeyword))
+                    .or(MEMBER.EMAIL.like(normalizedKeyword))
+                    .or(MEMBER.PHONE.like(normalizedKeyword)));
+        } else {
+            query.and(MEMBER.NICKNAME.like(normalizedKeyword)
+                    .or(MEMBER.USERNAME.like(normalizedKeyword))
+                    .or(MEMBER.EMAIL.like(normalizedKeyword))
+                    .or(MEMBER.PHONE.like(normalizedKeyword)));
+        }
+        return memberService.list(query
+                        .orderBy(MEMBER.ID.desc())
+                        .limit(safeLimit))
+                .stream()
+                .map(this::toUserProfile)
+                .toList();
+    }
+
+    @Override
+    public List<UserLeaderboardEntry> listLeaderboardEntries(int limit) {
+        var safeLimit = limit > 0 ? Math.min(limit, 50) : 20;
+        return memberService.list(
+                        QueryWrapper.create()
+                                .select(MEMBER.ID, MEMBER.NICKNAME, MEMBER.AVATAR_URL, MEMBER.POINTS, MEMBER.MEMBER_LEVEL)
+                                .where(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
+                                .and(MEMBER.STATUS.eq(0))
+                                .and(MEMBER.POINTS.isNotNull())
+                                .orderBy(MEMBER.POINTS.desc(), MEMBER.UPDATED_TIME.asc(), MEMBER.ID.asc())
+                                .limit(safeLimit)
+                ).stream()
+                .map(member -> new UserLeaderboardEntry(
+                        member.getId(),
+                        member.getNickname(),
+                        member.getAvatarUrl(),
+                        member.getPoints(),
+                        member.getMemberLevel()
+                ))
+                .toList();
     }
 
     /**

@@ -1,6 +1,7 @@
 package com.rymcu.mortise.core.spi;
 
 import com.rymcu.mortise.core.model.UserProfile;
+import com.rymcu.mortise.core.model.UserLeaderboardEntry;
 
 import java.util.List;
 import java.util.Map;
@@ -31,4 +32,25 @@ public interface UserProfileProvider {
      * @return userId → UserProfile 映射；不存在的 ID 不会出现在结果中
      */
     Map<Long, UserProfile> getUserProfiles(List<Long> userIds);
+
+    /**
+     * 按关键词搜索用户档案，供协作者选择、@ 提及等轻量候选场景复用。
+     *
+     * @param keyword 搜索关键词
+     * @param limit 返回条数上限
+     * @return 用户档案列表
+     */
+    default List<UserProfile> searchUserProfiles(String keyword, int limit) {
+        return List.of();
+    }
+
+    /**
+     * 查询积分排行榜快照，供社区读侧展示使用。
+     *
+     * @param limit 返回条数上限
+     * @return 排行榜条目
+     */
+    default List<UserLeaderboardEntry> listLeaderboardEntries(int limit) {
+        return List.of();
+    }
 }

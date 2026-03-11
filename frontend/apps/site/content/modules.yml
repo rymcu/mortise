@@ -73,6 +73,7 @@ categories:
       - name: mortise-product
         description: 通用资源目录基础模块——通用分类树、条目注册表、多属性规格框架与生命周期状态机。商品、固件、课程、设备型号均可复用同一套基础数据。通过 ProductTypeProvider / ProductValidator / ProductLifecycleListener 三组 SPI 接口实现业务扩展。
         icon: i-lucide-package
+        productKeyword: mortise-product
         tags:
           - 目录
           - 通用基础
@@ -82,6 +83,7 @@ categories:
       - name: mortise-community
         description: 社区运营模块——文章发布、评论互动、标签分类、内容审核、热度排行。
         icon: i-lucide-message-square
+        productKeyword: mortise-community
         tags:
           - 社区
           - 内容
@@ -90,6 +92,7 @@ categories:
       - name: mortise-commerce
         description: 电商交易套件——订单流转、库存扣减，依赖主仓库免费的 mortise-product 与商业模块 mortise-payment，DDD 分层架构。
         icon: i-lucide-shopping-cart
+        productKeyword: mortise-commerce
         tags:
           - 电商
           - DDD
@@ -98,6 +101,7 @@ categories:
       - name: mortise-payment
         description: 聚合支付模块——支持微信支付、支付宝，统一支付回调与对账。可单独使用，也是电商套件依赖。
         icon: i-lucide-credit-card
+        productKeyword: mortise-payment
         tags:
           - 支付
           - 微信支付

@@ -1,4 +1,9 @@
 <script setup lang="ts">
+const config = useRuntimeConfig()
+const baseURL = config.public.apiBase as string
+const { communityPath } = useCommunityBasePath()
+const { fetchArticlesByProduct } = useCommunityArticles()
+
 const { data: page } = await useAsyncData('modules', () => queryCollection('modules').first())
 
 if (!page.value) {
@@ -19,6 +24,71 @@ const statusMap: Record<string, { label: string, color: 'success' | 'warning' | 
   stable: { label: '稳定', color: 'success' },
   beta: { label: '测试中', color: 'warning' },
   planned: { label: '规划中', color: 'neutral' }
+}
+
+const { data: linkedArticlesMap } = await useAsyncData('modules-linked-articles', async () => {
+  const moduleEntries = page.value?.categories?.flatMap(category => category.modules ?? []) ?? []
+  if (!moduleEntries.length) {
+    return {}
+  }
+
+  const typeRes = await $fetch<{ code?: number, data?: Record<string, string> }>('/api/v1/app/products/types', {
+    baseURL,
+  }).catch(() => null)
+
+  const productTypeKeys = Object.keys(typeRes?.data ?? {})
+  if (!productTypeKeys.length) {
+    return {}
+  }
+
+  const productLists = await Promise.all(productTypeKeys.map(async (productType) => {
+    const res = await $fetch<{ code?: number, data?: Array<Record<string, unknown>> }>('/api/v1/app/products', {
+      baseURL,
+      params: { productType },
+    }).catch(() => null)
+    return (res?.data ?? []).map(product => ({
+      id: String(product.id ?? ''),
+      title: typeof product.title === 'string' ? product.title : '',
+      subtitle: typeof product.subtitle === 'string' ? product.subtitle : '',
+      description: typeof product.description === 'string' ? product.description : '',
+    }))
+  }))
+
+  const products = productLists.flat().filter(product => product.id)
+  if (!products.length) {
+    return {}
+  }
+
+  const articleEntries = await Promise.all(moduleEntries.map(async (mod) => {
+    const explicitProductId = typeof mod.productId === 'string' && mod.productId.trim().length
+      ? mod.productId.trim()
+      : ''
+    const keyword = normalizeKeyword(typeof mod.productKeyword === 'string' && mod.productKeyword.trim().length
+      ? mod.productKeyword
+      : mod.name)
+
+    const matchedProductId = explicitProductId || products.find((product) => {
+      const haystack = normalizeKeyword([product.title, product.subtitle, product.description].filter(Boolean).join(' '))
+      return !!keyword && haystack.includes(keyword)
+    })?.id
+
+    if (!matchedProductId) {
+      return [mod.name, []]
+    }
+
+    const articles = await fetchArticlesByProduct(matchedProductId, 3)
+    return [mod.name, articles]
+  }))
+
+  return Object.fromEntries(articleEntries)
+})
+
+function moduleLinkedArticles(moduleName: string) {
+  return linkedArticlesMap.value?.[moduleName] ?? []
+}
+
+function normalizeKeyword(value: string) {
+  return value.trim().toLowerCase()
 }
 </script>
 
@@ -55,26 +125,59 @@ const statusMap: Record<string, { label: string, color: 'success' | 'warning' | 
             variant="soft"
             class="absolute top-3 right-3 z-10"
           />
-          <UPageCard
-            :title="mod.name"
-            :description="mod.description"
-            :icon="mod.icon"
-            spotlight
-            class="h-full"
-            :ui="{ title: 'text-base font-semibold', description: 'text-sm leading-relaxed' }"
-          >
-            <template #footer>
-              <div class="flex flex-wrap gap-1.5">
-                <UBadge
-                  v-for="tag in (mod.tags || [])"
-                  :key="tag"
-                  :label="tag"
-                  color="primary"
-                  variant="subtle"
-                />
+          <div class="flex h-full flex-col gap-3">
+            <UPageCard
+              :title="mod.name"
+              :description="mod.description"
+              :icon="mod.icon"
+              spotlight
+              class="h-full"
+              :ui="{ title: 'text-base font-semibold', description: 'text-sm leading-relaxed' }"
+            >
+              <template #footer>
+                <div class="flex flex-wrap gap-1.5">
+                  <UBadge
+                    v-for="tag in (mod.tags || [])"
+                    :key="tag"
+                    :label="tag"
+                    color="primary"
+                    variant="subtle"
+                  />
+                </div>
+              </template>
+            </UPageCard>
+
+            <UCard
+              v-if="moduleLinkedArticles(mod.name).length"
+              :ui="{ header: 'pb-3', body: 'pt-0' }"
+            >
+              <template #header>
+                <div class="flex items-center justify-between gap-3">
+                  <div>
+                    <h3 class="text-sm font-semibold">相关文章</h3>
+                    <p class="mt-1 text-xs text-muted">围绕该模块的社区教程与实战内容。</p>
+                  </div>
+                  <UIcon name="i-lucide-book-open-text" class="size-4 text-primary" />
+                </div>
+              </template>
+
+              <div class="space-y-3">
+                <NuxtLink
+                  v-for="article in moduleLinkedArticles(mod.name)"
+                  :key="article.id"
+                  :to="communityPath(`/article/${article.id}`)"
+                  class="block rounded-xl border border-default/60 px-3 py-3 transition hover:border-primary/40 hover:bg-elevated/50"
+                >
+                  <div class="line-clamp-2 text-sm font-medium text-highlighted">{{ article.title }}</div>
+                  <p v-if="article.summary" class="mt-1 line-clamp-2 text-xs leading-5 text-muted">{{ article.summary }}</p>
+                  <div class="mt-2 flex items-center justify-between text-xs text-muted">
+                    <span>{{ article.author?.name || '匿名' }}</span>
+                    <span>{{ article.publishedTime || article.createdTime || '' }}</span>
+                  </div>
+                </NuxtLink>
               </div>
-            </template>
-          </UPageCard>
+            </UCard>
+          </div>
         </div>
       </div>
     </UPageSection>
