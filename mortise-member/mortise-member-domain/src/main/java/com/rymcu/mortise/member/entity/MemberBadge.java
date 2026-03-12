@@ -29,10 +29,6 @@ public class MemberBadge implements Serializable {
 
     private String description;
 
-    private String conditionType;
-
-    private String conditionValue;
-
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdTime;
 

@@ -6,5 +6,12 @@
             "approve": true,
             "matchCommandLine": true
         }
-    }
+    },
+    "recommendations": [
+    "esbenp.prettier-vscode",
+    "Vue.volar",
+    "bradlc.vscode-tailwindcss",
+    "dbaeumer.vscode-eslint"
+  ],
+  "unwantedRecommendations": ["octref.vetur"]
 }

@@ -1,11 +1,12 @@
 package com.rymcu.mortise.member.spi;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.mybatisflex.core.util.UpdateEntity;
 import com.rymcu.mortise.common.enumerate.DelFlag;
 import com.rymcu.mortise.core.model.UserBadgeAwardCommand;
+import com.rymcu.mortise.core.model.UserBadgeDefinitionCommand;
 import com.rymcu.mortise.core.model.UserBadgeDefinition;
 import com.rymcu.mortise.core.model.UserBadgeEntry;
-import com.rymcu.mortise.core.model.UserBadgeMetricCommand;
 import com.rymcu.mortise.core.spi.UserBadgeProvider;
 import com.rymcu.mortise.member.entity.MemberBadge;
 import com.rymcu.mortise.member.entity.MemberUserBadge;
@@ -118,26 +119,6 @@ public class MemberBadgeProvider implements UserBadgeProvider {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public List<UserBadgeEntry> awardBadges(UserBadgeMetricCommand command) {
-        if (command == null || command.userId() == null || command.metrics() == null || command.metrics().isEmpty()) {
-            return List.of();
-        }
-        return listBadgeDefinitions().stream()
-                .filter(definition -> StringUtils.hasText(definition.conditionType()))
-                .filter(definition -> command.metrics().containsKey(definition.conditionType()))
-                .filter(definition -> matchesMetric(definition, command.metrics().get(definition.conditionType())))
-                .map(definition -> awardBadge(new UserBadgeAwardCommand(
-                        command.userId(),
-                        definition.code(),
-                        command.sourceType(),
-                        command.sourceId()
-                )).orElse(null))
-                .filter(Objects::nonNull)
-                .toList();
-    }
-
-    @Override
     public List<UserBadgeDefinition> listBadgeDefinitions() {
         return memberBadgeMapper.selectListByQuery(
                         QueryWrapper.create()
@@ -148,22 +129,40 @@ public class MemberBadgeProvider implements UserBadgeProvider {
                         item.getCode(),
                         item.getName(),
                         item.getIcon(),
-                        item.getDescription(),
-                        item.getConditionType(),
-                        item.getConditionValue()
+                        item.getDescription()
                 ))
                 .toList();
     }
 
-    private boolean matchesMetric(UserBadgeDefinition definition, Long metricValue) {
-        if (definition == null || metricValue == null || !StringUtils.hasText(definition.conditionValue())) {
-            return false;
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Optional<UserBadgeDefinition> updateBadgeDefinition(UserBadgeDefinitionCommand command) {
+        if (command == null
+                || !StringUtils.hasText(command.code())
+                || !StringUtils.hasText(command.name())) {
+            return Optional.empty();
         }
-        try {
-            return metricValue >= Long.parseLong(definition.conditionValue().trim());
-        } catch (NumberFormatException ex) {
-            return false;
+        var badge = memberBadgeMapper.selectOneByQuery(
+                QueryWrapper.create()
+                        .where(MEMBER_BADGE.CODE.eq(command.code().trim()))
+                        .and(MEMBER_BADGE.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
+        );
+        if (badge == null) {
+            return Optional.empty();
         }
+        var now = LocalDateTime.now();
+        var update = UpdateEntity.of(MemberBadge.class, badge.getId());
+        update.setName(command.name().trim());
+        update.setIcon(normalizeNullableText(command.icon()));
+        update.setDescription(normalizeNullableText(command.description()));
+        update.setUpdatedTime(now);
+        memberBadgeMapper.update(update);
+        return Optional.of(new UserBadgeDefinition(
+                badge.getCode(),
+                update.getName(),
+                update.getIcon(),
+                update.getDescription()
+        ));
     }
 
     private UserBadgeEntry toEntry(MemberBadge badge, LocalDateTime earnedTime) {
@@ -174,5 +173,9 @@ public class MemberBadgeProvider implements UserBadgeProvider {
                 badge.getDescription(),
                 earnedTime
         );
+    }
+
+    private String normalizeNullableText(String value) {
+        return StringUtils.hasText(value) ? value.trim() : null;
     }
 }

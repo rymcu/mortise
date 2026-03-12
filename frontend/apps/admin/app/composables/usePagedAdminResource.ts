@@ -38,9 +38,9 @@ export function usePagedAdminResource<T>(
 
     try {
       const page = await fetchAdminPage<T>($api, options.path, {
-        pageNumber: pageNum.value,
+        pageNum: pageNum.value,
         pageSize: pageSize.value,
-        keyword: keyword.value || undefined,
+        query: keyword.value || undefined,
         ...options.buildQuery?.()
       })
 
