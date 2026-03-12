@@ -20,7 +20,7 @@ import java.util.List;
  */
 @Tag(name = "产品分类接口", description = "客户端产品分类查询接口")
 @ApiController
-@RequestMapping("/app/product-categories")
+@RequestMapping("/product-categories")
 @RequiredArgsConstructor
 public class ProductCategoryApiController {
 

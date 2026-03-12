@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -23,7 +24,7 @@ import java.util.Map;
  */
 @Tag(name = "产品目录接口", description = "客户端产品查询接口")
 @ApiController
-@RequestMapping("/app/products")
+@RequestMapping("/products")
 @RequiredArgsConstructor
 public class ProductApiController {
 
@@ -35,6 +36,14 @@ public class ProductApiController {
     public GlobalResult<List<Product>> listProducts(
             @Parameter(description = "产品类型") @RequestParam String productType) {
         return GlobalResult.success(productService.findByProductType(productType));
+    }
+
+    @GetMapping("/{id}")
+    @ApiLog("查询产品详情")
+    @Operation(summary = "获取上架产品详情")
+    public GlobalResult<Product> getProductDetail(
+            @Parameter(description = "产品ID") @PathVariable("id") Long id) {
+        return GlobalResult.success(productService.findPublishedById(id));
     }
 
     @GetMapping("/types")

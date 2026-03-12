@@ -190,7 +190,11 @@ importers:
 
   layers/admin/community: {}
 
-  layers/base: {}
+  layers/base:
+    dependencies:
+      '@mortise/core-sdk':
+        specifier: workspace:*
+        version: link:../../packages/core-sdk
 
   layers/community:
     dependencies:

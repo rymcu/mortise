@@ -2,5 +2,8 @@
   "name": "@mortise/base-layer",
   "private": true,
   "version": "0.1.0",
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "@mortise/core-sdk": "workspace:*"
+  }
 }

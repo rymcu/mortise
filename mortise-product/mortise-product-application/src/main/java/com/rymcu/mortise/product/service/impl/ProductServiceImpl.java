@@ -89,6 +89,18 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
     }
 
     @Override
+    public Product findPublishedById(Long id) {
+        if (id == null) {
+            return null;
+        }
+        return mapper.selectOneByQuery(
+                QueryWrapper.create()
+                        .where(PRODUCT.ID.eq(id))
+                        .and(PRODUCT.STATUS.eq(1))
+        );
+    }
+
+    @Override
     public Boolean updateStatus(Long id, Integer status) {
         Product existing = mapper.selectOneById(id);
         if (existing == null) {

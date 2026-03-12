@@ -42,6 +42,14 @@ public interface ProductService extends IService<Product> {
     List<Product> findByProductType(String productType);
 
     /**
+     * 查询客户端可见的上架产品详情
+     *
+     * @param id 产品ID
+     * @return 上架产品；不存在或不可见时返回 null
+     */
+    Product findPublishedById(Long id);
+
+    /**
      * 更新产品状态（触发 SPI 生命周期回调）
      *
      * @param id     产品ID

@@ -1,8 +1,7 @@
 <script setup lang="ts">
-const config = useRuntimeConfig()
-const baseURL = config.public.apiBase as string
 const { communityPath } = useCommunityBasePath()
 const { fetchArticlesByProduct } = useCommunityArticles()
+const { loadAllProducts } = useProductCatalog()
 
 const { data: page } = await useAsyncData('modules', () => queryCollection('modules').first())
 
@@ -32,29 +31,7 @@ const { data: linkedArticlesMap } = await useAsyncData('modules-linked-articles'
     return {}
   }
 
-  const typeRes = await $fetch<{ code?: number, data?: Record<string, string> }>('/api/v1/app/products/types', {
-    baseURL,
-  }).catch(() => null)
-
-  const productTypeKeys = Object.keys(typeRes?.data ?? {})
-  if (!productTypeKeys.length) {
-    return {}
-  }
-
-  const productLists = await Promise.all(productTypeKeys.map(async (productType) => {
-    const res = await $fetch<{ code?: number, data?: Array<Record<string, unknown>> }>('/api/v1/app/products', {
-      baseURL,
-      params: { productType },
-    }).catch(() => null)
-    return (res?.data ?? []).map(product => ({
-      id: String(product.id ?? ''),
-      title: typeof product.title === 'string' ? product.title : '',
-      subtitle: typeof product.subtitle === 'string' ? product.subtitle : '',
-      description: typeof product.description === 'string' ? product.description : '',
-    }))
-  }))
-
-  const products = productLists.flat().filter(product => product.id)
+  const products = await loadAllProducts()
   if (!products.length) {
     return {}
   }

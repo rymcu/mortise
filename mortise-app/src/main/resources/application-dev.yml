@@ -333,7 +333,7 @@ springdoc:
       paths-to-match: '/api/v1/app/**'
     - group: 'product'
       display-name: '商品管理接口'
-      paths-to-match: '/api/v1/admin/product/**,/api/v1/app/products/**'
+      paths-to-match: '/api/v1/admin/product/**,/api/v1/products/**,/api/v1/product-categories/**'
     - group: 'commerce'
       display-name: '订单商务接口'
       paths-to-match: '/api/v1/admin/commerce/**,/api/v1/app/orders/**'
