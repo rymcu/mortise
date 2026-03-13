@@ -44,6 +44,16 @@ public interface UserBadgeProvider {
     }
 
     /**
+     * 新增徽章定义。
+     *
+     * @param command 新增命令
+     * @return 新增后的徽章定义；编码冲突或参数非法时返回 empty
+     */
+    default Optional<UserBadgeDefinition> createBadgeDefinition(UserBadgeDefinitionCommand command) {
+        return Optional.empty();
+    }
+
+    /**
      * 更新徽章定义。
      *
      * @param command 维护命令

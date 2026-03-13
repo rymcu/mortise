@@ -136,6 +136,41 @@ public class MemberBadgeProvider implements UserBadgeProvider {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public Optional<UserBadgeDefinition> createBadgeDefinition(UserBadgeDefinitionCommand command) {
+        if (command == null
+                || !StringUtils.hasText(command.code())
+                || !StringUtils.hasText(command.name())) {
+            return Optional.empty();
+        }
+        var normalizedCode = command.code().trim();
+        var exists = memberBadgeMapper.selectCountByQuery(
+                QueryWrapper.create()
+                        .where(MEMBER_BADGE.CODE.eq(normalizedCode))
+                        .and(MEMBER_BADGE.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
+        );
+        if (exists > 0) {
+            return Optional.empty();
+        }
+        var now = LocalDateTime.now();
+        var badge = new MemberBadge();
+        badge.setCode(normalizedCode);
+        badge.setName(command.name().trim());
+        badge.setIcon(normalizeNullableText(command.icon()));
+        badge.setDescription(normalizeNullableText(command.description()));
+        badge.setCreatedTime(now);
+        badge.setUpdatedTime(now);
+        badge.setDelFlag(DelFlag.NORMAL.ordinal());
+        memberBadgeMapper.insertSelective(badge);
+        return Optional.of(new UserBadgeDefinition(
+                badge.getCode(),
+                badge.getName(),
+                badge.getIcon(),
+                badge.getDescription()
+        ));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public Optional<UserBadgeDefinition> updateBadgeDefinition(UserBadgeDefinitionCommand command) {
         if (command == null
                 || !StringUtils.hasText(command.code())

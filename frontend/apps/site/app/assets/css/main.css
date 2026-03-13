@@ -19,3 +19,16 @@
 
 @source "../../../content/**/*";
 
+/* Webkit 浏览器 */
+::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
+}
+/* Firefox */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
