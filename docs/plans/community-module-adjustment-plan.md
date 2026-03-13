@@ -226,6 +226,25 @@
 - 前端已新增公开 `community/leaderboard` 页面，展示前 20 名用户的排名、积分与等级标识
 - 前端已新增受保护 `community/points-history` 页面，可查看个人积分变化记录
 
+#### 当前落地进展（运营后台规则维护已完成）
+
+- 管理端已新增 `GET /api/v1/admin/community/gamification/rules`，统一返回积分规则与徽章规则，替代“积分规则 VO / 徽章定义 VO”分离模式
+- 管理端已新增：
+  - `GET /api/v1/admin/community/gamification/rules/point-templates/unconfigured`
+  - `GET /api/v1/admin/community/gamification/rules/condition-types`
+  - `POST /api/v1/admin/community/gamification/rules`
+  - `PUT /api/v1/admin/community/gamification/rules/{ruleType}/{code}`
+- 后端已引入统一契约：
+  - `CommunityGamificationRuleVO`
+  - `SaveCommunityGamificationRuleRequest`
+- `mortise_community_gamification_rule` 已成为社区运营规则总表：
+  - `POINT` 规则承载积分值、原因、业务类型
+  - `BADGE` 规则承载指标键与阈值
+- 社区后台已新增“积分与徽章”卡片，包含两个运营入口：
+  - `规则维护`：维护积分规则与成长徽章阈值
+  - `用户下钻`：按用户查看积分摘要、积分历史与已获徽章
+- 当前积分发放链路已从事件监听器动态读取规则表配置，不再依赖固定积分常量写死分值
+
 #### 当前落地进展（签到闭环已完成）
 
 - 社区已新增 `mortise_community_checkin_record` 表，单独落库存储每日签到日期、连续签到天数与奖励积分，避免把签到事实混进 member 模块
@@ -340,6 +359,20 @@
   - 统计口径为“作者名下已发布文章的产品关联总次数”，并通过 `awardBadges(UserBadgeMetricCommand)` 上报给 member 模块解释执行
 - `curriculum_citation_count` 仍待对应模块补指标上报
 
+#### 当前落地进展（后台用户下钻已完成）
+
+- 管理端已新增用户搜索与下钻接口：
+  - `GET /api/v1/admin/community/gamification/users/search`
+  - `GET /api/v1/admin/community/gamification/users/{userId}/points/summary`
+  - `GET /api/v1/admin/community/gamification/users/{userId}/points/history`
+  - `GET /api/v1/admin/community/gamification/users/{userId}/badges`
+- 后台页面 `community/gamification-users` 已支持运营按昵称搜索社区用户，并查看：
+  - 当前积分
+  - 当前等级
+  - 最近积分历史
+  - 已获徽章列表
+- 这补齐了“规则配置 -> 实际发放结果核查”的后台闭环，运营不再需要直接查库验证某个用户是否已得分或得章
+
 ### 7. 产品关联内容体系增强
 
 - 利用已有的 `ArticleProduct` 关联，在产品详情页自动聚合社区教程
@@ -389,18 +422,19 @@
 
 ### 进度状态
 
-- [ ] 用户关注表迁移脚本
-- [ ] UserFollow 实体与 FollowService
-- [ ] FollowController
-- [ ] 积分规则引擎（GamificationService）
+- [x] 用户关注表迁移脚本
+- [x] UserFollow 实体与 FollowService
+- [x] FollowController
+- [x] 积分规则管理后台
 - [x] 积分排行榜 API
-- [ ] 徽章表迁移脚本
-- [ ] Badge / UserBadge 实体与徽章触发逻辑
+- [x] 后台用户积分/徽章下钻
+- [x] 徽章表迁移脚本
+- [x] Badge / UserBadge 实体与徽章触发逻辑
 - [ ] 产品专栏聚合查询
 - [x] @ 提及解析与通知
-- [ ] 前端：关注/取关按钮与列表
+- [x] 前端：关注/取关按钮与列表
 - [x] 前端：积分/等级/排行榜页面
-- [ ] 前端：徽章墙
+- [x] 前端：徽章墙
 - [x] 前端：编辑器 @ 自动补全
 
 ---
@@ -454,8 +488,8 @@ mortise-community/
 │   │   ├── ArticleFavorite.java      ← 新增
 │   │   ├── CommentLike.java          ← 新增
 │   │   ├── UserFollow.java           ← 新增
-│   │   ├── Badge.java                ← 新增（第二阶段）
-│   │   └── UserBadge.java            ← 新增（第二阶段）
+│   │   ├── Badge.java                ← 已落地
+│   │   └── UserBadge.java            ← 已落地
 │   └── event/                         ← 新增
 │       ├── ArticleLikedEvent.java
 │       ├── ArticleFavoritedEvent.java
@@ -464,14 +498,14 @@ mortise-community/
 │       └── UserMentionedEvent.java
 ├── mortise-community-application/
 │   ├── SocialInteractionService.java  ← 新增
-│   ├── GamificationService.java       ← 新增（第二阶段）
+│   ├── GamificationService.java       ← 已演进为规则驱动成长能力
 │   └── listener/                      ← 新增
 │       └── CommunityEventListener.java
 └── mortise-community-api/
     └── controller/
         ├── LikeController.java        ← 新增
         ├── FavoriteController.java     ← 新增
-        ├── FollowController.java       ← 新增（第二阶段）
+        ├── FollowController.java       ← 已落地
         └── NotificationController.java ← 新增
 ```
 
