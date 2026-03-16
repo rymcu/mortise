@@ -49,6 +49,7 @@ applyTo: '**/*.java, **/*.kt'
 
 - Use parameterized queries | Always use Spring Data JPA or `NamedParameterJdbcTemplate` to prevent SQL injection.
 - Validate request bodies and parameters using JSR-380 (`@NotNull`, `@Size`, etc.) annotations and `BindingResult`
+- API-Level Permission Control | Use `@PreAuthorize("hasAuthority('module:resource:action')")` on method level. See `.github/instructions/permission-conventions.instructions.md` for naming conventions.
 
 ## Build and Verification
 

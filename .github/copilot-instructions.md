@@ -11,6 +11,7 @@
 
 - 后端 Java / Maven 模块边界、分层、SPI 扩展、最小 Maven 校验：见 `.github/instructions/backend-module-boundaries.instructions.md`。
 - 前端 Nuxt apps / packages / layers 的边界、类型规则、UI 约束、最小前端校验：见 `.github/instructions/frontend-nuxt-patterns.instructions.md`。
+- 权限命名规范、API 级权限控制、Controller 注解规范：见 `.github/instructions/permission-conventions.instructions.md`。
 - 启动失败、401/403、CORS、数据库权限、Jasypt、商业模块装配等环境链路排障：优先使用 `.github/prompts/mortise-env-triage.prompt.md`。
 
 ## 关键目录速查
