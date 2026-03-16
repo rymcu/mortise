@@ -39,7 +39,7 @@ public class SiteConfigController {
 
     @Operation(summary = "查询所有配置分组", description = "返回所有配置分组（含 Schema 字段定义 + 当前值）")
     @GetMapping
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('system:website-config:query')")
     @ApiLog("查询网站配置分组列表")
     public GlobalResult<List<SiteConfigGroupVO>> listGroups() {
         return GlobalResult.success(siteConfigService.listAllGroups());
@@ -47,7 +47,7 @@ public class SiteConfigController {
 
     @Operation(summary = "查询指定配置分组", description = "返回指定分组的配置详情")
     @GetMapping("/{group}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('system:website-config:query')")
     @ApiLog("查询网站配置分组详情")
     public GlobalResult<SiteConfigGroupVO> getGroup(
             @Parameter(description = "分组标识，如 site / seo", required = true)
@@ -57,7 +57,7 @@ public class SiteConfigController {
 
     @Operation(summary = "保存配置分组", description = "全量覆盖保存指定分组的配置，保存后立即刷新缓存")
     @PutMapping("/{group}")
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('system:website-config:edit')")
     @ApiLog("保存网站配置分组")
     @OperationLog(module = "网站配置", operation = "保存配置分组", recordParams = true)
     public GlobalResult<Void> saveGroup(

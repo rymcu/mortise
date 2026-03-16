@@ -32,7 +32,6 @@ import java.util.List;
 @AdminController
 @RequestMapping("/wechat/accounts")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class WeChatAccountController {
 
     private final WeChatAccountService accountService;
@@ -45,6 +44,7 @@ public class WeChatAccountController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping
+    @PreAuthorize("hasAuthority('wechat:account:list')")
     public GlobalResult<Page<WeChatAccount>> pageAccounts(@Parameter(description = "账号查询条件") @Valid WeChatAccountSearch search) {
         Page<WeChatAccount> page = new Page<>(search.getPageNum(), search.getPageSize());
         Page<WeChatAccount> result = accountService.pageAccounts(page, search);
@@ -59,6 +59,7 @@ public class WeChatAccountController {
      */
     @Operation(summary = "获取账号详情", description = "根据ID获取账号详细信息")
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('wechat:account:query')")
     public GlobalResult<WeChatAccount> getAccount(@PathVariable @Parameter(description = "账号ID") Long id) {
         log.info("获取微信账号详情，id: {}", id);
         WeChatAccount account = accountService.getAccountById(id);
@@ -73,6 +74,7 @@ public class WeChatAccountController {
      */
     @Operation(summary = "创建账号", description = "新增微信账号")
     @PostMapping
+    @PreAuthorize("hasAuthority('wechat:account:add')")
     public GlobalResult<Long> createAccount(@RequestBody @Valid WeChatAccount weChatAccount) {
         log.info("创建微信账号，type: {}, name: {}", weChatAccount.getAccountType(), weChatAccount.getAccountName());
 
@@ -96,6 +98,7 @@ public class WeChatAccountController {
      */
     @Operation(summary = "更新账号", description = "修改微信账号信息")
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('wechat:account:edit')")
     public GlobalResult<Boolean> updateAccount(@PathVariable @Parameter(description = "账号ID") Long id,
                                                 @RequestBody @Valid WeChatAccount weChatAccount) {
         log.info("更新微信账号，id: {}", id);
@@ -129,6 +132,7 @@ public class WeChatAccountController {
      */
     @Operation(summary = "删除账号", description = "删除微信账号及其所有配置")
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('wechat:account:delete')")
     public GlobalResult<Boolean> deleteAccount(@PathVariable @Parameter(description = "账号ID") Long id) {
         log.info("删除微信账号，id: {}", id);
         boolean result = accountService.deleteAccount(id);
@@ -142,6 +146,7 @@ public class WeChatAccountController {
      */
     @Operation(summary = "设置默认账号", description = "将指定账号设置为默认账号")
     @PatchMapping("/{id}/default")
+    @PreAuthorize("hasAuthority('wechat:account:edit')")
     public GlobalResult<Boolean> setDefaultAccount(@PathVariable @Parameter(description = "账号ID") Long id) {
         log.info("设置默认账号，id: {}", id);
         boolean result = accountService.setDefaultAccount(id);
@@ -156,6 +161,7 @@ public class WeChatAccountController {
      */
     @Operation(summary = "启用/禁用账号", description = "切换账号的启用状态")
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAuthority('wechat:account:edit')")
     public GlobalResult<Boolean> toggleAccount(@PathVariable @Parameter(description = "账号ID") Long id,
                                                 @RequestParam @Parameter(description = "是否启用") boolean enabled) {
         log.info("{}账号，id: {}", enabled ? "启用" : "禁用", id);
@@ -173,6 +179,7 @@ public class WeChatAccountController {
      */
     @Operation(summary = "获取配置列表", description = "获取账号的所有配置项")
     @GetMapping("/{accountId}/configs")
+    @PreAuthorize("hasAuthority('wechat:account:query')")
     public GlobalResult<List<WeChatConfig>> listConfigs(@PathVariable @Parameter(description = "账号ID") Long accountId) {
         log.info("获取账号配置列表，accountId: {}", accountId);
         List<WeChatConfig> list = accountService.listConfigs(accountId);
@@ -187,6 +194,7 @@ public class WeChatAccountController {
      */
     @Operation(summary = "保存配置", description = "保存或更新账号配置")
     @PostMapping("/{accountId}/configs")
+    @PreAuthorize("hasAuthority('wechat:account:edit')")
     public GlobalResult<Boolean> saveConfig(@PathVariable @Parameter(description = "账号ID") Long accountId,
                                              @RequestBody @Valid WeChatConfig request) {
         log.info("保存配置，accountId: {}, key: {}", accountId, request.getConfigKey());
@@ -207,6 +215,7 @@ public class WeChatAccountController {
      */
     @Operation(summary = "删除配置", description = "删除账号的指定配置项")
     @DeleteMapping("/{accountId}/configs/{configKey}")
+    @PreAuthorize("hasAuthority('wechat:account:delete')")
     public GlobalResult<Boolean> deleteConfig(@PathVariable @Parameter(description = "账号ID") Long accountId,
                                                @PathVariable @Parameter(description = "配置键") String configKey) {
         log.info("删除配置，accountId: {}, key: {}", accountId, configKey);
@@ -219,6 +228,7 @@ public class WeChatAccountController {
      */
     @Operation(summary = "刷新缓存", description = "刷新微信配置缓存")
     @PostMapping("/cache/refresh")
+    @PreAuthorize("hasAuthority('wechat:account:edit')")
     public GlobalResult<Void> refreshCache() {
         log.info("刷新微信配置缓存");
         accountService.refreshCache();

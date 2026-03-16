@@ -28,7 +28,6 @@ import java.util.List;
 @AdminController
 @RequestMapping("/product-categories")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class ProductCategoryAdminController {
 
     private final ProductCategoryService productCategoryService;
@@ -36,6 +35,7 @@ public class ProductCategoryAdminController {
     @GetMapping("/tree")
     @ApiLog("查询分类树")
     @Operation(summary = "查询完整分类树（含禁用，供后台管理使用）")
+    @PreAuthorize("hasAuthority('product:category:list')")
     public GlobalResult<List<ProductCategory>> getFullTree() {
         return GlobalResult.success(productCategoryService.getFullTree());
     }
@@ -43,6 +43,7 @@ public class ProductCategoryAdminController {
     @GetMapping("/{id}")
     @ApiLog("查询分类详情")
     @Operation(summary = "查询分类详情")
+    @PreAuthorize("hasAuthority('product:category:query')")
     public GlobalResult<ProductCategory> getCategory(
             @Parameter(description = "分类ID") @PathVariable Long id) {
         return GlobalResult.success(productCategoryService.getById(id));
@@ -52,6 +53,7 @@ public class ProductCategoryAdminController {
     @ApiLog("创建分类")
     @OperationLog(module = "产品分类管理", operation = "创建分类", recordParams = true, recordResult = true)
     @Operation(summary = "创建产品分类")
+    @PreAuthorize("hasAuthority('product:category:add')")
     public GlobalResult<Boolean> createCategory(@Valid @RequestBody ProductCategory category) {
         return GlobalResult.success(productCategoryService.save(category));
     }
@@ -60,6 +62,7 @@ public class ProductCategoryAdminController {
     @ApiLog("更新分类")
     @OperationLog(module = "产品分类管理", operation = "更新分类", recordParams = true)
     @Operation(summary = "更新产品分类")
+    @PreAuthorize("hasAuthority('product:category:edit')")
     public GlobalResult<Boolean> updateCategory(
             @Parameter(description = "分类ID") @PathVariable Long id,
             @Valid @RequestBody ProductCategory category) {
@@ -71,6 +74,7 @@ public class ProductCategoryAdminController {
     @ApiLog("更新分类状态")
     @OperationLog(module = "产品分类管理", operation = "更新分类状态", recordParams = true)
     @Operation(summary = "启用/禁用分类（0-正常, 1-禁用）")
+    @PreAuthorize("hasAuthority('product:category:edit')")
     public GlobalResult<Boolean> updateStatus(
             @Parameter(description = "分类ID") @PathVariable Long id,
             @Parameter(description = "状态：0-正常, 1-禁用") @RequestParam Integer status) {
@@ -81,8 +85,9 @@ public class ProductCategoryAdminController {
     @ApiLog("删除分类")
     @OperationLog(module = "产品分类管理", operation = "删除分类")
     @Operation(summary = "删除产品分类（注意：删除前请确认该分类下无产品及子分类）")
+    @PreAuthorize("hasAuthority('product:category:delete')")
     public GlobalResult<Boolean> deleteCategory(
-            @Parameter(description = "分类ID") @PathVariable Long id) {
+        @Parameter(description = "分类ID") @PathVariable Long id) {
         return GlobalResult.success(productCategoryService.removeById(id));
     }
 }

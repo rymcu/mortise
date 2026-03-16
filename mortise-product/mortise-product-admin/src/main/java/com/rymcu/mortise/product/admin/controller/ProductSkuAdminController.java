@@ -28,7 +28,6 @@ import java.util.List;
 @AdminController
 @RequestMapping("/products/{productId}/skus")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class ProductSkuAdminController {
 
     private final ProductSkuService productSkuService;
@@ -36,6 +35,7 @@ public class ProductSkuAdminController {
     @GetMapping
     @ApiLog("查询SKU列表")
     @Operation(summary = "查询指定产品的所有SKU（默认SKU排在最前）")
+    @PreAuthorize("hasAuthority('product:sku:list')")
     public GlobalResult<List<ProductSku>> listSkus(
             @Parameter(description = "产品ID") @PathVariable Long productId) {
         return GlobalResult.success(productSkuService.findByProductId(productId));
@@ -44,6 +44,7 @@ public class ProductSkuAdminController {
     @GetMapping("/{skuId}")
     @ApiLog("查询SKU详情")
     @Operation(summary = "查询SKU详情")
+    @PreAuthorize("hasAuthority('product:sku:query')")
     public GlobalResult<ProductSku> getSku(
             @Parameter(description = "产品ID") @PathVariable Long productId,
             @Parameter(description = "SKU ID") @PathVariable Long skuId) {
@@ -54,6 +55,7 @@ public class ProductSkuAdminController {
     @ApiLog("创建SKU")
     @OperationLog(module = "产品SKU管理", operation = "创建SKU", recordParams = true, recordResult = true)
     @Operation(summary = "为产品创建SKU（仅填写规格骨架，不含定价）")
+    @PreAuthorize("hasAuthority('product:sku:add')")
     public GlobalResult<Boolean> createSku(
             @Parameter(description = "产品ID") @PathVariable Long productId,
             @Valid @RequestBody ProductSku sku) {
@@ -65,6 +67,7 @@ public class ProductSkuAdminController {
     @ApiLog("更新SKU")
     @OperationLog(module = "产品SKU管理", operation = "更新SKU", recordParams = true)
     @Operation(summary = "更新SKU基本信息")
+    @PreAuthorize("hasAuthority('product:sku:edit')")
     public GlobalResult<Boolean> updateSku(
             @Parameter(description = "产品ID") @PathVariable Long productId,
             @Parameter(description = "SKU ID") @PathVariable Long skuId,
@@ -78,6 +81,7 @@ public class ProductSkuAdminController {
     @ApiLog("更新SKU状态")
     @OperationLog(module = "产品SKU管理", operation = "更新SKU状态", recordParams = true)
     @Operation(summary = "更新SKU状态（active-上架 / inactive-下架 / discontinued-停售）")
+    @PreAuthorize("hasAuthority('product:sku:edit')")
     public GlobalResult<Boolean> updateSkuStatus(
             @Parameter(description = "产品ID") @PathVariable Long productId,
             @Parameter(description = "SKU ID") @PathVariable Long skuId,
@@ -89,6 +93,7 @@ public class ProductSkuAdminController {
     @ApiLog("设置默认SKU")
     @OperationLog(module = "产品SKU管理", operation = "设置默认SKU", recordParams = true)
     @Operation(summary = "设置默认SKU（自动取消同产品下其他SKU的默认标记）")
+    @PreAuthorize("hasAuthority('product:sku:edit')")
     public GlobalResult<Boolean> setDefaultSku(
             @Parameter(description = "产品ID") @PathVariable Long productId,
             @Parameter(description = "SKU ID") @PathVariable Long skuId) {
@@ -99,9 +104,10 @@ public class ProductSkuAdminController {
     @ApiLog("删除SKU")
     @OperationLog(module = "产品SKU管理", operation = "删除SKU")
     @Operation(summary = "逻辑删除SKU")
+    @PreAuthorize("hasAuthority('product:sku:delete')")
     public GlobalResult<Boolean> deleteSku(
-            @Parameter(description = "产品ID") @PathVariable Long productId,
-            @Parameter(description = "SKU ID") @PathVariable Long skuId) {
+        @Parameter(description = "产品ID") @PathVariable Long productId,
+        @Parameter(description = "SKU ID") @PathVariable Long skuId) {
         return GlobalResult.success(productSkuService.removeById(skuId));
     }
 }

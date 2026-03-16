@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Duration;
@@ -34,6 +35,7 @@ public class SystemCacheController {
      */
     @DeleteMapping("/user/{userId}")
     @Operation(summary = "清除用户缓存")
+    @PreAuthorize("hasAuthority('system:cache:delete')")
     @ApiLog("清除用户缓存")
     @OperationLog(module = "系统缓存", operation = "清除用户缓存")
     public GlobalResult<Void> evictUserCache(@PathVariable Long userId) {
@@ -46,6 +48,7 @@ public class SystemCacheController {
      */
     @DeleteMapping("/dict/{dictType}")
     @Operation(summary = "清除字典缓存")
+    @PreAuthorize("hasAuthority('system:cache:delete')")
     @ApiLog("清除字典缓存")
     @OperationLog(module = "系统缓存", operation = "清除字典缓存")
     public GlobalResult<Void> evictDictCache(@PathVariable String dictType) {
@@ -58,6 +61,7 @@ public class SystemCacheController {
      */
     @DeleteMapping("/dict/all")
     @Operation(summary = "清除所有字典缓存")
+    @PreAuthorize("hasAuthority('system:cache:clear')")
     @ApiLog("清除所有字典缓存")
     @OperationLog(module = "系统缓存", operation = "清除所有字典缓存")
     @RateLimit(name = "admin", message = "操作过于频繁")
@@ -110,4 +114,3 @@ public class SystemCacheController {
         return GlobalResult.success(isValid);
     }
 }
-

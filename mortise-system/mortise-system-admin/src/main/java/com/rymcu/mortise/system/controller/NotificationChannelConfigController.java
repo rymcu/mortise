@@ -32,7 +32,6 @@ import java.util.List;
 @Tag(name = "通知渠道配置", description = "通知渠道配置管理接口")
 @AdminController
 @RequestMapping("/notification/channels")
-@PreAuthorize("hasRole('ADMIN')")
 public class NotificationChannelConfigController {
 
     @Resource
@@ -40,6 +39,7 @@ public class NotificationChannelConfigController {
 
     @Operation(summary = "查询所有渠道配置", description = "返回所有已定义渠道的配置（含 Schema 字段定义 + 当前值），密码字段已脱敏")
     @GetMapping
+    @PreAuthorize("hasAuthority('system:notification-channel:list')")
     @ApiLog("查询通知渠道配置列表")
     public GlobalResult<List<ChannelConfigVO>> listChannels() {
         return GlobalResult.success(notificationChannelConfigService.listAllChannels());
@@ -47,6 +47,7 @@ public class NotificationChannelConfigController {
 
     @Operation(summary = "查询指定渠道配置", description = "返回指定渠道的配置详情，密码字段已脱敏")
     @GetMapping("/{channel}")
+    @PreAuthorize("hasAuthority('system:notification-channel:query')")
     @ApiLog("查询通知渠道配置详情")
     public GlobalResult<ChannelConfigVO> getChannel(
             @Parameter(description = "渠道标识，如 email、sms、WeChat", required = true)
@@ -56,6 +57,7 @@ public class NotificationChannelConfigController {
 
     @Operation(summary = "保存渠道配置", description = "全量覆盖保存指定渠道的配置，保存后立即刷新缓存")
     @PutMapping("/{channel}")
+    @PreAuthorize("hasAuthority('system:notification-channel:edit')")
     @ApiLog("保存通知渠道配置")
     @OperationLog(module = "通知渠道配置", operation = "保存渠道配置", recordParams = true)
     public GlobalResult<Void> saveChannel(

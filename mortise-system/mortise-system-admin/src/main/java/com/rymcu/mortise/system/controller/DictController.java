@@ -35,7 +35,6 @@ import java.util.List;
 @Tag(name = "字典管理", description = "字典数据管理相关接口")
 @AdminController
 @RequestMapping("/dictionaries")
-@PreAuthorize("hasRole('ADMIN')")
 public class DictController {
 
     @Resource
@@ -47,7 +46,8 @@ public class DictController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping
-        @ApiLog("查询字典列表")
+    @PreAuthorize("hasAuthority('system:dict:list')")
+	@ApiLog("查询字典列表")
     public GlobalResult<Page<Dict>> listDict(@Parameter(description = "字典查询条件") @Valid DictSearch search) {
         Page<Dict> page = new Page<>(search.getPageNum(), search.getPageSize());
         Page<Dict> result = dictService.findDictList(page, search);
@@ -61,7 +61,8 @@ public class DictController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping("/{id}")
-        @ApiLog("获取字典详情")
+    @PreAuthorize("hasAuthority('system:dict:query')")
+	@ApiLog("获取字典详情")
     public GlobalResult<Dict> getDictById(@Parameter(description = "字典ID", required = true) @PathVariable("id") Long idDict) {
         Dict dict = dictService.findById(idDict);
         return GlobalResult.success(dict);
@@ -74,8 +75,9 @@ public class DictController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PostMapping
-        @ApiLog("创建字典")
-        @OperationLog(module = "字典管理", operation = "创建字典", recordParams = true, recordResult = true)
+    @PreAuthorize("hasAuthority('system:dict:add')")
+	@ApiLog("创建字典")
+	@OperationLog(module = "字典管理", operation = "创建字典", recordParams = true, recordResult = true)
     public GlobalResult<Long> createDict(@Parameter(description = "字典信息", required = true) @Valid @RequestBody Dict dict,
                                             @AuthenticationPrincipal CurrentUser currentUser) {
         dict.setCreatedBy(currentUser.getUserId());
@@ -91,8 +93,9 @@ public class DictController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PutMapping("/{id}")
-        @ApiLog("更新字典")
-        @OperationLog(module = "字典管理", operation = "更新字典", recordParams = true)
+    @PreAuthorize("hasAuthority('system:dict:edit')")
+	@ApiLog("更新字典")
+	@OperationLog(module = "字典管理", operation = "更新字典", recordParams = true)
     public GlobalResult<Boolean> updateDict(@Parameter(description = "字典ID", required = true) @PathVariable("id") Long idDict,
                                             @Parameter(description = "字典信息", required = true) @Valid @RequestBody Dict dict,
                                             @AuthenticationPrincipal CurrentUser currentUser) {
@@ -109,8 +112,9 @@ public class DictController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PatchMapping("/{id}/status")
-        @ApiLog("更新字典状态")
-        @OperationLog(module = "字典管理", operation = "更新字典状态", recordParams = true)
+    @PreAuthorize("hasAuthority('system:dict:edit')")
+	@ApiLog("更新字典状态")
+	@OperationLog(module = "字典管理", operation = "更新字典状态", recordParams = true)
     public GlobalResult<Boolean> updateDictStatus(@Parameter(description = "字典ID", required = true) @PathVariable("id") Long idDict,
                                                   @Parameter(description = "字典状态信息", required = true) @Valid @RequestBody Dict dict) {
         return GlobalResult.success(dictService.updateStatus(idDict, dict.getStatus()));
@@ -123,8 +127,9 @@ public class DictController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @DeleteMapping("/{id}")
-        @ApiLog("删除字典")
-        @OperationLog(module = "字典管理", operation = "删除字典")
+    @PreAuthorize("hasAuthority('system:dict:delete')")
+	@ApiLog("删除字典")
+	@OperationLog(module = "字典管理", operation = "删除字典")
     public GlobalResult<Boolean> deleteDict(@Parameter(description = "字典ID", required = true) @PathVariable("id") Long idDict) {
         return GlobalResult.success(dictService.deleteDict(idDict));
     }
@@ -135,7 +140,7 @@ public class DictController {
             @ApiResponse(responseCode = "400", description = "参数错误")
     })
     @GetMapping("/options")
-        @ApiLog("获取字典选项")
+	@ApiLog("获取字典选项")
     public GlobalResult<List<BaseOption>> getDictOptions(@Parameter(description = "字典类型编码", required = true) @RequestParam("code") String dictTypeCode) {
         return GlobalResult.success(dictService.queryDictOptions(dictTypeCode));
     }
@@ -147,11 +152,11 @@ public class DictController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @DeleteMapping("/batch")
-        @ApiLog("批量删除字典")
-        @OperationLog(module = "字典管理", operation = "批量删除字典", recordParams = true)
+    @PreAuthorize("hasAuthority('system:dict:delete')")
+	@ApiLog("批量删除字典")
+	@OperationLog(module = "字典管理", operation = "批量删除字典", recordParams = true)
     public GlobalResult<Boolean> batchDeleteDictionaries(@Parameter(description = "批量更新信息", required = true) @Valid @RequestBody BatchUpdateInfo batchUpdateInfo) {
         return GlobalResult.success(dictService.batchDeleteDictionaries(batchUpdateInfo.getIds()));
     }
 
 }
-

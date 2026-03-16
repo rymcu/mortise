@@ -28,7 +28,6 @@ import org.springframework.web.bind.annotation.*;
 @Slf4j
 @AdminController
 @RequestMapping("/oauth2/client-configs")
-@PreAuthorize("hasRole('ADMIN')")
 @RequiredArgsConstructor
 public class Oauth2ClientConfigController {
 
@@ -40,6 +39,7 @@ public class Oauth2ClientConfigController {
 			@ApiResponse(responseCode = "403", description = "权限不足")
 	})
 	@GetMapping
+	@PreAuthorize("hasAuthority('system:oauth2-client:list')")
 	@ApiLog(recordResponseBody = false, value = "获取OAuth2客户端配置列表")
 	public GlobalResult<Page<Oauth2ClientConfig>> list(@Parameter(description = "查询条件") OAuth2ClientConfigSearch search) {
 		Page<Oauth2ClientConfig> page = new Page<>(search.getPageNum(), search.getPageSize());
@@ -53,6 +53,7 @@ public class Oauth2ClientConfigController {
 			@ApiResponse(responseCode = "403", description = "权限不足")
 	})
 	@GetMapping("/{id}")
+	@PreAuthorize("hasAuthority('system:oauth2-client:query')")
 	@ApiLog(recordResponseBody = false, value = "获取OAuth2客户端配置详情")
 	public GlobalResult<Oauth2ClientConfig> getById(@Parameter(description = "配置ID", required = true) @PathVariable Long id) {
 		return GlobalResult.success(oauth2ClientConfigService.getById(id));
@@ -65,6 +66,7 @@ public class Oauth2ClientConfigController {
 			@ApiResponse(responseCode = "403", description = "权限不足")
 	})
 	@PostMapping
+	@PreAuthorize("hasAuthority('system:oauth2-client:add')")
 	@ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "创建OAuth2客户端配置")
 	@OperationLog(module = "OAuth2客户端配置", operation = "创建OAuth2客户端配置", recordParams = false, recordResult = false)
 	public GlobalResult<Long> createOauth2ClientConfig(@Parameter(description = "客户端配置", required = true) @RequestBody Oauth2ClientConfig config) {
@@ -79,6 +81,7 @@ public class Oauth2ClientConfigController {
 			@ApiResponse(responseCode = "403", description = "权限不足")
 	})
 	@PutMapping("/{id}")
+	@PreAuthorize("hasAuthority('system:oauth2-client:edit')")
 	@ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "更新OAuth2客户端配置")
 	@OperationLog(module = "OAuth2客户端配置", operation = "更新OAuth2客户端配置", recordParams = false, recordResult = false)
 	public GlobalResult<Boolean> updateOauth2ClientConfig(@Parameter(description = "配置ID", required = true) @PathVariable Long id,
@@ -95,6 +98,7 @@ public class Oauth2ClientConfigController {
 			@ApiResponse(responseCode = "403", description = "权限不足")
 	})
 	@DeleteMapping("/{id}")
+	@PreAuthorize("hasAuthority('system:oauth2-client:delete')")
 	@ApiLog(recordParams = true, recordRequestBody = false, recordResponseBody = false, value = "删除OAuth2客户端配置")
 	@OperationLog(module = "OAuth2客户端配置", operation = "删除OAuth2客户端配置", recordParams = true, recordResult = true)
 	public GlobalResult<Boolean> delete(@Parameter(description = "配置ID", required = true) @PathVariable Long id) {
@@ -108,6 +112,7 @@ public class Oauth2ClientConfigController {
 			@ApiResponse(responseCode = "403", description = "权限不足")
 	})
 	@DeleteMapping("/batch")
+	@PreAuthorize("hasAuthority('system:oauth2-client:delete')")
 	@ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "批量删除OAuth2客户端配置")
 	@OperationLog(module = "OAuth2客户端配置", operation = "批量删除OAuth2客户端配置", recordParams = false, recordResult = true)
 	public GlobalResult<Boolean> batchDelete(@Parameter(description = "批量删除信息", required = true) @RequestBody BatchUpdateInfo batchUpdateInfo) {

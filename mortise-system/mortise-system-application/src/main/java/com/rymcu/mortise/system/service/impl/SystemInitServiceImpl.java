@@ -334,6 +334,7 @@ public class SystemInitServiceImpl implements SystemInitService {
         private String permission;
         private String icon;
         private String href;
+        private Integer status;
         private Integer menuType;
         private Integer sortNo;
         private String parentPermission;
@@ -346,6 +347,7 @@ public class SystemInitServiceImpl implements SystemInitService {
         menu.setPermission(json.getPermission());
         menu.setIcon(json.getIcon());
         menu.setHref(json.getHref());
+        menu.setStatus(json.getStatus());
         menu.setMenuType(json.getMenuType());
         menu.setSortNo(json.getSortNo());
         // ParentId will be set later after parents are inserted

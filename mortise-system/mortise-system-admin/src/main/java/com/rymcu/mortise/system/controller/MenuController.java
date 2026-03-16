@@ -33,7 +33,6 @@ import java.util.List;
 @Tag(name = "菜单管理", description = "菜单管理相关接口")
 @AdminController
 @RequestMapping("/menus")
-@PreAuthorize("hasRole('ADMIN')")
 public class MenuController {
     @Resource
     private MenuService menuService;
@@ -44,6 +43,7 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping
+    @PreAuthorize("hasAuthority('system:menu:list')")
     @ApiLog("查询菜单列表")
     public GlobalResult<Page<Menu>> listMenu(@Parameter(description = "菜单查询条件") @Valid MenuSearch search) {
         Page<Menu> page = new Page<>(search.getPageNum(), search.getPageSize());
@@ -59,6 +59,7 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('system:menu:query')")
     @ApiLog("获取菜单详情")
     public GlobalResult<Menu> getMenuById(@Parameter(description = "菜单ID", required = true) @PathVariable("id") Long idMenu) {
         return GlobalResult.success(menuService.getById(idMenu));
@@ -71,6 +72,7 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PostMapping
+    @PreAuthorize("hasAuthority('system:menu:add')")
     @ApiLog("创建菜单")
     @OperationLog(module = "菜单管理", operation = "创建菜单", recordParams = true, recordResult = true)
     public GlobalResult<Long> createMenu(@Parameter(description = "菜单信息", required = true) @Valid @RequestBody Menu menu) {
@@ -85,6 +87,7 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PutMapping("/{id}")
+    @PreAuthorize("hasAuthority('system:menu:edit')")
     @ApiLog("更新菜单")
     @OperationLog(module = "菜单管理", operation = "更新菜单", recordParams = true)
     public GlobalResult<Boolean> updateMenu(@Parameter(description = "菜单ID", required = true) @PathVariable("id") Long idMenu,
@@ -100,6 +103,7 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PatchMapping("/{id}/status")
+    @PreAuthorize("hasAuthority('system:menu:edit')")
     @ApiLog("更新菜单状态")
     @OperationLog(module = "菜单管理", operation = "更新菜单状态", recordParams = true)
     public GlobalResult<Boolean> updateMenuStatus(@Parameter(description = "菜单ID", required = true) @PathVariable("id") Long idMenu,
@@ -114,6 +118,7 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('system:menu:delete')")
     @ApiLog("删除菜单")
     @OperationLog(module = "菜单管理", operation = "删除菜单")
     public GlobalResult<Boolean> deleteMenu(@Parameter(description = "菜单ID", required = true) @PathVariable("id") Long idMenu) {
@@ -126,6 +131,7 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping("/tree")
+    @PreAuthorize("hasAuthority('system:menu:list')")
     @ApiLog("获取菜单树")
     public GlobalResult<List<MenuTreeInfo>> getMenuTree(@Parameter(description = "菜单查询条件") @Valid MenuSearch search) {
         List<MenuTreeInfo> menus = menuService.findMenuTree(search);
@@ -139,6 +145,7 @@ public class MenuController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @DeleteMapping("/batch")
+    @PreAuthorize("hasAuthority('system:menu:delete')")
     @ApiLog("批量删除菜单")
     @OperationLog(module = "菜单管理", operation = "批量删除菜单", recordParams = true)
     public GlobalResult<Boolean> batchDeleteMenus(@Parameter(description = "批量更新信息", required = true) @Valid @RequestBody BatchUpdateInfo batchUpdateInfo) {

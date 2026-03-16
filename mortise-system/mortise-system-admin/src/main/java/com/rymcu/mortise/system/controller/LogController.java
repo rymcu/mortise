@@ -27,7 +27,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @Tag(name = "日志管理", description = "操作日志与 API 日志管理接口")
 @AdminController
 @RequestMapping("/logs")
-@PreAuthorize("hasRole('ADMIN')")
 public class LogController {
 
     @Resource
@@ -37,6 +36,7 @@ public class LogController {
 
     @Operation(summary = "分页查询操作日志", description = "支持关键词、客户端类型、模块、时间范围过滤")
     @GetMapping("/operation")
+    @PreAuthorize("hasAuthority('system:operation-log:list')")
     @com.rymcu.mortise.log.annotation.ApiLog(recordParams = false, recordResponseBody = false, value = "查询操作日志")
     public GlobalResult<Page<OperationLog>> listOperationLogs(
             @Parameter(description = "查询条件") @Valid LogSearch search) {
@@ -47,6 +47,7 @@ public class LogController {
 
     @Operation(summary = "删除操作日志", description = "根据 ID 删除指定操作日志记录")
     @DeleteMapping("/operation/{id}")
+    @PreAuthorize("hasAuthority('system:operation-log:delete')")
     @com.rymcu.mortise.log.annotation.ApiLog(value = "删除操作日志")
     @com.rymcu.mortise.log.annotation.OperationLog(module = "日志管理", operation = "删除操作日志", recordParams = true)
     public GlobalResult<Boolean> deleteOperationLog(
@@ -58,6 +59,7 @@ public class LogController {
 
     @Operation(summary = "分页查询 API 日志", description = "支持关键词、客户端类型、时间范围过滤")
     @GetMapping("/api")
+    @PreAuthorize("hasAuthority('system:api-log:list')")
     @com.rymcu.mortise.log.annotation.ApiLog(recordParams = false, recordResponseBody = false, value = "查询 API 日志")
     public GlobalResult<Page<ApiLog>> listApiLogs(
             @Parameter(description = "查询条件") @Valid LogSearch search) {
@@ -68,6 +70,7 @@ public class LogController {
 
     @Operation(summary = "删除 API 日志", description = "根据 ID 删除指定 API 日志记录")
     @DeleteMapping("/api/{id}")
+    @PreAuthorize("hasAuthority('system:api-log:delete')")
     @com.rymcu.mortise.log.annotation.ApiLog(value = "删除 API 日志")
     @com.rymcu.mortise.log.annotation.OperationLog(module = "日志管理", operation = "删除 API 日志", recordParams = true)
     public GlobalResult<Boolean> deleteApiLog(

@@ -36,7 +36,6 @@ import java.util.List;
 @Tag(name = "角色管理", description = "角色管理相关接口")
 @AdminController
 @RequestMapping("/roles")
-@PreAuthorize("hasRole('ADMIN')")
 public class RoleController {
     @Resource
     private RoleService roleService;
@@ -47,7 +46,8 @@ public class RoleController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping
-        @ApiLog("查询角色列表")
+    @PreAuthorize("hasAuthority('system:role:list')")
+	@ApiLog("查询角色列表")
     public GlobalResult<Page<Role>> listRole(@Parameter(description = "角色查询条件") @Valid RoleSearch search) {
         Page<Role> page = new Page<>(search.getPageNum(), search.getPageSize());
         return GlobalResult.success(roleService.findRoles(page, search));
@@ -60,7 +60,8 @@ public class RoleController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping("/{id}")
-        @ApiLog("获取角色详情")
+    @PreAuthorize("hasAuthority('system:role:query')")
+	@ApiLog("获取角色详情")
     public GlobalResult<Role> getRoleById(@Parameter(description = "角色ID", required = true) @PathVariable("id") Long idRole) {
         return GlobalResult.success(roleService.getById(idRole));
     }
@@ -72,8 +73,9 @@ public class RoleController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PostMapping
-        @ApiLog("创建角色")
-        @OperationLog(module = "角色管理", operation = "创建角色", recordParams = true, recordResult = true)
+    @PreAuthorize("hasAuthority('system:role:add')")
+	@ApiLog("创建角色")
+	@OperationLog(module = "角色管理", operation = "创建角色", recordParams = true, recordResult = true)
     public GlobalResult<Long> createRole(@Parameter(description = "角色信息", required = true) @Valid @RequestBody Role role) {
         return GlobalResult.success(roleService.createRole(role));
     }
@@ -86,8 +88,9 @@ public class RoleController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PutMapping("/{id}")
-        @ApiLog("更新角色")
-        @OperationLog(module = "角色管理", operation = "更新角色", recordParams = true)
+    @PreAuthorize("hasAuthority('system:role:edit')")
+	@ApiLog("更新角色")
+	@OperationLog(module = "角色管理", operation = "更新角色", recordParams = true)
     public GlobalResult<Boolean> updateRole(@Parameter(description = "角色ID", required = true) @PathVariable("id") Long idRole,
                                            @Parameter(description = "角色信息", required = true) @Valid @RequestBody Role role) {
         role.setId(idRole);
@@ -101,8 +104,9 @@ public class RoleController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PatchMapping("/{id}/status")
-        @ApiLog("更新角色状态")
-        @OperationLog(module = "角色管理", operation = "更新角色状态", recordParams = true)
+    @PreAuthorize("hasAuthority('system:role:edit')")
+	@ApiLog("更新角色状态")
+	@OperationLog(module = "角色管理", operation = "更新角色状态", recordParams = true)
     public GlobalResult<Boolean> updateRoleStatus(@Parameter(description = "角色ID", required = true) @PathVariable("id") Long idRole,
                                                   @Parameter(description = "角色状态信息", required = true) @Valid @RequestBody Role role) {
         return GlobalResult.success(roleService.updateStatus(idRole, role.getStatus()));
@@ -115,7 +119,8 @@ public class RoleController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping("/{id}/users")
-        @ApiLog("获取角色用户")
+    @PreAuthorize("hasAuthority('system:role:query')")
+	@ApiLog("获取角色用户")
     public GlobalResult<List<User>> getRoleUsers(@Parameter(description = "角色ID", required = true) @PathVariable("id") Long idRole) {
         return GlobalResult.success(roleService.findUsersByIdRole(idRole));
     }
@@ -127,8 +132,9 @@ public class RoleController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PutMapping("/{id}/users")
-        @ApiLog("绑定角色用户")
-        @OperationLog(module = "角色管理", operation = "绑定角色用户", recordParams = true)
+    @PreAuthorize("hasAuthority('system:role:assign')")
+	@ApiLog("绑定角色用户")
+	@OperationLog(module = "角色管理", operation = "绑定角色用户", recordParams = true)
     public GlobalResult<Boolean> bindRoleUsers(@Parameter(description = "角色ID", required = true) @PathVariable("id") Long idRole,
                                                @Parameter(description = "角色用户绑定信息", required = true) @Valid @RequestBody BindRoleUserInfo bindRoleUserInfo) {
         bindRoleUserInfo.setIdRole(idRole);
@@ -142,7 +148,8 @@ public class RoleController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping("/{id}/menus")
-        @ApiLog("获取角色菜单")
+    @PreAuthorize("hasAuthority('system:role:query')")
+	@ApiLog("获取角色菜单")
     public GlobalResult<List<Menu>> getRoleMenus(@Parameter(description = "角色ID", required = true) @PathVariable("id") Long idRole) {
         return GlobalResult.success(roleService.findMenusByIdRole(idRole));
     }
@@ -154,8 +161,9 @@ public class RoleController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PutMapping("/{id}/menus")
-        @ApiLog("绑定角色菜单")
-        @OperationLog(module = "角色管理", operation = "绑定角色菜单", recordParams = true)
+    @PreAuthorize("hasAuthority('system:role:assign')")
+	@ApiLog("绑定角色菜单")
+	@OperationLog(module = "角色管理", operation = "绑定角色菜单", recordParams = true)
     public GlobalResult<Boolean> bindRoleMenus(@Parameter(description = "角色ID", required = true) @PathVariable("id") Long idRole,
                                               @Parameter(description = "角色菜单绑定信息", required = true) @Valid @RequestBody BindRoleMenuInfo bindRoleMenuInfo) {
         bindRoleMenuInfo.setIdRole(idRole);
@@ -169,8 +177,9 @@ public class RoleController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @DeleteMapping("/{id}")
-        @ApiLog("删除角色")
-        @OperationLog(module = "角色管理", operation = "删除角色")
+    @PreAuthorize("hasAuthority('system:role:delete')")
+	@ApiLog("删除角色")
+	@OperationLog(module = "角色管理", operation = "删除角色")
     public GlobalResult<Boolean> deleteRole(@Parameter(description = "角色ID", required = true) @PathVariable("id") Long idRole) {
         return GlobalResult.success(roleService.deleteRole(idRole));
     }
@@ -182,10 +191,10 @@ public class RoleController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @DeleteMapping("/batch")
-        @ApiLog("批量删除角色")
-        @OperationLog(module = "角色管理", operation = "批量删除角色", recordParams = true)
+    @PreAuthorize("hasAuthority('system:role:delete')")
+	@ApiLog("批量删除角色")
+	@OperationLog(module = "角色管理", operation = "批量删除角色", recordParams = true)
     public GlobalResult<Boolean> batchDeleteRoles(@Parameter(description = "批量更新信息", required = true) @Valid @RequestBody BatchUpdateInfo batchUpdateInfo) {
         return GlobalResult.success(roleService.batchDeleteRoles(batchUpdateInfo.getIds()));
     }
 }
-

@@ -42,6 +42,7 @@ public class MemberController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('member:list')")
     @ApiLog(recordParams = false, recordResponseBody = false, value = "查询会员列表")
     public GlobalResult<Page<MemberInfo>> listMembers(@Parameter(description = "会员查询条件") @Valid MemberSearch search) {
         Page<MemberInfo> page = new Page<>(search.getPageNum(), search.getPageSize());
@@ -56,6 +57,7 @@ public class MemberController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @GetMapping("/{id}")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('member:query')")
     @ApiLog(recordParams = true, recordResponseBody = false, value = "获取会员详情")
     public GlobalResult<MemberInfo> getMemberById(@Parameter(description = "会员ID", required = true) @PathVariable("id") Long idMember) {
         return GlobalResult.success(adminMemberService.findMemberInfoById(idMember));
@@ -68,6 +70,7 @@ public class MemberController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PatchMapping("/{id}/status")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('member:edit')")
     @ApiLog(recordParams = true, recordRequestBody = false, recordResponseBody = false, value = "更新会员状态")
     @OperationLog(module = "会员管理", operation = "更新会员状态", recordParams = true)
     public GlobalResult<Boolean> updateMemberStatus(
@@ -83,6 +86,7 @@ public class MemberController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PutMapping("/{id}/enable")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('member:edit')")
     @ApiLog(recordParams = true, recordResponseBody = false, value = "启用会员")
     @OperationLog(module = "会员管理", operation = "启用会员", recordParams = true)
     public GlobalResult<Boolean> enableMember(@Parameter(description = "会员ID", required = true) @PathVariable("id") Long idMember) {
@@ -96,6 +100,7 @@ public class MemberController {
             @ApiResponse(responseCode = "403", description = "权限不足")
     })
     @PutMapping("/{id}/disable")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('member:edit')")
     @ApiLog(recordParams = true, recordResponseBody = false, value = "禁用会员")
     @OperationLog(module = "会员管理", operation = "禁用会员", recordParams = true)
     public GlobalResult<Boolean> disableMember(@Parameter(description = "会员ID", required = true) @PathVariable("id") Long idMember) {

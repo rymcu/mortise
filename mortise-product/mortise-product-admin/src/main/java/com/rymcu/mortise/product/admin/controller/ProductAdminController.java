@@ -31,7 +31,6 @@ import java.util.Map;
 @AdminController
 @RequestMapping("/products")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('ADMIN')")
 public class ProductAdminController {
 
     private final ProductService productService;
@@ -39,6 +38,7 @@ public class ProductAdminController {
     @GetMapping
     @ApiLog("查询产品列表")
     @Operation(summary = "分页查询产品列表（支持按类型、分类、状态、关键字过滤）")
+    @PreAuthorize("hasAuthority('product:catalog:list')")
     public GlobalResult<Page<Product>> listProducts(
             @Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer pageNum,
             @Parameter(description = "每页数量") @RequestParam(defaultValue = "10") Integer pageSize,
@@ -55,6 +55,7 @@ public class ProductAdminController {
     @GetMapping("/{id}")
     @ApiLog("查询产品详情")
     @Operation(summary = "查询产品详情")
+    @PreAuthorize("hasAuthority('product:catalog:query')")
     public GlobalResult<Product> getProduct(
             @Parameter(description = "产品ID") @PathVariable Long id) {
         return GlobalResult.success(productService.getById(id));
@@ -64,6 +65,7 @@ public class ProductAdminController {
     @ApiLog("创建产品")
     @OperationLog(module = "产品管理", operation = "创建产品", recordParams = true, recordResult = true)
     @Operation(summary = "创建产品（仅填写描述型元数据，不含定价/库存）")
+    @PreAuthorize("hasAuthority('product:catalog:add')")
     public GlobalResult<Boolean> createProduct(@Valid @RequestBody Product product) {
         return GlobalResult.success(productService.save(product));
     }
@@ -72,6 +74,7 @@ public class ProductAdminController {
     @ApiLog("更新产品")
     @OperationLog(module = "产品管理", operation = "更新产品", recordParams = true)
     @Operation(summary = "更新产品")
+    @PreAuthorize("hasAuthority('product:catalog:edit')")
     public GlobalResult<Boolean> updateProduct(
             @Parameter(description = "产品ID") @PathVariable Long id,
             @Valid @RequestBody Product product) {
@@ -83,6 +86,7 @@ public class ProductAdminController {
     @ApiLog("更新产品状态")
     @OperationLog(module = "产品管理", operation = "更新产品状态", recordParams = true)
     @Operation(summary = "上架/下架/停产产品（状态机：0-草稿→1-上架→2-下架→3-停产）")
+    @PreAuthorize("hasAuthority('product:catalog:edit')")
     public GlobalResult<Boolean> updateStatus(
             @Parameter(description = "产品ID") @PathVariable Long id,
             @Parameter(description = "状态：0-草稿, 1-上架, 2-下架, 3-停产") @RequestParam Integer status) {
@@ -93,6 +97,7 @@ public class ProductAdminController {
     @ApiLog("批量更新产品状态")
     @OperationLog(module = "产品管理", operation = "批量更新产品状态", recordParams = true)
     @Operation(summary = "批量更新产品状态（如批量上架/下架）")
+    @PreAuthorize("hasAuthority('product:catalog:edit')")
     public GlobalResult<Integer> batchUpdateStatus(
             @Parameter(description = "产品ID列表") @RequestBody List<Long> ids,
             @Parameter(description = "目标状态") @RequestParam Integer status) {
@@ -103,6 +108,7 @@ public class ProductAdminController {
     @ApiLog("删除产品")
     @OperationLog(module = "产品管理", operation = "删除产品")
     @Operation(summary = "逻辑删除产品")
+    @PreAuthorize("hasAuthority('product:catalog:delete')")
     public GlobalResult<Boolean> deleteProduct(
             @Parameter(description = "产品ID") @PathVariable Long id) {
         return GlobalResult.success(productService.removeById(id));
@@ -111,6 +117,7 @@ public class ProductAdminController {
     @GetMapping("/types")
     @ApiLog("查询产品类型列表")
     @Operation(summary = "获取所有可用产品类型（内置 + SPI 扩展）")
+    @PreAuthorize("hasAuthority('product:catalog:query')")
     public GlobalResult<Map<String, String>> listProductTypes() {
         return GlobalResult.success(productService.getAllProductTypes());
     }
