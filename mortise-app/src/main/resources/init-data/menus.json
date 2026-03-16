@@ -150,7 +150,7 @@
   { "label": "下载文件", "permission": "system:file:download", "icon": "i-lucide-download", "href": "", "menuType": 2, "sortNo": 3, "parentPermission": "system:file" },
   { "label": "删除文件", "permission": "system:file:delete", "icon": "i-lucide-trash-2", "href": "", "menuType": 2, "sortNo": 4, "parentPermission": "system:file" },
 
-  { "label": "网站配置", "permission": "system:website-config", "icon": "i-lucide-globe", "href": "/systems/website-config", "menuType": 1, "sortNo": 999, "parentPermission": "system" },
+  { "label": "网站配置", "permission": "system:website-config", "icon": "i-lucide-globe", "href": "/systems/site-config", "menuType": 1, "sortNo": 999, "parentPermission": "system" },
   { "label": "查询网站配置", "permission": "system:website-config:query", "icon": "i-lucide-eye", "href": "", "menuType": 2, "sortNo": 1, "parentPermission": "system:website-config" },
   { "label": "编辑网站配置", "permission": "system:website-config:edit", "icon": "i-lucide-pencil", "href": "", "menuType": 2, "sortNo": 2, "parentPermission": "system:website-config" },
 

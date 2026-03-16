@@ -4,11 +4,13 @@ import com.rymcu.mortise.cache.service.CacheService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 /**
@@ -72,7 +74,7 @@ public class RedisCacheServiceImpl implements CacheService {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T get(String key, Class<T> type) {
-        Object value = redisTemplate.opsForValue().get(key);
+        Object value = readWithSerializationGuard(key, () -> redisTemplate.opsForValue().get(key), null);
         if (value == null) {
             return null;
         }
@@ -128,7 +130,8 @@ public class RedisCacheServiceImpl implements CacheService {
     @Override
     @SuppressWarnings("unchecked")
     public <T> T hGet(String key, String hashKey, Class<T> type) {
-        Object value = redisTemplate.opsForHash().get(key, hashKey);
+        Object value = readWithSerializationGuard(key,
+                () -> redisTemplate.opsForHash().get(key, hashKey), null);
         if (value == null) {
             return null;
         }
@@ -148,7 +151,7 @@ public class RedisCacheServiceImpl implements CacheService {
 
     @Override
     public Map<Object, Object> hGetAll(String key) {
-        return redisTemplate.opsForHash().entries(key);
+        return readWithSerializationGuard(key, () -> redisTemplate.opsForHash().entries(key), Collections.emptyMap());
     }
 
     @Override
@@ -168,7 +171,7 @@ public class RedisCacheServiceImpl implements CacheService {
 
     @Override
     public Set<Object> sMembers(String key) {
-        return redisTemplate.opsForSet().members(key);
+        return readWithSerializationGuard(key, () -> redisTemplate.opsForSet().members(key), Collections.emptySet());
     }
 
     @Override
@@ -194,7 +197,8 @@ public class RedisCacheServiceImpl implements CacheService {
     @Override
     @SuppressWarnings("unchecked")
     public <T> List<T> lRange(String key, long start, long end, Class<T> type) {
-        List<Object> range = redisTemplate.opsForList().range(key, start, end);
+        List<Object> range = readWithSerializationGuard(key,
+                () -> redisTemplate.opsForList().range(key, start, end), Collections.emptyList());
         if (range == null || range.isEmpty()) {
             return Collections.emptyList();
         }
@@ -224,5 +228,43 @@ public class RedisCacheServiceImpl implements CacheService {
     @Override
     public Set<String> keys(String pattern) {
         return redisTemplate.keys(pattern);
+    }
+
+    /**
+     * 兼容 Redis 中遗留的旧格式 JSON（缺少 @class 类型标识）。
+     * 对于直接走 RedisTemplate 的读取链路，异常不会进入 Spring CacheErrorHandler，
+     * 因此在此处统一兜底：视为缓存未命中并主动驱逐坏数据。
+     */
+    private <T> T readWithSerializationGuard(String key, Supplier<T> reader, T fallbackValue) {
+        try {
+            return reader.get();
+        } catch (RuntimeException exception) {
+            if (isSerializationFailure(exception)) {
+                log.warn("Redis 缓存反序列化失败，已按未命中处理并驱逐旧数据: key={}, message={}",
+                        key, exception.getMessage());
+                deleteCorruptedKey(key);
+                return fallbackValue;
+            }
+            throw exception;
+        }
+    }
+
+    private boolean isSerializationFailure(RuntimeException exception) {
+        Throwable current = exception;
+        while (current != null) {
+            if (current instanceof SerializationException) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
+    }
+
+    private void deleteCorruptedKey(String key) {
+        try {
+            redisTemplate.delete(key);
+        } catch (RuntimeException deleteException) {
+            log.warn("驱逐损坏 Redis 缓存失败: key={}, message={}", key, deleteException.getMessage());
+        }
     }
 }

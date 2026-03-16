@@ -32,6 +32,9 @@
 [submodule "frontend/layers/admin/community"]
 	path = frontend/layers/admin/community
 	url = git@github.com:rymcu/admin-community.git
-[submodule "frontend/frontend/layers/admin/community"]
-	path = frontend/frontend/layers/admin/community
-	url = git@github.com:rymcu/admin-community.git
+[submodule "frontend/layers/admin/aiot"]
+	path = frontend/layers/admin/aiot
+	url = git@github.com:rymcu/admin-aiot.git
+[submodule "frontend/layers/admin/ota"]
+	path = frontend/layers/admin/ota
+	url = git@github.com:rymcu/admin-ota.git

@@ -8,6 +8,10 @@ import type { SiteConfigSaveRequest } from '~/types'
  */
 const { groups, loading, saving, errorMessage, loadGroups, saveGroup } = useSiteConfig()
 
+definePageMeta({
+  alias: ['/systems/website-config']
+})
+
 await loadGroups()
 
 // 当前激活的 Tab（默认选第一个分组）
