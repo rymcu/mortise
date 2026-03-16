@@ -1,6 +1,6 @@
 package com.rymcu.mortise.system.service.impl;
 
-import com.rymcu.mortise.persistence.systemconfig.service.SystemConfigStorageService;
+import com.rymcu.mortise.core.spi.SystemConfigStorage;
 import com.rymcu.mortise.system.constant.SiteConfigSchema;
 import com.rymcu.mortise.system.constant.SystemCacheConstant;
 import com.rymcu.mortise.system.model.SiteConfigFieldDef;
@@ -32,7 +32,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class SiteConfigServiceImpl implements SiteConfigService {
 
-    private final SystemConfigStorageService systemConfigStorageService;
+    private final SystemConfigStorage systemConfigStorage;
 
     // ─── SiteConfigService ────────────────────────────────────────────────────
 
@@ -67,7 +67,7 @@ public class SiteConfigServiceImpl implements SiteConfigService {
             if (value == null) {
                 continue; // 未传该字段则保持原值不变
             }
-            systemConfigStorageService.upsertValue(group, field.key(), value);
+            systemConfigStorage.upsertValue(group, field.key(), value);
         }
 
         log.info("保存网站配置成功: group={}", group);
@@ -89,7 +89,7 @@ public class SiteConfigServiceImpl implements SiteConfigService {
      * 从数据库加载指定分组的所有配置项（key → value）
      */
     private Map<String, String> loadFromDb(String group) {
-        return systemConfigStorageService.loadGroupValues(group);
+        return systemConfigStorage.loadGroupValues(group);
     }
 
     /**

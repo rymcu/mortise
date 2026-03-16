@@ -21,6 +21,12 @@
     </properties>
 
     <dependencies>
+        <!-- Mortise Core (SPI接口) -->
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-core</artifactId>
+        </dependency>
+
         <!-- Mortise Log (SPI接口) -->
         <dependency>
             <groupId>com.rymcu</groupId>

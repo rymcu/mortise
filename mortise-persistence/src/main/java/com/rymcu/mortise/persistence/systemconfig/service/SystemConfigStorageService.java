@@ -1,6 +1,7 @@
 package com.rymcu.mortise.persistence.systemconfig.service;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.rymcu.mortise.core.spi.SystemConfigStorage;
 import com.rymcu.mortise.persistence.systemconfig.entity.SystemConfig;
 import com.rymcu.mortise.persistence.systemconfig.mapper.SystemConfigMapper;
 import lombok.RequiredArgsConstructor;
@@ -15,11 +16,11 @@ import java.util.stream.Collectors;
 import static com.rymcu.mortise.persistence.systemconfig.entity.table.SystemConfigTableDef.SYSTEM_CONFIG;
 
 /**
- * 共享的系统配置表存储能力。
+ * 系统配置存储的数据库实现。
  */
 @Service
 @RequiredArgsConstructor
-public class SystemConfigStorageService {
+public class SystemConfigStorageService implements SystemConfigStorage {
 
     private final SystemConfigMapper systemConfigMapper;
 
