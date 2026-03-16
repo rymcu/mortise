@@ -76,6 +76,65 @@
                 <artifactId>mortise-common</artifactId>
                 <version>${revision}</version>
             </dependency>
+
+            <!-- AIoT 模块（商业版，通过 pro profile 按需引入） -->
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-aiot-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-aiot-application</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-aiot-infra</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-aiot-admin</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-aiot-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-aiot-gateway-mqtt</artifactId>
+                <version>${revision}</version>
+            </dependency>
+
+            <!-- OTA 模块（商业版，通过 pro profile 按需引入） -->
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-ota-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-ota-application</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-ota-infra</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-ota-admin</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-ota-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
             <dependency>
                 <groupId>com.rymcu</groupId>
                 <artifactId>mortise-core</artifactId>
@@ -550,6 +609,9 @@
                 <module>mortise-payment</module>
                 <module>mortise-community</module>
                 <module>mortise-im</module>
+                <module>mortise-aiot</module>
+                <module>mortise-aiot-gateway-mqtt</module>
+                <module>mortise-ota</module>
             </modules>
         </profile>
     </profiles>

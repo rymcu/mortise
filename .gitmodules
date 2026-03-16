@@ -14,6 +14,18 @@
 	path = mortise-im
 	url = git@github.com:rymcu/mortise-im.git
 	branch = master
+[submodule "mortise-aiot"]
+	path = mortise-aiot
+	url = git@github.com:rymcu/mortise-aiot.git
+	branch = master
+[submodule "mortise-aiot-gateway-mqtt"]
+	path = mortise-aiot-gateway-mqtt
+	url = git@github.com:rymcu/mortise-aiot-gateway-mqtt.git
+	branch = master
+[submodule "mortise-ota"]
+	path = mortise-ota
+	url = git@github.com:rymcu/mortise-ota.git
+	branch = master
 [submodule "frontend/layers/community"]
 	path = frontend/layers/community
 	url = git@github.com:rymcu/community.git

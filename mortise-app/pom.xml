@@ -214,6 +214,28 @@
                     <groupId>com.rymcu</groupId>
                     <artifactId>mortise-im-api</artifactId>
                 </dependency>
+                <!-- AIoT 模块 -->
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-aiot-admin</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-aiot-api</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-aiot-gateway-mqtt</artifactId>
+                </dependency>
+                <!-- OTA 模块 -->
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-ota-admin</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-ota-api</artifactId>
+                </dependency>
             </dependencies>
         </profile>
     </profiles>
