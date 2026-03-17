@@ -4,7 +4,6 @@
  * 仅包含描述型元数据，不含定价/库存等交易属性
  */
 import * as z from 'zod'
-import { useAppFileUpload } from '../../../../../layers/base/composables/useAppFileUpload'
 import { fetchAdminGet } from '@mortise/core-sdk'
 
 interface CategoryOption {

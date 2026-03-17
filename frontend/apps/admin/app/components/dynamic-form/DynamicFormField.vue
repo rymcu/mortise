@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import { useAppFileUpload } from '../../../../../layers/base/composables/useAppFileUpload'
 import type { FormFieldDef } from '~/types'
 
 /**

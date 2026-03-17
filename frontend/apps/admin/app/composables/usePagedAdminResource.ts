@@ -1,5 +1,5 @@
 import { fetchAdminPage } from '@mortise/core-sdk'
-import type { UsePagedAdminResourceOptions } from '../types/resource'
+import type { UsePagedAdminResourceOptions } from '~/types/resource'
 
 function toNumber(value: unknown, fallback = 0) {
   if (typeof value === 'number' && Number.isFinite(value)) {

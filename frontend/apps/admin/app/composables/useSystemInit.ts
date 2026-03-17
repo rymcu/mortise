@@ -3,7 +3,7 @@
  */
 
 import type { GlobalResult } from '@mortise/core-sdk'
-import type { SystemInitInfo } from '../types/system-init'
+import type { SystemInitInfo } from '~/types/system-init'
 
 export function useSystemInit() {
   const config = useRuntimeConfig()
