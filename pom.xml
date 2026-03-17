@@ -36,7 +36,6 @@
         <module>mortise-persistence</module>
         <module>mortise-file</module>
         <module>mortise-product</module>
-        <module>mortise-im</module>
     </modules>
 
     <properties>
