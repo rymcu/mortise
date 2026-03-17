@@ -30,8 +30,7 @@ public class ProductSku implements Serializable {
     @Id(keyType = KeyType.Generator, value = KeyGenerators.flexId)
     private Long id;
 
-    /** 产品ID */
-    @NotNull(message = "产品ID 不能为空")
+    /** 产品ID — 由 URL 路径变量 /products/{productId}/skus 注入，不在请求体中校验 */
     private Long productId;
 
     /** SKU编码 */
