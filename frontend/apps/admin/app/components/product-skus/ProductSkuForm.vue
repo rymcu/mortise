@@ -159,5 +159,57 @@ function removePair(index: number) {
         </UButton>
       </div>
     </UFormField>
+
+    <UDivider label="定价信息" class="my-2" />
+
+    <!-- 原价 -->
+    <UFormField label="原价" required>
+      <UInput
+        type="number"
+        :model-value="form.originalPrice != null ? String(form.originalPrice) : ''"
+        placeholder="如：99.00"
+        class="w-full"
+        @update:model-value="emit('update:modelValue', { ...form, originalPrice: $event !== '' ? Number($event) : undefined })"
+      />
+    </UFormField>
+
+    <!-- 当前价格 -->
+    <UFormField label="当前价格" hint="不填则与原价一致">
+      <UInput
+        type="number"
+        :model-value="form.currentPrice != null ? String(form.currentPrice) : ''"
+        placeholder="如：79.00"
+        class="w-full"
+        @update:model-value="emit('update:modelValue', { ...form, currentPrice: $event !== '' ? Number($event) : undefined })"
+      />
+    </UFormField>
+
+    <!-- 货币 -->
+    <UFormField label="货币">
+      <USelect
+        :model-value="String(form.currency ?? 'CNY')"
+        :items="[{ label: '人民币 (CNY)', value: 'CNY' }, { label: '美元 (USD)', value: 'USD' }]"
+        value-key="value"
+        label-key="label"
+        class="w-full"
+        @update:model-value="emit('update:modelValue', { ...form, currency: $event })"
+      />
+    </UFormField>
+
+    <!-- 库存类型 -->
+    <UFormField label="库存类型">
+      <USelect
+        :model-value="String(form.inventoryType ?? 'unlimited')"
+        :items="[
+          { label: '无限库存 (unlimited)', value: 'unlimited' },
+          { label: '有限库存 (limited)', value: 'limited' },
+          { label: '预售 (preorder)', value: 'preorder' }
+        ]"
+        value-key="value"
+        label-key="label"
+        class="w-full"
+        @update:model-value="emit('update:modelValue', { ...form, inventoryType: $event })"
+      />
+    </UFormField>
   </div>
 </template>

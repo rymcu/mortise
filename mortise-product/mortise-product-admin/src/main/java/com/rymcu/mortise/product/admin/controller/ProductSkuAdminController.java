@@ -56,11 +56,12 @@ public class ProductSkuAdminController {
     @OperationLog(module = "产品SKU管理", operation = "创建SKU", recordParams = true, recordResult = true)
     @Operation(summary = "为产品创建SKU（仅填写规格骨架，不含定价）")
     @PreAuthorize("hasAuthority('product:sku:add')")
-    public GlobalResult<Boolean> createSku(
+    public GlobalResult<ProductSku> createSku(
             @Parameter(description = "产品ID") @PathVariable Long productId,
             @Valid @RequestBody ProductSku sku) {
         sku.setProductId(productId);
-        return GlobalResult.success(productSkuService.save(sku));
+        productSkuService.save(sku);
+        return GlobalResult.success(sku);
     }
 
     @PutMapping("/{skuId}")
