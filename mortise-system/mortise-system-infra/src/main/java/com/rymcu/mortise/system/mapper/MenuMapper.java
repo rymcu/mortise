@@ -22,7 +22,7 @@ public interface MenuMapper extends BaseMapper<Menu> {
      * 根据用户ID查询菜单列表（通过用户角色关联）
      */
     @Select("SELECT id, label, permission FROM mortise_menu tm " +
-            "WHERE del_flag = 0 " +
+            "WHERE del_flag = 0 AND status = 0 " +
             "AND EXISTS (" +
             "  SELECT 1 FROM mortise_role_menu trm " +
             "  WHERE trm.id_mortise_menu = tm.id " +
@@ -39,7 +39,7 @@ public interface MenuMapper extends BaseMapper<Menu> {
      */
     @Select("SELECT id, label, permission, parent_id, sort_no, menu_type, icon, href " +
             "FROM mortise_menu tm " +
-            "WHERE del_flag = 0 " +
+            "WHERE del_flag = 0 AND status = 0 " +
             "AND menu_type in (0, 1) " +
             "AND parent_id = #{parentId} " +
             "AND EXISTS (" +
@@ -51,7 +51,7 @@ public interface MenuMapper extends BaseMapper<Menu> {
             "    AND tur.id_mortise_user = #{idUser}" +
             "  )" +
             ") " +
-            "ORDER BY sort_no ASC")
+            "ORDER BY sort_no ")
     List<Menu> findLinksByUserIdAndParentId(@Param("idUser") Long idUser, @Param("parentId") Long parentId);
 
 }

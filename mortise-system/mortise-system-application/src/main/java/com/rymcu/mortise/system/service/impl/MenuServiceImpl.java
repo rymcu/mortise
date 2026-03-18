@@ -128,7 +128,6 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
                 .select(MENU.ID, MENU.LABEL, MENU.PERMISSION, MENU.PARENT_ID, MENU.SORT_NO,
                         MENU.MENU_TYPE, MENU.ICON, MENU.HREF, MENU.CREATED_TIME, MENU.UPDATED_TIME, MENU.STATUS)
                 .where(MENU.PARENT_ID.eq(parentId != null ? parentId : 0L))
-                .and(MENU.MENU_TYPE.ne(MenuType.BUTTON.ordinal()))
                 .orderBy(MENU.SORT_NO.asc());
         List<Menu> menus = mapper.selectListByQuery(queryWrapper);
         List<MenuTreeInfo> menuTreeInfos = new ArrayList<>();
