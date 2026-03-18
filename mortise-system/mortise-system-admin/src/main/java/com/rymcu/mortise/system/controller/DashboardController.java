@@ -1,5 +1,7 @@
 package com.rymcu.mortise.system.controller;
 
+import com.mybatisflex.core.query.QueryWrapper;
+import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.web.annotation.AdminController;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.log.annotation.ApiLog;
@@ -15,6 +17,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.Resource;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import static com.rymcu.mortise.system.entity.table.MenuTableDef.MENU;
+import static com.rymcu.mortise.system.entity.table.RoleTableDef.ROLE;
+import static com.rymcu.mortise.system.entity.table.UserTableDef.USER;
 
 /**
  * 仪表盘控制器
@@ -65,7 +71,7 @@ public class DashboardController {
     private Long getOrCacheUserCount() {
         Long count = systemCacheService.getUserCount();
         if (count == null) {
-            count = userService.count();
+            count = userService.count(QueryWrapper.create().where(USER.STATUS.eq(Status.ENABLED.ordinal())));
             systemCacheService.cacheUserCount(count);
         }
         return count;
@@ -77,7 +83,7 @@ public class DashboardController {
     private Long getOrCacheRoleCount() {
         Long count = systemCacheService.getRoleCount();
         if (count == null) {
-            count = roleService.count();
+            count = roleService.count(QueryWrapper.create().where(ROLE.STATUS.eq(Status.ENABLED.ordinal())));
             systemCacheService.cacheRoleCount(count);
         }
         return count;
@@ -89,7 +95,7 @@ public class DashboardController {
     private Long getOrCacheMenuCount() {
         Long count = systemCacheService.getMenuCount();
         if (count == null) {
-            count = menuService.count();
+            count = menuService.count(QueryWrapper.create().where(MENU.STATUS.eq(Status.ENABLED.ordinal())));
             systemCacheService.cacheMenuCount(count);
         }
         return count;
