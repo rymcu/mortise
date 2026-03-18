@@ -64,10 +64,15 @@ public class WebSecurityConfigurer implements SecurityConfigurer {
             // 公开 API 端点（根据业务需求添加）
             .requestMatchers("/api/v1/public/**").permitAll()
 
+            // Spring Security OAuth2 错误重定向目标：当 OAuth2 授权请求失败时
+            // （如 registrationId 不存在），Spring 会将请求重定向到 /login?error。
+            // 此处放行 /login/** 可避免重定向后再次触发 401。
+            .requestMatchers("/login", "/login/**").permitAll()
+
             // OPTIONS 请求 - 无需认证（CORS 预检）
             .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
 
-        log.info("Web 模块安全配置已加载: OpenAPI 文档、静态资源、认证端点放行");
+        log.info("Web 模块安全配置已加载: OpenAPI 文档、静态资源、认证端点、登录重定向放行");
     }
 
     @Override
