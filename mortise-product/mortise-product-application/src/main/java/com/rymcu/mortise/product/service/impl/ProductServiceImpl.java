@@ -4,11 +4,13 @@ import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.util.UpdateEntity;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
+import com.rymcu.mortise.common.exception.BusinessException;
 import com.rymcu.mortise.product.dto.ProductQueryParam;
 import com.rymcu.mortise.product.entity.Product;
 import com.rymcu.mortise.product.enums.ProductType;
 import com.rymcu.mortise.product.mapper.ProductMapper;
 import com.rymcu.mortise.product.service.ProductService;
+import com.rymcu.mortise.product.service.support.ProductCodeGenerator;
 import com.rymcu.mortise.product.spi.ProductLifecycleListener;
 import com.rymcu.mortise.product.spi.ProductTypeProvider;
 import org.springframework.stereotype.Service;
@@ -39,6 +41,28 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
             Optional<List<ProductLifecycleListener>> lifecycleListeners) {
         this.typeProviders = typeProviders.orElse(List.of());
         this.lifecycleListeners = lifecycleListeners.orElse(List.of());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public boolean save(Product entity) {
+        if (!StringUtils.hasText(entity.getProductCode())) {
+            entity.setProductCode(ProductCodeGenerator.generateProductCode());
+        }
+        if (findByProductCode(entity.getProductCode()).isPresent()) {
+            throw new BusinessException("产品编码已存在");
+        }
+        return super.save(entity);
+    }
+
+    @Override
+    public Optional<Product> findByProductCode(String productCode) {
+        if (!StringUtils.hasText(productCode)) {
+            return Optional.empty();
+        }
+        return Optional.ofNullable(mapper.selectOneByQuery(
+                QueryWrapper.create().where(PRODUCT.PRODUCT_CODE.eq(productCode))
+        ));
     }
 
     @Override

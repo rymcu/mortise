@@ -41,6 +41,7 @@ const schema = z.object({
 })
 
 const state = reactive({
+  productCode: '',
   title: '',
   subtitle: '',
   shortDescription: '',
@@ -199,6 +200,10 @@ defineExpose({ validate, state })
 <template>
   <UForm ref="formRef" :schema="schema" :state="state" class="space-y-4">
     <!-- 基本信息 -->
+    <UFormField label="产品编码" name="productCode" hint="留空自动生成">
+      <UInput v-model="state.productCode" placeholder="留空自动生成（PRD-ULID 格式）" class="w-full" />
+    </UFormField>
+
     <UFormField label="产品标题" name="title" required>
       <UInput v-model="state.title" placeholder="请输入产品标题" class="w-full" />
     </UFormField>

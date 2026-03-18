@@ -7,6 +7,7 @@ import com.rymcu.mortise.product.entity.Product;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * 产品目录服务
@@ -14,6 +15,14 @@ import java.util.Map;
  * @author ronger
  */
 public interface ProductService extends IService<Product> {
+
+    /**
+     * 根据产品编码查找产品
+     *
+     * @param productCode 产品编码
+     * @return 产品（可能为空）
+     */
+    Optional<Product> findByProductCode(String productCode);
 
     /**
      * 分页查询产品（支持按类型、分类、状态、关键字过滤）
