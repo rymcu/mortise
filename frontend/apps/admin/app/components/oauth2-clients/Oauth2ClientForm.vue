@@ -22,6 +22,7 @@ const schema = z.object({
   clientId: z.string().min(1, '请输入客户端 ID'),
   clientSecret: z.string().optional(),
   clientName: z.string().optional(),
+  icon: z.string().optional(),
   authorizationGrantType: z.string().optional(),
   clientAuthenticationMethod: z.string().optional(),
   authorizationUri: z.string().optional(),
@@ -32,19 +33,19 @@ const schema = z.object({
   scopes: z.string().optional(),
   redirectUriTemplate: z.string().optional(),
   redirectUri: z.string().optional(),
-  isEnabled: z.coerce.number().default(0),
+  appType: z.string().optional(),
   status: z.coerce.number().default(0),
   remark: z.string().optional()
 })
 
-const enabledOptions = [
+const statusOptions = [
   { label: '启用', value: 0 },
   { label: '禁用', value: 1 }
 ]
 
-const statusOptions = [
-  { label: '启用', value: 0 },
-  { label: '禁用', value: 1 }
+const appTypeOptions = [
+  { label: '管理端', value: 'admin' },
+  { label: '用户端', value: 'site' }
 ]
 
 const state = reactive({
@@ -52,6 +53,7 @@ const state = reactive({
   clientId: '',
   clientSecret: '',
   clientName: '',
+  icon: '',
   authorizationGrantType: '',
   clientAuthenticationMethod: '',
   authorizationUri: '',
@@ -62,7 +64,7 @@ const state = reactive({
   scopes: '',
   redirectUriTemplate: '',
   redirectUri: '',
-  isEnabled: 0,
+  appType: '',
   status: 0,
   remark: '',
   ...props.data
@@ -89,6 +91,7 @@ defineExpose({ validate, state })
 
 <template>
   <UForm ref="formRef" :schema="schema" :state="state" class="space-y-4">
+    <!-- 短字段：两列排布 -->
     <div class="grid grid-cols-2 gap-4">
       <UFormField label="注册 ID" name="registrationId" required>
         <UInput
@@ -136,6 +139,24 @@ defineExpose({ validate, state })
         />
       </UFormField>
 
+      <UFormField label="图标" name="icon">
+        <div class="flex items-center gap-2 w-full">
+          <UInput
+            v-model="state.icon"
+            placeholder="如：i-simple-icons-github"
+            class="flex-1"
+          />
+          <div class="flex items-center justify-center size-8 rounded border border-dashed border-(--ui-border) shrink-0">
+            <UIcon
+              v-if="state.icon"
+              :name="String(state.icon)"
+              class="size-5"
+            />
+            <UIcon v-else name="i-lucide-image" class="size-4 text-(--ui-text-muted)" />
+          </div>
+        </div>
+      </UFormField>
+
       <UFormField label="授权类型" name="authorizationGrantType">
         <UInput
           v-model="state.authorizationGrantType"
@@ -152,30 +173,6 @@ defineExpose({ validate, state })
         />
       </UFormField>
 
-      <UFormField label="授权端点" name="authorizationUri">
-        <UInput
-          v-model="state.authorizationUri"
-          placeholder="如：https://github.com/login/oauth/authorize"
-          class="w-full"
-        />
-      </UFormField>
-
-      <UFormField label="Token 端点" name="tokenUri">
-        <UInput
-          v-model="state.tokenUri"
-          placeholder="如：https://github.com/login/oauth/access_token"
-          class="w-full"
-        />
-      </UFormField>
-
-      <UFormField label="用户信息端点" name="userInfoUri">
-        <UInput
-          v-model="state.userInfoUri"
-          placeholder="如：https://api.github.com/user"
-          class="w-full"
-        />
-      </UFormField>
-
       <UFormField label="用户名属性" name="userNameAttribute">
         <UInput
           v-model="state.userNameAttribute"
@@ -184,48 +181,14 @@ defineExpose({ validate, state })
         />
       </UFormField>
 
-      <UFormField label="JWK Set 端点" name="jwkSetUri">
-        <UInput
-          v-model="state.jwkSetUri"
-          placeholder="如：https://idp.example.com/.well-known/jwks.json"
+      <UFormField label="登录入口" name="appType">
+        <USelect
+          v-model="state.appType"
+          :items="appTypeOptions"
+          value-key="value"
+          label-key="label"
+          placeholder="请选择登录入口"
           class="w-full"
-        />
-      </UFormField>
-    </div>
-
-    <UFormField label="授权范围" name="scopes">
-      <UTextarea
-        v-model="state.scopes"
-        placeholder="多个范围以空格或逗号分隔"
-        :rows="2"
-        class="w-full"
-      />
-    </UFormField>
-
-    <div class="grid grid-cols-2 gap-4">
-      <UFormField label="重定向 URI 模板" name="redirectUriTemplate">
-        <UTextarea
-          v-model="state.redirectUriTemplate"
-          placeholder="如：{baseUrl}/login/oauth2/code/{registrationId}"
-          :rows="2"
-          class="w-full"
-        />
-      </UFormField>
-
-      <UFormField label="重定向 URI" name="redirectUri">
-        <UTextarea
-          v-model="state.redirectUri"
-          placeholder="如：http://localhost:3000/login/oauth2/code/github-app"
-          :rows="2"
-          class="w-full"
-        />
-      </UFormField>
-
-      <UFormField label="是否启用" name="isEnabled">
-        <URadioGroup
-          v-model="state.isEnabled"
-          :items="enabledOptions"
-          orientation="horizontal"
         />
       </UFormField>
 
@@ -237,6 +200,66 @@ defineExpose({ validate, state })
         />
       </UFormField>
     </div>
+
+    <!-- URL 类字段：全宽显示，避免长链接被截断 -->
+    <UFormField label="授权端点" name="authorizationUri">
+      <UInput
+        v-model="state.authorizationUri"
+        placeholder="如：https://github.com/login/oauth/authorize"
+        class="w-full"
+      />
+    </UFormField>
+
+    <UFormField label="Token 端点" name="tokenUri">
+      <UInput
+        v-model="state.tokenUri"
+        placeholder="如：https://github.com/login/oauth/access_token"
+        class="w-full"
+      />
+    </UFormField>
+
+    <UFormField label="用户信息端点" name="userInfoUri">
+      <UInput
+        v-model="state.userInfoUri"
+        placeholder="如：https://api.github.com/user"
+        class="w-full"
+      />
+    </UFormField>
+
+    <UFormField label="JWK Set 端点" name="jwkSetUri">
+      <UInput
+        v-model="state.jwkSetUri"
+        placeholder="如：https://idp.example.com/.well-known/jwks.json"
+        class="w-full"
+      />
+    </UFormField>
+
+    <UFormField label="授权范围" name="scopes">
+      <UTextarea
+        v-model="state.scopes"
+        placeholder="多个范围以空格或逗号分隔"
+        :rows="2"
+        class="w-full"
+      />
+    </UFormField>
+
+    <UFormField label="重定向 URI 模板" name="redirectUriTemplate">
+      <UTextarea
+        v-model="state.redirectUriTemplate"
+        placeholder="如：{baseUrl}/login/oauth2/code/{registrationId}"
+        :rows="2"
+        class="w-full"
+      />
+    </UFormField>
+
+    <UFormField label="重定向 URI" name="redirectUri">
+      <UTextarea
+        v-model="state.redirectUri"
+        placeholder="如：http://localhost:3000/login/oauth2/code/github-app"
+        :rows="2"
+        class="w-full"
+      />
+    </UFormField>
 
     <UFormField label="备注" name="remark">
       <UTextarea

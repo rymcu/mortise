@@ -4,7 +4,6 @@ import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.common.enumerate.DefaultFlag;
-import com.rymcu.mortise.common.enumerate.EnabledFlag;
 import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.wechat.entity.WeChatAccount;
 import com.rymcu.mortise.wechat.entity.WeChatConfig;
@@ -57,8 +56,8 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
         if (StringUtils.hasText(search.getAccountType())) {
             query.and(WE_CHAT_ACCOUNT.ACCOUNT_TYPE.eq(search.getAccountType()));
         }
-        if (search.getIsEnabled() != null) {
-            query.and(WE_CHAT_ACCOUNT.IS_ENABLED.eq(search.getIsEnabled()));
+        if (search.getStatus() != null) {
+            query.and(WE_CHAT_ACCOUNT.STATUS.eq(search.getStatus()));
         }
         if (StringUtils.hasText(search.getAccountName())) {
             query.and(WE_CHAT_ACCOUNT.ACCOUNT_NAME.like("%" + search.getAccountName() + "%"));
@@ -72,7 +71,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
     public List<WeChatAccount> listAccounts(String accountType) {
         QueryWrapper query = QueryWrapper.create()
                 .select()
-                .where(WE_CHAT_ACCOUNT.IS_ENABLED.eq(EnabledFlag.YES.ordinal()))
+                .where(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.ordinal()))
                 .orderBy(WE_CHAT_ACCOUNT.IS_DEFAULT.asc(), WE_CHAT_ACCOUNT.CREATED_TIME.desc());
 
         if (StringUtils.hasText(accountType)) {
@@ -91,7 +90,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
     public WeChatAccount getAccountByAppId(String appId) {
         QueryWrapper query = QueryWrapper.create().select()
                 .where(WE_CHAT_ACCOUNT.APP_ID.eq(appId))
-                .and(WE_CHAT_ACCOUNT.IS_ENABLED.eq(EnabledFlag.YES.ordinal()));
+                .and(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.ordinal()));
         return mapper.selectOneByQuery(query);
     }
 
@@ -99,7 +98,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
     public WeChatAccount getDefaultAccount(String accountType) {
         QueryWrapper query = QueryWrapper.create().select()
                 .where(WE_CHAT_ACCOUNT.ACCOUNT_TYPE.eq(accountType))
-                .and(WE_CHAT_ACCOUNT.IS_ENABLED.eq(EnabledFlag.YES.ordinal()))
+                .and(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.ordinal()))
                 .and(WE_CHAT_ACCOUNT.IS_DEFAULT.eq(DefaultFlag.YES.ordinal()));
         return mapper.selectOneByQuery(query);
     }
@@ -122,8 +121,8 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
         }
 
         // 设置默认值
-        if (account.getIsEnabled() == null) {
-            account.setIsEnabled(EnabledFlag.YES.ordinal());
+        if (account.getStatus() == null) {
+            account.setStatus(Status.ENABLED.ordinal());
         }
         account.setCreatedTime(LocalDateTime.now());
 
@@ -203,7 +202,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
             throw new IllegalArgumentException("账号不存在：" + accountId);
         }
 
-        account.setIsEnabled(enabled ? 1 : 0);
+        account.setStatus(enabled ? Status.ENABLED.ordinal() : Status.DISABLED.ordinal());
         account.setUpdatedTime(LocalDateTime.now());
         int rows = mapper.update(account);
         log.info("{}账号成功，id: {}", enabled ? "启用" : "禁用", accountId);
@@ -337,7 +336,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
     private void clearDefaultAccount(String accountType) {
         QueryWrapper query = QueryWrapper.create().select()
                 .where(WE_CHAT_ACCOUNT.ACCOUNT_TYPE.eq(accountType))
-                .and(WE_CHAT_ACCOUNT.IS_ENABLED.eq(EnabledFlag.YES.ordinal()));
+                .and(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.ordinal()));
 
         List<WeChatAccount> accounts = mapper.selectListByQuery(query);
         for (WeChatAccount account : accounts) {

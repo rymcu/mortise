@@ -21,4 +21,6 @@ public class OAuth2ClientConfigSearch extends BaseSearch {
 
     private String provider;
 
+    /** 登录入口类型，admin=管理端，site=用户端 */
+    private String appType;
 }

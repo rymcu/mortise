@@ -23,7 +23,6 @@ const schema = z.object({
   appId: z.string().min(1, '请输入 AppID'),
   appSecret: z.string().optional(),
   isDefault: z.coerce.number().default(0),
-  isEnabled: z.coerce.number().default(0),
   status: z.coerce.number().default(0),
   remark: z.string().optional()
 })
@@ -31,11 +30,6 @@ const schema = z.object({
 const yesNoOptions = [
   { label: '是', value: 0 },
   { label: '否', value: 1 }
-]
-
-const enabledOptions = [
-  { label: '启用', value: 0 },
-  { label: '禁用', value: 1 }
 ]
 
 const statusOptions = [
@@ -49,7 +43,6 @@ const state = reactive({
   appId: '',
   appSecret: '',
   isDefault: 1,
-  isEnabled: 0,
   status: 0,
   remark: '',
   ...props.data
@@ -127,14 +120,6 @@ defineExpose({ validate, state })
         <URadioGroup
           v-model="state.isDefault"
           :items="yesNoOptions"
-          orientation="horizontal"
-        />
-      </UFormField>
-
-      <UFormField label="是否启用" name="isEnabled">
-        <URadioGroup
-          v-model="state.isEnabled"
-          :items="enabledOptions"
           orientation="horizontal"
         />
       </UFormField>

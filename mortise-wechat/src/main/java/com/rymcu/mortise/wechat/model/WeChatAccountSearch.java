@@ -26,7 +26,7 @@ public class WeChatAccountSearch extends BaseSearch {
     private String accountName;
 
     /**
-     * 是否启用：0-禁用, 1-启用
+     * 状态：0-正常, 1-禁用
      */
-    private Integer isEnabled;
+    private Integer status;
 }

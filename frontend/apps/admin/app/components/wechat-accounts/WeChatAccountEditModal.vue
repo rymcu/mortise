@@ -39,7 +39,7 @@ async function handleConfirm() {
 </script>
 
 <template>
-  <UModal v-model:open="open" title="编辑微信账号">
+  <UModal v-model:open="open" title="编辑微信账号" :ui="{ content: 'sm:max-w-2xl' }">
     <template #body>
       <UAlert
         v-if="errorMessage"

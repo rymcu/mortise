@@ -3,7 +3,6 @@ package com.rymcu.mortise.wechat.service.impl;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.common.enumerate.DefaultFlag;
-import com.rymcu.mortise.common.enumerate.EnabledFlag;
 import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.wechat.config.WeChatMpProperties;
 import com.rymcu.mortise.wechat.config.WeChatOpenProperties;
@@ -70,7 +69,7 @@ public class WeChatConfigServiceImpl extends ServiceImpl<WeChatConfigMapper, WeC
             QueryWrapper query = QueryWrapper.create().select()
                     .where(WE_CHAT_ACCOUNT.ACCOUNT_TYPE.eq(WeChatAccountType.MP.getCode()))
                     .where(WE_CHAT_ACCOUNT.IS_DEFAULT.eq(DefaultFlag.YES.ordinal()))
-                    .and(WE_CHAT_ACCOUNT.IS_ENABLED.eq(EnabledFlag.YES.ordinal()));
+                    .and(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.ordinal()));
             account = accountMapper.selectOneByQuery(query);
         }
 
@@ -79,7 +78,7 @@ public class WeChatConfigServiceImpl extends ServiceImpl<WeChatConfigMapper, WeC
             return null;
         }
 
-        if (account.getIsEnabled() != 1) {
+        if (account.getStatus() != null && account.getStatus() != Status.ENABLED.ordinal()) {
             log.warn("微信公众号账号未启用, accountId: {}", account.getId());
             return null;
         }
@@ -106,7 +105,7 @@ public class WeChatConfigServiceImpl extends ServiceImpl<WeChatConfigMapper, WeC
         log.info("根据AppID加载微信公众号配置: {}", appId);
         QueryWrapper query = QueryWrapper.create().select()
                 .where(WE_CHAT_ACCOUNT.APP_ID.eq(appId))
-                .and(WE_CHAT_ACCOUNT.IS_ENABLED.eq(EnabledFlag.YES.ordinal()));
+                .and(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.ordinal()));
         WeChatAccount account = accountMapper.selectOneByQuery(query);
         if (account == null) {
             log.warn("未找到AppID对应的公众号账号: {}", appId);
@@ -137,7 +136,7 @@ public class WeChatConfigServiceImpl extends ServiceImpl<WeChatConfigMapper, WeC
             QueryWrapper query = QueryWrapper.create().select()
                     .where(WE_CHAT_ACCOUNT.ACCOUNT_TYPE.eq(WeChatAccountType.OPEN.getCode()))
                     .where(WE_CHAT_ACCOUNT.IS_DEFAULT.eq(DefaultFlag.YES.ordinal()))
-                    .and(WE_CHAT_ACCOUNT.IS_ENABLED.eq(EnabledFlag.YES.ordinal()));
+                    .and(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.ordinal()));
             account = accountMapper.selectOneByQuery(query);
         }
         if (account == null) {
@@ -145,7 +144,7 @@ public class WeChatConfigServiceImpl extends ServiceImpl<WeChatConfigMapper, WeC
             return null;
         }
 
-        if (account.getIsEnabled() != 1) {
+        if (account.getStatus() != null && account.getStatus() != Status.ENABLED.ordinal()) {
             log.warn("微信开放平台账号未启用, accountId: {}", account.getId());
             return null;
         }

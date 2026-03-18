@@ -31,6 +31,14 @@ public interface Oauth2ClientConfigService extends IService<Oauth2ClientConfig> 
     List<Oauth2ClientConfig> loadOauth2ClientConfigAllEnabled();
 
     /**
+     * 获取指定入口类型下所有启用的客户端配置
+     *
+     * @param appType 入口类型：admin=管理端，site=用户端
+     * @return 启用的客户端配置列表
+     */
+    List<Oauth2ClientConfig> loadOauth2ClientConfigAllEnabledByAppType(String appType);
+
+    /**
      * 删除客户端配置
      *
      * @param id 配置ID
