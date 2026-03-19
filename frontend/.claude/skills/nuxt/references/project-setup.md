@@ -52,7 +52,7 @@ export default withNuxt(
 **For monorepos, add:**
 
 ```js
-ignores: ['apps/site/.nuxt/**', 'packages/**/dist/**']
+ignores: ['apps/web/.nuxt/**', 'packages/**/dist/**']
 ```
 
 ## Package Scripts
