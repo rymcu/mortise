@@ -51,6 +51,13 @@ applyTo: 'frontend/**/*.{vue,ts,tsx,js,mjs,cjs}'
 - Reuse existing UI building blocks and class patterns before introducing new one-off styling systems.
 - Do not move complex data shaping, API orchestration, or business rules into presentation-only components if a composable, store, or shared package is the better home.
 
+### 组件体积控制
+
+- 单个 `.vue` 文件建议不超过 **300 行**（`<script setup>` + `<template>` + `<style>` 合计）。
+- 超过 300 行时，优先将弹窗（Modal / Slideover）、独立表单、子列表等逻辑拆分为子组件，放入同层 `components/` 目录。
+- 拆分参考：OTA 层已将固件创建表单、批次创建表单、兼容性面板、任务监控面板拆为独立组件，每个 ≤ 300 行。
+- 页面组件（`pages/*.vue`）保留路由级编排、数据加载与布局，具体表单和交互封装到子组件中。
+
 ### 表单输入宽度一致性
 
 维护表单中所有输入组件的宽度必须统一，确保视觉一致性。
