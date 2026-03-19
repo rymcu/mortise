@@ -151,7 +151,7 @@ pnpm dev:site
 如果你是第一次在本机启动 Mortise，优先按这个顺序排查：
 
 1. **后端没起来先看 `ENCRYPTION_KEY`**：当前 Shell 必须先设置环境变量，否则 `ENC(...)` 配置无法解密。
-2. **Flyway 报数据库或 schema 权限错误先修权限**：Windows 下直接执行仓库根目录的 `fix-postgresql-permissions.ps1`。
+2. **Flyway 报数据库或 schema 权限错误先修权限**：优先执行仓库根目录的 `fix-postgresql-permissions.ps1`；如果本机没有 `psql` 客户端，直接按 `docs\database\FLYWAY_PERMISSION_FIX.md` 中的 GUI 手动 SQL 方案处理。
 3. **管理端接口全红先确认后端地址**：本地开发默认依赖 `http://localhost:9999/mortise`，不要把管理端 API 基地址改成远端完整 URL。
 4. **前端命令必须在 `frontend/` 目录执行**：`pnpm install`、`pnpm dev:admin`、`pnpm dev:site` 都只在该目录运行。
 5. **根目录 `compose.yaml` 不启动 Java 应用**：`docker compose up -d` 之后还需要单独执行 `mvn spring-boot:run`。

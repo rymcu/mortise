@@ -12,8 +12,8 @@ agent: "agent"
 先阅读并遵循这些仓库文件：
 - [工作区说明](../copilot-instructions.md)
 - [快速开始](../../docs/quickstart/QUICK_START.md)
-- [权限快速修复](../../FIX_NOW.md)
-- [PostgreSQL 权限说明](../../QUICK_FIX_PERMISSIONS.md)
+- [数据库权限快速修复](../../docs/database/FLYWAY_PERMISSION_FIX.md)
+- [PostgreSQL 17 兼容性说明](../../docs/database/POSTGRESQL_17_COMPATIBILITY.md)
 - [模块依赖与 SPI 架构](../../docs/module-dependency-and-spi-architecture.md)
 
 排障步骤：

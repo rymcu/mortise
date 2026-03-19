@@ -1,9 +1,16 @@
-# Flyway 权限问题快速修复指南
+# PostgreSQL / Flyway 权限问题快速修复指南
 
-## 🔴 错误信息
+## 🔴 典型错误
 
+```text
+ERROR: permission denied for database postgres
+ERROR: permission denied for schema mortise
 ```
-Caused by: org.springframework.beans.factory.BeanCreationException: 
+
+或启动日志中出现：
+
+```text
+Caused by: org.springframework.beans.factory.BeanCreationException:
 Error creating bean with name 'flywayInitializer'
 
 SQL State  : 42501
@@ -13,27 +20,28 @@ Message    : ERROR: permission denied for schema mortise
 
 ## 🎯 问题原因
 
-PostgreSQL 数据库用户 `mortise` 没有在 schema `mortise` 上的操作权限。
+应用用户 `mortise` 缺少创建 `mortise` schema 或在该 schema 中建表所需的权限。
 
-Flyway 尝试在 schema 中创建表时被拒绝。
+最常见的根因不是 Flyway 本身，而是缺少下面两层权限之一：
 
-## ✅ 解决方案
+1. 数据库级 `CREATE` 权限，用于首次创建 schema。
+2. `mortise` schema 的所有权或 `USAGE` / `CREATE` 权限，用于创建表、序列等对象。
 
-### 方案1：使用自动修复脚本（推荐）
+## ✅ 先看这里：最快修复路径
+
+### 路径 A：本机已经有 `psql` 客户端
+
+直接运行根目录脚本：
 
 ```powershell
-# 运行权限修复脚本
 .\fix-postgresql-permissions.ps1
-
-# 脚本会提示输入 postgres 超级用户密码
-# 然后自动授予必要的权限
 ```
 
-### 方案2：手动执行 SQL（如果没有 psql 客户端）
+### 路径 B：本机没有 `psql` / PostgreSQL 客户端（重点）
 
-1. **使用 DBeaver、pgAdmin 或其他数据库工具**连接到数据库
+**不需要先安装本地 pg 客户端。**
 
-2. **以超级用户身份**（如 `postgres`）执行以下 SQL：
+直接使用 **DBeaver**、**pgAdmin** 或其他数据库工具，以 `postgres` 等超级用户身份连接数据库后执行下面的 SQL 即可：
 
 ```sql
 -- 授予数据库级别权限（关键！）
@@ -66,7 +74,29 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA mortise
     GRANT ALL PRIVILEGES ON FUNCTIONS TO mortise;
 ```
 
-### 方案3：使用 SQL 文件
+执行完成后，重启应用即可。
+
+## ✅ 解决方案
+
+### 方案1：使用自动修复脚本（推荐，有 `psql` 时最省事）
+
+```powershell
+# 运行权限修复脚本
+.\fix-postgresql-permissions.ps1
+
+# 脚本会提示输入 postgres 超级用户密码
+# 然后自动授予必要的权限
+```
+
+> 说明：该脚本依赖本机可调用的 `psql` 命令；如果没有，请直接使用上面的“路径 B”。
+
+### 方案2：本机没有 `psql` / PostgreSQL 客户端时的修复方法
+
+1. 使用 **DBeaver**、**pgAdmin** 或其他数据库工具连接数据库。
+2. 以超级用户身份（如 `postgres`）执行上一节的 SQL。
+3. 重启应用，重新触发 Flyway 迁移。
+
+### 方案3：使用 SQL 文件（已安装 `psql` 客户端时）
 
 ```powershell
 # 如果已安装 psql 客户端
@@ -126,6 +156,12 @@ mvn spring-boot:run
 ```
 
 Flyway 应该能够成功执行迁移！
+
+如果你希望在启动前先做一次确认，也可以运行：
+
+```powershell
+.\verify-postgresql-permissions.ps1
+```
 
 ## 📋 预期成功日志
 
@@ -203,6 +239,9 @@ ALTER SCHEMA mortise OWNER TO mortise;
 
 ## 📚 相关文档
 
+- [`docs\fix-postgresql-permissions.sql`](../fix-postgresql-permissions.sql) - 可直接执行的 SQL 修复脚本
+- [`POSTGRESQL_17_COMPATIBILITY.md`](./POSTGRESQL_17_COMPATIBILITY.md) - PostgreSQL 17+ 兼容性说明
+- [`DATABASE_PERMISSION_EXPLAINED.md`](./DATABASE_PERMISSION_EXPLAINED.md) - 权限机制详解
 - [PostgreSQL 权限管理官方文档](https://www.postgresql.org/docs/current/ddl-priv.html)
 - [Flyway 数据库权限要求](https://documentation.red-gate.com/fd/database-permissions-138346987.html)
 
