@@ -71,7 +71,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
     public List<WeChatAccount> listAccounts(String accountType) {
         QueryWrapper query = QueryWrapper.create()
                 .select()
-                .where(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.ordinal()))
+                .where(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.getCode()))
                 .orderBy(WE_CHAT_ACCOUNT.IS_DEFAULT.asc(), WE_CHAT_ACCOUNT.CREATED_TIME.desc());
 
         if (StringUtils.hasText(accountType)) {
@@ -90,7 +90,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
     public WeChatAccount getAccountByAppId(String appId) {
         QueryWrapper query = QueryWrapper.create().select()
                 .where(WE_CHAT_ACCOUNT.APP_ID.eq(appId))
-                .and(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.ordinal()));
+                .and(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.getCode()));
         return mapper.selectOneByQuery(query);
     }
 
@@ -98,7 +98,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
     public WeChatAccount getDefaultAccount(String accountType) {
         QueryWrapper query = QueryWrapper.create().select()
                 .where(WE_CHAT_ACCOUNT.ACCOUNT_TYPE.eq(accountType))
-                .and(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.ordinal()))
+                .and(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.getCode()))
                 .and(WE_CHAT_ACCOUNT.IS_DEFAULT.eq(DefaultFlag.YES.ordinal()));
         return mapper.selectOneByQuery(query);
     }
@@ -122,7 +122,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
 
         // 设置默认值
         if (account.getStatus() == null) {
-            account.setStatus(Status.ENABLED.ordinal());
+            account.setStatus(Status.ENABLED.getCode());
         }
         account.setCreatedTime(LocalDateTime.now());
 
@@ -202,7 +202,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
             throw new IllegalArgumentException("账号不存在：" + accountId);
         }
 
-        account.setStatus(enabled ? Status.ENABLED.ordinal() : Status.DISABLED.ordinal());
+        account.setStatus(enabled ? Status.ENABLED.getCode() : Status.DISABLED.getCode());
         account.setUpdatedTime(LocalDateTime.now());
         int rows = mapper.update(account);
         log.info("{}账号成功，id: {}", enabled ? "启用" : "禁用", accountId);
@@ -213,7 +213,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
     public List<WeChatConfig> listConfigs(Long accountId) {
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .select().where(WE_CHAT_CONFIG.ID.eq(accountId))
-                .and(WE_CHAT_CONFIG.STATUS.eq(Status.ENABLED.ordinal()));
+                .and(WE_CHAT_CONFIG.STATUS.eq(Status.ENABLED.getCode()));
         return configMapper.selectListByQuery(queryWrapper);
     }
 
@@ -230,7 +230,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
         // 查询是否已存在
         QueryWrapper queryWrapper = QueryWrapper.create().select()
                 .where(WE_CHAT_CONFIG.ACCOUNT_ID.eq(accountId))
-                .and(WE_CHAT_CONFIG.STATUS.eq(Status.ENABLED.ordinal()))
+                .and(WE_CHAT_CONFIG.STATUS.eq(Status.ENABLED.getCode()))
                 .and(WE_CHAT_CONFIG.CONFIG_KEY.eq(configKey));
         WeChatConfig existing = configMapper.selectOneByQuery(queryWrapper);
 
@@ -336,7 +336,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
     private void clearDefaultAccount(String accountType) {
         QueryWrapper query = QueryWrapper.create().select()
                 .where(WE_CHAT_ACCOUNT.ACCOUNT_TYPE.eq(accountType))
-                .and(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.ordinal()));
+                .and(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.getCode()));
 
         List<WeChatAccount> accounts = mapper.selectListByQuery(query);
         for (WeChatAccount account : accounts) {

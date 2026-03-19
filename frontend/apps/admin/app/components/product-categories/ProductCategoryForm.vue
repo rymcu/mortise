@@ -22,12 +22,12 @@ const schema = z.object({
   slug: z.string().min(1, '请输入分类别名'),
   description: z.string().optional(),
   sortNo: z.coerce.number().default(0),
-  status: z.coerce.number().default(0)
+  status: z.coerce.number().default(1)
 })
 
 const statusOptions = [
-  { label: '正常', value: 0 },
-  { label: '禁用', value: 1 }
+  { label: '启用', value: 1 },
+  { label: '禁用', value: 0 }
 ]
 
 const state = reactive({
@@ -36,7 +36,7 @@ const state = reactive({
   description: '',
   parentId: null as number | null,
   sortNo: 0,
-  status: 0,
+  status: 1,
   ...props.data
 })
 

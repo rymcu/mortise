@@ -69,7 +69,7 @@ public class WeChatConfigServiceImpl extends ServiceImpl<WeChatConfigMapper, WeC
             QueryWrapper query = QueryWrapper.create().select()
                     .where(WE_CHAT_ACCOUNT.ACCOUNT_TYPE.eq(WeChatAccountType.MP.getCode()))
                     .where(WE_CHAT_ACCOUNT.IS_DEFAULT.eq(DefaultFlag.YES.ordinal()))
-                    .and(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.ordinal()));
+                    .and(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.getCode()));
             account = accountMapper.selectOneByQuery(query);
         }
 
@@ -78,7 +78,7 @@ public class WeChatConfigServiceImpl extends ServiceImpl<WeChatConfigMapper, WeC
             return null;
         }
 
-        if (account.getStatus() != null && account.getStatus() != Status.ENABLED.ordinal()) {
+        if (account.getStatus() != null && account.getStatus() != Status.ENABLED.getCode()) {
             log.warn("微信公众号账号未启用, accountId: {}", account.getId());
             return null;
         }
@@ -105,7 +105,7 @@ public class WeChatConfigServiceImpl extends ServiceImpl<WeChatConfigMapper, WeC
         log.info("根据AppID加载微信公众号配置: {}", appId);
         QueryWrapper query = QueryWrapper.create().select()
                 .where(WE_CHAT_ACCOUNT.APP_ID.eq(appId))
-                .and(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.ordinal()));
+                .and(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.getCode()));
         WeChatAccount account = accountMapper.selectOneByQuery(query);
         if (account == null) {
             log.warn("未找到AppID对应的公众号账号: {}", appId);
@@ -136,7 +136,7 @@ public class WeChatConfigServiceImpl extends ServiceImpl<WeChatConfigMapper, WeC
             QueryWrapper query = QueryWrapper.create().select()
                     .where(WE_CHAT_ACCOUNT.ACCOUNT_TYPE.eq(WeChatAccountType.OPEN.getCode()))
                     .where(WE_CHAT_ACCOUNT.IS_DEFAULT.eq(DefaultFlag.YES.ordinal()))
-                    .and(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.ordinal()));
+                    .and(WE_CHAT_ACCOUNT.STATUS.eq(Status.ENABLED.getCode()));
             account = accountMapper.selectOneByQuery(query);
         }
         if (account == null) {
@@ -144,7 +144,7 @@ public class WeChatConfigServiceImpl extends ServiceImpl<WeChatConfigMapper, WeC
             return null;
         }
 
-        if (account.getStatus() != null && account.getStatus() != Status.ENABLED.ordinal()) {
+        if (account.getStatus() != null && account.getStatus() != Status.ENABLED.getCode()) {
             log.warn("微信开放平台账号未启用, accountId: {}", account.getId());
             return null;
         }
@@ -169,7 +169,7 @@ public class WeChatConfigServiceImpl extends ServiceImpl<WeChatConfigMapper, WeC
     private Map<String, WeChatConfig> listConfigs(Long accountId) {
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .select().where(WE_CHAT_CONFIG.ACCOUNT_ID.eq(accountId))
-                .and(WE_CHAT_CONFIG.STATUS.eq(Status.ENABLED.ordinal()));
+                .and(WE_CHAT_CONFIG.STATUS.eq(Status.ENABLED.getCode()));
         List<WeChatConfig> configs = mapper.selectListByQuery(queryWrapper);
         return configs.stream()
                 .collect(Collectors.toMap(WeChatConfig::getConfigKey, Function.identity()));

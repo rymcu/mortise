@@ -34,13 +34,13 @@ const schema = z.object({
   redirectUriTemplate: z.string().optional(),
   redirectUri: z.string().optional(),
   appType: z.string().optional(),
-  status: z.coerce.number().default(0),
+  status: z.coerce.number().default(1),
   remark: z.string().optional()
 })
 
 const statusOptions = [
-  { label: '启用', value: 0 },
-  { label: '禁用', value: 1 }
+  { label: '启用', value: 1 },
+  { label: '禁用', value: 0 }
 ]
 
 const appTypeOptions = [
@@ -65,7 +65,7 @@ const state = reactive({
   redirectUriTemplate: '',
   redirectUri: '',
   appType: '',
-  status: 0,
+  status: 1,
   remark: '',
   ...props.data
 })

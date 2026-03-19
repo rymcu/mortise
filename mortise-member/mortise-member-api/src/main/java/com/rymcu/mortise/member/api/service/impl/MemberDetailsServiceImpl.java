@@ -79,7 +79,7 @@ public class MemberDetailsServiceImpl implements CustomUserDetailsService {
         log.debug("成功查询到用户: id={}, account={}", member.getId(), member.getUsername());
 
         // 4. 用户状态检查
-        if (Objects.nonNull(member.getStatus()) && member.getStatus() == Status.DISABLED.ordinal()) {
+        if (Objects.nonNull(member.getStatus()) && member.getStatus() == Status.DISABLED.getCode()) {
             log.warn("登录失败: 用户已被禁用 - userId={}, account={}", member.getId(), member.getUsername());
             throw new DisabledException("账号已被禁用，请联系管理员");
         }

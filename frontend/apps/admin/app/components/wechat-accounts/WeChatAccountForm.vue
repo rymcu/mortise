@@ -23,7 +23,7 @@ const schema = z.object({
   appId: z.string().min(1, '请输入 AppID'),
   appSecret: z.string().optional(),
   isDefault: z.coerce.number().default(0),
-  status: z.coerce.number().default(0),
+  status: z.coerce.number().default(1),
   remark: z.string().optional()
 })
 
@@ -33,8 +33,8 @@ const yesNoOptions = [
 ]
 
 const statusOptions = [
-  { label: '启用', value: 0 },
-  { label: '禁用', value: 1 }
+  { label: '启用', value: 1 },
+  { label: '禁用', value: 0 }
 ]
 
 const state = reactive({
@@ -43,7 +43,7 @@ const state = reactive({
   appId: '',
   appSecret: '',
   isDefault: 1,
-  status: 0,
+  status: 1,
   remark: '',
   ...props.data
 })
