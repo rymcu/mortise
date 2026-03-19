@@ -84,7 +84,7 @@ public class WeChatAccountController {
         account.setAppId(weChatAccount.getAppId());
         account.setAppSecret(weChatAccount.getAppSecret());
         account.setIsDefault(weChatAccount.getIsDefault());
-        account.setIsEnabled(weChatAccount.getIsEnabled());
+        account.setStatus(weChatAccount.getStatus());
 
         Long id = accountService.createAccount(account);
         return GlobalResult.success(id);
@@ -117,8 +117,8 @@ public class WeChatAccountController {
         if (weChatAccount.getIsDefault() != null) {
             account.setIsDefault(weChatAccount.getIsDefault());
         }
-        if (weChatAccount.getIsEnabled() != null) {
-            account.setIsEnabled(weChatAccount.getIsEnabled());
+        if (weChatAccount.getStatus() != null) {
+            account.setStatus(weChatAccount.getStatus());
         }
 
         boolean result = accountService.updateAccount(account);

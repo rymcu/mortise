@@ -2,6 +2,7 @@ package com.rymcu.mortise.system.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.rymcu.mortise.auth.service.Oauth2ClientConfigService;
 import com.rymcu.mortise.auth.service.TokenManager;
 import com.rymcu.mortise.common.exception.ServiceException;
 import com.rymcu.mortise.common.model.Link;
@@ -57,6 +58,28 @@ public class AuthController {
 
     @Resource
     private UserService userService;
+
+    @Resource
+    private Oauth2ClientConfigService oauth2ClientConfigService;
+
+    /**
+     * 获取已启用的 OAuth2 登录提供商列表（公开接口，登录页使用）
+     * 仅返回 registrationId 和 clientName，不暴露任何敏感配置
+     */
+    @Operation(summary = "获取 OAuth2 提供商列表", description = "返回当前已启用的第三方登录提供商，供登录页动态渲染")
+    @ApiResponse(responseCode = "200", description = "查询成功")
+    @GetMapping("/oauth2-providers")
+    @ApiLog(value = "获取OAuth2提供商列表", recordRequestBody = false, recordResponseBody = false)
+    public GlobalResult<List<OAuth2ProviderInfo>> listOAuth2Providers(
+            @Parameter(description = "登录入口类型：admin=管理端，site=用户端", example = "admin")
+            @RequestParam(defaultValue = "admin") String appType) {
+        List<OAuth2ProviderInfo> providers = oauth2ClientConfigService
+                .loadOauth2ClientConfigAllEnabledByAppType(appType)
+                .stream()
+                .map(c -> new OAuth2ProviderInfo(c.getRegistrationId(), c.getClientName(), c.getIcon()))
+                .toList();
+        return GlobalResult.success(providers);
+    }
 
     /**
      * 用户登录

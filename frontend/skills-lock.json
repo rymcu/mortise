@@ -41,6 +41,11 @@
       "sourceType": "github",
       "computedHash": "5bcf87721302cb40e3e760271279bd72c106c085b8c4a82196dd5d8cabe4e0dc"
     },
+    "vite": {
+      "source": "onmax/nuxt-skills",
+      "sourceType": "github",
+      "computedHash": "bfce47b3705ca5d9ae2ac38f273b2a024f56c0ea8b75860d0b40cdb905cf235b"
+    },
     "vue": {
       "source": "onmax/nuxt-skills",
       "sourceType": "github",

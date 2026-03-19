@@ -14,9 +14,8 @@
 |------|---------|------|
 | `docs/fix-postgresql-permissions.sql` | 权限验证查询更新为 pg_catalog | ✅ 完成 |
 | `fix-postgresql-permissions.ps1` | 自动修复脚本验证查询更新 | ✅ 完成 |
-| `docs/FLYWAY_PERMISSION_FIX.md` | 验证步骤更新为 PostgreSQL 17 兼容 | ✅ 完成 |
-| `QUICK_FIX_PERMISSIONS.md` | 添加 PostgreSQL 17 兼容性说明 | ✅ 完成 |
-| `docs/POSTGRESQL_17_COMPATIBILITY.md` | 新建：详细兼容性说明文档 | ✅ 新增 |
+| `docs/database/FLYWAY_PERMISSION_FIX.md` | 验证步骤更新为 PostgreSQL 17 兼容，并作为统一修复入口 | ✅ 完成 |
+| `docs/database/POSTGRESQL_17_COMPATIBILITY.md` | 新建：详细兼容性说明文档 | ✅ 新增 |
 | `verify-postgresql-permissions.ps1` | 新建：权限验证脚本 | ✅ 新增 |
 
 ## 🔄 查询变更对比
@@ -129,14 +128,16 @@ mvn spring-boot:run
 
 ```
 mortise/
-├── QUICK_FIX_PERMISSIONS.md              # 快速修复指南
 ├── fix-postgresql-permissions.ps1         # 自动修复脚本 ⭐
 ├── verify-postgresql-permissions.ps1      # 权限验证脚本 ⭐ 新增
 └── docs/
     ├── fix-postgresql-permissions.sql     # SQL 修复脚本
-    ├── FLYWAY_PERMISSION_FIX.md          # 详细修复指南
-    └── POSTGRESQL_17_COMPATIBILITY.md     # PostgreSQL 17 兼容性 ⭐ 新增
+    └── database/
+        ├── FLYWAY_PERMISSION_FIX.md       # 统一快速修复指南
+        └── POSTGRESQL_17_COMPATIBILITY.md # PostgreSQL 17 兼容性 ⭐ 新增
 ```
+
+> 注：原根目录快速修复文档已合并进 `docs/database/FLYWAY_PERMISSION_FIX.md`。
 
 ## 💡 技术要点
 

@@ -39,7 +39,7 @@ async function handleConfirm() {
 </script>
 
 <template>
-  <UModal v-model:open="open" title="编辑 OAuth2 客户端">
+  <UModal v-model:open="open" title="编辑 OAuth2 客户端" :ui="{ content: 'sm:max-w-4xl' }">
     <template #body>
       <UAlert
         v-if="errorMessage"

@@ -45,6 +45,7 @@ public class SystemSecurityConfigurer implements SecurityConfigurer {
         registry.requestMatchers("/api/v1/admin/auth/password/reset").permitAll();
         registry.requestMatchers("/api/v1/admin/auth/email/request").permitAll();
         registry.requestMatchers("/api/v1/admin/auth/callback").permitAll();
+        registry.requestMatchers("/api/v1/admin/auth/oauth2-providers").permitAll();
 
         log.info("系统模块安全配置已加载: Auth 端点放行");
     }

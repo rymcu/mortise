@@ -7,7 +7,7 @@ import com.rymcu.mortise.auth.entity.Oauth2ClientConfig;
 import com.rymcu.mortise.auth.mapper.Oauth2ClientConfigMapper;
 import com.rymcu.mortise.auth.model.OAuth2ClientConfigSearch;
 import com.rymcu.mortise.auth.service.Oauth2ClientConfigService;
-import com.rymcu.mortise.common.enumerate.EnabledFlag;
+import com.rymcu.mortise.common.enumerate.Status;
 import lombok.extern.slf4j.Slf4j;
 import org.jasypt.encryption.StringEncryptor;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -42,7 +42,7 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
 
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .where(OAUTH2_CLIENT_CONFIG.REGISTRATION_ID.eq(registrationId))
-                .and(OAUTH2_CLIENT_CONFIG.IS_ENABLED.eq(EnabledFlag.YES.ordinal()));
+                .and(OAUTH2_CLIENT_CONFIG.STATUS.eq(Status.ENABLED.ordinal()));
 
         Oauth2ClientConfig config = mapper.selectOneByQuery(queryWrapper);
         if (config != null) {
@@ -57,7 +57,20 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
         log.debug("加载所有启用的 OAuth2 客户端配置");
 
         QueryWrapper queryWrapper = QueryWrapper.create()
-                .where(OAUTH2_CLIENT_CONFIG.IS_ENABLED.eq(EnabledFlag.YES.ordinal()))
+                .where(OAUTH2_CLIENT_CONFIG.STATUS.eq(Status.ENABLED.ordinal()))
+                .orderBy(OAUTH2_CLIENT_CONFIG.CREATED_TIME.desc());
+        List<Oauth2ClientConfig> list = mapper.selectListByQuery(queryWrapper);
+        list.forEach(config -> config.setClientSecret(decryptValue(config.getClientSecret())));
+        return list;
+    }
+
+    @Override
+    public List<Oauth2ClientConfig> loadOauth2ClientConfigAllEnabledByAppType(String appType) {
+        log.debug("加载指定入口类型的启用 OAuth2 客户端配置: appType={}", appType);
+
+        QueryWrapper queryWrapper = QueryWrapper.create()
+                .where(OAUTH2_CLIENT_CONFIG.STATUS.eq(Status.ENABLED.ordinal()))
+                .and(OAUTH2_CLIENT_CONFIG.APP_TYPE.eq(appType, StringUtils::hasText))
                 .orderBy(OAUTH2_CLIENT_CONFIG.CREATED_TIME.desc());
         List<Oauth2ClientConfig> list = mapper.selectListByQuery(queryWrapper);
         list.forEach(config -> config.setClientSecret(decryptValue(config.getClientSecret())));
@@ -87,7 +100,8 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .select()
                 .where(OAUTH2_CLIENT_CONFIG.REGISTRATION_ID.eq(search.getRegistrationId(), StringUtils::hasText))
-                .and(OAUTH2_CLIENT_CONFIG.CLIENT_ID.eq(search.getClientId(), StringUtils::hasText));
+                .and(OAUTH2_CLIENT_CONFIG.CLIENT_ID.eq(search.getClientId(), StringUtils::hasText))
+                .and(OAUTH2_CLIENT_CONFIG.APP_TYPE.eq(search.getAppType(), StringUtils::hasText));
         return mapper.paginate(page, queryWrapper);
     }
 
@@ -108,8 +122,8 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
         }
 
         // 设置默认值
-        if (config.getIsEnabled() == null) {
-            config.setIsEnabled(EnabledFlag.YES.ordinal());
+        if (config.getStatus() == null) {
+            config.setStatus(Status.ENABLED.ordinal());
         }
 
         config.setCreatedTime(LocalDateTime.now());
@@ -142,7 +156,7 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
     public Oauth2ClientConfig loadOauth2ClientConfigByClientId(String clientId) {
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .where(OAUTH2_CLIENT_CONFIG.CLIENT_ID.eq(clientId))
-                .and(OAUTH2_CLIENT_CONFIG.IS_ENABLED.eq(EnabledFlag.YES.ordinal()));
+                .and(OAUTH2_CLIENT_CONFIG.STATUS.eq(Status.ENABLED.ordinal()));
 
         return mapper.selectOneByQuery(queryWrapper);
     }

@@ -2,25 +2,27 @@
 import { usePagedAdminResource } from '~/composables/usePagedAdminResource'
 
 interface Oauth2ClientInfo {
-  id: number
+  id: string
   registrationId?: string
   clientId?: string
   clientName?: string
+  icon?: string
+  appType?: string
   authorizationGrantType?: string
   scopes?: string
   redirectUri?: string
-  isEnabled?: number
   status?: number
   createdTime?: string
 }
 
 const columns = [
+  { key: 'icon', label: '图标' },
   { key: 'registrationId', label: '注册 ID' },
   { key: 'clientId', label: '客户端 ID' },
   { key: 'clientName', label: '名称' },
+  { key: 'appType', label: '登录入口' },
   { key: 'authorizationGrantType', label: '授权类型' },
   { key: 'scopes', label: '授权范围' },
-  { key: 'isEnabled', label: '启用' },
   { key: 'status', label: '状态' },
   { key: 'createdTime', label: '创建时间' }
 ]
@@ -103,6 +105,27 @@ function openDeleteModal(row: Record<string, unknown>) {
           </UButton>
         </template>
 
+        <template #cell-icon="{ row }">
+          <UIcon
+            v-if="row.icon"
+            :name="String(row.icon)"
+            class="text-xl"
+          />
+          <span v-else class="text-(--ui-text-muted)">-</span>
+        </template>
+
+        <template #cell-appType="{ row }">
+          <UBadge
+            v-if="row.appType"
+            :color="row.appType === 'admin' ? 'primary' : 'secondary'"
+            variant="subtle"
+            size="xs"
+          >
+            {{ row.appType === 'admin' ? '管理端' : '用户端' }}
+          </UBadge>
+          <span v-else class="text-(--ui-text-muted)">-</span>
+        </template>
+
         <template #cell-scopes="{ row }">
           <div v-if="row.scopes" class="flex flex-wrap gap-1">
             <UBadge
@@ -135,14 +158,6 @@ function openDeleteModal(row: Record<string, unknown>) {
             </UBadge>
           </div>
           <span v-else>-</span>
-        </template>
-        <template #cell-isEnabled="{ row }">
-          <UBadge
-            :color="row.isEnabled === 0 ? 'success' : 'neutral'"
-            variant="subtle"
-          >
-            {{ row.isEnabled === 0 ? '启用' : '禁用' }}
-          </UBadge>
         </template>
         <template #cell-status="{ row }">
           <UBadge

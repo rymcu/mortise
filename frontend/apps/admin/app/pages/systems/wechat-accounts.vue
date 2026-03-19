@@ -7,7 +7,7 @@ interface WeChatAccountInfo {
   accountType?: string
   appId?: string
   isDefault?: number
-  isEnabled?: number
+  status?: number
   remark?: string
   createdTime?: string
 }
@@ -17,7 +17,7 @@ const columns = [
   { key: 'accountType', label: '账号类型' },
   { key: 'appId', label: 'AppID' },
   { key: 'isDefault', label: '默认' },
-  { key: 'isEnabled', label: '启用' },
+  { key: 'status', label: '状态' },
   { key: 'remark', label: '备注' },
   { key: 'createdTime', label: '创建时间' }
 ]
@@ -108,12 +108,12 @@ function openDeleteModal(row: Record<string, unknown>) {
             {{ row.isDefault === 0 ? '是' : '否' }}
           </UBadge>
         </template>
-        <template #cell-isEnabled="{ row }">
+        <template #cell-status="{ row }">
           <UBadge
-            :color="row.isEnabled === 0 ? 'success' : 'neutral'"
+            :color="row.status === 0 ? 'success' : 'neutral'"
             variant="subtle"
           >
-            {{ row.isEnabled === 0 ? '启用' : '禁用' }}
+            {{ row.status === 0 ? '启用' : '禁用' }}
           </UBadge>
         </template>
 

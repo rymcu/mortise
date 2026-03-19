@@ -63,12 +63,6 @@ public class WeChatAccount implements Serializable {
     private Integer isDefault;
 
     /**
-     * 是否启用：0-禁用, 1-启用
-     */
-    @Column("is_enabled")
-    private Integer isEnabled;
-
-    /**
      * 状态：0-正常, 1-禁用
      */
     @Column("status")

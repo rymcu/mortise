@@ -319,7 +319,7 @@ pnpm dev:site
 首次排障优先级：
 
 1. 启动报解密或数据源异常，先检查当前 Shell 是否设置了 `ENCRYPTION_KEY`。
-2. Flyway 报 `permission denied for database postgres` 或 `schema mortise`，先执行根目录的 `fix-postgresql-permissions.ps1`。
+2. Flyway 报 `permission denied for database postgres` 或 `schema mortise`，优先执行根目录的 `fix-postgresql-permissions.ps1`；如果本机没有 `psql` 客户端，按 `docs\database\FLYWAY_PERMISSION_FIX.md` 中的 GUI 手动 SQL 方案处理。
 3. 管理端请求失败，先确认后端仍监听 `localhost:9999`，且前端命令在 `frontend/` 目录使用 `pnpm` 执行。
 
 ### 方式一：Docker Compose（推荐）⭐

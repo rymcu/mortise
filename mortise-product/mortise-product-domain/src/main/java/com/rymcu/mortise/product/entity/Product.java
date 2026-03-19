@@ -32,6 +32,9 @@ public class Product implements Serializable {
     @Id(keyType = KeyType.Generator, value = KeyGenerators.flexId)
     private Long id;
 
+    /** 产品编码（PRD-{ULID} 格式，全局唯一） */
+    private String productCode;
+
     /** 产品标题 */
     @NotBlank(message = "产品标题不能为空")
     private String title;

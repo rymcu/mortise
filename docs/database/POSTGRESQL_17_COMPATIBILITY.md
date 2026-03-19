@@ -10,7 +10,7 @@
 
 1. ✅ `docs/fix-postgresql-permissions.sql` - SQL 权限修复脚本
 2. ✅ `fix-postgresql-permissions.ps1` - PowerShell 自动修复脚本
-3. ✅ `docs/FLYWAY_PERMISSION_FIX.md` - 权限修复文档
+3. ✅ `docs/database/FLYWAY_PERMISSION_FIX.md` - 权限修复文档
 
 ## 🔍 PostgreSQL 17 兼容的权限查询
 

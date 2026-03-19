@@ -119,12 +119,6 @@ public class Oauth2ClientConfig implements Serializable {
     private String jwkSetUri;
 
     /**
-     * 是否启用
-     */
-    @Column("is_enabled")
-    private Integer isEnabled;
-
-    /**
      * 状态：0-正常, 1-禁用
      */
     @Column("status")
@@ -171,4 +165,17 @@ public class Oauth2ClientConfig implements Serializable {
      */
     @Column("redirect_uri")
     private String redirectUri;
+
+    /**
+     * 登录入口类型：admin=管理端，site=用户端
+     */
+    @Column("app_type")
+    private String appType;
+
+    /**
+     * 客户端图标 URL
+     * 用于在登录页展示第三方平台的品牌图标
+     */
+    @Column("icon")
+    private String icon;
 }
