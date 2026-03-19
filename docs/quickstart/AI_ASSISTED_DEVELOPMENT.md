@@ -120,3 +120,42 @@ agent: "agent"
 ```
 
 建议遵循现有 prompt 的风格：使用简体中文、引用相关 instruction 文件、提供结构化的输出模板。
+
+## 前端 Claude Skills
+
+`frontend/.claude/skills/` 目录下维护了 11 个技术参考文件，源自 Claude Code skill 格式，但内容对所有 AI 工具通用。
+
+```
+frontend/.claude/skills/
+├── nuxt              # Nuxt 4+ 路由、中间件、composable
+├── nuxt-ui           # @nuxt/ui v4 组件、表单验证、主题
+├── nuxt-content      # Nuxt Content v3、MDC 渲染
+├── nuxt-modules      # Nuxt 模块开发与发布
+├── vue               # Vue 3 Composition API、props/emits
+├── vueuse            # VueUse composable 库
+├── reka-ui           # Reka UI 无头组件（原 Radix Vue）
+├── pnpm              # pnpm workspace、monorepo 配置
+├── vite              # Vite 构建配置与插件
+├── ts-library        # TypeScript 库开发与打包
+└── document-writer   # Markdown 文档与 MDC 写作风格
+```
+
+### 使用方式
+
+**在 VS Code Copilot Chat 中**：编辑前端文件时，Copilot 会根据 `copilot-instructions.md` 的指示自动参考对应 skill 文件。也可手动引用：
+
+```
+@frontend/.claude/skills/nuxt-ui 如何在表单中使用 UInput 的密码切换功能？
+```
+
+**在 Copilot CLI 中**：同样通过 `@` 引用：
+
+```
+@frontend/.claude/skills/nuxt 帮我创建一个带中间件鉴权的页面
+```
+
+### 为什么不迁移到 `.github/instructions/`
+
+这些 skill 文件是**通用技术参考**（Nuxt、Vue、pnpm 的最佳实践），不含 Mortise 业务逻辑。而 `.github/instructions/` 下的文件是**项目专属规范**（模块边界、权限命名等）。两者定位不同，保持分离更清晰。
+
+如果未来需要添加 Mortise 前端业务级规范（如组件命名约定、状态管理模式），应放在 `.github/instructions/` 下而非 `frontend/.claude/skills/`。
