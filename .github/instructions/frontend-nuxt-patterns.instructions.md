@@ -51,6 +51,51 @@ applyTo: 'frontend/**/*.{vue,ts,tsx,js,mjs,cjs}'
 - Reuse existing UI building blocks and class patterns before introducing new one-off styling systems.
 - Do not move complex data shaping, API orchestration, or business rules into presentation-only components if a composable, store, or shared package is the better home.
 
+## USelect Component Rules
+
+USelect 基于 Reka UI Select，有几个容易出错的约束，必须严格遵守。
+
+### 空字符串 value 禁令
+
+- **`value: ''`（空字符串）是保留值**，USelect 用它表示"清除选择并显示 placeholder"。
+- **禁止**在 items 数组中使用 `{ label: '...', value: '' }` 作为"全部"或"默认"选项，否则会触发控制台警告：`A <SelectItem /> must have a value prop that is not an empty string.`
+- 正确做法：用 `placeholder` 属性显示默认文本，不放空值选项到 items 中。
+
+```vue
+<!-- ❌ 错误：空字符串作为"全部"选项 -->
+<USelect
+  :model-value="filterValue"
+  :items="[{ label: '全部', value: '' }, ...options]"
+/>
+
+<!-- ✅ 正确：使用 placeholder + 过滤空值 -->
+<USelect
+  :model-value="filterValue || undefined"
+  :items="options"
+  placeholder="全部"
+  @update:model-value="filterValue = String($event ?? '')"
+/>
+```
+
+### model-value 与 placeholder 联动
+
+- 当内部状态使用空字符串表示"未选择"时，绑定 `:model-value="value || undefined"` 确保空字符串映射为 `undefined`，从而触发 placeholder 显示。
+- `@update:model-value` 回调中用 `String($event ?? '')` 将 `undefined`/`null` 安全转回空字符串。
+
+### value-key 使用
+
+- 当 items 是对象数组时，**必须**设置 `value-key="value"`（或对应字段名），否则 model-value 匹配不到选项。
+- `v-model` / `:model-value` 绑定的值类型必须与 items 中 value 的类型一致（通常是 `string`）。
+
+### 常见模式速查
+
+| 场景 | 做法 |
+|------|------|
+| 筛选器含"全部"选项 | 用 `placeholder="全部"`，不加空值 item |
+| 表单必选字段 | items 正常提供，不含空值 item；用 `placeholder` 提示用户选择 |
+| 可清除选择 | 依赖 USelect 内置的清除行为（value 设为 `''` 即清除） |
+| 对比选择含"当前状态" | 用 `placeholder="当前状态"`，不加空值 item |
+
 ## Content and Media Rules
 
 - Prefer Nuxt-generated auto-imports for Markdown/content runtime helpers instead of direct imports that may break typecheck.
