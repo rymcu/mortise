@@ -42,7 +42,7 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
 
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .where(OAUTH2_CLIENT_CONFIG.REGISTRATION_ID.eq(registrationId))
-                .and(OAUTH2_CLIENT_CONFIG.STATUS.eq(Status.ENABLED.ordinal()));
+                .and(OAUTH2_CLIENT_CONFIG.STATUS.eq(Status.ENABLED.getCode()));
 
         Oauth2ClientConfig config = mapper.selectOneByQuery(queryWrapper);
         if (config != null) {
@@ -57,7 +57,7 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
         log.debug("加载所有启用的 OAuth2 客户端配置");
 
         QueryWrapper queryWrapper = QueryWrapper.create()
-                .where(OAUTH2_CLIENT_CONFIG.STATUS.eq(Status.ENABLED.ordinal()))
+                .where(OAUTH2_CLIENT_CONFIG.STATUS.eq(Status.ENABLED.getCode()))
                 .orderBy(OAUTH2_CLIENT_CONFIG.CREATED_TIME.desc());
         List<Oauth2ClientConfig> list = mapper.selectListByQuery(queryWrapper);
         list.forEach(config -> config.setClientSecret(decryptValue(config.getClientSecret())));
@@ -69,7 +69,7 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
         log.debug("加载指定入口类型的启用 OAuth2 客户端配置: appType={}", appType);
 
         QueryWrapper queryWrapper = QueryWrapper.create()
-                .where(OAUTH2_CLIENT_CONFIG.STATUS.eq(Status.ENABLED.ordinal()))
+                .where(OAUTH2_CLIENT_CONFIG.STATUS.eq(Status.ENABLED.getCode()))
                 .and(OAUTH2_CLIENT_CONFIG.APP_TYPE.eq(appType, StringUtils::hasText))
                 .orderBy(OAUTH2_CLIENT_CONFIG.CREATED_TIME.desc());
         List<Oauth2ClientConfig> list = mapper.selectListByQuery(queryWrapper);
@@ -123,7 +123,7 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
 
         // 设置默认值
         if (config.getStatus() == null) {
-            config.setStatus(Status.ENABLED.ordinal());
+            config.setStatus(Status.ENABLED.getCode());
         }
 
         config.setCreatedTime(LocalDateTime.now());
@@ -156,7 +156,7 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
     public Oauth2ClientConfig loadOauth2ClientConfigByClientId(String clientId) {
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .where(OAUTH2_CLIENT_CONFIG.CLIENT_ID.eq(clientId))
-                .and(OAUTH2_CLIENT_CONFIG.STATUS.eq(Status.ENABLED.ordinal()));
+                .and(OAUTH2_CLIENT_CONFIG.STATUS.eq(Status.ENABLED.getCode()));
 
         return mapper.selectOneByQuery(queryWrapper);
     }

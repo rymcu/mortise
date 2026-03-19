@@ -71,7 +71,7 @@ public class DashboardController {
     private Long getOrCacheUserCount() {
         Long count = systemCacheService.getUserCount();
         if (count == null) {
-            count = userService.count(QueryWrapper.create().where(USER.STATUS.eq(Status.ENABLED.ordinal())));
+            count = userService.count(QueryWrapper.create().where(USER.STATUS.eq(Status.ENABLED.getCode())));
             systemCacheService.cacheUserCount(count);
         }
         return count;
@@ -83,7 +83,7 @@ public class DashboardController {
     private Long getOrCacheRoleCount() {
         Long count = systemCacheService.getRoleCount();
         if (count == null) {
-            count = roleService.count(QueryWrapper.create().where(ROLE.STATUS.eq(Status.ENABLED.ordinal())));
+            count = roleService.count(QueryWrapper.create().where(ROLE.STATUS.eq(Status.ENABLED.getCode())));
             systemCacheService.cacheRoleCount(count);
         }
         return count;
@@ -95,7 +95,7 @@ public class DashboardController {
     private Long getOrCacheMenuCount() {
         Long count = systemCacheService.getMenuCount();
         if (count == null) {
-            count = menuService.count(QueryWrapper.create().where(MENU.STATUS.eq(Status.ENABLED.ordinal())));
+            count = menuService.count(QueryWrapper.create().where(MENU.STATUS.eq(Status.ENABLED.getCode())));
             systemCacheService.cacheMenuCount(count);
         }
         return count;
