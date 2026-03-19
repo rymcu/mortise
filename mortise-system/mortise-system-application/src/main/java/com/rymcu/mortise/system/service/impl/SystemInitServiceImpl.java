@@ -100,6 +100,15 @@ public class SystemInitServiceImpl implements SystemInitService {
 
     private Long initAdminUser(SystemInitInfo initInfo) {
         log.info("创建管理员用户...");
+        log.info("收到初始化信息: nickname={}, email={}, password长度={}",
+            initInfo.getAdminNickname(), 
+            initInfo.getAdminEmail(), 
+            initInfo.getAdminPassword() == null ? "null" : initInfo.getAdminPassword().length());
+        
+        if (initInfo.getAdminPassword() == null || initInfo.getAdminPassword().isBlank()) {
+            throw new IllegalArgumentException("管理员密码不能为空");
+        }
+        
         User admin = new User();
         admin.setAccount(userService.nextAccount());
         admin.setPassword(passwordEncoder.encode(initInfo.getAdminPassword()));

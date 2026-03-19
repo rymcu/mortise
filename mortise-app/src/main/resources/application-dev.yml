@@ -9,9 +9,9 @@ spring:
     cache: false
   data:
     redis:
-      host: 192.168.88.243
+      host: 192.168.49.129
       port: 6379
-      password:
+      password: 1234
       database: 1
       timeout: 3000
       jedis:
@@ -21,9 +21,9 @@ spring:
           max-idle: 500
           min-idle: 0
   datasource:
-    url: jdbc:postgresql://192.168.88.243:15432/postgres
+    url: jdbc:postgresql://192.168.49.129:5432/mortise
     username: mortise
-    password: ENC(/T9oN1+Zyq6ZOYV4oOyJJFblmrbhla0tmI1ExpjXA/4cg1gw+Yh6kw==)
+    password: BidD8WNsL8e7
     driver-class-name: org.postgresql.Driver
     type: com.zaxxer.hikari.HikariDataSource
     hikari:

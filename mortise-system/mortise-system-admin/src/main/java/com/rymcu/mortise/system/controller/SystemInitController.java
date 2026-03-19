@@ -6,6 +6,7 @@ import com.rymcu.mortise.log.annotation.ApiLog;
 import com.rymcu.mortise.log.annotation.OperationLog;
 import com.rymcu.mortise.system.model.SystemInitInfo;
 import com.rymcu.mortise.system.service.SystemInitService;
+import jakarta.validation.Valid;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -125,7 +126,7 @@ public class SystemInitController {
     @PostMapping("/initialize")
     @ApiLog(recordRequestBody = false, recordResponseBody = false, recordParams = false, value = "执行系统初始化")
     @OperationLog(module = "系统初始化", operation = "执行系统初始化", recordParams = false, recordResult = false)
-    public GlobalResult<String> initializeSystem(@RequestBody SystemInitInfo initInfo) {
+    public GlobalResult<String> initializeSystem(@Valid @RequestBody SystemInitInfo initInfo) {
         // 检查是否已初始化
         if (systemInitService.isSystemInitialized()) {
             return GlobalResult.error("系统已经初始化，无法重复初始化");

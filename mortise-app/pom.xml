@@ -17,6 +17,11 @@
     <description>Mortise App - 主应用模块</description>
 
     <dependencies>
+        <!-- Spring Boot Starter -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter</artifactId>
+        </dependency>
         <!-- 所有 Mortise 模块 -->
         <dependency>
             <groupId>com.rymcu</groupId>
