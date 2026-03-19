@@ -17,22 +17,22 @@ const { loading, errorMessage, putAction } = useAdminCrud(
 )
 
 const statusOptions = [
-  { label: '启用', value: 0 },
-  { label: '禁用', value: 1 }
+  { label: '启用', value: 1 },
+  { label: '禁用', value: 0 }
 ]
 
-const selectedStatus = ref<number>((props.member.status as number) ?? 0)
+const selectedStatus = ref<number>((props.member.status as number) ?? 1)
 
 watch(
   () => props.member,
   (v) => {
-    selectedStatus.value = (v.status as number) ?? 0
+    selectedStatus.value = (v.status as number) ?? 1
   }
 )
 
 async function handleConfirm() {
   const id = props.member.id as number
-  if (selectedStatus.value === 0) {
+  if (selectedStatus.value === 1) {
     const ok = await putAction(`${id}/enable`)
     if (ok) {
       open.value = false

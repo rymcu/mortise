@@ -25,15 +25,15 @@ const schema = z.object({
   label: z.string().min(1, '请输入字典标签'),
   value: z.string().min(1, '请输入字典值'),
   sortNo: z.coerce.number().default(0),
-  status: z.coerce.number().default(0),
+  status: z.coerce.number().default(1),
   icon: z.string().optional(),
   image: z.string().optional(),
   color: z.string().optional()
 })
 
 const statusOptions = [
-  { label: '启用', value: 0 },
-  { label: '禁用', value: 1 }
+  { label: '启用', value: 1 },
+  { label: '禁用', value: 0 }
 ]
 
 const colorOptions = [
@@ -50,7 +50,7 @@ const state = reactive({
   label: '',
   value: '',
   sortNo: 0,
-  status: 0,
+  status: 1,
   icon: '',
   image: '',
   color: '',

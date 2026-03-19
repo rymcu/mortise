@@ -88,22 +88,22 @@ function openEditModal(row: Record<string, unknown>) {
       >
         <template #cell-status="{ row }">
           <UBadge
-            :color="row.status === 0 ? 'success' : 'neutral'"
+            :color="row.status === 1 ? 'success' : 'neutral'"
             variant="subtle"
           >
-            {{ row.status === 0 ? '启用' : '禁用' }}
+            {{ row.status === 1 ? '启用' : '禁用' }}
           </UBadge>
         </template>
 
         <template #actions="{ row }">
           <UButton
-            :icon="row.status === 0 ? 'i-lucide-pause' : 'i-lucide-play'"
-            :color="row.status === 0 ? 'warning' : 'success'"
+            :icon="row.status === 1 ? 'i-lucide-pause' : 'i-lucide-play'"
+            :color="row.status === 1 ? 'warning' : 'success'"
             variant="ghost"
             size="xs"
             @click="openEditModal(row)"
           >
-            {{ row.status === 0 ? '禁用' : '启用' }}
+            {{ row.status === 1 ? '禁用' : '启用' }}
           </UButton>
         </template>
       </AdminPagedTableCard>

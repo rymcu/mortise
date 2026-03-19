@@ -26,7 +26,7 @@ const schema = z.object({
   icon: z.string().optional(),
   href: z.string().optional(),
   menuType: z.coerce.number().default(0),
-  status: z.coerce.number().default(0),
+  status: z.coerce.number().default(1),
   parentId: z.union([z.string(), z.number()]).optional(),
   sortNo: z.coerce.number().default(0)
 })
@@ -38,8 +38,8 @@ const menuTypeOptions = [
 ]
 
 const statusOptions = [
-  { label: '启用', value: 0 },
-  { label: '禁用', value: 1 }
+  { label: '启用', value: 1 },
+  { label: '禁用', value: 0 }
 ]
 
 const state = reactive({
@@ -48,7 +48,7 @@ const state = reactive({
   icon: '',
   href: '',
   menuType: 0,
-  status: 0,
+  status: 1,
   parentId: undefined as string | number | undefined,
   sortNo: 0,
   ...props.data

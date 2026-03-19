@@ -38,7 +38,7 @@ onMounted(async () => {
 /** 将后端 MenuLink 树递归转换为 NavigationMenuItem */
 function toNavItems(links: MenuLink[]): NavigationMenuItem[] {
   return links
-    .filter((l) => l.status === 0 || l.status === undefined) // 只展示启用状态的菜单
+    .filter((l) => l.status === 1 || l.status === undefined) // 只展示启用状态的菜单
     .sort((a, b) => (a.sortNo ?? 0) - (b.sortNo ?? 0))
     .map((link) => {
       const hasChildren = Boolean(link.children?.length)

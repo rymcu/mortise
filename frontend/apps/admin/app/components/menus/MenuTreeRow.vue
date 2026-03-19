@@ -108,10 +108,10 @@ const isExpanded = computed(() => props.expandedIds.has(props.node.id))
     <!-- 状态 -->
     <td class="px-2 py-2 text-center">
       <UBadge
-        :color="node.status === 0 ? 'success' : 'neutral'"
+        :color="node.status === 1 ? 'success' : 'neutral'"
         variant="subtle"
       >
-        {{ node.status === 0 ? '启用' : '禁用' }}
+        {{ node.status === 1 ? '启用' : '禁用' }}
       </UBadge>
     </td>
 

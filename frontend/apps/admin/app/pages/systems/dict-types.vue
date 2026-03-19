@@ -403,10 +403,10 @@ function typesNextPage() {
                       </td>
                       <td class="px-2 py-2">
                         <UBadge
-                          :color="dict.status === 0 ? 'success' : 'neutral'"
+                          :color="dict.status === 1 ? 'success' : 'neutral'"
                           variant="subtle"
                         >
-                          {{ dict.status === 0 ? '启用' : '禁用' }}
+                          {{ dict.status === 1 ? '启用' : '禁用' }}
                         </UBadge>
                       </td>
                       <td class="px-2 py-2">

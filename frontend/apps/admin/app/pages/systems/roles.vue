@@ -109,10 +109,10 @@ function openMenuModal(row: Record<string, unknown>) {
 
         <template #cell-status="{ row }">
           <UBadge
-            :color="row.status === 0 ? 'success' : 'neutral'"
+            :color="row.status === 1 ? 'success' : 'neutral'"
             variant="subtle"
           >
-            {{ row.status === 0 ? '启用' : '禁用' }}
+            {{ row.status === 1 ? '启用' : '禁用' }}
           </UBadge>
         </template>
 

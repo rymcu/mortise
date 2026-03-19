@@ -48,7 +48,7 @@ public class ProductCategoryServiceImpl extends ServiceImpl<ProductCategoryMappe
     public Boolean updateStatus(Long id, Integer status) {
         ProductCategory category = UpdateEntity.of(ProductCategory.class, id);
         category.setStatus(status);
-        category.setIsActive(status == 0);
+        category.setIsActive(status == 1);
         category.setUpdatedTime(LocalDateTime.now());
         return mapper.update(category) > 0;
     }
