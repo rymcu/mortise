@@ -51,6 +51,36 @@ applyTo: 'frontend/**/*.{vue,ts,tsx,js,mjs,cjs}'
 - Reuse existing UI building blocks and class patterns before introducing new one-off styling systems.
 - Do not move complex data shaping, API orchestration, or business rules into presentation-only components if a composable, store, or shared package is the better home.
 
+### 表单输入宽度一致性
+
+维护表单中所有输入组件的宽度必须统一，确保视觉一致性。
+
+- **`UFormField` 内的独立输入组件**（`UInput`、`USelect`、`UTextarea`、`UInputNumber`）必须添加 `class="w-full"`，使其填满容器宽度。
+- **flex 行内输入**（如枚举值编辑、参数列表中的多列布局）可使用 `w-24`、`w-28`、`flex-1` 等宽度约束，不受 `w-full` 限制。
+- **`URadioGroup`、`USwitch`、`UCheckbox`** 等控件型组件无需 `w-full`。
+- 当 `UTextarea` 已有其他 class（如 `font-mono`），追加 `w-full` 而非替换：`class="w-full font-mono"`。
+
+```vue
+<!-- ✅ 正确：UFormField 内的独立输入 -->
+<UFormField label="名称">
+  <UInput v-model="form.name" class="w-full" />
+</UFormField>
+<UFormField label="描述">
+  <UTextarea v-model="form.desc" class="w-full font-mono" />
+</UFormField>
+
+<!-- ✅ 正确：flex 行内布局使用针对性宽度 -->
+<div class="flex items-center gap-2">
+  <UInput v-model="item.key" class="w-28" />
+  <UInput v-model="item.name" class="flex-1" />
+</div>
+
+<!-- ❌ 错误：UFormField 内的 UInput 缺少 w-full -->
+<UFormField label="名称">
+  <UInput v-model="form.name" />
+</UFormField>
+```
+
 ## USelect Component Rules
 
 USelect 基于 Reka UI Select，有几个容易出错的约束，必须严格遵守。
