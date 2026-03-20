@@ -49,7 +49,34 @@ agent: "agent"
 
 与用户确认模块划分和测试范围。
 
-### 5. 编写 PRD 并提交 Issue
+### 5. 确定 Issue 提交仓库
+
+Mortise 是多 git submodule 项目，需要将 Issue 提交到**对应的子仓库**。
+
+#### 仓库路由规则
+
+读取根目录 `.gitmodules` 文件获取完整的子模块映射。常见映射示例：
+
+| 改动范围 | 目标仓库 | 子模块路径 |
+|---------|---------|-----------|
+| 后端 AIOT 业务 | `rymcu/mortise-aiot` | `mortise-aiot/` |
+| 前端 AIOT 管理 | `rymcu/admin-aiot` | `frontend/layers/admin/aiot/` |
+| 后端社区业务 | `rymcu/mortise-community` | `mortise-community/` |
+| 前端社区管理 | `rymcu/admin-community` | `frontend/layers/admin/community/` |
+| 框架公共模块 | `rymcu/mortise`（父仓库） | `mortise-common/`、`mortise-core/` 等 |
+| 前端共享包 | `rymcu/mortise`（父仓库） | `frontend/packages/` 等 |
+
+#### 提交策略
+
+- **单仓库改动**：直接在目标子仓库创建 Issue。
+- **跨仓库改动**（涉及多个子模块）：
+  1. 在父仓库 `rymcu/mortise` 创建 **Umbrella PRD Issue**（完整 PRD 内容）
+  2. 在每个涉及的子仓库创建 **实现 Issue**（只包含该仓库范围内的切片和验收标准）
+  3. 子仓库 Issue 开头标注 `Parent PRD: rymcu/mortise#N`
+  4. Umbrella Issue 顶部用表格列出所有子仓库 Issue 链接
+- **仅父仓库改动**（框架层、配置、文档）：直接在 `rymcu/mortise` 创建 Issue。
+
+### 6. 编写 PRD 并提交 Issue
 
 使用下面的模板编写 PRD，提交为 GitHub Issue。
 
@@ -121,3 +148,5 @@ agent: "agent"
 - 涉及权限时，参考 `.github/instructions/permission-conventions.instructions.md` 的命名规范
 - 垂直切片拆分是可选步骤——如果 PRD 较小，可以不拆分
 - PRD 提交后不要关闭——后续的实现 Issue 应引用它作为 Parent PRD
+- **跨子模块的 PRD 必须拆分 Issue 到对应子仓库**，父仓库只保留 Umbrella 跟踪 Issue
+- 提交前先通过 `.gitmodules` 确认目标仓库，不要将子模块范围的 Issue 提交到父仓库
