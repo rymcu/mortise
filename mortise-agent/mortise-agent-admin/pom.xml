@@ -11,32 +11,35 @@
         <version>${revision}</version>
     </parent>
 
-    <artifactId>mortise-agent-domain</artifactId>
+    <artifactId>mortise-agent-admin</artifactId>
     <packaging>jar</packaging>
-    <name>mortise-agent-domain</name>
-    <description>Mortise Agent - Domain Layer</description>
+    <name>mortise-agent-admin</name>
+    <description>Mortise Agent - Admin API Layer</description>
 
     <dependencies>
         <dependency>
             <groupId>com.rymcu</groupId>
-            <artifactId>mortise-core</artifactId>
+            <artifactId>mortise-web-support</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.rymcu</groupId>
-            <artifactId>mortise-persistence</artifactId>
+            <artifactId>mortise-agent-application</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.ai</groupId>
-            <artifactId>spring-ai-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-validation</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
 </project>

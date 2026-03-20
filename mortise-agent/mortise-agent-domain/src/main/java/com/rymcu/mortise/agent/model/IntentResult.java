@@ -1,5 +1,7 @@
 package com.rymcu.mortise.agent.model;
 
+import com.rymcu.mortise.agent.constant.AgentConstants;
+
 import java.util.List;
 
 /**
@@ -16,7 +18,7 @@ public record IntentResult(
     }
     
     public boolean isHighConfidence() {
-        return confidence >= 0.8;
+        return confidence >= AgentConstants.HIGH_CONFIDENCE_THRESHOLD;
     }
     
     public static IntentResult chat(double confidence, String reasoning) {

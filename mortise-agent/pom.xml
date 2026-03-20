@@ -20,6 +20,7 @@
         <module>mortise-agent-domain</module>
         <module>mortise-agent-infra</module>
         <module>mortise-agent-application</module>
+        <module>mortise-agent-admin</module>
         <module>mortise-agent-api</module>
     </modules>
 

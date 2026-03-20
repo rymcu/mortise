@@ -1,5 +1,6 @@
 package com.rymcu.mortise.agent.router;
 
+import com.rymcu.mortise.agent.constant.AgentConstants;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rymcu.mortise.agent.model.AgentIntent;
@@ -50,7 +51,7 @@ public class LlmIntentClassifier implements IntentClassifier {
         try {
             JsonNode json = objectMapper.readTree(extractJson(content));
             String intentCode = json.path("intent").asText("chat");
-            double confidence = json.path("confidence").asDouble(0.5);
+            double confidence = json.path("confidence").asDouble(AgentConstants.FALLBACK_CONFIDENCE);
             String reasoning = json.path("reasoning").asText("");
             List<String> tools = parseTools(json.path("recommendedTools"));
             
@@ -60,7 +61,7 @@ public class LlmIntentClassifier implements IntentClassifier {
             return new IntentResult(intent, confidence, reasoning, tools);
         } catch (Exception e) {
             log.warn("Failed to parse intent classification result: {}", e.getMessage());
-            return IntentResult.chat(0.5, "Failed to classify, defaulting to chat");
+            return IntentResult.chat(AgentConstants.FALLBACK_CONFIDENCE, "Failed to classify, defaulting to chat");
         }
     }
     

@@ -1,5 +1,6 @@
 package com.rymcu.mortise.agent.config;
 
+import com.rymcu.mortise.agent.constant.AgentConstants;
 import com.rymcu.mortise.agent.model.ModelType;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -14,9 +15,9 @@ public record AgentProperties(
 ) {
     
     public AgentProperties {
-        defaultModel = defaultModel != null ? defaultModel : new ModelConfig(ModelType.OPENAI, "gpt-4o-mini", null);
-        router = router != null ? router : new RouterConfig(null, IntentClassifierType.FUNCTION_CALLING, null, 0.7);
-        react = react != null ? react : new ReActConfig(5, true, true);
+        defaultModel = defaultModel != null ? defaultModel : new ModelConfig(ModelType.OPENAI, AgentConstants.AGENT_DEFAULT_MODEL, null);
+        router = router != null ? router : new RouterConfig(null, IntentClassifierType.FUNCTION_CALLING, null, AgentConstants.DEFAULT_CONFIDENCE_THRESHOLD);
+        react = react != null ? react : new ReActConfig(AgentConstants.DEFAULT_MAX_ITERATIONS, true, true);
     }
     
     /**
@@ -52,7 +53,7 @@ public record AgentProperties(
         double confidenceThreshold
     ) {
         public RouterConfig {
-            confidenceThreshold = confidenceThreshold > 0 ? confidenceThreshold : 0.7;
+            confidenceThreshold = confidenceThreshold > 0 ? confidenceThreshold : AgentConstants.DEFAULT_CONFIDENCE_THRESHOLD;
             intentClassifierType = intentClassifierType != null ? intentClassifierType : IntentClassifierType.FUNCTION_CALLING;
         }
     }
@@ -63,7 +64,7 @@ public record AgentProperties(
         boolean enableErrorRecovery
     ) {
         public ReActConfig {
-            maxIterations = maxIterations > 0 ? maxIterations : 5;
+            maxIterations = maxIterations > 0 ? maxIterations : AgentConstants.DEFAULT_MAX_ITERATIONS;
         }
     }
 }

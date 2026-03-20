@@ -1,5 +1,6 @@
 package com.rymcu.mortise.agent.router;
 
+import com.rymcu.mortise.agent.constant.AgentConstants;
 import com.rymcu.mortise.agent.model.AgentIntent;
 import com.rymcu.mortise.agent.model.IntentResult;
 import com.rymcu.mortise.agent.spi.IntentClassifier;
@@ -41,7 +42,7 @@ public class RuleBasedIntentClassifier implements IntentClassifier {
                 List<String> matchedTools = findMatchingTools(message, availableTools);
                 if (!matchedTools.isEmpty()) {
                     log.debug("Rule matched tool intent with keyword: {}", keyword);
-                    return IntentResult.toolCall(0.7, "Matched keyword: " + keyword, matchedTools);
+                    return IntentResult.toolCall(AgentConstants.RULE_TOOL_KEYWORD_CONFIDENCE, "Matched keyword: " + keyword, matchedTools);
                 }
             }
         }
@@ -50,18 +51,18 @@ public class RuleBasedIntentClassifier implements IntentClassifier {
         for (String keyword : CHAT_KEYWORDS) {
             if (message.contains(keyword)) {
                 log.debug("Rule matched chat intent with keyword: {}", keyword);
-                return IntentResult.chat(0.8, "Matched chat keyword: " + keyword);
+                return IntentResult.chat(AgentConstants.RULE_CHAT_KEYWORD_CONFIDENCE, "Matched chat keyword: " + keyword);
             }
         }
         
         // 检查问句模式
         if (QUESTION_PATTERN.matcher(message).matches()) {
             log.debug("Rule matched question pattern");
-            return IntentResult.chat(0.6, "Matched question pattern");
+            return IntentResult.chat(AgentConstants.RULE_QUESTION_PATTERN_CONFIDENCE, "Matched question pattern");
         }
         
         // 默认返回聊天意图
-        return IntentResult.chat(0.5, "No specific pattern matched, defaulting to chat");
+        return IntentResult.chat(AgentConstants.RULE_DEFAULT_CONFIDENCE, "No specific pattern matched, defaulting to chat");
     }
     
     @Override

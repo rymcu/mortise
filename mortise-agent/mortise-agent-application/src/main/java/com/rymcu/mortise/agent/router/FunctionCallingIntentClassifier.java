@@ -1,5 +1,6 @@
 package com.rymcu.mortise.agent.router;
 
+import com.rymcu.mortise.agent.constant.AgentConstants;
 import com.rymcu.mortise.agent.model.IntentResult;
 import com.rymcu.mortise.agent.model.ChatMessage;
 import com.rymcu.mortise.agent.spi.ChatModelProvider;
@@ -28,7 +29,7 @@ public class FunctionCallingIntentClassifier implements IntentClassifier {
     
     private final ChatModelProvider modelProvider;
     
-    private static final String INTENT_FUNCTION_NAME = "indicate_tool_intent";
+    private static final String INTENT_FUNCTION_NAME = AgentConstants.INTENT_FUNCTION_NAME;
     
     /**
      * 系统提示：引导模型使用函数调用来表示意图
@@ -95,11 +96,11 @@ public class FunctionCallingIntentClassifier implements IntentClassifier {
             
             // 函数未被调用，模型直接返回文本 → CHAT 意图
             log.debug("Intent function was NOT called, classified as CHAT");
-            return IntentResult.chat(0.9, "Model responded directly without function call");
+            return IntentResult.chat(AgentConstants.FC_DIRECT_REPLY_CONFIDENCE, "Model responded directly without function call");
             
         } catch (Exception e) {
             log.warn("Function calling intent classification failed: {}", e.getMessage());
-            return IntentResult.chat(0.5, "Fallback to chat due to error: " + e.getMessage());
+            return IntentResult.chat(AgentConstants.FALLBACK_CONFIDENCE, "Fallback to chat due to error: " + e.getMessage());
         }
     }
     

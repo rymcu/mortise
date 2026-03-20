@@ -96,6 +96,10 @@
             <groupId>com.rymcu</groupId>
             <artifactId>mortise-agent-api</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-agent-admin</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>com.rymcu</groupId>

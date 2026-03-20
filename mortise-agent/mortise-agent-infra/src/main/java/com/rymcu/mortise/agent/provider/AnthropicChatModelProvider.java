@@ -1,5 +1,6 @@
 package com.rymcu.mortise.agent.provider;
 
+import com.rymcu.mortise.agent.constant.AgentConstants;
 import com.rymcu.mortise.agent.model.ModelType;
 import org.springframework.ai.anthropic.AnthropicChatModel;
 import org.springframework.ai.anthropic.AnthropicChatOptions;
@@ -17,10 +18,12 @@ public class AnthropicChatModelProvider extends AbstractChatModelProvider {
     
     private final AnthropicChatModel chatModel;
     private final String defaultModel;
+    private List<String> availableModels;
     
     public AnthropicChatModelProvider(AnthropicChatModel chatModel, String defaultModel) {
         this.chatModel = chatModel;
-        this.defaultModel = defaultModel != null ? defaultModel : "claude-sonnet-4-20250514";
+        this.defaultModel = defaultModel != null ? defaultModel : AgentConstants.ANTHROPIC_DEFAULT_MODEL;
+        this.availableModels = List.of();
     }
     
     @Override
@@ -65,12 +68,10 @@ public class AnthropicChatModelProvider extends AbstractChatModelProvider {
     
     @Override
     public List<String> getAvailableModels() {
-        return List.of(
-            "claude-sonnet-4-20250514",
-            "claude-opus-4-20250514",
-            "claude-3-7-sonnet-20250219",
-            "claude-3-5-sonnet-20241022",
-            "claude-3-5-haiku-20241022"
-        );
+        return availableModels;
+    }
+
+    public void setAvailableModels(List<String> availableModels) {
+        this.availableModels = availableModels != null ? List.copyOf(availableModels) : List.of();
     }
 }

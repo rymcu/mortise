@@ -1,5 +1,6 @@
 package com.rymcu.mortise.agent.provider;
 
+import com.rymcu.mortise.agent.constant.AgentConstants;
 import com.rymcu.mortise.agent.model.ModelType;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -17,10 +18,12 @@ public class OllamaChatModelProvider extends AbstractChatModelProvider {
     
     private final OllamaChatModel chatModel;
     private final String defaultModel;
+    private List<String> availableModels;
     
     public OllamaChatModelProvider(OllamaChatModel chatModel, String defaultModel) {
         this.chatModel = chatModel;
-        this.defaultModel = defaultModel != null ? defaultModel : "qwen2.5";
+        this.defaultModel = defaultModel != null ? defaultModel : AgentConstants.OLLAMA_DEFAULT_MODEL;
+        this.availableModels = List.of();
     }
     
     @Override
@@ -65,6 +68,10 @@ public class OllamaChatModelProvider extends AbstractChatModelProvider {
     
     @Override
     public List<String> getAvailableModels() {
-        return List.of("qwen2.5", "llama3.2", "llama3.1", "mistral", "deepseek-r1");
+        return availableModels;
+    }
+
+    public void setAvailableModels(List<String> availableModels) {
+        this.availableModels = availableModels != null ? List.copyOf(availableModels) : List.of();
     }
 }

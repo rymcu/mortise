@@ -127,6 +127,11 @@
             </dependency>
             <dependency>
                 <groupId>com.rymcu</groupId>
+                <artifactId>mortise-agent-admin</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
                 <artifactId>mortise-agent-api</artifactId>
                 <version>${revision}</version>
             </dependency>

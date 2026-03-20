@@ -1,5 +1,6 @@
 package com.rymcu.mortise.agent.provider;
 
+import com.rymcu.mortise.agent.constant.AgentConstants;
 import com.rymcu.mortise.agent.model.ModelType;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -17,10 +18,12 @@ public class OpenAiChatModelProvider extends AbstractChatModelProvider {
     
     private final OpenAiChatModel chatModel;
     private final String defaultModel;
+    private List<String> availableModels;
     
     public OpenAiChatModelProvider(OpenAiChatModel chatModel, String defaultModel) {
         this.chatModel = chatModel;
-        this.defaultModel = defaultModel != null ? defaultModel : "gpt-4.1";
+        this.defaultModel = defaultModel != null ? defaultModel : AgentConstants.OPENAI_DEFAULT_MODEL;
+        this.availableModels = List.of();
     }
     
     @Override
@@ -65,6 +68,10 @@ public class OpenAiChatModelProvider extends AbstractChatModelProvider {
     
     @Override
     public List<String> getAvailableModels() {
-        return List.of("gpt-4.1", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-4o");
+        return availableModels;
+    }
+
+    public void setAvailableModels(List<String> availableModels) {
+        this.availableModels = availableModels != null ? List.copyOf(availableModels) : List.of();
     }
 }
