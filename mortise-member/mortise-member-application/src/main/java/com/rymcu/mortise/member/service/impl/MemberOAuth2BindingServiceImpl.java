@@ -2,6 +2,8 @@ package com.rymcu.mortise.member.service.impl;
 
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
+import com.rymcu.mortise.common.enumerate.DelFlag;
+import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.member.entity.MemberOAuth2Binding;
 import com.rymcu.mortise.member.mapper.MemberOAuth2BindingMapper;
 import com.rymcu.mortise.member.service.MemberOAuth2BindingService;
@@ -35,7 +37,7 @@ public class MemberOAuth2BindingServiceImpl extends ServiceImpl<MemberOAuth2Bind
         return getOne(QueryWrapper.create()
                 .where(MemberOAuth2Binding::getProvider).eq(provider)
                 .and(MemberOAuth2Binding::getOpenId).eq(openId)
-                .and(MemberOAuth2Binding::getDelFlag).eq(0)
+                .and(MemberOAuth2Binding::getDelFlag).eq(DelFlag.NORMAL.ordinal())
         );
     }
 
@@ -51,7 +53,7 @@ public class MemberOAuth2BindingServiceImpl extends ServiceImpl<MemberOAuth2Bind
         return getOne(QueryWrapper.create()
                 .where(MemberOAuth2Binding::getProvider).eq(provider)
                 .and(MemberOAuth2Binding::getUnionId).eq(unionId)
-                .and(MemberOAuth2Binding::getDelFlag).eq(0)
+                .and(MemberOAuth2Binding::getDelFlag).eq(DelFlag.NORMAL.ordinal())
         );
     }
 
@@ -67,7 +69,7 @@ public class MemberOAuth2BindingServiceImpl extends ServiceImpl<MemberOAuth2Bind
         return getOne(QueryWrapper.create()
                 .where(MemberOAuth2Binding::getMemberId).eq(memberId)
                 .and(MemberOAuth2Binding::getProvider).eq(provider)
-                .and(MemberOAuth2Binding::getDelFlag).eq(0)
+                .and(MemberOAuth2Binding::getDelFlag).eq(DelFlag.NORMAL.ordinal())
         );
     }
 
@@ -84,10 +86,10 @@ public class MemberOAuth2BindingServiceImpl extends ServiceImpl<MemberOAuth2Bind
         
         // 设置默认值
         if (binding.getStatus() == null) {
-            binding.setStatus(0);
+            binding.setStatus(Status.ENABLED.getCode());
         }
         if (binding.getDelFlag() == null) {
-            binding.setDelFlag(0);
+            binding.setDelFlag(DelFlag.NORMAL.ordinal());
         }
         
         boolean result = save(binding);
@@ -140,7 +142,7 @@ public class MemberOAuth2BindingServiceImpl extends ServiceImpl<MemberOAuth2Bind
         }
         
         // 软删除
-        binding.setDelFlag(1);
+        binding.setDelFlag(DelFlag.DELETED.ordinal());
         boolean result = updateById(binding);
         
         if (result) {

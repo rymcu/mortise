@@ -6,6 +6,7 @@ import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.core.model.UserLeaderboardEntry;
 import com.rymcu.mortise.core.model.UserProfile;
 import com.rymcu.mortise.core.spi.UserProfileProvider;
+import com.rymcu.mortise.member.constant.MemberProfileKeys;
 import com.rymcu.mortise.member.entity.Member;
 import com.rymcu.mortise.member.service.MemberService;
 import com.rymcu.mortise.member.support.MemberPointLevelResolver;
@@ -74,7 +75,7 @@ public class MemberUserProfileProvider implements UserProfileProvider {
         var query = QueryWrapper.create()
                 .select(MEMBER.ID, MEMBER.NICKNAME, MEMBER.AVATAR_URL, MEMBER.PROFILE)
                 .where(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
-                .and(MEMBER.STATUS.eq(0));
+                .and(MEMBER.STATUS.eq(Status.ENABLED.getCode()));
         if (normalizedKeyword.chars().allMatch(Character::isDigit)) {
             query.and(MEMBER.ID.eq(Long.parseLong(normalizedKeyword))
                     .or(MEMBER.NICKNAME.like(normalizedKeyword))
@@ -127,13 +128,13 @@ public class MemberUserProfileProvider implements UserProfileProvider {
                 member.getId(),
                 member.getNickname(),
                 member.getAvatarUrl(),
-                ext != null ? (String) ext.get("bio") : null,
-                ext != null ? (String) ext.get("website") : null,
-                ext != null ? (String) ext.get("location") : null,
-                ext != null ? (String) ext.get("github") : null,
-                ext != null ? (String) ext.get("weibo") : null,
-                ext != null ? (String) ext.get("wechat") : null,
-                ext != null ? (String) ext.get("qq") : null
+                ext != null ? (String) ext.get(MemberProfileKeys.BIO) : null,
+                ext != null ? (String) ext.get(MemberProfileKeys.WEBSITE) : null,
+                ext != null ? (String) ext.get(MemberProfileKeys.LOCATION) : null,
+                ext != null ? (String) ext.get(MemberProfileKeys.GITHUB) : null,
+                ext != null ? (String) ext.get(MemberProfileKeys.WEIBO) : null,
+                ext != null ? (String) ext.get(MemberProfileKeys.WECHAT) : null,
+                ext != null ? (String) ext.get(MemberProfileKeys.QQ) : null
         );
     }
 }

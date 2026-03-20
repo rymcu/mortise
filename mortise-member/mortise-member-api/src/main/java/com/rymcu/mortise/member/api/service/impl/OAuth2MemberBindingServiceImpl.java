@@ -6,12 +6,17 @@ import com.rymcu.mortise.auth.constant.AuthCacheConstant;
 import com.rymcu.mortise.auth.service.AuthCacheService;
 import com.rymcu.mortise.auth.util.JwtTokenUtil;
 import com.rymcu.mortise.auth.util.OAuth2ProviderUtils;
+import com.rymcu.mortise.common.enumerate.DelFlag;
+import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.common.util.Utils;
 import com.rymcu.mortise.member.api.model.OAuth2LoginResponse;
 import com.rymcu.mortise.member.api.service.ApiMemberService;
 import com.rymcu.mortise.member.api.service.OAuth2MemberBindingService;
+import com.rymcu.mortise.member.constant.MemberJwtConstants;
+import com.rymcu.mortise.member.constant.OAuth2UserAttributeKeys;
 import com.rymcu.mortise.member.entity.Member;
 import com.rymcu.mortise.member.entity.MemberOAuth2Binding;
+import com.rymcu.mortise.member.enumerate.Gender;
 import com.rymcu.mortise.member.service.MemberOAuth2BindingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -140,7 +145,7 @@ public class OAuth2MemberBindingServiceImpl implements OAuth2MemberBindingServic
 
         // 创建新会员
         Member member = new Member();
-        member.setNickname(nickname != null ? nickname : "WeChat_User_" + openid);
+        member.setNickname(nickname != null ? nickname : OAuth2UserAttributeKeys.DEFAULT_WECHAT_NICKNAME_PREFIX + openid);
         member.setAvatarUrl(avatarUrl);
         // 其他字段可根据需要设置
 
@@ -222,8 +227,7 @@ public class OAuth2MemberBindingServiceImpl implements OAuth2MemberBindingServic
         Map<String, Object> attributes = oauth2User.getAttributes();
 
         if (OAuth2ProviderUtils.isWeChatProviderType(providerType)) {
-            // 微信返回的属性中 openid 在顶级
-            return (String) attributes.get("openid");
+            return (String) attributes.get(OAuth2UserAttributeKeys.WECHAT_OPENID);
         }
 
         return null;
@@ -236,8 +240,7 @@ public class OAuth2MemberBindingServiceImpl implements OAuth2MemberBindingServic
         Map<String, Object> attributes = oauth2User.getAttributes();
 
         if (OAuth2ProviderUtils.isWeChatProviderType(providerType)) {
-            // 微信返回的属性中 unionid 在顶级
-            return (String) attributes.get("unionid");
+            return (String) attributes.get(OAuth2UserAttributeKeys.WECHAT_UNIONID);
         }
 
         return null;
@@ -250,7 +253,7 @@ public class OAuth2MemberBindingServiceImpl implements OAuth2MemberBindingServic
         Map<String, Object> attributes = oauth2User.getAttributes();
 
         if (OAuth2ProviderUtils.isWeChatProviderType(providerType)) {
-            return (String) attributes.get("nickname");
+            return (String) attributes.get(OAuth2UserAttributeKeys.WECHAT_NICKNAME);
         }
 
         // 从 name 或 login 字段获取
@@ -259,7 +262,7 @@ public class OAuth2MemberBindingServiceImpl implements OAuth2MemberBindingServic
             return name;
         }
 
-        return (String) attributes.get("name");
+        return (String) attributes.get(OAuth2UserAttributeKeys.NAME);
     }
 
     /**
@@ -269,10 +272,10 @@ public class OAuth2MemberBindingServiceImpl implements OAuth2MemberBindingServic
         Map<String, Object> attributes = oauth2User.getAttributes();
 
         if (OAuth2ProviderUtils.isWeChatProviderType(providerType)) {
-            return (String) attributes.get("headimgurl");
+            return (String) attributes.get(OAuth2UserAttributeKeys.WECHAT_HEADIMGURL);
         }
 
-        return (String) attributes.get("avatar_url");
+        return (String) attributes.get(OAuth2UserAttributeKeys.AVATAR_URL);
     }
 
     /**
@@ -282,14 +285,10 @@ public class OAuth2MemberBindingServiceImpl implements OAuth2MemberBindingServic
         Map<String, Object> attributes = oauth2User.getAttributes();
 
         if (OAuth2ProviderUtils.isWeChatProviderType(providerType)) {
-            Object sex = attributes.get("sex");
+            Object sex = attributes.get(OAuth2UserAttributeKeys.WECHAT_SEX);
             if (sex != null) {
                 int sexValue = sex instanceof Number ? ((Number) sex).intValue() : Integer.parseInt(sex.toString());
-                return switch (sexValue) {
-                    case 1 -> "male";
-                    case 2 -> "female";
-                    default -> "other";
-                };
+                return Gender.fromWechatSexCode(sexValue).getValue();
             }
         }
         return null;
@@ -300,17 +299,17 @@ public class OAuth2MemberBindingServiceImpl implements OAuth2MemberBindingServic
      */
     private String extractCountry(OAuth2User oauth2User, String providerType) {
         Map<String, Object> attributes = oauth2User.getAttributes();
-        return (String) attributes.get("country");
+        return (String) attributes.get(OAuth2UserAttributeKeys.COUNTRY);
     }
 
     private String extractProvince(OAuth2User oauth2User, String providerType) {
         Map<String, Object> attributes = oauth2User.getAttributes();
-        return (String) attributes.get("province");
+        return (String) attributes.get(OAuth2UserAttributeKeys.PROVINCE);
     }
 
     private String extractCity(OAuth2User oauth2User, String providerType) {
         Map<String, Object> attributes = oauth2User.getAttributes();
-        return (String) attributes.get("city");
+        return (String) attributes.get(OAuth2UserAttributeKeys.CITY);
     }
 
     /**
@@ -328,8 +327,8 @@ public class OAuth2MemberBindingServiceImpl implements OAuth2MemberBindingServic
         binding.setCountry(extractCountry(oauth2User, providerType));
         binding.setProvince(extractProvince(oauth2User, providerType));
         binding.setCity(extractCity(oauth2User, providerType));
-        binding.setStatus(0);
-        binding.setDelFlag(0);
+        binding.setStatus(Status.ENABLED.getCode());
+        binding.setDelFlag(DelFlag.NORMAL.ordinal());
 
         // 序列化原始用户数据
         try {
@@ -398,12 +397,12 @@ public class OAuth2MemberBindingServiceImpl implements OAuth2MemberBindingServic
 
         // 生成 JWT Token
         Map<String, Object> claims = new HashMap<>();
-        claims.put("memberId", member.getId());
-        claims.put("type", "member");
-        claims.put("loginType", "oauth2");
-        claims.put("openid", openid);
+        claims.put(MemberJwtConstants.CLAIM_MEMBER_ID, member.getId());
+        claims.put(MemberJwtConstants.CLAIM_TYPE, MemberJwtConstants.TYPE_MEMBER);
+        claims.put(MemberJwtConstants.CLAIM_LOGIN_TYPE, MemberJwtConstants.LOGIN_TYPE_OAUTH2);
+        claims.put(MemberJwtConstants.CLAIM_OPENID, openid);
         if (unionid != null) {
-            claims.put("unionid", unionid);
+            claims.put(MemberJwtConstants.CLAIM_UNIONID, unionid);
         }
 
         String username = member.getUsername();
@@ -425,7 +424,7 @@ public class OAuth2MemberBindingServiceImpl implements OAuth2MemberBindingServic
                 jwtToken,
                 refreshToken,
                 jwtTokenUtil.getTokenPrefix().trim(),
-                1800000L,
+                MemberJwtConstants.ACCESS_TOKEN_EXPIRY_MS,
                 AuthCacheConstant.MEMBER_REFRESH_TOKEN_EXPIRE_HOURS * 60 * 60 * 1000,
                 openid,
                 unionid,

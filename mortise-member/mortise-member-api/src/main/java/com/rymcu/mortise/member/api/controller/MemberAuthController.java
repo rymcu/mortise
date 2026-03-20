@@ -19,10 +19,12 @@ import com.rymcu.mortise.member.api.model.ResetPasswordRequest;
 import com.rymcu.mortise.member.api.model.SendCodeRequest;
 import com.rymcu.mortise.member.api.model.TokenRefreshResponse;
 import com.rymcu.mortise.member.api.model.VerifyCodeRequest;
+import com.rymcu.mortise.member.constant.MemberJwtConstants;
 import com.rymcu.mortise.core.model.CurrentUser;
 import com.rymcu.mortise.member.api.service.ApiMemberService;
 import com.rymcu.mortise.member.api.service.VerificationCodeService;
 import com.rymcu.mortise.member.entity.Member;
+import com.rymcu.mortise.member.enumerate.VerificationCodeType;
 import com.rymcu.mortise.web.annotation.ApiController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -89,8 +91,8 @@ public class MemberAuthController {
 
         // 生成 JWT Token（添加 memberId 到 claims）
         Map<String, Object> claims = new HashMap<>();
-        claims.put("memberId", member.getId());
-        claims.put("type", "member"); // 标识为会员 token
+        claims.put(MemberJwtConstants.CLAIM_MEMBER_ID, member.getId());
+        claims.put(MemberJwtConstants.CLAIM_TYPE, MemberJwtConstants.TYPE_MEMBER);
 
         // 使用 username 作为 subject（JWT 的标准用法）
         String username = member.getUsername();
@@ -113,7 +115,7 @@ public class MemberAuthController {
                 jwtToken,
                 refreshToken,
                 jwtTokenUtil.getTokenPrefix().trim(),
-                1800000L,
+                MemberJwtConstants.ACCESS_TOKEN_EXPIRY_MS,
                 AuthCacheConstant.MEMBER_REFRESH_TOKEN_EXPIRE_HOURS * 60 * 60 * 1000
         );
 
@@ -131,9 +133,9 @@ public class MemberAuthController {
 
         // 生成 JWT Token（添加 memberId 到 claims）
         Map<String, Object> claims = new HashMap<>();
-        claims.put("memberId", member.getId());
-        claims.put("type", "member"); // 标识为会员 token
-        claims.put("loginType", "phone"); // 标识登录方式
+        claims.put(MemberJwtConstants.CLAIM_MEMBER_ID, member.getId());
+        claims.put(MemberJwtConstants.CLAIM_TYPE, MemberJwtConstants.TYPE_MEMBER);
+        claims.put(MemberJwtConstants.CLAIM_LOGIN_TYPE, MemberJwtConstants.LOGIN_TYPE_PHONE);
 
         // 使用手机号作为 subject
         String username = member.getUsername();
@@ -155,7 +157,7 @@ public class MemberAuthController {
                 jwtToken,
                 refreshToken,
                 jwtTokenUtil.getTokenPrefix().trim(),
-                1800000L,
+                MemberJwtConstants.ACCESS_TOKEN_EXPIRY_MS,
                 AuthCacheConstant.MEMBER_REFRESH_TOKEN_EXPIRE_HOURS * 60 * 60 * 1000
         );
 
@@ -186,8 +188,8 @@ public class MemberAuthController {
 
         // 生成新的 JWT Token
         Map<String, Object> claims = new HashMap<>();
-        claims.put("memberId", member.getId());
-        claims.put("type", "member");
+        claims.put(MemberJwtConstants.CLAIM_MEMBER_ID, member.getId());
+        claims.put(MemberJwtConstants.CLAIM_TYPE, MemberJwtConstants.TYPE_MEMBER);
 
         String username = member.getUsername();
         if (username == null || username.trim().isEmpty()) {
@@ -209,7 +211,7 @@ public class MemberAuthController {
                 jwtToken,
                 newRefreshToken,
                 jwtTokenUtil.getTokenPrefix().trim(),
-                1800000L,
+                MemberJwtConstants.ACCESS_TOKEN_EXPIRY_MS,
                 AuthCacheConstant.MEMBER_REFRESH_TOKEN_EXPIRE_HOURS * 60 * 60 * 1000
         );
 
@@ -236,7 +238,7 @@ public class MemberAuthController {
         TokenRefreshResponse response = new TokenRefreshResponse(
                 newToken,
                 jwtTokenUtil.getTokenPrefix().trim(),
-                1800000L
+                MemberJwtConstants.ACCESS_TOKEN_EXPIRY_MS
         );
 
         return GlobalResult.success(response);
@@ -337,12 +339,12 @@ public class MemberAuthController {
     public GlobalResult<Boolean> sendCode(@Valid @RequestBody SendCodeRequest request) {
         Boolean success;
 
-        if ("sms".equalsIgnoreCase(request.type())) {
+        if (VerificationCodeType.SMS.matches(request.type())) {
             if (request.phone() == null || request.phone().trim().isEmpty()) {
                 return GlobalResult.error("手机号不能为空");
             }
             success = verificationCodeService.sendSmsCode(request.phone());
-        } else if ("email".equalsIgnoreCase(request.type())) {
+        } else if (VerificationCodeType.EMAIL.matches(request.type())) {
             if (request.email() == null || request.email().trim().isEmpty()) {
                 return GlobalResult.error("邮箱不能为空");
             }
@@ -360,12 +362,12 @@ public class MemberAuthController {
     public GlobalResult<Boolean> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         boolean isValid;
 
-        if ("sms".equalsIgnoreCase(request.type())) {
+        if (VerificationCodeType.SMS.matches(request.type())) {
             if (request.account() == null || request.account().trim().isEmpty()) {
                 return GlobalResult.error("手机号不能为空");
             }
             isValid = verificationCodeService.verifySmsCode(request.account(), request.code());
-        } else if ("email".equalsIgnoreCase(request.type())) {
+        } else if (VerificationCodeType.EMAIL.matches(request.type())) {
             if (request.account() == null || request.account().trim().isEmpty()) {
                 return GlobalResult.error("邮箱不能为空");
             }
@@ -389,12 +391,12 @@ public class MemberAuthController {
     public GlobalResult<Boolean> verifyCode(@Valid @RequestBody VerifyCodeRequest request) {
         Boolean isValid;
 
-        if ("sms".equalsIgnoreCase(request.type())) {
+        if (VerificationCodeType.SMS.matches(request.type())) {
             if (request.phone() == null || request.phone().trim().isEmpty()) {
                 return GlobalResult.error("手机号不能为空");
             }
             isValid = verificationCodeService.verifySmsCode(request.phone(), request.code());
-        } else if ("email".equalsIgnoreCase(request.type())) {
+        } else if (VerificationCodeType.EMAIL.matches(request.type())) {
             if (request.email() == null || request.email().trim().isEmpty()) {
                 return GlobalResult.error("邮箱不能为空");
             }

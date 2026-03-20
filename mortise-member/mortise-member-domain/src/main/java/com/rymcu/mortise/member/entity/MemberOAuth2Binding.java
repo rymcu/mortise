@@ -128,7 +128,7 @@ public class MemberOAuth2Binding implements Serializable {
     private String rawData;
 
     /**
-     * 状态: 0-正常, 1-禁用
+     * 状态: 0-禁用, 1-启用
      */
     private Integer status;
 

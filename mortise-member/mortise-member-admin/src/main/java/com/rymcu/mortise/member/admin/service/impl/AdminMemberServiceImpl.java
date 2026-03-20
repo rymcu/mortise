@@ -2,6 +2,7 @@ package com.rymcu.mortise.member.admin.service.impl;
 
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
+import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.member.admin.model.MemberInfo;
 import com.rymcu.mortise.member.admin.model.MemberSearch;
 import com.rymcu.mortise.member.admin.service.AdminMemberService;
@@ -48,12 +49,12 @@ public class AdminMemberServiceImpl extends MemberServiceImpl implements AdminMe
 
     @Override
     public Boolean enableMember(Long id) {
-        return updateStatus(id, 0);
+        return updateStatus(id, Status.ENABLED.getCode());
     }
 
     @Override
     public Boolean disableMember(Long id) {
-        return updateStatus(id, 1);
+        return updateStatus(id, Status.DISABLED.getCode());
     }
 
     @Override

@@ -1,7 +1,11 @@
 package com.rymcu.mortise.member.support;
 
+import com.rymcu.mortise.member.enumerate.MemberLevel;
+
 /**
  * 会员积分等级映射
+ * <p>
+ * 委托给 {@link MemberLevel} 枚举实现，保留此工具类作为统一入口。
  */
 public final class MemberPointLevelResolver {
 
@@ -9,19 +13,11 @@ public final class MemberPointLevelResolver {
     }
 
     public static String resolveLabel(Integer points) {
-        int safePoints = points != null ? Math.max(points, 0) : 0;
-        if (safePoints >= 10_000) {
-            return "Lv.5 布道师";
-        }
-        if (safePoints >= 2_000) {
-            return "Lv.4 专家";
-        }
-        if (safePoints >= 500) {
-            return "Lv.3 贡献者";
-        }
-        if (safePoints >= 100) {
-            return "Lv.2 入门者";
-        }
-        return "Lv.1 新手";
+        return MemberLevel.resolveLabel(points);
+    }
+
+    public static MemberLevel resolve(Integer points) {
+        int safePoints = points != null ? points : 0;
+        return MemberLevel.fromPoints(safePoints);
     }
 }

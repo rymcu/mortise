@@ -3,9 +3,13 @@ package com.rymcu.mortise.member.api.service.impl;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.rymcu.mortise.cache.service.CacheService;
+import com.rymcu.mortise.common.enumerate.DelFlag;
+import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.member.api.service.ApiMemberService;
 import com.rymcu.mortise.member.api.service.VerificationCodeService;
+import com.rymcu.mortise.member.constant.OAuth2UserAttributeKeys;
 import com.rymcu.mortise.member.entity.Member;
+import com.rymcu.mortise.member.enumerate.MemberLevel;
 import com.rymcu.mortise.member.service.impl.MemberServiceImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -45,7 +49,7 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
         }
         return getOne(QueryWrapper.create()
                 .where(MEMBER.USERNAME.eq(username))
-                .and(MEMBER.DEL_FLAG.eq(0)));
+                .and(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal())));
     }
 
     @Override
@@ -55,7 +59,7 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
         }
         return getOne(QueryWrapper.create()
                 .where(MEMBER.EMAIL.eq(email))
-                .and(MEMBER.DEL_FLAG.eq(0)));
+                .and(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal())));
     }
 
     @Override
@@ -65,7 +69,7 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
         }
         return getOne(QueryWrapper.create()
                 .where(MEMBER.PHONE.eq(phone))
-                .and(MEMBER.DEL_FLAG.eq(0)));
+                .and(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal())));
     }
 
     @Override
@@ -86,10 +90,10 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
         member.setPasswordHash(passwordEncoder.encode(password));
         member.setCreatedTime(LocalDateTime.now());
         member.setUpdatedTime(LocalDateTime.now());
-        member.setStatus(0);
-        member.setMemberLevel("normal");
+        member.setStatus(Status.ENABLED.getCode());
+        member.setMemberLevel(MemberLevel.DEFAULT_LEVEL_CODE);
         member.setPoints(0);
-        member.setDelFlag(0);
+        member.setDelFlag(DelFlag.NORMAL.ordinal());
 
         // 使用继承自 ServiceImpl 的 save 方法
         save(member);
@@ -117,7 +121,7 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
             throw new IllegalArgumentException("账号不存在");
         }
 
-        if (member.getStatus() != 0) {
+        if (member.getStatus() != Status.ENABLED.getCode()) {
             throw new IllegalArgumentException("账号已被禁用");
         }
 
@@ -154,7 +158,7 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
             throw new IllegalArgumentException("手机号未注册");
         }
 
-        if (member.getStatus() != 0) {
+        if (member.getStatus() != Status.ENABLED.getCode()) {
             throw new IllegalArgumentException("账号已被禁用");
         }
 
@@ -270,7 +274,7 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
     @Deprecated
     public Page<Member> findMemberList(Page<Member> page, Integer status, String memberLevel, String keyword) {
         QueryWrapper queryWrapper = QueryWrapper.create()
-                .where(MEMBER.DEL_FLAG.eq(0));
+                .where(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()));
 
         if (status != null) {
             queryWrapper.and(MEMBER.STATUS.eq(status));
@@ -306,11 +310,11 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
 
         // 设置默认状态
         if (member.getStatus() == null) {
-            member.setStatus(0); // 正常状态
+            member.setStatus(Status.ENABLED.getCode());
         }
 
         // 设置其他默认值
-        member.setDelFlag(0);
+        member.setDelFlag(DelFlag.NORMAL.ordinal());
         member.setCreatedTime(LocalDateTime.now());
 
         // 保存会员
@@ -353,7 +357,7 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
         }
 
         // 检查会员状态
-        if (member.getStatus() != 0) {
+        if (member.getStatus() != Status.ENABLED.getCode()) {
             throw new IllegalArgumentException("账号已被禁用，无法修改用户名");
         }
 
@@ -390,7 +394,7 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
      * 格式：user_${timestamp}_${randomCode}
      */
     private String generateUniqueUsername() {
-        String prefix = "oauth2_";
+        String prefix = OAuth2UserAttributeKeys.OAUTH2_USERNAME_PREFIX;
         String suffix = System.currentTimeMillis() + "_" +
                        (int) (Math.random() * 10000);
         String username = prefix + suffix;
