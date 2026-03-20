@@ -140,21 +140,7 @@ defineExpose({ validate, state })
       </UFormField>
 
       <UFormField label="图标" name="icon">
-        <div class="flex items-center gap-2 w-full">
-          <UInput
-            v-model="state.icon"
-            placeholder="如：i-simple-icons-github"
-            class="flex-1"
-          />
-          <div class="flex items-center justify-center size-8 rounded border border-dashed border-(--ui-border) shrink-0">
-            <UIcon
-              v-if="state.icon"
-              :name="String(state.icon)"
-              class="size-5"
-            />
-            <UIcon v-else name="i-lucide-image" class="size-4 text-(--ui-text-muted)" />
-          </div>
-        </div>
+        <IconPicker v-model="state.icon" />
       </UFormField>
 
       <UFormField label="授权类型" name="authorizationGrantType">

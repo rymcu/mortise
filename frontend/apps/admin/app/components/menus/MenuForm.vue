@@ -142,11 +142,7 @@ defineExpose({ validate, state })
     </UFormField>
 
     <UFormField label="图标" name="icon">
-      <UInput
-        v-model="state.icon"
-        placeholder="如：i-lucide-home"
-        class="w-full"
-      />
+      <IconPicker v-model="state.icon" />
     </UFormField>
 
     <UFormField label="路由链接" name="href">
