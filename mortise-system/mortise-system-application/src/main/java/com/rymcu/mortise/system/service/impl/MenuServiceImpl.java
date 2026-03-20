@@ -21,8 +21,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.rymcu.mortise.system.entity.table.MenuTableDef.MENU;
 
@@ -120,36 +123,47 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
 
     @Override
     public List<MenuTreeInfo> findMenuTree(MenuSearch search) {
-        return findMenuTreeMode(search.getParentId());
-    }
-
-    private List<MenuTreeInfo> findMenuTreeMode(Long parentId) {
+        Long rootParentId = search.getParentId() != null ? search.getParentId() : 0L;
+        // 一次性查询所有菜单，避免递归 N+1 查询
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .select(MENU.ID, MENU.LABEL, MENU.PERMISSION, MENU.PARENT_ID, MENU.SORT_NO,
                         MENU.MENU_TYPE, MENU.ICON, MENU.HREF, MENU.CREATED_TIME, MENU.UPDATED_TIME, MENU.STATUS)
-                .where(MENU.PARENT_ID.eq(parentId != null ? parentId : 0L))
                 .orderBy(MENU.SORT_NO.asc());
-        List<Menu> menus = mapper.selectListByQuery(queryWrapper);
-        List<MenuTreeInfo> menuTreeInfos = new ArrayList<>();
-        for (Menu menu : menus) {
-            MenuTreeInfo menuTreeInfo = new MenuTreeInfo();
-            BeanUtils.copyProperties(menu, menuTreeInfo);
-            menuTreeInfo.setChildren(findMenuTreeMode(menu.getId()));
-            menuTreeInfos.add(menuTreeInfo);
-        }
-        return menuTreeInfos;
+        List<Menu> allMenus = mapper.selectListByQuery(queryWrapper);
+        Map<Long, List<Menu>> menusByParentId = allMenus.stream()
+                .collect(Collectors.groupingBy(Menu::getParentId));
+        return buildMenuTree(menusByParentId, rootParentId);
     }
 
-    private List<Link> findLinkTreeMode(Long idUser, long parentId) {
-        // 使用 Mapper 方法，避免参数绑定问题
-        List<Menu> menus = mapper.findLinksByUserIdAndParentId(idUser, parentId);
-        List<Link> links = new ArrayList<>();
-        for (Menu menu : menus) {
-            Link link = convertLink(menu);
-            link.setChildren(findLinkTreeMode(idUser, menu.getId()));
-            links.add(link);
+    private List<MenuTreeInfo> buildMenuTree(Map<Long, List<Menu>> menusByParentId, Long parentId) {
+        List<Menu> children = menusByParentId.getOrDefault(parentId, Collections.emptyList());
+        List<MenuTreeInfo> result = new ArrayList<>(children.size());
+        for (Menu menu : children) {
+            MenuTreeInfo menuTreeInfo = new MenuTreeInfo();
+            BeanUtils.copyProperties(menu, menuTreeInfo);
+            menuTreeInfo.setChildren(buildMenuTree(menusByParentId, menu.getId()));
+            result.add(menuTreeInfo);
         }
-        return links;
+        return result;
+    }
+
+    private List<Link> findLinkTreeMode(Long idUser, Long parentId) {
+        // 一次性查询该用户所有授权菜单，避免递归 N+1 查询
+        List<Menu> allMenus = mapper.findAllLinksByUserId(idUser);
+        Map<Long, List<Menu>> menusByParentId = allMenus.stream()
+                .collect(Collectors.groupingBy(Menu::getParentId));
+        return buildLinkTree(menusByParentId, parentId);
+    }
+
+    private List<Link> buildLinkTree(Map<Long, List<Menu>> menusByParentId, Long parentId) {
+        List<Menu> children = menusByParentId.getOrDefault(parentId, Collections.emptyList());
+        List<Link> result = new ArrayList<>(children.size());
+        for (Menu menu : children) {
+            Link link = convertLink(menu);
+            link.setChildren(buildLinkTree(menusByParentId, menu.getId()));
+            result.add(link);
+        }
+        return result;
     }
 
     private static Link convertLink(Menu menu) {
