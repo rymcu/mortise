@@ -109,6 +109,32 @@
                 <artifactId>mortise-aiot-gateway-mqtt</artifactId>
                 <version>${revision}</version>
             </dependency>
+            <!-- Automation 模块（商业版，通过 pro profile 按需引入） -->
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-automation-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-automation-application</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-automation-infra</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-automation-admin</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-automation-api</artifactId>
+                <version>${revision}</version>
+            </dependency>
             <!-- Agent 模块（AI Agent） -->
             <dependency>
                 <groupId>com.rymcu</groupId>
@@ -644,6 +670,7 @@
                 <module>mortise-aiot</module>
                 <module>mortise-aiot-gateway-mqtt</module>
                 <module>mortise-ota</module>
+                <module>mortise-automation</module>
             </modules>
         </profile>
     </profiles>

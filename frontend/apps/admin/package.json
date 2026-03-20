@@ -16,6 +16,7 @@
     "@internationalized/date": "^3.11.0",
     "@mortise/admin-aiot-layer": "workspace:*",
     "@mortise/admin-community-layer": "workspace:*",
+    "@mortise/admin-automation-layer": "workspace:*",
     "@mortise/admin-ota-layer": "workspace:*",
     "@mortise/auth": "workspace:*",
     "@mortise/core-sdk": "workspace:*",

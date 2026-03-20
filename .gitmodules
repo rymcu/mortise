@@ -32,9 +32,16 @@
 [submodule "frontend/layers/admin/community"]
 	path = frontend/layers/admin/community
 	url = git@github.com:rymcu/admin-community.git
+[submodule "mortise-automation"]
+	path = mortise-automation
+	url = git@github.com:rymcu/mortise-automation.git
+	branch = master
 [submodule "frontend/layers/admin/aiot"]
 	path = frontend/layers/admin/aiot
 	url = git@github.com:rymcu/admin-aiot.git
 [submodule "frontend/layers/admin/ota"]
 	path = frontend/layers/admin/ota
 	url = git@github.com:rymcu/admin-ota.git
+[submodule "frontend/layers/admin/automation"]
+	path = frontend/layers/admin/automation
+	url = git@github.com:rymcu/admin-automation.git

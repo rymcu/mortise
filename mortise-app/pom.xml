@@ -250,6 +250,15 @@
                     <groupId>com.rymcu</groupId>
                     <artifactId>mortise-ota-api</artifactId>
                 </dependency>
+                <!-- Automation 模块 -->
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-automation-admin</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-automation-api</artifactId>
+                </dependency>
             </dependencies>
         </profile>
     </profiles>
