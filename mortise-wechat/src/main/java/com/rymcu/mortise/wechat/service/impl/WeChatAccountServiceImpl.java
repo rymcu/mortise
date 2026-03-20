@@ -287,7 +287,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
         int rows = configMapper.deleteByQuery(QueryWrapper.create()
                 .from(WeChatConfig.class)
                 .where(WE_CHAT_CONFIG.ACCOUNT_ID.eq(accountId))
-                .and(WE_CHAT_ACCOUNT.CONFIG_KEY.eq(configKey)));
+                .and(WE_CHAT_CONFIG.CONFIG_KEY.eq(configKey)));
         log.info("删除配置成功，accountId: {}, key: {}", accountId, configKey);
         return rows > 0;
     }
