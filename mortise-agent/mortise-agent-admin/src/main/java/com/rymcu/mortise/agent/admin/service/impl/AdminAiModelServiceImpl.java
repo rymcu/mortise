@@ -11,6 +11,7 @@ import com.rymcu.mortise.agent.service.AiProviderService;
 import com.rymcu.mortise.agent.service.impl.AiModelServiceImpl;
 import com.rymcu.mortise.common.enumerate.Status;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -27,7 +28,7 @@ public class AdminAiModelServiceImpl extends AiModelServiceImpl implements Admin
 
     private final AiProviderService aiProviderService;
 
-    public AdminAiModelServiceImpl(AiProviderService aiProviderService) {
+    public AdminAiModelServiceImpl(@Qualifier("aiProviderServiceImpl") AiProviderService aiProviderService) {
         this.aiProviderService = aiProviderService;
     }
 
