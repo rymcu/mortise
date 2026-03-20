@@ -73,6 +73,7 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => [
 const navItems = [
   { label: '首页', to: '/' },
   { label: '模块', to: '/modules' },
+  { label: 'AI 对话', to: '/chat' },
   { label: '定价', to: '/pricing' },
   { label: '博客', to: '/blog' },
   { label: '文档', to: '/docs' },

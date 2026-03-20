@@ -1,0 +1,77 @@
+# Mortise Agent 配置示例
+# 将此文件内容复制到 application.yml 中
+
+mortise:
+  agent:
+    # 默认模型配置
+    default-model:
+      type: openai  # 可选: openai, anthropic, deepseek, zhipu, dashscope, ollama
+      name: qwen3-next-80b-a3b-instruct # 模型名称
+      # api-key: ${OPENAI_API_KEY}  # 可选，通常从环境变量读取
+    
+    # 语义路由配置
+    router:
+      # 意图分类器类型（推荐使用 FUNCTION_CALLING）
+      # - RULE_BASED: 规则匹配，最快但精度较低，无需LLM调用
+      # - FUNCTION_CALLING: 基于函数调用，利用LLM原生能力判断意图（推荐）
+      #                       普通聊天直接返回，工具调用才走ReAct Agent
+      # - LLM_BASED: 基于LLM的分类器，需要额外LLM调用
+      intent-classifier-type: function_calling
+      
+      # 意图分类器使用的模型（仅 LLM_BASED 类型需要，其他类型会忽略此配置）
+      intent-classifier-model:
+        type: openai
+        name: gpt-4o-mini
+      
+      # 意图分类的置信度阈值
+      confidence-threshold: 0.7
+    
+    # ReAct Agent 配置
+    react:
+      # 最大迭代次数
+      max-iterations: 5
+      # 启用自我反思
+      enable-self-reflection: true
+      # 启用错误恢复
+      enable-error-recovery: true
+
+# Spring AI 各模型配置（按需启用）
+
+# OpenAI 配置
+spring:
+  ai:
+    openai:
+      api-key: XXXXX
+      base-url: https://dashscope.aliyuncs.com/compatible-mode  # 可选，自定义 API 地址
+      chat:
+        options:
+          model: qwen3-next-80b-a3b-instruct
+          temperature: 0.7
+
+# Anthropic Claude 配置（可选）
+# spring:
+#   ai:
+#     anthropic:
+#       api-key: ${ANTHROPIC_API_KEY}
+#       chat:
+#         options:
+#           model: claude-3-sonnet
+
+# DeepSeek 配置（可选）
+# spring:
+#   ai:
+#     deepseek:
+#       api-key: ${DEEPSEEK_API_KEY}
+#       base-url: https://api.deepseek.com
+#       chat:
+#         options:
+#           model: deepseek-chat
+
+# Ollama 本地模型配置（可选）
+# spring:
+#   ai:
+#     ollama:
+#       base-url: http://localhost:11434
+#       chat:
+#         options:
+#           model: llama3

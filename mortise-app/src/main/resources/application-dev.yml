@@ -21,9 +21,9 @@ spring:
           max-idle: 500
           min-idle: 0
   datasource:
-    url: jdbc:postgresql://192.168.49.129:5432/mortise
+    url: jdbc:postgresql://192.168.88.243:15432/postgres
     username: mortise
-    password: BidD8WNsL8e7
+    password: ENC(/T9oN1+Zyq6ZOYV4oOyJJFblmrbhla0tmI1ExpjXA/4cg1gw+Yh6kw==)
     driver-class-name: org.postgresql.Driver
     type: com.zaxxer.hikari.HikariDataSource
     hikari:

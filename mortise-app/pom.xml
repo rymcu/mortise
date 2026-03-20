@@ -92,6 +92,10 @@
             <groupId>com.rymcu</groupId>
             <artifactId>mortise-file</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-agent</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>com.rymcu</groupId>
