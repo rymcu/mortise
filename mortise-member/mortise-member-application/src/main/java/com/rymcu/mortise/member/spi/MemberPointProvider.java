@@ -53,7 +53,6 @@ public class MemberPointProvider implements UserPointProvider {
                 QueryWrapper.create()
                         .where(MEMBER_POINT_HISTORY.USER_ID.eq(command.userId()))
                         .and(MEMBER_POINT_HISTORY.BIZ_KEY.eq(command.bizKey()))
-                        .and(MEMBER_POINT_HISTORY.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
         );
         if (duplicate > 0) {
             return false;
@@ -63,7 +62,6 @@ public class MemberPointProvider implements UserPointProvider {
                 QueryWrapper.create()
                         .select(MEMBER.ID, MEMBER.POINTS)
                         .where(MEMBER.ID.eq(command.userId()))
-                        .and(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
         );
         if (member == null) {
             return false;
@@ -104,7 +102,6 @@ public class MemberPointProvider implements UserPointProvider {
                 QueryWrapper.create()
                         .select(MEMBER.ID, MEMBER.POINTS)
                         .where(MEMBER.ID.eq(userId))
-                        .and(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
         );
         if (member == null) {
             return new UserPointSummary(userId, 0, MemberPointLevelResolver.resolveLabel(0));
@@ -123,7 +120,6 @@ public class MemberPointProvider implements UserPointProvider {
                         QueryWrapper.create()
                                 .select(MEMBER_POINT_HISTORY.ALL_COLUMNS)
                                 .where(MEMBER_POINT_HISTORY.USER_ID.eq(userId))
-                                .and(MEMBER_POINT_HISTORY.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
                                 .orderBy(MEMBER_POINT_HISTORY.CREATED_TIME.desc(), MEMBER_POINT_HISTORY.ID.desc())
                                 .limit(safeLimit)
                 ).stream()

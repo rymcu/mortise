@@ -1,7 +1,6 @@
 package com.rymcu.mortise.member.spi;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.rymcu.mortise.common.enumerate.DelFlag;
 import com.rymcu.mortise.core.model.MemberContact;
 import com.rymcu.mortise.core.spi.MemberContactProvider;
 import com.rymcu.mortise.member.service.MemberService;
@@ -32,8 +31,7 @@ public class MemberContactProviderImpl implements MemberContactProvider {
         }
         var member = memberService.getOne(QueryWrapper.create()
                 .select(MEMBER.ID, MEMBER.EMAIL, MEMBER.EMAIL_VERIFIED_TIME, MEMBER.STATUS)
-                .where(MEMBER.ID.eq(userId))
-                .and(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal())));
+                .where(MEMBER.ID.eq(userId)));
         if (member == null || StringUtils.isBlank(member.getEmail())) {
             return Optional.empty();
         }

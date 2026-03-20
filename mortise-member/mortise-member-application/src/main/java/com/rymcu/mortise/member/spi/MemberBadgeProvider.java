@@ -51,7 +51,6 @@ public class MemberBadgeProvider implements UserBadgeProvider {
         var badge = memberBadgeMapper.selectOneByQuery(
                 QueryWrapper.create()
                         .where(MEMBER_BADGE.CODE.eq(command.badgeCode()))
-                        .and(MEMBER_BADGE.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
         );
         if (badge == null) {
             return Optional.empty();
@@ -61,7 +60,6 @@ public class MemberBadgeProvider implements UserBadgeProvider {
                 QueryWrapper.create()
                         .where(MEMBER_USER_BADGE.USER_ID.eq(command.userId()))
                         .and(MEMBER_USER_BADGE.BADGE_ID.eq(badge.getId()))
-                        .and(MEMBER_USER_BADGE.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
         );
         if (exists > 0) {
             return Optional.empty();
@@ -90,7 +88,6 @@ public class MemberBadgeProvider implements UserBadgeProvider {
         var userBadges = memberUserBadgeMapper.selectListByQuery(
                 QueryWrapper.create()
                         .where(MEMBER_USER_BADGE.USER_ID.eq(userId))
-                        .and(MEMBER_USER_BADGE.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
                         .orderBy(MEMBER_USER_BADGE.EARNED_TIME.desc(), MEMBER_USER_BADGE.ID.desc())
                         .limit(safeLimit)
         );
@@ -105,7 +102,6 @@ public class MemberBadgeProvider implements UserBadgeProvider {
         var badgeMap = memberBadgeMapper.selectListByQuery(
                         QueryWrapper.create()
                                 .where(MEMBER_BADGE.ID.in(badgeIds))
-                                .and(MEMBER_BADGE.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
                 ).stream()
                 .collect(Collectors.toMap(MemberBadge::getId, Function.identity()));
 
@@ -122,7 +118,6 @@ public class MemberBadgeProvider implements UserBadgeProvider {
     public List<UserBadgeDefinition> listBadgeDefinitions() {
         return memberBadgeMapper.selectListByQuery(
                         QueryWrapper.create()
-                                .where(MEMBER_BADGE.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
                                 .orderBy(MEMBER_BADGE.ID.asc())
                 ).stream()
                 .map(item -> new UserBadgeDefinition(
@@ -146,7 +141,6 @@ public class MemberBadgeProvider implements UserBadgeProvider {
         var exists = memberBadgeMapper.selectCountByQuery(
                 QueryWrapper.create()
                         .where(MEMBER_BADGE.CODE.eq(normalizedCode))
-                        .and(MEMBER_BADGE.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
         );
         if (exists > 0) {
             return Optional.empty();
@@ -180,7 +174,6 @@ public class MemberBadgeProvider implements UserBadgeProvider {
         var badge = memberBadgeMapper.selectOneByQuery(
                 QueryWrapper.create()
                         .where(MEMBER_BADGE.CODE.eq(command.code().trim()))
-                        .and(MEMBER_BADGE.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
         );
         if (badge == null) {
             return Optional.empty();

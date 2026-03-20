@@ -48,8 +48,7 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
             return null;
         }
         return getOne(QueryWrapper.create()
-                .where(MEMBER.USERNAME.eq(username))
-                .and(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal())));
+                .where(MEMBER.USERNAME.eq(username)));
     }
 
     @Override
@@ -58,8 +57,7 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
             return null;
         }
         return getOne(QueryWrapper.create()
-                .where(MEMBER.EMAIL.eq(email))
-                .and(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal())));
+                .where(MEMBER.EMAIL.eq(email)));
     }
 
     @Override
@@ -68,8 +66,7 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
             return null;
         }
         return getOne(QueryWrapper.create()
-                .where(MEMBER.PHONE.eq(phone))
-                .and(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal())));
+                .where(MEMBER.PHONE.eq(phone)));
     }
 
     @Override
@@ -273,8 +270,7 @@ public class ApiMemberServiceImpl extends MemberServiceImpl implements ApiMember
     @Override
     @Deprecated
     public Page<Member> findMemberList(Page<Member> page, Integer status, String memberLevel, String keyword) {
-        QueryWrapper queryWrapper = QueryWrapper.create()
-                .where(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()));
+        QueryWrapper queryWrapper = QueryWrapper.create();
 
         if (status != null) {
             queryWrapper.and(MEMBER.STATUS.eq(status));

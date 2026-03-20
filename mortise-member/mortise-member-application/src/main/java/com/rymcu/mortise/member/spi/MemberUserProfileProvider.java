@@ -1,7 +1,6 @@
 package com.rymcu.mortise.member.spi;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.rymcu.mortise.common.enumerate.DelFlag;
 import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.core.model.UserLeaderboardEntry;
 import com.rymcu.mortise.core.model.UserProfile;
@@ -46,7 +45,6 @@ public class MemberUserProfileProvider implements UserProfileProvider {
                 QueryWrapper.create()
                         .select(MEMBER.ID, MEMBER.NICKNAME, MEMBER.AVATAR_URL, MEMBER.PROFILE)
                         .where(MEMBER.ID.eq(userId))
-                        .and(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
         );
         return member == null ? null : toUserProfile(member);
     }
@@ -60,7 +58,6 @@ public class MemberUserProfileProvider implements UserProfileProvider {
                         QueryWrapper.create()
                                 .select(MEMBER.ID, MEMBER.NICKNAME, MEMBER.AVATAR_URL, MEMBER.PROFILE)
                                 .where(MEMBER.ID.in(userIds))
-                                .and(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
                 ).stream()
                 .collect(Collectors.toMap(Member::getId, this::toUserProfile, (a, b) -> a));
     }
@@ -74,8 +71,7 @@ public class MemberUserProfileProvider implements UserProfileProvider {
         var safeLimit = limit > 0 ? Math.min(limit, 20) : 8;
         var query = QueryWrapper.create()
                 .select(MEMBER.ID, MEMBER.NICKNAME, MEMBER.AVATAR_URL, MEMBER.PROFILE)
-                .where(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
-                .and(MEMBER.STATUS.eq(Status.ENABLED.getCode()));
+                .where(MEMBER.STATUS.eq(Status.ENABLED.getCode()));
         if (normalizedKeyword.chars().allMatch(Character::isDigit)) {
             query.and(MEMBER.ID.eq(Long.parseLong(normalizedKeyword))
                     .or(MEMBER.NICKNAME.like(normalizedKeyword))
@@ -102,8 +98,7 @@ public class MemberUserProfileProvider implements UserProfileProvider {
         return memberService.list(
                         QueryWrapper.create()
                                 .select(MEMBER.ID, MEMBER.NICKNAME, MEMBER.AVATAR_URL, MEMBER.POINTS, MEMBER.MEMBER_LEVEL)
-                                .where(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
-                                .and(MEMBER.STATUS.eq(Status.ENABLED.getCode()))
+                                .where(MEMBER.STATUS.eq(Status.ENABLED.getCode()))
                                 .and(MEMBER.POINTS.isNotNull())
                                 .orderBy(MEMBER.POINTS.desc(), MEMBER.UPDATED_TIME.asc(), MEMBER.ID.asc())
                                 .limit(safeLimit)

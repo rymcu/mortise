@@ -37,7 +37,6 @@ public class MemberOAuth2BindingServiceImpl extends ServiceImpl<MemberOAuth2Bind
         return getOne(QueryWrapper.create()
                 .where(MemberOAuth2Binding::getProvider).eq(provider)
                 .and(MemberOAuth2Binding::getOpenId).eq(openId)
-                .and(MemberOAuth2Binding::getDelFlag).eq(DelFlag.NORMAL.ordinal())
         );
     }
 
@@ -53,7 +52,6 @@ public class MemberOAuth2BindingServiceImpl extends ServiceImpl<MemberOAuth2Bind
         return getOne(QueryWrapper.create()
                 .where(MemberOAuth2Binding::getProvider).eq(provider)
                 .and(MemberOAuth2Binding::getUnionId).eq(unionId)
-                .and(MemberOAuth2Binding::getDelFlag).eq(DelFlag.NORMAL.ordinal())
         );
     }
 
@@ -69,7 +67,6 @@ public class MemberOAuth2BindingServiceImpl extends ServiceImpl<MemberOAuth2Bind
         return getOne(QueryWrapper.create()
                 .where(MemberOAuth2Binding::getMemberId).eq(memberId)
                 .and(MemberOAuth2Binding::getProvider).eq(provider)
-                .and(MemberOAuth2Binding::getDelFlag).eq(DelFlag.NORMAL.ordinal())
         );
     }
 

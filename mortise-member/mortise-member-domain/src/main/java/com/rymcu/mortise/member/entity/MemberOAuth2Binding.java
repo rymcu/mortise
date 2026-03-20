@@ -135,6 +135,7 @@ public class MemberOAuth2Binding implements Serializable {
     /**
      * 删除标记: 0-未删除, 1-已删除
      */
+    @Column(isLogicDelete = true)
     private Integer delFlag;
 
     /**

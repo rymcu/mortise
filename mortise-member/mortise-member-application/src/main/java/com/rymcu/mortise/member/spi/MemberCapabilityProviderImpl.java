@@ -1,7 +1,6 @@
 package com.rymcu.mortise.member.spi;
 
 import com.mybatisflex.core.query.QueryWrapper;
-import com.rymcu.mortise.common.enumerate.DelFlag;
 import com.rymcu.mortise.core.model.MemberCapability;
 import com.rymcu.mortise.core.spi.MemberCapabilityProvider;
 import com.rymcu.mortise.member.entity.Member;
@@ -33,8 +32,7 @@ public class MemberCapabilityProviderImpl implements MemberCapabilityProvider {
         }
         var member = memberService.getOne(QueryWrapper.create()
                 .select(MEMBER.ID, MEMBER.STATUS, MEMBER.MEMBER_LEVEL)
-                .where(MEMBER.ID.eq(userId))
-                .and(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal())));
+                .where(MEMBER.ID.eq(userId)));
         if (member == null) {
             return Optional.empty();
         }

@@ -1,6 +1,7 @@
 package com.rymcu.mortise.member.entity;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.mybatisflex.annotation.Column;
 import com.mybatisflex.annotation.Id;
 import com.mybatisflex.annotation.KeyType;
 import com.mybatisflex.annotation.Table;
@@ -40,5 +41,6 @@ public class MemberPointHistory implements Serializable {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedTime;
 
+    @Column(isLogicDelete = true)
     private Integer delFlag;
 }
