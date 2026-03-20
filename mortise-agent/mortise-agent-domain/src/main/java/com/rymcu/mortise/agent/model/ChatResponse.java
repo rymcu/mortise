@@ -7,6 +7,7 @@ import java.util.Map;
  * 聊天响应
  */
 public record ChatResponse(
+    String conversationId,
     String content,
     AgentIntent intent,
     ModelType modelType,
@@ -16,7 +17,7 @@ public record ChatResponse(
     Map<String, Object> metadata
 ) {
     public static ChatResponse chat(String content, ModelType modelType, String modelName) {
-        return new ChatResponse(content, AgentIntent.CHAT, modelType, modelName, null, null, null);
+        return new ChatResponse(null, content, AgentIntent.CHAT, modelType, modelName, null, null, null);
     }
     
     public static ChatResponse withToolCalls(
@@ -25,7 +26,14 @@ public record ChatResponse(
             String modelName,
             List<ToolCallRecord> toolCalls
     ) {
-        return new ChatResponse(content, AgentIntent.TOOL_CALL, modelType, modelName, toolCalls, null, null);
+        return new ChatResponse(null, content, AgentIntent.TOOL_CALL, modelType, modelName, toolCalls, null, null);
+    }
+
+    /**
+     * 返回带有 conversationId 的副本
+     */
+    public ChatResponse withConversationId(String conversationId) {
+        return new ChatResponse(conversationId, content, intent, modelType, modelName, toolCalls, tokenUsage, metadata);
     }
     
     public static Builder builder() {
@@ -33,6 +41,7 @@ public record ChatResponse(
     }
     
     public static class Builder {
+        private String conversationId;
         private String content;
         private AgentIntent intent;
         private ModelType modelType;
@@ -40,6 +49,11 @@ public record ChatResponse(
         private List<ToolCallRecord> toolCalls;
         private TokenUsage tokenUsage;
         private Map<String, Object> metadata;
+
+        public Builder conversationId(String conversationId) {
+            this.conversationId = conversationId;
+            return this;
+        }
         
         public Builder content(String content) {
             this.content = content;
@@ -77,7 +91,7 @@ public record ChatResponse(
         }
         
         public ChatResponse build() {
-            return new ChatResponse(content, intent, modelType, modelName, toolCalls, tokenUsage, metadata);
+            return new ChatResponse(conversationId, content, intent, modelType, modelName, toolCalls, tokenUsage, metadata);
         }
     }
 }
