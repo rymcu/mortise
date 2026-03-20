@@ -73,7 +73,7 @@ function openDelete(sku: Record<string, unknown>) {
 }
 
 // ============ 设为默认 ============
-const { patchAction, loading: patchLoading } = useAdminCrud(
+const { patchAction, loading: _patchLoading } = useAdminCrud(
   `/api/v1/admin/products/${productId}/skus`
 )
 const settingDefaultId = ref<number | null>(null)

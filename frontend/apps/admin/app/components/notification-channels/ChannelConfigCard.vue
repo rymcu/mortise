@@ -21,7 +21,10 @@ watch(
   () => props.channel,
   (newChannel) => {
     localEnabled.value = newChannel.enabled
-    Object.keys(localValues).forEach(k => delete localValues[k])
+    for (const k of Object.keys(localValues)) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete localValues[k]
+    }
     Object.assign(localValues, newChannel.values)
   }
 )

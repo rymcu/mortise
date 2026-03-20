@@ -87,7 +87,7 @@ export interface FormFieldDef {
 }
 
 /** @deprecated 使用 FormFieldDef 代替 */
-export interface ChannelFieldDef extends FormFieldDef {}
+export type ChannelFieldDef = FormFieldDef
 
 export interface ChannelConfigVO {
   channel: string

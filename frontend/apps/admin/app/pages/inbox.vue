@@ -6,7 +6,7 @@
  * 数据：对接后端 /api/v1/admin/im 系列接口
  */
 import type { GlobalResult, PageResult } from '@mortise/core-sdk'
-import type { ChatSession, InboxChatMessage } from '~/types/inbox'
+import type { BackendMessage, BackendSession, ChatSession, InboxChatMessage } from '~/types/inbox'
 
 const { $api } = useNuxtApp()
 
@@ -38,30 +38,7 @@ function mapRole(role: string): 'user' | 'assistant' {
 
 // ── 会话列表 ──────────────────────────────────────────────────────────────────
 
-interface BackendSession {
-  id: number
-  userId: number
-  userName: string | null
-  userAvatar: string | null
-  status: number
-  contextType: string | null
-  contextId: number | null
-  contextTitle: string | null
-  lastMessage: string | null
-  unreadCount: number
-  updatedTime: string | null
-}
-
-interface BackendMessage {
-  id: number
-  sessionId: number
-  role: string
-  senderId: number | null
-  content: string
-  createdTime: string
-}
-
-const sessions = ref<ChatSession[]>([])
+const sessions= ref<ChatSession[]>([])
 const sessionsLoading = ref(false)
 const sessionsError = ref('')
 const selectedSessionId = ref<number | null>(null)
@@ -247,201 +224,23 @@ async function sendReply() {
 
     <template #body>
       <div class="flex h-full overflow-hidden">
-        <!-- ── 左侧：会话列表 ─────────────────────────────────────────────── -->
-        <div class="border-default flex w-72 shrink-0 flex-col border-r">
-          <div class="border-default border-b px-4 py-3">
-            <p class="text-sm font-medium">用户咨询</p>
-            <p class="text-muted text-xs">{{ sessions.length }} 个会话</p>
-          </div>
-
-          <div class="flex-1 overflow-y-auto">
-            <div
-              v-if="sessionsLoading && sessions.length === 0"
-              class="text-muted py-8 text-center text-sm"
-            >
-              加载中...
-            </div>
-            <div
-              v-else-if="sessionsError"
-              class="flex flex-col items-center py-8 text-center"
-            >
-              <UIcon name="i-lucide-alert-circle" class="text-error mb-2 text-2xl" />
-              <p class="text-muted text-xs">{{ sessionsError }}</p>
-              <UButton
-                size="xs"
-                variant="ghost"
-                class="mt-2"
-                @click="loadSessions"
-              >
-                重试
-              </UButton>
-            </div>
-            <div
-              v-else-if="sessions.length === 0"
-              class="py-12 text-center"
-            >
-              <UIcon
-                name="i-lucide-message-square"
-                class="text-muted mb-2 text-3xl"
-              />
-              <p class="text-muted text-sm">暂无咨询会话</p>
-            </div>
-            <div
-              v-for="session in sessions"
-              v-else
-              :key="session.id"
-              class="hover:bg-elevated/60 flex cursor-pointer items-start gap-3 px-4 py-3 transition-colors"
-              :class="{ 'bg-elevated': selectedSessionId === session.id }"
-              @click="selectSession(session)"
-            >
-              <UAvatar
-                :src="session.userAvatar || undefined"
-                :alt="session.userName || '用户'"
-                size="md"
-                class="shrink-0"
-              />
-              <div class="min-w-0 flex-1">
-                <div class="flex items-center justify-between gap-1">
-                  <span class="truncate text-sm font-medium">
-                    {{ session.userName || `用户 ${session.userId}` }}
-                  </span>
-                  <span class="text-muted shrink-0 text-xs">
-                    {{ formatTime(session.updatedTime) }}
-                  </span>
-                </div>
-                <div class="mt-0.5 flex items-center justify-between gap-1">
-                  <span class="text-muted truncate text-xs">
-                    {{ session.lastMessage || '暂无消息' }}
-                  </span>
-                  <UBadge
-                    v-if="session.unreadCount > 0"
-                    :label="String(session.unreadCount)"
-                    color="primary"
-                    variant="solid"
-                    size="xs"
-                    class="shrink-0"
-                  />
-                </div>
-                <!-- 上下文标签 -->
-                <div v-if="session.contextTitle" class="mt-1">
-                  <span class="rounded bg-accented px-1 py-0.5 font-mono text-xs text-muted">
-                    {{ session.contextTitle }}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ── 右侧：消息区 ───────────────────────────────────────────────── -->
-        <div class="flex min-w-0 flex-1 flex-col">
-          <!-- 未选中占位 -->
-          <div
-            v-if="!selectedSession"
-            class="flex flex-1 flex-col items-center justify-center"
-          >
-            <UIcon
-              name="i-lucide-message-circle"
-              class="text-muted mb-3 text-5xl"
-            />
-            <p class="text-muted text-sm">请从左侧选择一个会话</p>
-          </div>
-
-          <!-- 已选中会话 -->
-          <template v-else>
-            <!-- 顶栏 -->
-            <div
-              class="border-default flex shrink-0 items-center justify-between gap-3 border-b px-5 py-3"
-            >
-              <div class="flex items-center gap-3">
-                <UAvatar
-                  :src="selectedSession.userAvatar || undefined"
-                  :alt="selectedSession.userName || '用户'"
-                  size="sm"
-                />
-                <div>
-                  <p class="text-sm font-medium">
-                    {{ selectedSession.userName || `用户 ${selectedSession.userId}` }}
-                  </p>
-                  <p class="text-muted text-xs">
-                    用户 ID：{{ selectedSession.userId }}
-                    <template v-if="selectedSession.contextTitle">
-                      · {{ selectedSession.contextTitle }}
-                    </template>
-                  </p>
-                </div>
-              </div>
-              <div class="flex items-center gap-2">
-                <UBadge
-                  :label="selectedSession.status === 0 ? '进行中' : selectedSession.status === 2 ? '等待中' : '已关闭'"
-                  :color="selectedSession.status === 0 ? 'success' : selectedSession.status === 2 ? 'warning' : 'neutral'"
-                  variant="subtle"
-                  size="xs"
-                />
-              </div>
-            </div>
-
-            <!-- 消息列表区 -->
-            <div class="flex-1 overflow-y-auto px-4 py-4">
-              <div
-                v-if="messagesLoading && currentMessages.length === 0"
-                class="text-muted py-8 text-center text-sm"
-              >
-                <UIcon name="i-lucide-loader-circle" class="animate-spin text-2xl" />
-              </div>
-              <div
-                v-else-if="currentMessages.length === 0"
-                class="py-12 text-center"
-              >
-                <p class="text-muted text-sm">暂无消息记录</p>
-              </div>
-              <div
-                v-for="msg in currentMessages"
-                v-else
-                :key="msg.id"
-                class="mb-1 last:mb-0"
-              >
-                <p
-                  class="text-muted mb-1 text-xs"
-                  :class="msg.role === 'assistant' ? 'text-right' : 'text-left'"
-                >
-                  {{ msg.time }}
-                </p>
-                <UChatMessage
-                  :parts="msg.parts"
-                  :side="msg.role === 'assistant' ? 'right' : 'left'"
-                  :avatar="
-                    msg.role === 'user'
-                      ? { src: selectedSession.userAvatar || undefined, alt: selectedSession.userName || '用户' }
-                      : { icon: 'i-lucide-headset', alt: '客服' }
-                  "
-                />
-              </div>
-            </div>
-
-            <!-- 回复输入 -->
-            <div class="border-default shrink-0 border-t px-4 pb-4 pt-3">
-              <UChatPrompt
-                v-model="replyText"
-                placeholder="输入回复内容（Enter 发送）"
-                variant="subtle"
-                :disabled="replying"
-                @submit="sendReply"
-              >
-                <template #footer>
-                  <div class="flex w-full items-center justify-end">
-                    <UChatPromptSubmit
-                      color="primary"
-                      size="sm"
-                      :loading="replying"
-                      :disabled="!replyText.trim() || replying"
-                    />
-                  </div>
-                </template>
-              </UChatPrompt>
-            </div>
-          </template>
-        </div>
+        <InboxSessionList
+          :sessions="sessions"
+          :sessions-loading="sessionsLoading"
+          :sessions-error="sessionsError"
+          :selected-session-id="selectedSessionId"
+          @select="selectSession"
+          @reload="loadSessions"
+        />
+        <InboxChatPanel
+          :selected-session="selectedSession"
+          :current-messages="currentMessages"
+          :messages-loading="messagesLoading"
+          :reply-text="replyText"
+          :replying="replying"
+          @update:reply-text="replyText = $event"
+          @submit="sendReply"
+        />
       </div>
     </template>
   </UDashboardPanel>

@@ -41,3 +41,28 @@ export interface InboxChatMessage {
   time: string
   senderId: number | null
 }
+
+/** 后端会话原始结构，对应 SessionVO */
+export interface BackendSession {
+  id: number
+  userId: number
+  userName: string | null
+  userAvatar: string | null
+  status: number
+  contextType: string | null
+  contextId: number | null
+  contextTitle: string | null
+  lastMessage: string | null
+  unreadCount: number
+  updatedTime: string | null
+}
+
+/** 后端消息原始结构，对应 MessageVO */
+export interface BackendMessage {
+  id: number
+  sessionId: number
+  role: string
+  senderId: number | null
+  content: string
+  createdTime: string
+}

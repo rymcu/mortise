@@ -30,7 +30,6 @@ const emit = defineEmits<{
 }>()
 
 const { $api } = useNuxtApp()
-const { resolveUrl } = useMediaUrl()
 const toast = useToast()
 const { uploadFile } = useAppFileUpload()
 
@@ -60,17 +59,8 @@ const state = reactive({
 const formRef = ref()
 
 // ─── 封面图片上传 ──────────────────────────────────────────────────────────────
-const coverImageFile = ref<File | null>(null)
-const coverImagePreview = ref<string | null>(null)
 const coverUploading = ref(false)
-
-const displayCoverUrl = computed(
-  () => coverImagePreview.value || resolveUrl(state.coverImageUrl) || null
-)
-
-async function onCoverFileChange(file: File | null | undefined) {
-  if (!file) return
-  coverImagePreview.value = URL.createObjectURL(file)
+async function onCoverFileChange(file: File) {
   coverUploading.value = true
   try {
     state.coverImageUrl = await uploadFile(file, {
@@ -80,20 +70,15 @@ async function onCoverFileChange(file: File | null | undefined) {
       maxSize: 10 * 1024 * 1024,
       fileKindLabel: '封面图片',
     })
-    coverImagePreview.value = null
   } catch (e) {
-    coverImagePreview.value = null
     toast.add({ title: '封面上传失败', description: e instanceof Error ? e.message : '请重试', color: 'error' })
   } finally {
     coverUploading.value = false
-    coverImageFile.value = null
   }
 }
 
 function clearCoverImage() {
-  coverImageFile.value = null
   state.coverImageUrl = ''
-  coverImagePreview.value = null
 }
 
 // ─── 编辑器工具栏 ──────────────────────────────────────────────────────────────
@@ -240,40 +225,12 @@ defineExpose({ validate, state })
       </UFormField>
     </div>
 
-    <UFormField label="封面图片" name="coverImageUrl">
-      <div v-if="displayCoverUrl" class="relative mb-2 w-fit">
-        <img
-          :src="displayCoverUrl"
-          alt="封面预览"
-          class="border-default h-32 rounded-md border object-cover"
-        />
-        <UButton
-          icon="i-lucide-x"
-          color="error"
-          variant="soft"
-          size="xs"
-          class="absolute right-1 top-1"
-          @click="clearCoverImage"
-        />
-      </div>
-
-      <UFileUpload
-        v-model="coverImageFile"
-        accept="image/*"
-        :disabled="coverUploading"
-        :reset="true"
-        :preview="false"
-        color="neutral"
-        variant="button"
-        size="sm"
-        icon="i-lucide-upload"
-        :label="displayCoverUrl ? '更换封面' : '上传封面'"
-        description="支持 PNG、JPG、WEBP 等常见图片格式"
-        @update:model-value="onCoverFileChange"
-      >
-        <template #actions />
-      </UFileUpload>
-    </UFormField>
+    <ProductsCoverImageUpload
+      :image-url="state.coverImageUrl"
+      :uploading="coverUploading"
+      @change="onCoverFileChange"
+      @clear="clearCoverImage"
+    />
 
     <UFormField label="简短描述" name="shortDescription">
       <UTextarea

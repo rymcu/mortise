@@ -4,6 +4,7 @@ import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.common.enumerate.DefaultFlag;
+import com.rymcu.mortise.common.enumerate.DelFlag;
 import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.wechat.entity.WeChatAccount;
 import com.rymcu.mortise.wechat.entity.WeChatConfig;
@@ -249,8 +250,8 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
             config.setConfigKey(configKey);
             config.setConfigValue(finalValue);
             config.setIsEncrypted(isEncrypted);
-            config.setStatus(0);
-            config.setDelFlag(0);
+            config.setStatus(Status.ENABLED.getCode());
+            config.setDelFlag(DelFlag.NORMAL.ordinal());
             config.setCreatedTime(LocalDateTime.now());
             int rows = configMapper.insertSelective(config);
             log.info("新增配置成功，accountId: {}, key: {}", accountId, configKey);
@@ -285,8 +286,8 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
     public boolean deleteConfig(Long accountId, String configKey) {
         int rows = configMapper.deleteByQuery(QueryWrapper.create()
                 .from(WeChatConfig.class)
-                .where("account_id = {0}", accountId)
-                .and("config_key = {0}", configKey));
+                .where(WE_CHAT_CONFIG.ACCOUNT_ID.eq(accountId))
+                .and(WE_CHAT_ACCOUNT.CONFIG_KEY.eq(configKey)));
         log.info("删除配置成功，accountId: {}, key: {}", accountId, configKey);
         return rows > 0;
     }
@@ -340,8 +341,8 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
 
         List<WeChatAccount> accounts = mapper.selectListByQuery(query);
         for (WeChatAccount account : accounts) {
-            if (account.getIsDefault() != null && account.getIsDefault() == 1) {
-                account.setIsDefault(0);
+            if (account.getIsDefault() != null && account.getIsDefault() == DefaultFlag.YES.ordinal()) {
+                account.setIsDefault(DefaultFlag.NO.ordinal());
                 account.setUpdatedTime(LocalDateTime.now());
                 mapper.update(account);
             }

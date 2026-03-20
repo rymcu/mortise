@@ -20,7 +20,10 @@ const localValues = reactive<Record<string, string>>({ ...props.group.values })
 watch(
   () => props.group,
   (newGroup) => {
-    Object.keys(localValues).forEach(k => delete localValues[k])
+    for (const k of Object.keys(localValues)) {
+      // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+      delete localValues[k]
+    }
     Object.assign(localValues, newGroup.values)
   }
 )
