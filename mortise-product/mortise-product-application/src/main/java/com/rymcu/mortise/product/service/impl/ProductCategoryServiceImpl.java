@@ -3,6 +3,7 @@ package com.rymcu.mortise.product.service.impl;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.util.UpdateEntity;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
+import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.product.entity.ProductCategory;
 import com.rymcu.mortise.product.mapper.ProductCategoryMapper;
 import com.rymcu.mortise.product.service.ProductCategoryService;
@@ -48,7 +49,7 @@ public class ProductCategoryServiceImpl extends ServiceImpl<ProductCategoryMappe
     public Boolean updateStatus(Long id, Integer status) {
         ProductCategory category = UpdateEntity.of(ProductCategory.class, id);
         category.setStatus(status);
-        category.setIsActive(status == 1);
+        category.setIsActive(status == Status.ENABLED.getCode());
         category.setUpdatedTime(LocalDateTime.now());
         return mapper.update(category) > 0;
     }
