@@ -5,6 +5,7 @@
       <slot />
     </main>
     <AppFooter />
+    <AgentChatFab />
     <SiteChatWidget />
   </div>
 </template>

@@ -32,6 +32,15 @@ importers:
       '@internationalized/date':
         specifier: ^3.11.0
         version: 3.12.0
+      '@mortise/admin-aiot-layer':
+        specifier: workspace:*
+        version: link:../../layers/admin/aiot
+      '@mortise/admin-community-layer':
+        specifier: workspace:*
+        version: link:../../layers/admin/community
+      '@mortise/admin-ota-layer':
+        specifier: workspace:*
+        version: link:../../layers/admin/ota
       '@mortise/auth':
         specifier: workspace:*
         version: link:../../packages/auth
@@ -135,6 +144,9 @@ importers:
       '@mortise/base-layer':
         specifier: workspace:*
         version: link:../../layers/base
+      '@mortise/community-layer':
+        specifier: workspace:*
+        version: link:../../layers/community
       '@mortise/core-sdk':
         specifier: workspace:*
         version: link:../../packages/core-sdk
