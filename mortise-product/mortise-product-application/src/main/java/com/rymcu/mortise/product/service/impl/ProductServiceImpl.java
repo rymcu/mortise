@@ -4,6 +4,7 @@ import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.core.util.UpdateEntity;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
+import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.common.exception.BusinessException;
 import com.rymcu.mortise.product.dto.ProductQueryParam;
 import com.rymcu.mortise.product.entity.Product;
@@ -108,7 +109,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         return mapper.selectListByQuery(
                 QueryWrapper.create()
                         .where(PRODUCT.PRODUCT_TYPE.eq(productType))
-                        .and(PRODUCT.STATUS.eq(1))
+                        .and(PRODUCT.STATUS.eq(Status.ENABLED.getCode()))
                         .orderBy(PRODUCT.SORT_NO.asc()));
     }
 
@@ -120,7 +121,7 @@ public class ProductServiceImpl extends ServiceImpl<ProductMapper, Product> impl
         return mapper.selectOneByQuery(
                 QueryWrapper.create()
                         .where(PRODUCT.ID.eq(id))
-                        .and(PRODUCT.STATUS.eq(1))
+                        .and(PRODUCT.STATUS.eq(Status.ENABLED.getCode()))
         );
     }
 

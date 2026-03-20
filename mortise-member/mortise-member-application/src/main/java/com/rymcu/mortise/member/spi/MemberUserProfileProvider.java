@@ -2,6 +2,7 @@ package com.rymcu.mortise.member.spi;
 
 import com.mybatisflex.core.query.QueryWrapper;
 import com.rymcu.mortise.common.enumerate.DelFlag;
+import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.core.model.UserLeaderboardEntry;
 import com.rymcu.mortise.core.model.UserProfile;
 import com.rymcu.mortise.core.spi.UserProfileProvider;
@@ -101,7 +102,7 @@ public class MemberUserProfileProvider implements UserProfileProvider {
                         QueryWrapper.create()
                                 .select(MEMBER.ID, MEMBER.NICKNAME, MEMBER.AVATAR_URL, MEMBER.POINTS, MEMBER.MEMBER_LEVEL)
                                 .where(MEMBER.DEL_FLAG.eq(DelFlag.NORMAL.ordinal()))
-                                .and(MEMBER.STATUS.eq(0))
+                                .and(MEMBER.STATUS.eq(Status.ENABLED.getCode()))
                                 .and(MEMBER.POINTS.isNotNull())
                                 .orderBy(MEMBER.POINTS.desc(), MEMBER.UPDATED_TIME.asc(), MEMBER.ID.asc())
                                 .limit(safeLimit)

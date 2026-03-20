@@ -6,28 +6,7 @@
  */
 import { usePagedAdminResource } from '~/composables/usePagedAdminResource'
 import { fetchAdminPage } from '@mortise/core-sdk'
-
-interface DictTypeInfo {
-  id: number
-  typeCode?: string
-  label?: string
-  description?: string
-  sortNo?: number
-  status?: number
-  createdTime?: string
-}
-
-interface DictInfo {
-  id: number
-  dictTypeCode?: string
-  label?: string
-  value?: string
-  sortNo?: number
-  status?: number
-  icon?: string
-  color?: string
-  createdTime?: string
-}
+import type { DictTypeInfo, DictInfo } from '~/types/dict'
 
 const { $api } = useNuxtApp()
 
@@ -41,10 +20,10 @@ const {
   hasNext: typesHasNext,
   hasPrevious: typesHasPrevious,
   keyword: typesKeyword,
-  load: loadTypes
+  load: loadTypes,
 } = usePagedAdminResource<DictTypeInfo>({
   path: '/api/v1/admin/dictionary-types',
-  errorMessage: '加载字典类型失败'
+  errorMessage: '加载字典类型失败',
 })
 
 await loadTypes()
@@ -84,26 +63,28 @@ async function loadDicts() {
       {
         dictTypeCode: selectedType.value.typeCode,
         pageNumber: dictPageNum.value,
-        pageSize: dictPageSize.value
-      }
+        pageSize: dictPageSize.value,
+      },
     )
     dictRecords.value = page.records || []
     dictTotal.value = page.totalRow || 0
     dictTotalPage.value = page.totalPage || 0
 
     if (
-      typeof page.pageNumber === 'number' &&
-      page.pageNumber > 0 &&
-      page.pageNumber !== dictPageNum.value
+      typeof page.pageNumber === 'number'
+      && page.pageNumber > 0
+      && page.pageNumber !== dictPageNum.value
     ) {
       dictPageNum.value = page.pageNumber
     }
 
     dictHasPrevious.value = Boolean(page.hasPrevious)
     dictHasNext.value = Boolean(page.hasNext)
-  } catch (err) {
+  }
+  catch (err) {
     dictsError.value = err instanceof Error ? err.message : '加载字典数据失败'
-  } finally {
+  }
+  finally {
     dictsLoading.value = false
   }
 }
@@ -111,15 +92,6 @@ async function loadDicts() {
 watch([dictPageNum, dictPageSize], () => {
   if (selectedType.value) loadDicts()
 })
-
-const dictColumns = [
-  { key: 'label', label: '标签' },
-  { key: 'value', label: '值' },
-  { key: 'sortNo', label: '排序' },
-  { key: 'status', label: '状态' },
-  { key: 'icon', label: '图标' },
-  { key: 'color', label: '颜色' }
-]
 
 // ============ 字典类型 CRUD 弹窗 ============
 const showTypeAddModal = ref(false)
@@ -141,8 +113,8 @@ function onTypesSuccess() {
   loadTypes()
   // 如果删除了选中的类型，清空右侧
   if (
-    selectedType.value &&
-    currentTypeRow.value?.id === selectedType.value.id
+    selectedType.value
+    && currentTypeRow.value?.id === selectedType.value.id
   ) {
     selectedType.value = null
     dictRecords.value = []
@@ -170,17 +142,13 @@ function dictPrevPage() {
   if (dictHasPrevious.value) dictPageNum.value--
 }
 function dictNextPage() {
-  if (dictHasNext.value) {
-    dictPageNum.value++
-  }
+  if (dictHasNext.value) dictPageNum.value++
 }
 function typesPrevPage() {
   if (typesHasPrevious.value) typesPageNum.value--
 }
 function typesNextPage() {
-  if (typesHasNext.value) {
-    typesPageNum.value++
-  }
+  if (typesHasNext.value) typesPageNum.value++
 }
 </script>
 
@@ -197,319 +165,41 @@ function typesNextPage() {
     <template #body>
       <div class="flex h-full gap-4">
         <!-- 左侧：字典类型列表 -->
-        <div class="w-80 shrink-0">
-          <UCard>
-            <div class="mb-3 flex items-center justify-between gap-2">
-              <h3 class="text-sm font-medium">字典类型</h3>
-              <div class="flex items-center gap-1">
-                <UButton
-                  icon="i-lucide-plus"
-                  color="primary"
-                  variant="ghost"
-                  size="xs"
-                  @click="showTypeAddModal = true"
-                />
-                <UButton
-                  icon="i-lucide-refresh-cw"
-                  color="neutral"
-                  variant="ghost"
-                  size="xs"
-                  :loading="typesLoading"
-                  @click="loadTypes"
-                />
-              </div>
-            </div>
-
-            <UInput
-              v-model="typesKeyword"
-              placeholder="搜索类型编码/名称"
-              icon="i-lucide-search"
-              size="sm"
-              class="mb-3"
-              @keyup.enter="loadTypes"
-            />
-
-            <UAlert
-              v-if="typesError"
-              color="error"
-              variant="soft"
-              :title="typesError"
-              class="mb-2"
-            />
-
-            <!-- 类型列表 -->
-            <div class="max-h-[60vh] space-y-1 overflow-y-auto">
-              <div
-                v-for="type in typeRecords"
-                :key="type.id"
-                class="cursor-pointer rounded-lg px-3 py-2 text-sm transition-colors"
-                :class="
-                  selectedType?.id === type.id
-                    ? 'bg-primary/10 text-primary ring-primary/20 ring-1'
-                    : 'hover:bg-elevated/50'
-                "
-                @click="selectType(type)"
-              >
-                <div class="flex items-center justify-between">
-                  <div class="min-w-0 flex-1">
-                    <div class="truncate font-medium">
-                      {{ type.label }}
-                    </div>
-                    <div class="text-muted truncate text-xs">
-                      {{ type.typeCode }}
-                    </div>
-                  </div>
-                  <div class="ml-2 flex shrink-0 items-center gap-1">
-                    <UButton
-                      icon="i-lucide-pencil"
-                      color="neutral"
-                      variant="ghost"
-                      size="xs"
-                      @click.stop="
-                        openTypeEditModal(
-                          type as unknown as Record<string, unknown>
-                        )
-                      "
-                    />
-                    <UButton
-                      icon="i-lucide-trash-2"
-                      color="error"
-                      variant="ghost"
-                      size="xs"
-                      @click.stop="
-                        openTypeDeleteModal(
-                          type as unknown as Record<string, unknown>
-                        )
-                      "
-                    />
-                  </div>
-                </div>
-              </div>
-              <div
-                v-if="!typeRecords.length && !typesLoading"
-                class="text-muted py-4 text-center text-sm"
-              >
-                暂无字典类型
-              </div>
-            </div>
-
-            <!-- 类型翻页 -->
-            <div
-              class="text-muted mt-3 flex items-center justify-between text-xs"
-            >
-              <span>共 {{ typesTotal }} 条</span>
-              <div class="flex items-center gap-1">
-                <UButton
-                  color="neutral"
-                  variant="ghost"
-                  size="xs"
-                  :disabled="!typesHasPrevious"
-                  @click="typesPrevPage"
-                >
-                  上一页
-                </UButton>
-                <UButton
-                  color="neutral"
-                  variant="ghost"
-                  size="xs"
-                  :disabled="!typesHasNext"
-                  @click="typesNextPage"
-                >
-                  下一页
-                </UButton>
-              </div>
-            </div>
-          </UCard>
-        </div>
+        <DictTypesTypeListPanel
+          v-model:keyword="typesKeyword"
+          :records="typeRecords"
+          :loading="typesLoading"
+          :error-message="typesError"
+          :total="typesTotal"
+          :has-next="typesHasNext"
+          :has-previous="typesHasPrevious"
+          :selected-type="selectedType"
+          @select="selectType"
+          @add="showTypeAddModal = true"
+          @edit="openTypeEditModal"
+          @delete="openTypeDeleteModal"
+          @reload="loadTypes"
+          @prev-page="typesPrevPage"
+          @next-page="typesNextPage"
+        />
 
         <!-- 右侧：字典项列表 -->
-        <div class="min-w-0 flex-1">
-          <UCard>
-            <template v-if="selectedType">
-              <div class="mb-4 flex items-center justify-between gap-2">
-                <div>
-                  <h3 class="text-sm font-medium">
-                    {{ selectedType.label }}
-                    <span class="text-muted font-normal"
-                      >（{{ selectedType.typeCode }}）</span
-                    >
-                  </h3>
-                  <p
-                    v-if="selectedType.description"
-                    class="text-muted mt-0.5 text-xs"
-                  >
-                    {{ selectedType.description }}
-                  </p>
-                </div>
-                <div class="flex items-center gap-2">
-                  <UButton
-                    icon="i-lucide-plus"
-                    color="primary"
-                    variant="soft"
-                    size="sm"
-                    @click="showDictAddModal = true"
-                  >
-                    新增字典
-                  </UButton>
-                  <UButton
-                    icon="i-lucide-refresh-cw"
-                    color="neutral"
-                    variant="soft"
-                    size="sm"
-                    :loading="dictsLoading"
-                    @click="loadDicts"
-                  >
-                    刷新
-                  </UButton>
-                </div>
-              </div>
-
-              <UAlert
-                v-if="dictsError"
-                color="error"
-                variant="soft"
-                :title="dictsError"
-                class="mb-4"
-              />
-
-              <div class="overflow-x-auto">
-                <table class="min-w-full text-sm">
-                  <thead>
-                    <tr class="border-default border-b">
-                      <th
-                        v-for="col in dictColumns"
-                        :key="col.key"
-                        class="px-2 py-2 text-left"
-                      >
-                        {{ col.label }}
-                      </th>
-                      <th class="px-2 py-2 text-right">操作</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr
-                      v-for="dict in dictRecords"
-                      :key="dict.id"
-                      class="border-default/60 hover:bg-elevated/50 border-b transition-colors"
-                    >
-                      <td class="px-2 py-2">
-                        {{ dict.label || '-' }}
-                      </td>
-                      <td class="text-muted px-2 py-2">
-                        {{ dict.value || '-' }}
-                      </td>
-                      <td class="text-muted px-2 py-2">
-                        {{ dict.sortNo ?? '-' }}
-                      </td>
-                      <td class="px-2 py-2">
-                        <UBadge
-                          :color="dict.status === 1 ? 'success' : 'neutral'"
-                          variant="subtle"
-                        >
-                          {{ dict.status === 1 ? '启用' : '禁用' }}
-                        </UBadge>
-                      </td>
-                      <td class="px-2 py-2">
-                        <UIcon
-                          v-if="dict.icon"
-                          :name="String(dict.icon)"
-                          class="text-lg"
-                        />
-                        <span v-else class="text-muted">-</span>
-                      </td>
-                      <td class="px-2 py-2">
-                        <div
-                          v-if="dict.color"
-                          class="flex items-center gap-1.5"
-                        >
-                          <span
-                            class="inline-block h-3 w-3 rounded-full"
-                            :class="`bg-${dict.color}-500`"
-                          />
-                          <span class="text-xs">{{ dict.color }}</span>
-                        </div>
-                        <span v-else class="text-muted">-</span>
-                      </td>
-                      <td class="px-2 py-2 text-right">
-                        <div class="flex items-center justify-end gap-1">
-                          <UButton
-                            icon="i-lucide-pencil"
-                            color="primary"
-                            variant="ghost"
-                            size="xs"
-                            @click="
-                              openDictEditModal(
-                                dict as unknown as Record<string, unknown>
-                              )
-                            "
-                          >
-                            编辑
-                          </UButton>
-                          <UButton
-                            icon="i-lucide-trash-2"
-                            color="error"
-                            variant="ghost"
-                            size="xs"
-                            @click="
-                              openDictDeleteModal(
-                                dict as unknown as Record<string, unknown>
-                              )
-                            "
-                          >
-                            删除
-                          </UButton>
-                        </div>
-                      </td>
-                    </tr>
-                    <tr v-if="!dictRecords.length && !dictsLoading">
-                      <td
-                        :colspan="dictColumns.length + 1"
-                        class="text-muted py-6 text-center"
-                      >
-                        暂无字典数据
-                      </td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-
-              <div
-                class="text-muted mt-4 flex items-center justify-between text-sm"
-              >
-                <span>共 {{ dictTotal }} 条</span>
-                <div class="flex items-center gap-2">
-                  <UButton
-                    color="neutral"
-                    variant="ghost"
-                    :disabled="!dictHasPrevious"
-                    @click="dictPrevPage"
-                  >
-                    上一页
-                  </UButton>
-                  <span>第 {{ dictPageNum }} 页</span>
-                  <UButton
-                    color="neutral"
-                    variant="ghost"
-                    :disabled="!dictHasNext"
-                    @click="dictNextPage"
-                  >
-                    下一页
-                  </UButton>
-                </div>
-              </div>
-            </template>
-
-            <!-- 未选择类型时的占位 -->
-            <div
-              v-else
-              class="text-muted flex flex-col items-center justify-center py-16"
-            >
-              <UIcon name="i-lucide-book-open" class="mb-3 text-4xl" />
-              <p class="text-sm">请从左侧选择一个字典类型</p>
-              <p class="mt-1 text-xs">选择后可查看和管理该类型下的字典项</p>
-            </div>
-          </UCard>
-        </div>
+        <DictTypesItemsTablePanel
+          :selected-type="selectedType"
+          :records="dictRecords"
+          :loading="dictsLoading"
+          :error-message="dictsError"
+          :total="dictTotal"
+          :page-num="dictPageNum"
+          :has-next="dictHasNext"
+          :has-previous="dictHasPrevious"
+          @add="showDictAddModal = true"
+          @edit="openDictEditModal"
+          @delete="openDictDeleteModal"
+          @reload="loadDicts"
+          @prev-page="dictPrevPage"
+          @next-page="dictNextPage"
+        />
       </div>
 
       <!-- 字典类型弹窗 -->

@@ -54,4 +54,23 @@ public interface MenuMapper extends BaseMapper<Menu> {
             "ORDER BY sort_no ")
     List<Menu> findLinksByUserIdAndParentId(@Param("idUser") Long idUser, @Param("parentId") Long parentId);
 
+    /**
+     * 根据用户ID一次性查询所有授权菜单链接（避免递归 N+1 查询）
+     */
+    @Select("SELECT id, label, permission, parent_id, sort_no, menu_type, icon, href " +
+            "FROM mortise_menu tm " +
+            "WHERE del_flag = 0 AND status = 1 " +
+            "AND menu_type in (0, 1) " +
+            "AND EXISTS (" +
+            "  SELECT 1 FROM mortise_role_menu trm " +
+            "  WHERE trm.id_mortise_menu = tm.id " +
+            "  AND EXISTS (" +
+            "    SELECT 1 FROM mortise_user_role tur " +
+            "    WHERE tur.id_mortise_role = trm.id_mortise_role " +
+            "    AND tur.id_mortise_user = #{idUser}" +
+            "  )" +
+            ") " +
+            "ORDER BY sort_no ")
+    List<Menu> findAllLinksByUserId(@Param("idUser") Long idUser);
+
 }

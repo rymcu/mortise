@@ -249,182 +249,28 @@ async function doInitialize() {
     </UForm>
 
     <!-- 步骤 2: 管理员账号 -->
-    <UForm
+    <SetupAdminForm
       v-if="currentStep === 1"
-      :schema="adminSchema"
-      :state="adminState"
-      class="space-y-4"
+      v-model:admin-state="adminState"
+      v-model:show-admin-password="showAdminPassword"
+      v-model:show-admin-password-confirm="showAdminPasswordConfirm"
+      :admin-schema="adminSchema"
       @submit="onAdminSubmit"
-    >
-      <UFormField label="管理员昵称" name="adminNickname" required>
-        <UInput
-          v-model="adminState.adminNickname"
-          placeholder="请输入管理员昵称"
-          class="w-full"
-        />
-      </UFormField>
-
-      <UFormField label="管理员邮箱" name="adminEmail" required>
-        <UInput
-          v-model="adminState.adminEmail"
-          type="email"
-          placeholder="请输入管理员邮箱"
-          class="w-full"
-        />
-      </UFormField>
-
-      <UFormField label="管理员密码" name="adminPassword" required>
-        <UInput
-          v-model="adminState.adminPassword"
-          :type="showAdminPassword ? 'text' : 'password'"
-          placeholder="请输入管理员密码（至少 8 位）"
-          :ui="{ trailing: 'pe-1' }"
-          class="w-full"
-        >
-          <template #trailing>
-            <UButton
-              color="neutral"
-              variant="link"
-              size="sm"
-              :icon="showAdminPassword ? 'i-lucide-eye-off' : 'i-lucide-eye'"
-              :aria-label="showAdminPassword ? '隐藏密码' : '显示密码'"
-              :aria-pressed="showAdminPassword"
-              @click="showAdminPassword = !showAdminPassword"
-            />
-          </template>
-        </UInput>
-      </UFormField>
-
-      <UFormField label="确认密码" name="adminPasswordConfirm" required>
-        <UInput
-          v-model="adminState.adminPasswordConfirm"
-          :type="showAdminPasswordConfirm ? 'text' : 'password'"
-          placeholder="请再次输入密码"
-          :ui="{ trailing: 'pe-1' }"
-          class="w-full"
-        >
-          <template #trailing>
-            <UButton
-              color="neutral"
-              variant="link"
-              size="sm"
-              :icon="
-                showAdminPasswordConfirm ? 'i-lucide-eye-off' : 'i-lucide-eye'
-              "
-              :aria-label="showAdminPasswordConfirm ? '隐藏密码' : '显示密码'"
-              :aria-pressed="showAdminPasswordConfirm"
-              @click="showAdminPasswordConfirm = !showAdminPasswordConfirm"
-            />
-          </template>
-        </UInput>
-      </UFormField>
-
-      <div class="flex justify-between pt-2">
-        <UButton color="neutral" variant="ghost" @click="prevStep">
-          <template #leading>
-            <UIcon name="i-lucide-arrow-left" />
-          </template>
-          上一步
-        </UButton>
-        <UButton type="submit">
-          下一步
-          <template #trailing>
-            <UIcon name="i-lucide-arrow-right" />
-          </template>
-        </UButton>
-      </div>
-    </UForm>
+      @prev="prevStep"
+    />
 
     <!-- 步骤 3: 确认初始化 -->
-    <div v-if="currentStep === 2" class="space-y-4">
-      <div class="border-default space-y-3 rounded-lg border p-4">
-        <h3
-          class="flex items-center gap-2 font-medium text-gray-900 dark:text-white"
-        >
-          <UIcon name="i-lucide-settings" class="text-primary h-4 w-4" />
-          系统信息
-        </h3>
-        <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-          <span class="text-gray-500 dark:text-gray-400">系统名称</span>
-          <span class="text-gray-900 dark:text-white">{{
-            systemState.systemName
-          }}</span>
-          <span class="text-gray-500 dark:text-gray-400">系统描述</span>
-          <span class="text-gray-900 dark:text-white">{{
-            systemState.systemDescription || '—'
-          }}</span>
-        </div>
-      </div>
-
-      <div class="border-default space-y-3 rounded-lg border p-4">
-        <h3
-          class="flex items-center gap-2 font-medium text-gray-900 dark:text-white"
-        >
-          <UIcon name="i-lucide-user" class="text-primary h-4 w-4" />
-          管理员信息
-        </h3>
-        <div class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
-          <span class="text-gray-500 dark:text-gray-400">昵称</span>
-          <span class="text-gray-900 dark:text-white">{{
-            adminState.adminNickname
-          }}</span>
-          <span class="text-gray-500 dark:text-gray-400">邮箱</span>
-          <span class="text-gray-900 dark:text-white">{{
-            adminState.adminEmail
-          }}</span>
-          <span class="text-gray-500 dark:text-gray-400">密码</span>
-          <span class="text-gray-900 dark:text-white">••••••••</span>
-        </div>
-      </div>
-
-      <!-- 初始化进度 -->
-      <div v-if="isInitializing" class="space-y-2">
-        <div class="flex items-center justify-between text-sm">
-          <span class="text-gray-500 dark:text-gray-400">初始化进度</span>
-          <span class="text-primary font-medium">{{ progress }}%</span>
-        </div>
-        <UProgress :value="progress" />
-      </div>
-
-      <UAlert
-        v-if="successMessage"
-        color="success"
-        variant="soft"
-        :title="successMessage"
-        icon="i-lucide-circle-check"
-      />
-
-      <UAlert
-        v-if="errorMessage"
-        color="error"
-        variant="soft"
-        :title="errorMessage"
-        icon="i-lucide-circle-x"
-      />
-
-      <div class="flex justify-between pt-2">
-        <UButton
-          color="neutral"
-          variant="ghost"
-          :disabled="isInitializing"
-          @click="prevStep"
-        >
-          <template #leading>
-            <UIcon name="i-lucide-arrow-left" />
-          </template>
-          上一步
-        </UButton>
-        <UButton
-          :loading="loading"
-          :disabled="!!successMessage"
-          @click="doInitialize"
-        >
-          <template #leading>
-            <UIcon name="i-lucide-rocket" />
-          </template>
-          开始初始化
-        </UButton>
-      </div>
-    </div>
+    <SetupConfirmStep
+      v-if="currentStep === 2"
+      :system-state="systemState"
+      :admin-state="adminState"
+      :is-initializing="isInitializing"
+      :progress="progress"
+      :success-message="successMessage"
+      :error-message="errorMessage"
+      :loading="loading"
+      @prev="prevStep"
+      @initialize="doInitialize"
+    />
   </UCard>
 </template>

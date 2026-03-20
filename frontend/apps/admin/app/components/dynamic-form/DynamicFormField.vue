@@ -19,7 +19,7 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const { $api } = useNuxtApp()
+const { $api: _api } = useNuxtApp()
 const { resolveUrl } = useMediaUrl()
 const toast = useToast()
 const { uploadFile } = useAppFileUpload()

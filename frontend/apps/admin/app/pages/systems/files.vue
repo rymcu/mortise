@@ -75,8 +75,9 @@ async function confirmDelete() {
     showDeleteModal.value = false
     deleteTarget.value = null
     await loadFiles()
-  } catch (e: any) {
-    toast.add({ title: '删除失败', description: e?.message ?? '请稍后重试', color: 'error' })
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : '请稍后重试'
+    toast.add({ title: '删除失败', description: message, color: 'error' })
   } finally {
     deleting.value = false
   }
