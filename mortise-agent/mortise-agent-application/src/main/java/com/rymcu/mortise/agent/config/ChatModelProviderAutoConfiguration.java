@@ -1,6 +1,5 @@
 package com.rymcu.mortise.agent.config;
 
-import com.rymcu.mortise.agent.prompt.AgentPromptTemplate;
 import com.rymcu.mortise.agent.provider.ChatModelProviderRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,22 +10,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
- * Agent 模型提供者自动配置
+ * Agent 模型提供者基础设施配置
+ * 负责注册模型提供者和 Registry
  */
 @Configuration
 @EnableConfigurationProperties(AgentProperties.class)
 public class ChatModelProviderAutoConfiguration {
-    
+
     private static final Logger log = LoggerFactory.getLogger(ChatModelProviderAutoConfiguration.class);
-    
+
     @Bean
     public ChatModelProviderRegistry chatModelProviderRegistry() {
         return new ChatModelProviderRegistry();
-    }
-
-    @Bean
-    public AgentPromptTemplate agentPromptTemplate() {
-        return new AgentPromptTemplate();
     }
     
     /**

@@ -112,7 +112,22 @@
             <!-- Agent 模块（AI Agent） -->
             <dependency>
                 <groupId>com.rymcu</groupId>
-                <artifactId>mortise-agent</artifactId>
+                <artifactId>mortise-agent-domain</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-agent-infra</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-agent-application</artifactId>
+                <version>${revision}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.rymcu</groupId>
+                <artifactId>mortise-agent-api</artifactId>
                 <version>${revision}</version>
             </dependency>
             <!-- OTA 模块（商业版，通过 pro profile 按需引入） -->

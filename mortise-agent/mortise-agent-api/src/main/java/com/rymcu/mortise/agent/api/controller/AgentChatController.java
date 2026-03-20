@@ -1,4 +1,4 @@
-package com.rymcu.mortise.agent.api;
+package com.rymcu.mortise.agent.api.controller;
 
 import com.rymcu.mortise.agent.model.ChatRequest;
 import com.rymcu.mortise.agent.model.ChatResponse;
