@@ -3,7 +3,7 @@
 -- 幂等：使用 WHERE NOT EXISTS 避免重复插入
 
 INSERT INTO mortise.mortise_role (id, label, permission, status, is_default, del_flag, created_time, updated_time)
-SELECT 10000000000002001, '超级管理员', 'ADMIN', 0, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+SELECT 10000000000002001, '超级管理员', 'ADMIN', 1, 0, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 WHERE NOT EXISTS (SELECT 1 FROM mortise.mortise_role WHERE permission = 'ADMIN');
 
 INSERT INTO mortise.mortise_role (id, label, permission, status, is_default, del_flag, created_time, updated_time)

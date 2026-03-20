@@ -38,7 +38,7 @@ COMMENT ON COLUMN mortise.mortise_product_category.parent_id IS '父分类ID';
 COMMENT ON COLUMN mortise.mortise_product_category.image_url IS '分类图片URL';
 COMMENT ON COLUMN mortise.mortise_product_category.sort_no IS '排序号';
 COMMENT ON COLUMN mortise.mortise_product_category.is_active IS '是否激活';
-COMMENT ON COLUMN mortise.mortise_product_category.status IS '状态：0-正常, 1-禁用';
+COMMENT ON COLUMN mortise.mortise_product_category.status IS '状态：1-正常, 0-禁用';
 COMMENT ON COLUMN mortise.mortise_product_category.metadata IS '扩展元数据';
 COMMENT ON COLUMN mortise.mortise_product_category.created_time IS '创建时间';
 COMMENT ON COLUMN mortise.mortise_product_category.updated_time IS '更新时间';
@@ -185,7 +185,7 @@ COMMENT ON COLUMN mortise.mortise_product_sku_target.validity_days IS '有效天
 COMMENT ON COLUMN mortise.mortise_product_sku_target.access_level IS '访问级别';
 COMMENT ON COLUMN mortise.mortise_product_sku_target.conditions IS '发放条件';
 COMMENT ON COLUMN mortise.mortise_product_sku_target.metadata IS '扩展元数据';
-COMMENT ON COLUMN mortise.mortise_product_sku_target.status IS '状态：0-正常, 1-禁用';
+COMMENT ON COLUMN mortise.mortise_product_sku_target.status IS '状态：1-正常, 0-禁用';
 COMMENT ON COLUMN mortise.mortise_product_sku_target.created_time IS '创建时间';
 COMMENT ON COLUMN mortise.mortise_product_sku_target.updated_time IS '更新时间';
 COMMENT ON COLUMN mortise.mortise_product_sku_target.del_flag IS '删除标记：0-未删除, 1-已删除';

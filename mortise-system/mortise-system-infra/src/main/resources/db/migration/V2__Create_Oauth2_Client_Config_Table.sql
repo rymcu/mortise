@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS mortise.mortise_oauth2_client_config
     user_name_attribute         VARCHAR(100),           -- 用户名属性名称
     jwk_set_uri                 VARCHAR(300),           -- JWK Set URI
     is_enabled                  INTEGER     DEFAULT 1,  -- 是否启用
-    status                      INTEGER     DEFAULT 0,  -- 状态：0-正常, 1-禁用
+    status                      INTEGER     DEFAULT 0,  -- 状态：1-正常, 0-禁用
     del_flag                    INTEGER     DEFAULT 0,  -- 删除标记：0-未删除, 1-已删除
     remark                      VARCHAR(500),           -- 备注
     created_by                  BIGINT,                 -- 创建人ID
@@ -50,7 +50,7 @@ COMMENT ON COLUMN mortise.mortise_oauth2_client_config.user_info_uri IS '用户�
 COMMENT ON COLUMN mortise.mortise_oauth2_client_config.user_name_attribute IS '用户名属性名称';
 COMMENT ON COLUMN mortise.mortise_oauth2_client_config.jwk_set_uri IS 'JWK Set URI';
 COMMENT ON COLUMN mortise.mortise_oauth2_client_config.is_enabled IS '是否启用';
-COMMENT ON COLUMN mortise.mortise_oauth2_client_config.status IS '状态：0-正常, 1-禁用';
+COMMENT ON COLUMN mortise.mortise_oauth2_client_config.status IS '状态：1-正常, 0-禁用';
 COMMENT ON COLUMN mortise.mortise_oauth2_client_config.del_flag IS '删除标记：0-未删除, 1-已删除';
 COMMENT ON COLUMN mortise.mortise_oauth2_client_config.remark IS '备注';
 COMMENT ON COLUMN mortise.mortise_oauth2_client_config.created_by IS '创建人ID';

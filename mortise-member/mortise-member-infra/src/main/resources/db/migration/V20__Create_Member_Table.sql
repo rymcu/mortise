@@ -49,7 +49,7 @@ COMMENT ON COLUMN mortise.mortise_member.nickname IS '昵称';
 COMMENT ON COLUMN mortise.mortise_member.avatar_url IS '头像URL';
 COMMENT ON COLUMN mortise.mortise_member.gender IS '性别：male-男, female-女, other-其他';
 COMMENT ON COLUMN mortise.mortise_member.birth_date IS '出生日期';
-COMMENT ON COLUMN mortise.mortise_member.status IS '状态：0-正常, 1-禁用';
+COMMENT ON COLUMN mortise.mortise_member.status IS '状态：1-正常, 0-禁用';
 COMMENT ON COLUMN mortise.mortise_member.member_level IS '会员等级';
 COMMENT ON COLUMN mortise.mortise_member.points IS '积分';
 COMMENT ON COLUMN mortise.mortise_member.balance IS '账户余额';
