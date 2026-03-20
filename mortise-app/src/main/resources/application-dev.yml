@@ -9,9 +9,9 @@ spring:
     cache: false
   data:
     redis:
-      host: 192.168.49.129
+      host: 192.168.88.243
       port: 6379
-      password: 1234
+      password: 
       database: 1
       timeout: 3000
       jedis:
