@@ -45,3 +45,4 @@
 [submodule "frontend/layers/admin/automation"]
 	path = frontend/layers/admin/automation
 	url = git@github.com:rymcu/admin-automation.git
+	branch = main
