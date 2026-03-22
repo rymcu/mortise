@@ -37,3 +37,4 @@ build/
 /redis/
 /app/
 /old-code/
+/frontend/templates/chat/
