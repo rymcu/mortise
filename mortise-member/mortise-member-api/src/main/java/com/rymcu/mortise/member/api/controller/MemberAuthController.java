@@ -1,6 +1,7 @@
 package com.rymcu.mortise.member.api.controller;
 
 import com.rymcu.mortise.auth.constant.AuthCacheConstant;
+import com.rymcu.mortise.auth.constant.JwtConstants;
 import com.rymcu.mortise.auth.service.AuthCacheService;
 import com.rymcu.mortise.auth.util.JwtTokenUtil;
 import com.rymcu.mortise.common.util.Utils;
@@ -39,6 +40,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -116,7 +118,7 @@ public class MemberAuthController {
                 refreshToken,
                 jwtTokenUtil.getTokenPrefix().trim(),
                 MemberJwtConstants.ACCESS_TOKEN_EXPIRY_MS,
-                AuthCacheConstant.MEMBER_REFRESH_TOKEN_EXPIRE_HOURS * 60 * 60 * 1000
+                Duration.ofHours(AuthCacheConstant.MEMBER_REFRESH_TOKEN_EXPIRE_HOURS).toMillis()
         );
 
         log.info("会员登录成功: memberId={}", member.getId());
@@ -158,7 +160,7 @@ public class MemberAuthController {
                 refreshToken,
                 jwtTokenUtil.getTokenPrefix().trim(),
                 MemberJwtConstants.ACCESS_TOKEN_EXPIRY_MS,
-                AuthCacheConstant.MEMBER_REFRESH_TOKEN_EXPIRE_HOURS * 60 * 60 * 1000
+                Duration.ofHours(AuthCacheConstant.MEMBER_REFRESH_TOKEN_EXPIRE_HOURS).toMillis()
         );
 
         log.info("手机号验证码登录成功: memberId={}", member.getId());
@@ -212,7 +214,7 @@ public class MemberAuthController {
                 newRefreshToken,
                 jwtTokenUtil.getTokenPrefix().trim(),
                 MemberJwtConstants.ACCESS_TOKEN_EXPIRY_MS,
-                AuthCacheConstant.MEMBER_REFRESH_TOKEN_EXPIRE_HOURS * 60 * 60 * 1000
+                Duration.ofHours(AuthCacheConstant.MEMBER_REFRESH_TOKEN_EXPIRE_HOURS).toMillis()
         );
 
         log.info("Token 刷新成功: memberId={}", member.getId());
@@ -223,7 +225,7 @@ public class MemberAuthController {
     @PostMapping("/refresh-token-by-jwt")
     @Operation(summary = "刷新 Token（使用 JWT 窗口期）", description = "在 JWT 刷新窗口期内刷新 Token（兼容旧版）")
     @ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "刷新Token（JWT窗口期）")
-    public GlobalResult<TokenRefreshResponse> refreshTokenByJwt(@RequestHeader("Authorization") String authHeader) {
+    public GlobalResult<TokenRefreshResponse> refreshTokenByJwt(@RequestHeader(JwtConstants.AUTHORIZATION) String authHeader) {
         if (authHeader == null || !authHeader.startsWith(jwtTokenUtil.getTokenPrefix())) {
             return GlobalResult.error("无效的 Token 格式");
         }

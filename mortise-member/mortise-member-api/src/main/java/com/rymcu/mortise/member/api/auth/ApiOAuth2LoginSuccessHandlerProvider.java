@@ -2,6 +2,7 @@ package com.rymcu.mortise.member.api.auth;
 
 import com.rymcu.mortise.auth.spi.OAuth2LoginSuccessHandlerProvider;
 import com.rymcu.mortise.member.api.handler.ApiOAuth2LoginSuccessHandler;
+import com.rymcu.mortise.member.constant.MemberOAuth2Constants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -49,10 +50,10 @@ public class ApiOAuth2LoginSuccessHandlerProvider implements OAuth2LoginSuccessH
     public String[] getSupportedRegistrationIds() {
         // API 客户端支持的 OAuth2 客户端注册 ID
         return new String[] {
-            "wechat-app",   // 微信 APP 登录
-            "github-app",   // GitHub APP 登录
-            "google-app",   // Google APP 登录
-            "logto-app"     // Logto APP 登录
+            MemberOAuth2Constants.DEFAULT_WECHAT_REGISTRATION_ID,
+            MemberOAuth2Constants.GITHUB_APP_REGISTRATION_ID,
+            MemberOAuth2Constants.GOOGLE_APP_REGISTRATION_ID,
+            MemberOAuth2Constants.LOGTO_APP_REGISTRATION_ID
         };
     }
 

@@ -2,6 +2,7 @@ package com.rymcu.mortise.system.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rymcu.mortise.system.annotation.DictAnnotationIntrospector;
+import com.rymcu.mortise.system.constant.SystemSpiOrderConstants;
 import com.rymcu.mortise.system.service.DictService;
 import com.rymcu.mortise.web.spi.JacksonConfigurer;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +56,7 @@ public class DictJacksonConfigurer implements JacksonConfigurer {
     @Override
     public int getOrder() {
         // 业务扩展配置，优先级中等
-        return 200;
+        return SystemSpiOrderConstants.LOW_PRIORITY_ORDER;
     }
 
     @Override

@@ -2,6 +2,7 @@ package com.rymcu.mortise.system.config;
 
 import com.rymcu.mortise.cache.spi.CacheConfigurer;
 import com.rymcu.mortise.system.constant.SystemCacheConstant;
+import com.rymcu.mortise.system.constant.SystemSpiOrderConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
 import org.springframework.stereotype.Component;
@@ -35,7 +36,7 @@ public class SystemCacheConfigurer implements CacheConfigurer {
 
     @Override
     public int getOrder() {
-        return 100; // 默认优先级
+                return SystemSpiOrderConstants.DEFAULT_ORDER;
     }
 
     @Override

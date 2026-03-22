@@ -1,6 +1,8 @@
 package com.rymcu.mortise.system.auth;
 
 import com.rymcu.mortise.auth.spi.OAuth2LoginSuccessHandlerProvider;
+import com.rymcu.mortise.system.constant.SystemAuthConstants;
+import com.rymcu.mortise.system.constant.SystemSpiOrderConstants;
 import com.rymcu.mortise.system.handler.SystemOAuth2LoginSuccessHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.ObjectProvider;
@@ -47,8 +49,8 @@ public class SystemOAuth2LoginSuccessHandlerProvider implements OAuth2LoginSucce
     public String[] getSupportedRegistrationIds() {
         // 系统管理端支持的 OAuth2 客户端注册 ID
         return new String[] {
-            "logto",        // 默认 Logto 配置（向后兼容）
-            "logto-admin"   // 管理后台专用 Logto 配置
+            SystemAuthConstants.DEFAULT_LOGTO_REGISTRATION_ID,
+            SystemAuthConstants.ADMIN_LOGTO_REGISTRATION_ID
         };
     }
 
@@ -60,8 +62,7 @@ public class SystemOAuth2LoginSuccessHandlerProvider implements OAuth2LoginSucce
 
     @Override
     public int getOrder() {
-        // 高优先级（100）
-        return 100;
+        return SystemSpiOrderConstants.DEFAULT_ORDER;
     }
 
     @Override

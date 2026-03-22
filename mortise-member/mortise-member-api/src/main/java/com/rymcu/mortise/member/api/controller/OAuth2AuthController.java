@@ -17,6 +17,7 @@ import com.rymcu.mortise.member.api.model.OAuth2QRCodeStateResponse;
 import com.rymcu.mortise.member.api.model.QRCodeLoginResponse;
 import com.rymcu.mortise.member.api.model.WeChatOpenIdResponse;
 import com.rymcu.mortise.member.api.service.OAuth2MemberBindingService;
+import com.rymcu.mortise.member.constant.MemberOAuth2Constants;
 import com.rymcu.mortise.web.annotation.ApiController;
 import io.micrometer.common.util.StringUtils;
 import io.swagger.v3.oas.annotations.Operation;
@@ -86,8 +87,8 @@ public class OAuth2AuthController {
     @GetMapping("/wechat/qrcode")
     @ApiLog(value = "获取微信二维码登录链接", recordRequestBody = false, recordResponseBody = false)
     public GlobalResult<OAuth2QRCodeResponse> getWeChatQRCode(
-            @Parameter(name = "registrationId", description = "OAuth2 客户端注册ID", example = "wechat-app")
-            @RequestParam(value = "registrationId", defaultValue = "wechat-app") String registrationId,
+            @Parameter(name = "registrationId", description = "OAuth2 客户端注册ID", example = MemberOAuth2Constants.DEFAULT_WECHAT_REGISTRATION_ID)
+            @RequestParam(value = "registrationId", defaultValue = MemberOAuth2Constants.DEFAULT_WECHAT_REGISTRATION_ID) String registrationId,
             HttpServletRequest request,
             HttpServletResponse response) {
         log.debug("获取微信二维码登录链接，registrationId: {}", registrationId);
@@ -185,11 +186,11 @@ public class OAuth2AuthController {
     @GetMapping("/wechat/mobile/auth-url")
     @ApiLog(value = "获取微信OAuth2授权URL(手机端)", recordRequestBody = false, recordResponseBody = false)
     public GlobalResult<OAuth2AuthUrlResponse> getMobileAuthUrl(
-            @Parameter(name = "registrationId", description = "OAuth2 客户端注册ID", example = "wechat-app")
-            @RequestParam(value = "registrationId", defaultValue = "wechat-app") String registrationId,
+            @Parameter(name = "registrationId", description = "OAuth2 客户端注册ID", example = MemberOAuth2Constants.DEFAULT_WECHAT_REGISTRATION_ID)
+            @RequestParam(value = "registrationId", defaultValue = MemberOAuth2Constants.DEFAULT_WECHAT_REGISTRATION_ID) String registrationId,
             @Parameter(name = "scope", description = "授权作用域：snsapi_base（静默授权）或 snsapi_userinfo（弹出授权页面）",
-                    example = "snsapi_userinfo")
-            @RequestParam(value = "scope", defaultValue = "snsapi_userinfo") String scope,
+                example = MemberOAuth2Constants.DEFAULT_WECHAT_SCOPE)
+            @RequestParam(value = "scope", defaultValue = MemberOAuth2Constants.DEFAULT_WECHAT_SCOPE) String scope,
             HttpServletRequest request,
             HttpServletResponse response) {
 
@@ -217,7 +218,9 @@ public class OAuth2AuthController {
         }
 
         // 5. 判断授权类型
-        String authType = OAuth2ProviderUtils.isWeChatProvider(registrationId) ? "wechat_redirect" : "standard";
+        String authType = OAuth2ProviderUtils.isWeChatProvider(registrationId)
+            ? MemberOAuth2Constants.AUTH_TYPE_WECHAT_REDIRECT
+            : MemberOAuth2Constants.AUTH_TYPE_STANDARD;
 
         // 6. 构建响应
         OAuth2AuthUrlResponse authUrlResponse = new OAuth2AuthUrlResponse(
@@ -244,7 +247,7 @@ public class OAuth2AuthController {
     @GetMapping("/auth-url/{registrationId}")
     @ApiLog(value = "获取OAuth2授权URL", recordRequestBody = false, recordResponseBody = false)
     public GlobalResult<OAuth2AuthUrlResponse> getAuthUrl(
-            @Parameter(name = "registrationId", description = "OAuth2 客户端注册ID", example = "wechat-app")
+            @Parameter(name = "registrationId", description = "OAuth2 客户端注册ID", example = MemberOAuth2Constants.DEFAULT_WECHAT_REGISTRATION_ID)
             @PathVariable String registrationId,
             HttpServletRequest request,
             HttpServletResponse response) {
@@ -328,8 +331,8 @@ public class OAuth2AuthController {
     @ApiLog(value = "创建微信扫码登录二维码", recordRequestBody = false, recordResponseBody = false)
     public GlobalResult<QRCodeLoginResponse> createWeChatQRCode(
             @Parameter(description = "二维码有效期（秒），范围：60-300，默认 300")
-            @RequestParam(value = "expireSeconds", defaultValue = "300") Integer expireSeconds,
-            @RequestParam(value = "appId", defaultValue = "") String appId) {
+            @RequestParam(value = "expireSeconds", defaultValue = MemberOAuth2Constants.DEFAULT_QR_CODE_EXPIRE_SECONDS_VALUE) Integer expireSeconds,
+            @RequestParam(value = "appId", defaultValue = MemberOAuth2Constants.DEFAULT_APP_ID) String appId) {
 
         log.info("创建微信扫码登录二维码 - appId: {} - expireSeconds: {}", appId, expireSeconds);
 
@@ -340,13 +343,18 @@ public class OAuth2AuthController {
         }
 
         // 参数校验
-        if (expireSeconds < 60 || expireSeconds > 300) {
+        if (expireSeconds < MemberOAuth2Constants.QR_CODE_EXPIRE_SECONDS_MIN
+            || expireSeconds > MemberOAuth2Constants.QR_CODE_EXPIRE_SECONDS_MAX) {
             return GlobalResult.error("二维码有效期必须在 60-300 秒之间");
         }
 
         try {
             // 生成唯一场景值
-            String sceneStr = "LOGIN_" + UUID.randomUUID().toString().replace("-", "");
+            String sceneStr = MemberOAuth2Constants.QR_CODE_SCENE_PREFIX
+                    + UUID.randomUUID().toString().replace(
+                    MemberOAuth2Constants.UUID_HYPHEN,
+                    MemberOAuth2Constants.DEFAULT_APP_ID
+                );
 
             // 调用服务创建二维码
             QRCodeResult result = qrCodeLoginService.createQRCode(appId, sceneStr, expireSeconds);
@@ -398,13 +406,16 @@ public class OAuth2AuthController {
     @ApiLog(value = "获取微信静默授权URL", recordRequestBody = false, recordResponseBody = false)
     public GlobalResult<OAuth2AuthUrlResponse> getSilentAuthUrl(
             @Parameter(name = "appId", description = "微信公众号 appId，为空时使用默认账号")
-            @RequestParam(value = "appId", defaultValue = "") String appId,
+            @RequestParam(value = "appId", defaultValue = MemberOAuth2Constants.DEFAULT_APP_ID) String appId,
             @Parameter(name = "redirectUri", description = "授权回调地址（前端页面 URL，不是后端回调）", required = true)
             @RequestParam("redirectUri") String redirectUri) {
 
         log.debug("获取微信静默授权 URL - appId: {}, redirectUri: {}", appId, redirectUri);
 
-        String state = UUID.randomUUID().toString().replace("-", "");
+        String state = UUID.randomUUID().toString().replace(
+            MemberOAuth2Constants.UUID_HYPHEN,
+            MemberOAuth2Constants.DEFAULT_APP_ID
+        );
         String authUrl = silentAuthService.buildSilentAuthUrl(appId, redirectUri, state);
 
         OAuth2AuthUrlResponse response = new OAuth2AuthUrlResponse(
@@ -440,7 +451,7 @@ public class OAuth2AuthController {
             @Parameter(name = "code", description = "微信授权码", required = true)
             @RequestParam("code") String code,
             @Parameter(name = "appId", description = "微信公众号 appId，为空时使用默认账号")
-            @RequestParam(value = "appId", defaultValue = "") String appId) {
+            @RequestParam(value = "appId", defaultValue = MemberOAuth2Constants.DEFAULT_APP_ID) String appId) {
 
         log.info("静默获取微信 openid - appId: {}", appId);
 
@@ -482,7 +493,7 @@ public class OAuth2AuthController {
         }
         try {
             String encodedTicket = URLEncoder.encode(ticket, StandardCharsets.UTF_8);
-            return "https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=" + encodedTicket;
+            return MemberOAuth2Constants.WECHAT_SHOW_QRCODE_URL_PREFIX + encodedTicket;
         } catch (Exception e) {
             log.error("构建二维码显示 URL 失败", e);
             return null;

@@ -1,6 +1,7 @@
 package com.rymcu.mortise.system.config;
 
 import com.rymcu.mortise.auth.spi.SecurityConfigurer;
+import com.rymcu.mortise.system.constant.SystemSpiOrderConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
@@ -25,7 +26,7 @@ public class SystemSecurityConfigurer implements SecurityConfigurer {
 
     @Override
     public int getOrder() {
-        return 200; // 低优先级
+        return SystemSpiOrderConstants.LOW_PRIORITY_ORDER;
     }
 
     @Override

@@ -2,14 +2,17 @@ package com.rymcu.mortise.system.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.rymcu.mortise.auth.constant.JwtConstants;
 import com.rymcu.mortise.auth.service.Oauth2ClientConfigService;
 import com.rymcu.mortise.auth.service.TokenManager;
+import com.rymcu.mortise.auth.util.JwtTokenUtil;
 import com.rymcu.mortise.common.exception.ServiceException;
 import com.rymcu.mortise.common.model.Link;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.log.annotation.ApiLog;
 import com.rymcu.mortise.log.annotation.OperationLog;
+import com.rymcu.mortise.system.constant.SystemAuthConstants;
 import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.exception.AccountExistsException;
 import com.rymcu.mortise.system.model.AuthInfo;
@@ -62,6 +65,9 @@ public class AuthController {
     @Resource
     private Oauth2ClientConfigService oauth2ClientConfigService;
 
+        @Resource
+        private JwtTokenUtil jwtTokenUtil;
+
     /**
      * 获取已启用的 OAuth2 登录提供商列表（公开接口，登录页使用）
      * 仅返回 registrationId 和 clientName，不暴露任何敏感配置
@@ -71,8 +77,8 @@ public class AuthController {
     @GetMapping("/oauth2-providers")
     @ApiLog(value = "获取OAuth2提供商列表", recordRequestBody = false, recordResponseBody = false)
     public GlobalResult<List<OAuth2ProviderInfo>> listOAuth2Providers(
-            @Parameter(description = "登录入口类型：admin=管理端，site=用户端", example = "admin")
-            @RequestParam(defaultValue = "admin") String appType) {
+            @Parameter(description = "登录入口类型：admin=管理端，site=用户端", example = SystemAuthConstants.OAUTH2_APP_TYPE_ADMIN)
+            @RequestParam(defaultValue = SystemAuthConstants.OAUTH2_APP_TYPE_ADMIN) String appType) {
         List<OAuth2ProviderInfo> providers = oauth2ClientConfigService
                 .loadOauth2ClientConfigAllEnabledByAppType(appType)
                 .stream()
@@ -98,9 +104,9 @@ public class AuthController {
             @Parameter(description = "登录请求", required = true)
             @Valid @RequestBody LoginInfo loginInfo) {
         log.info("用户登录请求: {}", loginInfo.getAccount());
-        TokenUser tokenUser = authService.login(loginInfo.getAccount(), loginInfo.getPassword());
-        return GlobalResult.success(tokenUser);
-    }
+                        String tokenPrefix = jwtTokenUtil.getTokenPrefix();
+                        if (authHeader != null && tokenPrefix != null && authHeader.startsWith(tokenPrefix)) {
+                                token = authHeader.substring(tokenPrefix.length());
 
     /**
      * 用户注册
@@ -159,13 +165,14 @@ public class AuthController {
     @OperationLog(module = "认证管理", operation = "用户登出", recordParams = false)
     public GlobalResult<?> logout(
             @AuthenticationPrincipal CurrentUser currentUser,
-            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+            @RequestHeader(value = JwtConstants.AUTHORIZATION, required = false) String authHeader) {
         String account = currentUser.getUsername();
         if (account != null) {
             // 从 Authorization 头中提取 Token
             String token = null;
-            if (authHeader != null && authHeader.startsWith("Bearer ")) {
-                token = authHeader.substring(7);
+                        String tokenPrefix = jwtTokenUtil.getTokenPrefix();
+                        if (authHeader != null && tokenPrefix != null && authHeader.startsWith(tokenPrefix)) {
+                                token = authHeader.substring(tokenPrefix.length());
             }
 
             if (token != null) {

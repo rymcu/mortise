@@ -25,6 +25,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.HashMap;
@@ -425,7 +426,7 @@ public class OAuth2MemberBindingServiceImpl implements OAuth2MemberBindingServic
                 refreshToken,
                 jwtTokenUtil.getTokenPrefix().trim(),
                 MemberJwtConstants.ACCESS_TOKEN_EXPIRY_MS,
-                AuthCacheConstant.MEMBER_REFRESH_TOKEN_EXPIRE_HOURS * 60 * 60 * 1000,
+                Duration.ofHours(AuthCacheConstant.MEMBER_REFRESH_TOKEN_EXPIRE_HOURS).toMillis(),
                 openid,
                 unionid,
                 nickname,

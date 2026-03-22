@@ -9,6 +9,8 @@ import com.rymcu.mortise.auth.util.OAuth2ProviderUtils;
 import com.rymcu.mortise.member.api.handler.ApiOAuth2LoginSuccessHandler;
 import com.rymcu.mortise.member.api.model.OAuth2LoginResponse;
 import com.rymcu.mortise.member.api.service.OAuth2MemberBindingService;
+import com.rymcu.mortise.member.constant.MemberOAuth2Constants;
+import com.rymcu.mortise.member.constant.OAuth2UserAttributeKeys;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -118,12 +120,12 @@ public class QRCodeScanEventListener {
      */
     private OAuth2User buildOAuth2UserFromEvent(QRCodeScanEvent event) {
         Map<String, Object> attributes = new HashMap<>();
-        attributes.put("openid", event.getUserId());
+        attributes.put(OAuth2UserAttributeKeys.WECHAT_OPENID, event.getUserId());
 
         return new DefaultOAuth2User(
-                List.of(new SimpleGrantedAuthority("ROLE_USER")),
+            List.of(new SimpleGrantedAuthority(MemberOAuth2Constants.DEFAULT_MEMBER_ROLE)),
                 attributes,
-                "openid"
+            OAuth2UserAttributeKeys.WECHAT_OPENID
         );
     }
 

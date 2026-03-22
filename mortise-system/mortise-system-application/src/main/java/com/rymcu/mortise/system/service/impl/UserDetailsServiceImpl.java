@@ -5,6 +5,7 @@ import com.rymcu.mortise.auth.enumerate.UserType;
 import com.rymcu.mortise.auth.service.CustomUserDetailsService;
 import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.core.result.ResultCode;
+import com.rymcu.mortise.system.constant.SystemAuthConstants;
 import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.mapper.UserMapper;
 import com.rymcu.mortise.system.model.UserDetailInfo;
@@ -97,7 +98,7 @@ public class UserDetailsServiceImpl implements CustomUserDetailsService {
         } catch (Exception e) {
             log.error("加载用户权限失败: userId={}", user.getId(), e);
             // 权限加载失败时给予基础权限
-            permissions = Set.of("ROLE_USER");
+            permissions = Set.of(SystemAuthConstants.DEFAULT_FALLBACK_ROLE);
         }
 
         // 6. 转换为 Spring Security 的 GrantedAuthority

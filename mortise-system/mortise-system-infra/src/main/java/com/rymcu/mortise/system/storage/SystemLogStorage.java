@@ -2,6 +2,7 @@ package com.rymcu.mortise.system.storage;
 
 import com.rymcu.mortise.log.entity.OperationLogEntity;
 import com.rymcu.mortise.log.spi.LogStorage;
+import com.rymcu.mortise.system.constant.SystemSpiOrderConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -22,7 +23,7 @@ public class SystemLogStorage implements LogStorage {
 
     @Override
     public int getOrder() {
-        return 100; // 默认优先级
+        return SystemSpiOrderConstants.DEFAULT_ORDER;
     }
 
     @Override

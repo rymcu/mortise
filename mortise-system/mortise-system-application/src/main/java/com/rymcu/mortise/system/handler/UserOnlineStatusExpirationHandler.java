@@ -4,6 +4,7 @@ import com.rymcu.mortise.cache.constant.CacheConstant;
 import com.rymcu.mortise.cache.spi.CacheExpirationHandler;
 import com.rymcu.mortise.common.constant.ProjectConstant;
 import com.rymcu.mortise.system.constant.SystemCacheConstant;
+import com.rymcu.mortise.system.constant.SystemSpiOrderConstants;
 import com.rymcu.mortise.system.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +25,7 @@ public class UserOnlineStatusExpirationHandler implements CacheExpirationHandler
 
     @Override
     public int getOrder() {
-        return 10; // 高优先级
+        return SystemSpiOrderConstants.HIGH_PRIORITY_ORDER;
     }
 
     @Override

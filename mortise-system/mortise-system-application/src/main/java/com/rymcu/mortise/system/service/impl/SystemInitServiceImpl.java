@@ -1,6 +1,7 @@
 package com.rymcu.mortise.system.service.impl;
 
 import com.mybatisflex.core.query.QueryWrapper;
+import com.rymcu.mortise.system.constant.SystemAuthConstants;
 import com.rymcu.mortise.system.entity.Role;
 import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.entity.UserRole;
@@ -125,16 +126,16 @@ public class SystemInitServiceImpl implements SystemInitService {
      */
     private Long findAdminRole() {
         Role adminRole = roleMapper.selectOneByQuery(
-                QueryWrapper.create().from(ROLE).where(ROLE.PERMISSION.eq("ADMIN"))
+                QueryWrapper.create().from(ROLE).where(ROLE.PERMISSION.eq(SystemAuthConstants.ADMIN_ROLE_PERMISSION))
         );
         if (adminRole == null) {
-            throw new IllegalStateException("未找到 ADMIN 角色，请检查 Flyway 脚本 V8__Seed_System_Roles.sql 是否已执行");
+            throw new IllegalStateException("未找到 " + SystemAuthConstants.ADMIN_ROLE_PERMISSION + " 角色，请检查 Flyway 脚本 V8__Seed_System_Roles.sql 是否已执行");
         }
         return adminRole.getId();
     }
 
     private void assignRoleToUser(Long userId, Long roleId) {
-        log.info("为管理员分配 ADMIN 角色...");
+        log.info("为管理员分配 {} 角色...", SystemAuthConstants.ADMIN_ROLE_PERMISSION);
         UserRole userRole = new UserRole();
         userRole.setIdMortiseUser(userId);
         userRole.setIdMortiseRole(roleId);
