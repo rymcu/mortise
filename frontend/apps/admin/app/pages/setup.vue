@@ -14,6 +14,8 @@ useSeoMeta({
 
 const { checkInitStatus, initializeSystem, getInitProgress } = useSystemInit()
 
+const router = useRouter()
+
 // 步骤状态
 const currentStep = ref(0)
 const loading = ref(false)
@@ -154,8 +156,8 @@ async function doInitialize() {
     progress.value = 100
     successMessage.value = '系统初始化成功！即将跳转到登录页面...'
 
-    setTimeout(async () => {
-      await navigateTo('/auth/login')
+    setTimeout(() => {
+      router.push('/auth/login')
     }, 2000)
   } catch (error) {
     stopProgressPolling()
