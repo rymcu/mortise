@@ -37,18 +37,15 @@ const fields = [
   }
 ]
 
-const providers = [
-  {
-    label: '使用微信登录',
-    icon: 'i-simple-icons-wechat',
-    onClick: () => loginWithOAuth('wechat-app')
-  },
-  {
-    label: '使用 GitHub 登录',
-    icon: 'i-simple-icons-github',
-    onClick: () => loginWithOAuth('github-app')
-  }
-]
+const { providers: oauth2Providers } = useOAuth2Providers('site')
+
+const providers = computed(() =>
+  (oauth2Providers.value ?? []).map((p) => ({
+    label: p.label,
+    icon: p.icon,
+    onClick: () => loginWithOAuth(p.registrationId)
+  }))
+)
 
 const schema = z.object({
   account: z.string().min(1, '请输入账号/邮箱/手机号'),
