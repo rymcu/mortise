@@ -104,10 +104,10 @@ public class AuthController {
             @Parameter(description = "登录请求", required = true)
             @Valid @RequestBody LoginInfo loginInfo) {
         log.info("用户登录请求: {}", loginInfo.getAccount());
-                        String tokenPrefix = jwtTokenUtil.getTokenPrefix();
-                        if (authHeader != null && tokenPrefix != null && authHeader.startsWith(tokenPrefix)) {
-                                token = authHeader.substring(tokenPrefix.length());
-
+        TokenUser tokenUser = authService.login(loginInfo.getAccount(), loginInfo.getPassword());
+        return GlobalResult.success(tokenUser);
+    }
+    
     /**
      * 用户注册
      */
