@@ -39,3 +39,7 @@ build/
 /old-code/
 /frontend/templates/chat/
 plan.md
+
+### Tmp files ###
+.tmp/
+.tmp-*

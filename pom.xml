@@ -65,6 +65,7 @@
         <resilience4j.version>2.2.0</resilience4j.version>
         <pay-java.version>2.14.9</pay-java.version>
         <fesod.version>2.0.1-incubating</fesod.version>
+        <sensitive-word.version>0.29.4</sensitive-word.version>
         <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
         <layer.guard.skip>true</layer.guard.skip>
     </properties>
@@ -533,6 +534,12 @@
                 <groupId>org.apache.fesod</groupId>
                 <artifactId>fesod-sheet</artifactId>
                 <version>${fesod.version}</version>
+            </dependency>
+            <!-- houbb sensitive-word (DFA 高性能敏感词引擎) -->
+            <dependency>
+                <groupId>com.github.houbb</groupId>
+                <artifactId>sensitive-word</artifactId>
+                <version>${sensitive-word.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
