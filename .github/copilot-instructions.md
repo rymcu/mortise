@@ -77,6 +77,15 @@
 - 改动应优先修复根因，不做表面补丁；避免顺手重构无关代码。
 - 修改前先确认目标模块或前端 app/package 的现有模式，再保持一致，不要把另一处的设计硬搬过来。
 
+## Flyway 迁移脚本约束
+
+- 新增 Flyway SQL 前，必须先查询当前仓库可用版本号，禁止直接凭感觉命名。
+- 优先运行根目录 `get-next-flyway-version.ps1`；如果无法运行脚本，也必须至少扫描全仓库所有 `src/main/resources/db/migration/V*.sql` 后再确定版本号。
+- Flyway 版本号按**全仓库全局共享**管理，不按单个模块各自从 `V1` 重新开始。
+- 标准业务模块的迁移脚本应放在对应 `mortise-xx-infra/src/main/resources/db/migration/`；少量历史单模块仍可能位于 `mortise-xx/src/main/resources/db/migration/`，查询版本号时两类目录都要纳入统计。
+- 如果发现重复版本号，先处理冲突，再创建新的迁移脚本。
+- 新迁移脚本命名格式保持 `V{version}__{description}.sql`，其中 `{version}` 必须是当前全局最大版本号之后的下一个可用值。
+
 ## 代理工作方式建议
 
 - 开始编码前，先确认改动位于后端、前端、文档还是基础设施脚本，再选择对应命令与阅读路径。

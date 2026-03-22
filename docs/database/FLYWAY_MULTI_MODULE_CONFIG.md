@@ -108,6 +108,16 @@ Successfully applied 1 migration to schema "mortise" (execution time 00:00.156s)
 - Flyway 配置：`locations: classpath:db/migration`
 - **优点**：模块职责清晰，易于维护
 
+### ✅ 版本号这样分配（避免冲突）
+
+- Flyway 版本号在 Mortise 中按**全仓库全局序列**使用，而不是按模块单独编号。
+- 标准业务模块的迁移目录是 `mortise-xx-infra/src/main/resources/db/migration/`。
+- 当前仓库还有少量历史单模块迁移目录，例如 `mortise-wechat/src/main/resources/db/migration/`、`mortise-file/src/main/resources/db/migration/`，统计版本号时也必须一起扫描。
+- 新建迁移脚本前，先在仓库根目录运行：`./get-next-flyway-version.ps1`
+- 如果不能运行脚本，至少手动扫描所有 `src/main/resources/db/migration/V*.sql`，确认当前最大版本号。
+- 创建新脚本时使用脚本输出的 `NextVersion`，并在提交前再次确认没有并发新增导致撞号。
+- 如果脚本提示存在重复版本号，应先解决重复，再继续新增迁移。
+
 ### ⚠️ 不需要这样配置（常见误区）
 
 ❌ 不需要复制脚本到 `mortise-app`
@@ -122,6 +132,31 @@ Successfully applied 1 migration to schema "mortise" (execution time 00:00.156s)
 ```powershell
 .\verify-flyway-config.ps1
 ```
+
+### 方法1.5：查询下一个可用版本号
+
+```powershell
+.\get-next-flyway-version.ps1
+```
+
+预期输出会包含：
+
+- 当前最大版本号
+- 建议下一个版本号
+- 最近 10 个已使用版本
+- 是否存在重复版本号
+
+### 方法1.6：启用提交前自动拦截
+
+```powershell
+.\setup-git-hooks.ps1
+```
+
+启用后，Git 会在每次 `commit` 前执行 `.githooks/pre-commit`：
+
+- 调用 `get-next-flyway-version.ps1 -FailOnDuplicates`
+- 发现重复版本号时直接终止提交
+- 未发现重复版本号时允许提交继续进行
 
 ### 方法2：手动检查 JAR
 

@@ -20,5 +20,8 @@ Frontend: Nuxt 4 + Nuxt UI 4.5 + TypeScript monorepo under `frontend/` (pnpm wor
 - Controllers use `@AdminController`/`@ApiController` (custom meta-annotations), return `GlobalResult`.
 - Exceptions: throw `BusinessException`/`ServiceException`, handled by `GlobalExceptionHandler`.
 - IDs generated via ULID (`FlexId`). DB: PostgreSQL 17 preferred, Flyway migrations.
+- Flyway SQL uses a repository-wide global version sequence. Before adding a migration, run `./get-next-flyway-version.ps1` or scan all `src/main/resources/db/migration/V*.sql` files to choose the next available version; never infer from the current module alone.
+- Standard business-module migrations live under `mortise-xx-infra/src/main/resources/db/migration/`; some legacy single-module migrations still live directly under `mortise-xx/src/main/resources/db/migration/`, and both count toward the global version sequence.
+- Run `./setup-git-hooks.ps1` once per clone to enable the repository `.githooks/pre-commit` check that blocks duplicate Flyway versions before commit.
 - Comments, commit messages, docs in **简体中文** by default. Commits follow Conventional Commits.
 - Read `.github/copilot-instructions.md` and `docs/module-dependency-and-spi-architecture.md` before cross-module changes.
