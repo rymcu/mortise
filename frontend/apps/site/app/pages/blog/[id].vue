@@ -16,6 +16,8 @@ if (error.value || !articleData.value?.data) {
 
 const article = computed(() => articleData.value!.data)
 
+const sanitizedContent = useSanitizedHtml(computed(() => article.value?.content ?? ''))
+
 const { data: commentsData } = await useAsyncData(
   `article-comments-${id.value}`,
   () => fetchComments(id.value)
@@ -84,7 +86,7 @@ useSeoMeta({
       <!-- 文章内容 -->
       <div
         class="prose prose-neutral dark:prose-invert max-w-none"
-        v-html="article.content"
+        v-html="sanitizedContent"
       />
 
       <USeparator class="my-10" />

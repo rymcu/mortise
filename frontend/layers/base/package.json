@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "type": "module",
   "dependencies": {
-    "@mortise/core-sdk": "workspace:*"
+    "@mortise/core-sdk": "workspace:*",
+    "isomorphic-dompurify": "^3.6.0"
   }
 }
