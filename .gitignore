@@ -43,3 +43,9 @@ plan.md
 ### Tmp files ###
 .tmp/
 .tmp-*
+
+### Docker 运行时数据与敏感配置 ###
+.env
+.env.properties
+config/rootCA.pem
+config/nginx/certs/

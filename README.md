@@ -287,12 +287,15 @@
 如果目标是先把本地开发环境跑通，建议直接按下面顺序执行：
 
 ```powershell
+# 0. 创建 .env 配置文件（首次必做，后续复用）
+Copy-Item .env.example .env
+# 编辑 .env，把所有 changeme 替换为实际值（数据库密码、Redis 密码、ENCRYPTION_KEY 等）
+
 # 终端 1：仓库根目录启动依赖
 docker compose up -d
 
-# 终端 2：启动后端
+# 终端 2：启动后端（.env 会被 Spring Boot 自动加载）
 Set-Location mortise-app
-$env:ENCRYPTION_KEY = "your_secret_key"
 mvn spring-boot:run
 
 # 终端 3：启动管理端前端
@@ -308,7 +311,7 @@ Set-Location frontend
 pnpm dev:site
 ```
 
-默认访问地址：
+默认访问地址（端口可在 `.env` 中修改）：
 
 | 进程 | 地址 |
 |------|------|
@@ -318,7 +321,7 @@ pnpm dev:site
 
 首次排障优先级：
 
-1. 启动报解密或数据源异常，先检查当前 Shell 是否设置了 `ENCRYPTION_KEY`。
+1. 启动报解密或数据源异常，先检查 `.env` 文件是否存在于仓库根目录、`ENCRYPTION_KEY` 值是否正确。
 2. Flyway 报 `permission denied for database postgres` 或 `schema mortise`，优先执行根目录的 `fix-postgresql-permissions.ps1`；如果本机没有 `psql` 客户端，按 `docs\database\FLYWAY_PERMISSION_FIX.md` 中的 GUI 手动 SQL 方案处理。
 3. 管理端请求失败，先确认后端仍监听 `localhost:9999`，且前端命令在 `frontend/` 目录使用 `pnpm` 执行。
 
@@ -423,9 +426,21 @@ sudo ./update_hosts.sh
 127.0.0.1 logto.rymcu.local
 ```
 
-#### 3️⃣ 启动依赖服务
+#### 3️⃣ 创建环境变量配置
 
-根目录 `compose.yaml` 启动的是基础设施依赖（PostgreSQL、Redis、Logto、Nginx），**不含** Spring Boot 应用本身：
+项目根目录有一个 `.env.example` 模板，Docker Compose 和 Spring Boot **共享同一个 `.env`** 文件，所有密码、端口、地址等只需在这一处维护：
+
+```powershell
+Copy-Item .env.example .env
+# 用编辑器打开 .env，将所有 changeme 替换为实际值
+```
+
+> `.env` 已被 `.gitignore` 忽略，不会提交到版本库。
+
+#### 4️⃣ 启动依赖服务
+
+根目录 `compose.yaml` 启动的是基础设施依赖（PostgreSQL、Redis、Logto、Nginx），**不含** Spring Boot 应用本身。
+Docker Compose 会自动读取 `.env` 中的变量（数据库密码、端口等）：
 
 ```bash
 # 启动依赖服务（首次启动会下载镜像，需要几分钟）
@@ -438,9 +453,9 @@ docker compose logs -f
 docker compose ps
 ```
 
-#### 4️⃣ 启动 Spring Boot 应用
+#### 5️⃣ 启动 Spring Boot 应用
 
-依赖服务就绪后，单独启动后端应用：
+依赖服务就绪后，单独启动后端应用。Spring Boot 会自动从 `.env` 加载数据库、Redis、邮件等配置，无需手动设置环境变量：
 
 ```bash
 # 方式 1：Maven（开发推荐）
@@ -454,17 +469,17 @@ java -jar mortise-app/target/mortise-app-0.2.0.jar
 java -jar mortise-app/target/mortise-app-0.2.0.jar --spring.profiles.active=dev
 ```
 
-#### 5️⃣ 访问服务
+#### 6️⃣ 访问服务
 
 | 服务 | 地址 | 说明 |
 |------|------|------|
-| 🌐 应用主页 | http://localhost:9999 | Spring Boot 应用 |
+| 🌐 应用主页 | http://localhost:9999 | Spring Boot 应用（端口由 `.env` 的 `SERVER_PORT` 控制） |
 | 📊 Actuator | http://localhost:9999/mortise/actuator | 监控端点 |
-| 🗄️ PostgreSQL | localhost:5432 | 数据库（用户: mortise, 密码: mortise） |
-| 🔴 Redis | localhost:6379 | 缓存服务 |
+| 🗄️ PostgreSQL | localhost:5432 | 数据库（凭据见 `.env`） |
+| 🔴 Redis | localhost:6379 | 缓存服务（密码见 `.env`） |
 | 🌐 Nginx | http://localhost:80 | 反向代理（Logto 等） |
 
-#### 6️⃣ 停止依赖服务
+#### 7️⃣ 停止依赖服务
 
 ```bash
 # 停止服务
@@ -535,33 +550,26 @@ redis-server
 
 #### 4️⃣ 配置应用
 
-**设置加密密钥**（必须，配置文件中使用了 `ENC(...)` 加密的敏感值均依赖此变量）：
+项目使用根目录的 **`.env` 文件**作为唯一配置入口，Docker Compose 和 Spring Boot 共享同一份变量，无需手动设置环境变量或编辑 `application-dev.yml`：
 
-```bash
-# Linux / macOS
-export ENCRYPTION_KEY=your_secret_key
-
-# PowerShell
-$env:ENCRYPTION_KEY = "your_secret_key"
+```powershell
+# 首次：从模板创建 .env（已被 .gitignore 忽略）
+Copy-Item .env.example .env
 ```
 
-编辑配置文件 `mortise-app/src/main/resources/application-dev.yml`，将数据库/Redis 地址改为本地实际地址：
+打开 `.env`，将所有 `changeme` 替换为实际值。关键配置项：
 
-```yaml
-spring:
-  datasource:
-    url: jdbc:postgresql://localhost:5432/mortise
-    username: mortise
-    password: your_password    # 或使用 ENC(密文) 格式，见 Jasypt 加密说明
-  
-  data:
-    redis:
-      host: localhost
-      port: 6379
-      # password: your_redis_password
-```
+| 变量 | 说明 | 示例 |
+|------|------|------|
+| `POSTGRES_PASSWORD` | 数据库密码 | `your_db_password` |
+| `REDIS_PASSWORD` | Redis 密码 | `your_redis_password` |
+| `ENCRYPTION_KEY` | Jasypt 加密主密钥 | `your_secret_key` |
+| `JWT_SECRET` | JWT 签名密钥 | `your_jwt_secret` |
+| `MAIL_PASSWORD` | 邮件服务密码 | `your_mail_password` |
 
-> 📖 Jasypt 配置加密详见：[docs/quickstart/QUICK_START.md#5-jasypt-敏感配置加密](docs/quickstart/QUICK_START.md)
+> 如果不需要 Jasypt 加密（本地开发使用明文密码），`application-dev.yml` 中的 `${POSTGRES_PASSWORD:mortise}` 等占位符已有默认值，`.env` 中设为实际密码即可。
+
+> 📖 Jasypt 配置加密详见：[docs/quickstart/QUICK_START.md#6-jasypt-敏感配置加密](docs/quickstart/QUICK_START.md)
 
 #### 5️⃣ 编译项目
 
@@ -690,7 +698,7 @@ sudo systemctl status mortise
 
 **解决**:
 1. 检查数据库是否启动：`psql -U postgres`
-2. 检查用户名密码是否正确
+2. 检查 `.env` 文件中的 `POSTGRES_USER` 和 `POSTGRES_PASSWORD` 是否正确
 3. 检查数据库是否已创建：`\l` 查看数据库列表
 4. 检查防火墙是否开放 5432 端口
 </details>
@@ -702,8 +710,8 @@ sudo systemctl status mortise
 
 **解决**:
 1. 检查 Redis 是否启动：`redis-cli ping`（应返回 PONG）
-2. 检查配置文件中的 Redis 地址和端口
-3. 如果有密码，确保配置了正确的密码
+2. 检查 `.env` 文件中的 Redis 地址和端口
+3. 如果有密码，确保 `.env` 中 `REDIS_PASSWORD` 值正确
 </details>
 
 <details>
@@ -723,7 +731,7 @@ sudo systemctl status mortise
 **问题**: `Port 9999 is already in use`
 
 **解决**:
-1. 修改 `application.yml` 中的端口号
+1. 修改 `.env` 文件中的 `SERVER_PORT` 值
 2. 或停止占用端口的进程：
    - Windows: `netstat -ano | findstr 9999`
    - Linux/Mac: `lsof -i :9999`

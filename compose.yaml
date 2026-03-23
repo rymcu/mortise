@@ -14,24 +14,32 @@ services:
       timeout: 5s
       retries: 5
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
       - ./app/postgresql/data:/var/lib/postgresql/data
       - ./app/postgresql/logs:/var/log/postgresql
-      - ./config/postgresql.conf:/etc/postgresql/postgresql.conf
-      - ./config/pg_hba.conf:/etc/postgresql/pg_hba.conf
+      - ./config/postgresql.conf:/etc/postgresql/postgresql.conf:ro
+      - ./config/pg_hba.conf:/etc/postgresql/pg_hba.conf:ro
     command:
       - "postgres"
       - "-c"
       - "config_file=/etc/postgresql/postgresql.conf"
+    networks:
+      - mortise-net
+
   redis:
     image: 'redis:7.0.8'
     container_name: mortise-redis
     restart: unless-stopped
     sysctls:
       - net.core.somaxconn=1024
+    healthcheck:
+      test: [ 'CMD', 'redis-cli', '-a', '${REDIS_PASSWORD}', 'ping' ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
     volumes:
       - ./app/redis:/data
     command:
@@ -40,13 +48,16 @@ services:
       - redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes
     environment:
       TZ: ${TZ}
+    networks:
+      - mortise-net
+
   logto:
     image: svhd/logto:1.24.1
     container_name: mortise-logto
     restart: unless-stopped
     ports:
-      - '3001:3001'
-      - '3002:3002'
+      - '${LOGTO_PORT:-3001}:3001'
+      - '${LOGTO_ADMIN_PORT:-3002}:3002'
     depends_on:
       postgresql:
         condition: service_healthy
@@ -56,25 +67,88 @@ services:
       DB_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@mortise-postgres:5432/${LOGTO_DB_NAME}
       ENDPOINT: ${LOGTO_ENDPOINT}
       ADMIN_ENDPOINT: ${LOGTO_ADMIN_ENDPOINT}
-      # Self-signed certificates require NODE_EXTRA_CA_CERTS to be configured
+      # 自签名证书需要配置 NODE_EXTRA_CA_CERTS
       NODE_EXTRA_CA_CERTS: /usr/local/share/ca-certificates/logto-rootCA.crt
-    # Self-signed certificates need to be added to the container
+    # 自签名证书需要挂载到容器中
     volumes:
-      - ./config/rootCA.pem:/usr/local/share/ca-certificates/logto-rootCA.crt
+      - ./config/rootCA.pem:/usr/local/share/ca-certificates/logto-rootCA.crt:ro
     extra_hosts:
-      # Map the hostnames to the IP addresses of the host machine
+      # 将域名映射到宿主机 IP
       - "${LOGTO_AUTH_HOST}:${LOGTO_HOST_IP}"
       - "${LOGTO_ADMIN_HOST}:${LOGTO_HOST_IP}"
     entrypoint: ['sh', '-c', 'npm run cli db seed -- --swe && npm start']
-  app:
+    networks:
+      - mortise-net
+
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: mortise-rustfs
+    restart: unless-stopped
+    ports:
+      - '${RUSTFS_PORT:-9000}:9000'
+    environment:
+      TZ: ${TZ}
+      RUSTFS_CONSOLE_ENABLE: 'true'
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+    volumes:
+      - rustfs-data:/data
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9000/health >/dev/null 2>&1 || exit 1"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+    command: ["--access-key","${RUSTFS_ACCESS_KEY}","--secret-key","${RUSTFS_SECRET_KEY}","/data"]
+    networks:
+      - mortise-net
+
+  rustfs-init:
+    image: minio/mc:latest
+    container_name: mortise-rustfs-init
+    depends_on:
+      rustfs:
+        condition: service_healthy
+    volumes:
+      - ./config/bucket.config.json:/bucket.config.json:ro
+    entrypoint: /bin/sh
+    command: -c '
+        set -eux;
+        mc alias set rustfs "http://rustfs:9000" "${RUSTFS_ACCESS_KEY}" "${RUSTFS_SECRET_KEY}";
+        mc mb "rustfs/${RUSTFS_BUCKET:-mortise}" --ignore-existing;
+        mc anonymous set-json "/bucket.config.json" "rustfs/${RUSTFS_BUCKET:-mortise}" || true;
+      '
+    restart: "no"
+    networks:
+      - mortise-net
+
+  nginx:
     image: 'nginx:latest'
     container_name: mortise-nginx
     restart: unless-stopped
     ports:
-      - '80:80'
-      - '443:443'
+      - '${NGINX_HTTP_PORT:-80}:80'
+      - '${NGINX_HTTPS_PORT:-443}:443'
+    depends_on:
+      - logto
     volumes:
-      - ./config/nginx/nginx.conf:/etc/nginx/nginx.conf
-      - ./config/nginx/certs:/etc/nginx/certs
+      - ./config/nginx/nginx.conf.template:/etc/nginx/nginx.conf.template:ro
+      - ./config/nginx/certs:/etc/nginx/certs:ro
     environment:
       TZ: ${TZ}
+      BACKEND_HOST: ${BACKEND_HOST}
+      BACKEND_PORT: ${BACKEND_PORT}
+      FRONTEND_HOST: ${FRONTEND_HOST}
+      FRONTEND_PORT: ${FRONTEND_PORT}
+    command: >
+      /bin/sh -c "envsubst '$$BACKEND_HOST $$BACKEND_PORT $$FRONTEND_HOST $$FRONTEND_PORT'
+      < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf
+      && nginx -g 'daemon off;'"
+    networks:
+      - mortise-net
+
+volumes:
+  rustfs-data:
+
+networks:
+  mortise-net:
+    driver: bridge

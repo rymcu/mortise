@@ -2,4 +2,7 @@
 spring:
   profiles:
     active: '@profileActive@'
+  config:
+    import:
+      - optional:file:../.env[.properties]
 ---

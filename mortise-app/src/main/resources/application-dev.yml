@@ -9,10 +9,10 @@ spring:
     cache: false
   data:
     redis:
-      host: 192.168.88.243
-      port: 6379
-      password: 
-      database: 1
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:1}
       timeout: 3000
       jedis:
         pool:
@@ -21,9 +21,9 @@ spring:
           max-idle: 500
           min-idle: 0
   datasource:
-    url: jdbc:postgresql://192.168.88.243:15432/postgres
-    username: mortise
-    password: ENC(/T9oN1+Zyq6ZOYV4oOyJJFblmrbhla0tmI1ExpjXA/4cg1gw+Yh6kw==)
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:postgres}?currentSchema=${POSTGRES_SCHEMA:mortise}
+    username: ${POSTGRES_USER:mortise}
+    password: ${POSTGRES_PASSWORD:changeme}
     driver-class-name: org.postgresql.Driver
     type: com.zaxxer.hikari.HikariDataSource
     hikari:
@@ -35,7 +35,7 @@ spring:
       minimum-idle: 8                    # 最小空闲连接数 - 增加到8
       pool-name: mortisePool
       connection-test-query: SELECT 1
-      schema: mortise
+      schema: ${POSTGRES_SCHEMA:mortise}
 
       # 性能和监控配置
       register-mbeans: true              # 启用JMX监控
@@ -75,11 +75,11 @@ spring:
     sql-migration-suffixes: .sql         # SQL迁移脚本后缀
 
   mail:
-    host: smtp.larksuite.com
-    port: 465
-    person: ATDAK
-    username: services@atdak.com
-    password: ENC(EBe9Le3JmVqg5iEvu9jMGTg33rBDoX5qocVTkrjyKyTU8XcH7ht2aQ==)
+    host: ${MAIL_HOST:smtp.larksuite.com}
+    port: ${MAIL_PORT:465}
+    person: ${MAIL_PERSON:ATDAK}
+    username: ${MAIL_USERNAME:services@atdak.com}
+    password: ${MAIL_PASSWORD:changeme}
     protocol: smtp
     properties:
       mail:
@@ -234,7 +234,7 @@ info:
       version: ${java.version:21}
 
 server:
-  port: 9999
+  port: ${SERVER_PORT:9999}
   servlet:
     context-path: /mortise
   compression:
@@ -242,7 +242,7 @@ server:
     mime-types: application/json,application/xml,text/html,text/xml,text/plain
     min-response-size: 10240
   max-http-request-header-size: 10240
-baseUrl: https://atdak.com
+baseUrl: ${BASE_URL:https://rymcu.local}
 
 # JWT 配置
 jwt:

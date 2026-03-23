@@ -82,13 +82,14 @@ git submodule deinit -f mortise-product
 适合只修改 Java / SQL / Flyway / 后端接口：
 
 ```powershell
+# 0. 首次必做：创建 .env 配置文件
+Copy-Item .env.example .env
+# 编辑 .env，把所有 changeme 替换为实际值
+
 # 1. 在仓库根目录启动依赖
 docker compose up -d postgresql redis
 
-# 2. 设置当前 PowerShell 会话的加密密钥
-$env:ENCRYPTION_KEY = "your_secret_key"
-
-# 3. 启动后端
+# 2. 启动后端（.env 会被 Spring Boot 自动加载，无需手动设置环境变量）
 Set-Location mortise-app
 mvn spring-boot:run
 ```
@@ -104,12 +105,15 @@ Invoke-RestMethod http://localhost:9999/mortise/actuator/health
 适合同时修改后端和前端页面：
 
 ```powershell
+# 首次必做：创建 .env 配置文件（后续复用）
+Copy-Item .env.example .env
+# 编辑 .env，把所有 changeme 替换为实际值
+
 # 终端 1：仓库根目录启动依赖
 docker compose up -d
 
-# 终端 2：启动后端
+# 终端 2：启动后端（.env 自动加载）
 Set-Location mortise-app
-$env:ENCRYPTION_KEY = "your_secret_key"
 mvn spring-boot:run
 
 # 终端 3：启动管理端前端
@@ -150,7 +154,7 @@ pnpm dev:site
 
 如果你是第一次在本机启动 Mortise，优先按这个顺序排查：
 
-1. **后端没起来先看 `ENCRYPTION_KEY`**：当前 Shell 必须先设置环境变量，否则 `ENC(...)` 配置无法解密。
+1. **后端没起来先看 `.env`**：确认仓库根目录存在 `.env` 文件，且 `ENCRYPTION_KEY`、`POSTGRES_PASSWORD`、`REDIS_PASSWORD` 等值已正确填写。如果配置文件中使用了 `ENC(...)` 加密值，`ENCRYPTION_KEY` 必须与生成密文时的密钥一致。
 2. **Flyway 报数据库或 schema 权限错误先修权限**：优先执行仓库根目录的 `fix-postgresql-permissions.ps1`；如果本机没有 `psql` 客户端，直接按 `docs\database\FLYWAY_PERMISSION_FIX.md` 中的 GUI 手动 SQL 方案处理。
 3. **管理端接口全红先确认后端地址**：本地开发默认依赖 `http://localhost:9999/mortise`，不要把管理端 API 基地址改成远端完整 URL。
 4. **前端命令必须在 `frontend/` 目录执行**：`pnpm install`、`pnpm dev:admin`、`pnpm dev:site` 都只在该目录运行。
@@ -160,8 +164,11 @@ pnpm dev:site
 常用快速命令：
 
 ```powershell
-# 检查当前 PowerShell 会话的加密密钥
-echo $env:ENCRYPTION_KEY
+# 检查 .env 文件是否存在
+Test-Path .env
+
+# 查看 .env 中的 ENCRYPTION_KEY（不含引号）
+Select-String -Path .env -Pattern "^ENCRYPTION_KEY="
 
 # 修复 PostgreSQL 权限
 .\fix-postgresql-permissions.ps1
@@ -175,13 +182,14 @@ Invoke-RestMethod http://localhost:9999/mortise/actuator/health
 仓库默认终端是 PowerShell，Windows 下优先使用下面这些命令：
 
 ```powershell
-# 设置当前会话的 Jasypt 密钥
-$env:ENCRYPTION_KEY = "your_secret_key"
+# 首次：从模板创建 .env 配置文件
+Copy-Item .env.example .env
+# 编辑 .env，把所有 changeme 替换为实际值
 
-# 查看环境变量是否已生效
-echo $env:ENCRYPTION_KEY
+# 验证 .env 存在
+Test-Path .env
 
-# 启动后端
+# 启动后端（.env 自动加载）
 Set-Location mortise-app
 mvn spring-boot:run
 
@@ -211,8 +219,8 @@ docker compose logs postgresql
 
 说明：
 
-1. PowerShell 中 `$env:变量名 = "值"` 只对当前终端会话生效。
-2. 如果你是从 IDE 启动后端，需要在 IDE 的运行配置里单独设置 `ENCRYPTION_KEY`。
+1. `.env` 文件由 Spring Boot 在启动时自动加载（通过 `spring.config.import`），无需手动 `$env:ENCRYPTION_KEY`。
+2. 如果你是从 IDE 启动后端，确保 IDE 的工作目录设为仓库根目录（使 `.env` 可被找到），或在 IDE 运行配置中设置对应环境变量。
 3. 若 `Get-NetTCPConnection` 不可用，可退回使用 `netstat -ano | findstr 9999`。
 
 ---
@@ -232,12 +240,12 @@ docker compose ps
 docker compose logs -f postgresql
 ```
 
-启动后各服务地址：
+启动后各服务地址（端口可在 `.env` 中修改）：
 
 | 服务 | 地址 | 默认凭据 |
 |------|------|----------|
-| PostgreSQL | `localhost:5432` | 见 `.env` 文件 |
-| Redis | `localhost:6379` | 见 `.env` 文件 |
+| PostgreSQL | `localhost:5432` | 见 `.env` 中的 `POSTGRES_USER` / `POSTGRES_PASSWORD` |
+| Redis | `localhost:6379` | 见 `.env` 中的 `REDIS_PASSWORD` |
 | Logto（OIDC） | `http://localhost:3001` | - |
 | Logto（Admin） | `http://localhost:3002` | - |
 | Nginx | `http://localhost:80` | - |
@@ -250,32 +258,24 @@ docker compose logs -f postgresql
 
 | 文件 | 用途 |
 |------|------|
-| `mortise-app/src/main/resources/application.yml` | 指定激活的 profile（Maven 注入） |
-| `mortise-app/src/main/resources/application-dev.yml` | 开发环境配置（数据库、Redis、邮件等） |
+| **`.env`** | **环境变量唯一入口**，Docker Compose 和 Spring Boot 共享。包含数据库、Redis、邮件、JWT、加密密钥等所有环境相关值 |
+| `.env.example` | `.env` 模板，提交在版本库中供参考。首次使用 `Copy-Item .env.example .env` |
+| `mortise-app/src/main/resources/application.yml` | 通过 `spring.config.import` 自动加载 `.env`，指定激活的 profile |
+| `mortise-app/src/main/resources/application-dev.yml` | 开发环境配置，使用 `${ENV_VAR:default}` 占位符引用 `.env` 中的变量 |
 | `mortise-app/src/main/resources/application-prod.yml` | 生产环境配置 |
 
-### 5.2 设置加密密钥环境变量
+### 5.2 创建 `.env` 配置文件
 
-项目使用 Jasypt 加密配置文件中的敏感信息（数据库密码、邮件密码、OSS Key 等），**启动前必须设置 `ENCRYPTION_KEY` 环境变量**。
-
-> ❌ **若未设置 `ENCRYPTION_KEY`**，配置文件中的 `ENC(...)` 值将无法解密，导致对应属性为空（`null` 或空字符串），应用启动即报错，常见表现：
-> - `dataSource or DataSourceTransactionManager are required`
-> - `Failed to determine a suitable driver class`
-> - `Connection refused` / `password authentication failed`
-> - 其他因关键配置项为空引发的初始化异常
-
-```bash
-# Linux / macOS
-export ENCRYPTION_KEY=your_secret_key
-
-# PowerShell
-$env:ENCRYPTION_KEY = "your_secret_key"
-
-# Windows CMD
-set ENCRYPTION_KEY=your_secret_key
+```powershell
+# 首次：从模板创建（已被 .gitignore 忽略，不会提交）
+Copy-Item .env.example .env
 ```
 
-> ⚠️ `ENCRYPTION_KEY` 的值即为加密时使用的主密钥，需与生成 `ENC(...)` 密文时一致，**不要提交到版本库**。
+打开 `.env`，将所有 `changeme` 替换为实际值。Spring Boot 通过 `spring.config.import: optional:file:.env[.properties]` 自动加载该文件，Docker Compose 也原生读取同一文件。
+
+> **不再需要**手动执行 `$env:ENCRYPTION_KEY = "..."` 或 `export ENCRYPTION_KEY=...`。所有环境变量统一在 `.env` 中维护，启动时自动加载。
+>
+> **例外**：如果从 IDE 启动且 IDE 工作目录不是仓库根目录，需要在 IDE 运行配置中手动设置环境变量，或将 `.env` 文件复制到 IDE 的工作目录。
 
 ---
 
@@ -283,16 +283,25 @@ set ENCRYPTION_KEY=your_secret_key
 
 ### 6.1 原理
 
-Spring Boot 启动时，Jasypt 自动解密配置文件中形如 `ENC(密文)` 的值，解密密钥来自环境变量 `ENCRYPTION_KEY`。
+Spring Boot 启动时，Jasypt 自动解密配置文件中形如 `ENC(密文)` 的值，解密密钥来自 `.env` 文件中的 `ENCRYPTION_KEY` 变量（通过 `System.getenv("ENCRYPTION_KEY")` 读取）。
 
 ```yaml
-# application-dev.yml 示例
+# application-dev.yml 示例（密码可以是明文或 ENC() 格式）
 spring:
   datasource:
-    password: ENC(/T9oN1+Zyq6ZOYV4oOyJJFblmrbhla0tmI1ExpjXA/4cg1gw+Yh6kw==)
+    password: ${POSTGRES_PASSWORD:mortise}    # 从 .env 读取，本地开发可用明文
   data:
     redis:
-      password: ENC(EBe9Le3JmVqg5iEvu9jMGTg33rBDoX5qocVTkrjyKyTU8XcH7ht2aQ==)
+      password: ${REDIS_PASSWORD:}            # 从 .env 读取
+```
+
+如果需要使用 Jasypt 加密，在 `.env` 中将密码设为 `ENC(密文)` 格式：
+
+```properties
+# .env
+ENCRYPTION_KEY=your_secret_key
+POSTGRES_PASSWORD=ENC(/T9oN1+Zyq6ZOYV4oOyJJFblmrbhla0tmI1ExpjXA/4cg1gw+Yh6kw==)
+REDIS_PASSWORD=ENC(EBe9Le3JmVqg5iEvu9jMGTg33rBDoX5qocVTkrjyKyTU8XcH7ht2aQ==)
 ```
 
 算法：`PBEWithMD5AndDES`，输出格式：Base64。
@@ -337,15 +346,7 @@ System.out.println("ENC(" + cipher + ")");
 3. 将 `ENC(密文)` 填入 `application-prod.yml`，明文从配置文件中彻底移除。
 4. 通过 CI/CD 将 `ENCRYPTION_KEY` 注入为部署环境变量（如 Docker 的 `-e ENCRYPTION_KEY=xxx` 或 Kubernetes Secret）。
 
-**开发环境说明**：本地开发时若使用的是独立的本地数据库且**不含生产凭据**，可在 `application-dev.yml` 中填明文以简化调试：
-
-```yaml
-spring:
-  datasource:
-    password: your_local_dev_password   # 仅本地开发数据库，绝不包含生产凭据
-```
-
-此时无需设置 `ENCRYPTION_KEY`，但**一旦配置中含有任何生产/测试环境凭据，必须使用加密**。
+**开发环境说明**：本地开发推荐在 `.env` 文件中直接填写明文密码（如 `POSTGRES_PASSWORD=my_local_password`），Spring Boot 会自动加载。**不含生产凭据时无需使用 `ENC()` 加密**，这是最简单的本地开发方式。
 
 ---
 
@@ -375,7 +376,7 @@ java -jar mortise-app/target/mortise-app-*.jar
 java -jar mortise-app/target/mortise-app-*.jar --spring.profiles.active=dev
 ```
 
-> 需确保 `ENCRYPTION_KEY` 环境变量已在当前 Shell 中设置。
+> `.env` 文件中的配置（包括 `ENCRYPTION_KEY`）会被 Spring Boot 自动加载。
 
 ### 7.3 验证启动
 
@@ -444,15 +445,15 @@ SSH 认证失败，检查：
 
 ### Q: 启动报 `dataSource required` / 数据库密码为空 / `decryption` 异常
 
-配置文件包含 `ENC(...)` 加密值，但 `ENCRYPTION_KEY` 环境变量未设置或值不正确，导致 Jasypt 无法解密，相关配置项变为空。
+配置文件包含 `ENC(...)` 加密值，但 `.env` 文件中 `ENCRYPTION_KEY` 未设置或值不正确，导致 Jasypt 无法解密。
 
-先确认当前 Shell 中变量是否已生效：
-```bash
-echo $ENCRYPTION_KEY          # Linux/macOS
-echo $env:ENCRYPTION_KEY      # PowerShell
+先确认 `.env` 文件存在且包含正确的 `ENCRYPTION_KEY`：
+```powershell
+Test-Path .env
+Select-String -Path .env -Pattern "^ENCRYPTION_KEY="
 ```
 
-注意：`export` / `$env:` 只对**当前 Shell 会话**有效，通过 IDE 启动时需在 IDE 的运行配置中单独设置环境变量，或在系统级别持久化该变量。
+也可能是 `.env` 文件不在 Spring Boot 能找到的路径。`mvn spring-boot:run` 的工作目录是 `mortise-app/`，Spring Boot 会同时查找 `mortise-app/.env` 和 `mortise-app/../.env`（即仓库根目录）。如果从 IDE 启动，确保 IDE 的工作目录设为仓库根目录。
 
 ### Q: 切换分支后子模块目录为空
 
