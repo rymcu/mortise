@@ -146,8 +146,46 @@ services:
     networks:
       - mortise-net
 
+  # ── EMQX MQTT Broker（AIoT 可选，按需启用） ──
+  emqx:
+    image: emqx/emqx:5.8
+    container_name: mortise-emqx
+    restart: unless-stopped
+    profiles:
+      - aiot
+    environment:
+      TZ: ${TZ}
+      EMQX_NAME: mortise
+      EMQX_HOST: 0.0.0.0
+      # Dashboard 默认账号
+      EMQX_DASHBOARD__DEFAULT_USERNAME: ${EMQX_DASHBOARD_USER:-admin}
+      EMQX_DASHBOARD__DEFAULT_PASSWORD: ${EMQX_DASHBOARD_PASS:-public}
+    ports:
+      # MQTT TCP
+      - "${EMQX_MQTT_PORT:-1883}:1883"
+      # MQTT SSL/TLS
+      - "${EMQX_MQTTS_PORT:-8883}:8883"
+      # MQTT WebSocket
+      - "${EMQX_WS_PORT:-8083}:8083"
+      # MQTT WebSocket SSL
+      - "${EMQX_WSS_PORT:-8084}:8084"
+      # Dashboard & REST API
+      - "${EMQX_DASHBOARD_PORT:-18083}:18083"
+    volumes:
+      - emqx-data:/opt/emqx/data
+      - emqx-log:/opt/emqx/log
+    healthcheck:
+      test: ["CMD", "emqx", "ctl", "status"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - mortise-net
+
 volumes:
   rustfs-data:
+  emqx-data:
+  emqx-log:
 
 networks:
   mortise-net:
