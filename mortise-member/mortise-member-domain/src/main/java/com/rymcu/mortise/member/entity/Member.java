@@ -144,6 +144,11 @@ public class Member implements Serializable {
     private Map<String, Object> preferences;
 
     /**
+     * 当前家庭ID
+     */
+    private Long currentFamilyId;
+
+    /**
      * 创建时间
      */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

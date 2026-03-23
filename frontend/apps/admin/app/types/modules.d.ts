@@ -1,5 +1,5 @@
 declare module 'isomorphic-dompurify' {
-  interface SanitizeOptions extends Record<string, unknown> {}
+  type SanitizeOptions = Record<string, unknown>
 
   interface DOMPurifyLike {
     sanitize(dirty: string, options?: SanitizeOptions): string

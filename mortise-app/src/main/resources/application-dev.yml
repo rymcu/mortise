@@ -2,8 +2,9 @@ spring:
   thymeleaf:
     prefix: classpath:/templates/
     suffix: .html
-    mode: HTML5
+    mode: HTML
     encoding: UTF-8
+    check-template-location: false
     servlet:
       content-type: text/html
     cache: false
