@@ -26,9 +26,13 @@ export async function fetchAdminPage<T>(
 /** 获取单条记录 */
 export async function fetchAdminGet<T>(
   api: ApiInvoker,
-  path: string
+  path: string,
+  options?: Record<string, unknown>
 ): Promise<T> {
-  const response = await api<GlobalResult<T>>(path, { method: 'GET' })
+  const response = await api<GlobalResult<T>>(path, {
+    method: 'GET',
+    ...options
+  })
   if (!response || response.code !== 200) {
     throw new Error(response?.message || '请求失败')
   }

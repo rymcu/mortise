@@ -105,7 +105,7 @@ function onSystemSubmit(_event: FormSubmitEvent<SystemSchema>) {
   nextStep()
 }
 
-function onAdminSubmit(_event: FormSubmitEvent<AdminSchema>) {
+function onAdminSubmit(_event: unknown) {
   nextStep()
 }
 

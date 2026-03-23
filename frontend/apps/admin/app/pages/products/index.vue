@@ -176,17 +176,17 @@ const showProductDeleteModal = ref(false)
 const showProductStatusModal = ref(false)
 const currentProduct = ref<Record<string, unknown>>({})
 
-function openEditProduct(row: Record<string, unknown>) {
+function openEditProduct(row: ProductInfo) {
   currentProduct.value = { ...row }
   showProductEditModal.value = true
 }
 
-function openDeleteProduct(row: Record<string, unknown>) {
+function openDeleteProduct(row: ProductInfo) {
   currentProduct.value = { ...row }
   showProductDeleteModal.value = true
 }
 
-function openStatusProduct(row: Record<string, unknown>) {
+function openStatusProduct(row: ProductInfo) {
   currentProduct.value = { ...row }
   showProductStatusModal.value = true
 }

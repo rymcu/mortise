@@ -22,10 +22,10 @@ defineEmits<{
   'update:productKeyword': [value: string]
   'search': []
   'add-product': []
-  'edit-product': [row: Record<string, unknown>]
+  'edit-product': [row: ProductInfo]
   'sku-manage': [id: string]
-  'status-product': [row: Record<string, unknown>]
-  'delete-product': [row: Record<string, unknown>]
+  'status-product': [row: ProductInfo]
+  'delete-product': [row: ProductInfo]
   'refresh': []
   'update:productPageNum': [value: number]
 }>()
@@ -206,7 +206,7 @@ defineEmits<{
                     variant="ghost"
                     size="xs"
                     label="编辑"
-                    @click="$emit('edit-product', product as Record<string, unknown>)"
+                    @click="$emit('edit-product', product)"
                   />
                   <UButton
                     icon="i-lucide-layers"
@@ -222,7 +222,7 @@ defineEmits<{
                     variant="ghost"
                     size="xs"
                     label="状态变更"
-                    @click="$emit('status-product', product as Record<string, unknown>)"
+                    @click="$emit('status-product', product)"
                   />
                   <UButton
                     icon="i-lucide-trash-2"
@@ -230,7 +230,7 @@ defineEmits<{
                     variant="ghost"
                     size="xs"
                     label="删除"
-                    @click="$emit('delete-product', product as Record<string, unknown>)"
+                    @click="$emit('delete-product', product)"
                   />
                 </div>
               </td>
