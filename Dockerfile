@@ -26,6 +26,6 @@ RUN mkdir -p /logs/mortise/data
 
 COPY --from=builder /workspace/mortise-app/target/mortise.jar /app/mortise.jar
 
-EXPOSE 8080
+EXPOSE 9999
 
 ENTRYPOINT ["java", "-jar", "/app/mortise.jar"]

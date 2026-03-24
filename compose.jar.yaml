@@ -6,10 +6,18 @@ services:
     image: mortise-jar:latest
     container_name: mortise-jar
     restart: unless-stopped
+    env_file: .env
     ports:
-      - "9999:9999"
+      - "${SERVER_PORT:-9999}:${SERVER_PORT:-9999}"
     environment:
-      TZ: ${TZ:-Asia/Shanghai}
-      ENCRYPTION_KEY: ${ENCRYPTION_KEY}
+      # 容器间通信使用容器名，覆盖 .env 中的 localhost
+      POSTGRES_HOST: mortise-postgres
+      REDIS_HOST: mortise-redis
     volumes:
       - ./app/files:/app/files
+    networks:
+      - mortise-net
+
+networks:
+  mortise-net:
+    external: true
