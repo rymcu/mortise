@@ -8,6 +8,8 @@ import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
@@ -32,7 +34,15 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
                          AuthenticationException authException) throws IOException, ServletException {
-        log.warn("未认证访问: {} - {}", request.getRequestURI(), authException.getMessage());
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        log.warn("未认证访问: method={}, requestURI={}, servletPath={}, contextPath={}, hasAuthorization={}, authentication={}, message={}",
+            request.getMethod(),
+            request.getRequestURI(),
+            request.getServletPath(),
+            request.getContextPath(),
+            request.getHeader("Authorization") != null,
+            authentication == null ? "<null>" : authentication.getClass().getSimpleName(),
+            authException.getMessage());
         
         response.setContentType("application/json;charset=UTF-8");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
