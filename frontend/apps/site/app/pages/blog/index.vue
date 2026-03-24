@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { Article } from '~/composables/useArticles'
+import type { BlogArticle } from '~/types/blog'
 
 const { fetchArticles } = useArticles()
 
@@ -16,7 +16,7 @@ const { data, pending, refresh: _refresh } = await useAsyncData(
   { watch: [page, keyword, tag] }
 )
 
-const articles = computed<Article[]>(() => data.value?.data?.records || [])
+const articles = computed<BlogArticle[]>(() => data.value?.data?.records || [])
 const total = computed(() => data.value?.data?.total || 0)
 const totalPages = computed(() => Math.ceil(total.value / pageSize))
 

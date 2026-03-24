@@ -1,7 +1,6 @@
 <script setup lang="ts">
 const route = useRoute()
 const { fetchArticle, fetchComments, trackArticleView } = useArticles()
-const { public: { webUrl } } = useRuntimeConfig()
 
 const id = computed(() => route.params.id as string)
 
@@ -111,7 +110,7 @@ useSeoMeta({
             <UButton
               label="去登录"
               size="sm"
-              :to="`${webUrl}/login`"
+              :to="`/auth/login`"
               target="_blank"
             />
           </template>
