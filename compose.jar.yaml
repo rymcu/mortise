@@ -9,10 +9,10 @@ services:
     env_file: .env
     ports:
       - "${SERVER_PORT:-9999}:${SERVER_PORT:-9999}"
-    environment:
+    # environment:
       # 容器间通信使用容器名，覆盖 .env 中的 localhost
-      POSTGRES_HOST: mortise-postgres
-      REDIS_HOST: mortise-redis
+      # POSTGRES_HOST: mortise-postgres
+      # REDIS_HOST: mortise-redis
     volumes:
       - ./app/files:/app/files
     networks:
