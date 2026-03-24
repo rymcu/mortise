@@ -120,7 +120,11 @@ export function useAdminCrud(basePath: string) {
     loading.value = true
     errorMessage.value = ''
     try {
-      return await fetchAdminPatch<T>($api, `${basePath}/${subPath}`, query)
+      return await fetchAdminPatch<T>(
+        $api,
+        `${basePath}/${subPath}`,
+        query ? { query } : undefined
+      )
     } catch (error) {
       errorMessage.value = error instanceof Error ? error.message : '操作失败'
       return null
