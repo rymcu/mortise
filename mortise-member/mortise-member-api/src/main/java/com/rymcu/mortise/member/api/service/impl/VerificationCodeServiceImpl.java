@@ -1,18 +1,25 @@
 package com.rymcu.mortise.member.api.service.impl;
 
+import com.rymcu.mortise.common.exception.BusinessException;
 import com.rymcu.mortise.member.api.service.VerificationCodeService;
+import com.rymcu.mortise.notification.entity.NotificationMessage;
+import com.rymcu.mortise.notification.enums.NotificationType;
+import com.rymcu.mortise.notification.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
-import java.util.Random;
+import java.security.SecureRandom;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 /**
  * 验证码服务实现
  * <p>
- * 使用 Redis 存储验证码，默认有效期 5 分钟
+ * 使用 Redis 存储验证码，默认有效期 5 分钟。
+ * Email 验证码通过 {@link NotificationService} 发送（底层由 EmailNotificationSender 完成）。
  *
  * @author ronger
  */
@@ -22,6 +29,7 @@ import java.util.concurrent.TimeUnit;
 public class VerificationCodeServiceImpl implements VerificationCodeService {
 
     private final StringRedisTemplate redisTemplate;
+    private final NotificationService notificationService;
 
     /**
      * 验证码长度
@@ -43,6 +51,16 @@ public class VerificationCodeServiceImpl implements VerificationCodeService {
      */
     private static final String EMAIL_CODE_PREFIX = "api:email:code:";
 
+    /**
+     * 验证码邮件模板名称
+     */
+    private static final String VERIFICATION_CODE_EMAIL_TEMPLATE = "verification-code-email";
+
+    /**
+     * 验证码邮件主题
+     */
+    private static final String VERIFICATION_CODE_EMAIL_SUBJECT = "验证码";
+
     @Override
     public Boolean sendSmsCode(String phone) {
         // 1. 生成验证码
@@ -53,11 +71,25 @@ public class VerificationCodeServiceImpl implements VerificationCodeService {
         redisTemplate.opsForValue().set(redisKey, code, CODE_EXPIRATION, TimeUnit.MINUTES);
 
         // 3. 调用 SMS 服务发送
-        // TODO: 集成阿里云/腾讯云 SMS 服务
-        log.info("发送 SMS 验证码: phone={}, code={} (有效期: {} 分钟)", phone, code, CODE_EXPIRATION);
+        Map<String, Object> params = new HashMap<>();
+        params.put("code", code);
+        params.put("expiration", CODE_EXPIRATION);
 
-        // 临时方案：打印到日志（生产环境应删除）
-        log.warn("【开发模式】SMS 验证码: {} -> {}", phone, code);
+        NotificationMessage message = NotificationMessage.builder()
+                .type(NotificationType.SMS)
+                .receiver(phone)
+                .subject(VERIFICATION_CODE_EMAIL_SUBJECT)
+                .content("您的验证码为：" + code + "，有效期 " + CODE_EXPIRATION + " 分钟。请勿泄露给他人。")
+                .templateParams(params)
+                .async(false)
+                .build();
+
+        boolean success = notificationService.send(message);
+        if (success) {
+            log.info("SMS 验证码发送成功: phone={}", phone);
+        } else {
+            log.warn("SMS 验证码发送失败（SMS 渠道可能未启用），验证码已存储到 Redis: phone={}", phone);
+        }
 
         return true;
     }
@@ -71,13 +103,28 @@ public class VerificationCodeServiceImpl implements VerificationCodeService {
         String redisKey = EMAIL_CODE_PREFIX + email;
         redisTemplate.opsForValue().set(redisKey, code, CODE_EXPIRATION, TimeUnit.MINUTES);
 
-        // 3. 调用 Email 服务发送
-        // TODO: 使用 mortise-notification 模块发送邮件
-        log.info("发送 Email 验证码: email={}, code={} (有效期: {} 分钟)", email, code, CODE_EXPIRATION);
+        // 3. 通过 NotificationService 发送邮件
+        Map<String, Object> params = new HashMap<>();
+        params.put("code", code);
+        params.put("expiration", CODE_EXPIRATION);
 
-        // 临时方案：打印到日志（生产环境应删除）
-        log.warn("【开发模式】Email 验证码: {} -> {}", email, code);
+        NotificationMessage message = NotificationMessage.builder()
+                .type(NotificationType.EMAIL)
+                .receiver(email)
+                .subject(VERIFICATION_CODE_EMAIL_SUBJECT)
+                .template(VERIFICATION_CODE_EMAIL_TEMPLATE)
+                .templateParams(params)
+                .async(false)
+                .build();
 
+        boolean success = notificationService.send(message);
+        if (!success) {
+            // 发送失败时删除 Redis 中的验证码，避免用户收不到验证码却被要求输入
+            redisTemplate.delete(redisKey);
+            throw new BusinessException("验证码邮件发送失败，请稍后重试");
+        }
+
+        log.info("Email 验证码发送成功: email={}", email);
         return true;
     }
 
@@ -97,7 +144,7 @@ public class VerificationCodeServiceImpl implements VerificationCodeService {
             redisTemplate.delete(redisKey);
             log.info("SMS 验证码验证成功: phone={}", phone);
         } else {
-            log.warn("SMS 验证码验证失败: phone={}, expected={}, actual={}", phone, storedCode, code);
+            log.warn("SMS 验证码验证失败: phone={}", phone);
         }
 
         return isValid;
@@ -119,7 +166,7 @@ public class VerificationCodeServiceImpl implements VerificationCodeService {
             redisTemplate.delete(redisKey);
             log.info("Email 验证码验证成功: email={}", email);
         } else {
-            log.warn("Email 验证码验证失败: email={}, expected={}, actual={}", email, storedCode, code);
+            log.warn("Email 验证码验证失败: email={}", email);
         }
 
         return isValid;
@@ -127,7 +174,7 @@ public class VerificationCodeServiceImpl implements VerificationCodeService {
 
     @Override
     public String generateCode(int length) {
-        Random random = new Random();
+        SecureRandom random = new SecureRandom();
         StringBuilder code = new StringBuilder();
         for (int i = 0; i < length; i++) {
             code.append(random.nextInt(10));

@@ -1,6 +1,7 @@
 package com.rymcu.mortise.notification.sender;
 
 import com.rymcu.mortise.common.util.Utils;
+import com.rymcu.mortise.core.spi.SystemConfigStorage;
 import com.rymcu.mortise.notification.entity.NotificationMessage;
 import com.rymcu.mortise.notification.enums.NotificationType;
 import com.rymcu.mortise.notification.spi.NotificationChannelConfigProvider;
@@ -17,6 +18,7 @@ import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
 import java.io.UnsupportedEncodingException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
@@ -36,18 +38,32 @@ public class EmailNotificationSender implements NotificationSender {
 
     private final NotificationChannelConfigProvider configProvider;
     private final TemplateEngine templateEngine;
+    private final SystemConfigStorage systemConfigStorage;
+
+    /**
+     * 站点配置分组标识
+     */
+    private static final String SITE_CONFIG_GROUP = "site";
+
+    /**
+     * 默认站点名称
+     */
+    private static final String DEFAULT_SITE_NAME = "Mortise";
 
     /**
      * 构造函数注入
      * <p>
-     * {@code TemplateEngine} 为可选依赖，未引入 Thymeleaf 时不影响基础邮件发送功能。
+     * {@code TemplateEngine} 和 {@code SystemConfigStorage} 均为可选依赖，
+     * 缺失时不影响基础邮件发送功能。
      */
     @Autowired
     public EmailNotificationSender(
             NotificationChannelConfigProvider configProvider,
-            Optional<TemplateEngine> templateEngineOptional) {
+            Optional<TemplateEngine> templateEngineOptional,
+            Optional<SystemConfigStorage> systemConfigStorageOptional) {
         this.configProvider = configProvider;
         this.templateEngine = templateEngineOptional.orElse(null);
+        this.systemConfigStorage = systemConfigStorageOptional.orElse(null);
     }
 
     @Override
@@ -80,9 +96,12 @@ public class EmailNotificationSender implements NotificationSender {
             String content = message.getContent();
             if (message.getTemplate() != null && templateEngine != null) {
                 Context context = new Context();
+                // 自动注入站点配置变量（siteName 等），所有邮件模板均可使用
+                Map<String, Object> mergedParams = new HashMap<>(loadSiteVariables());
                 if (message.getTemplateParams() != null) {
-                    context.setVariables(message.getTemplateParams());
+                    mergedParams.putAll(message.getTemplateParams());
                 }
+                context.setVariables(mergedParams);
                 content = templateEngine.process(message.getTemplate(), context);
             }
 
@@ -128,5 +147,32 @@ public class EmailNotificationSender implements NotificationSender {
             props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         }
         return sender;
+    }
+
+    /**
+     * 从系统配置中加载站点变量，供邮件模板全局使用
+     * <p>
+     * 自动注入以下变量到所有邮件模板上下文：
+     * <ul>
+     *     <li>{@code siteName} — 站点名称（默认 "Mortise"）</li>
+     *     <li>{@code siteLogo} — 站点 Logo 路径</li>
+     *     <li>{@code siteDescription} — 站点描述</li>
+     * </ul>
+     *
+     * @return 站点变量 Map
+     */
+    private Map<String, Object> loadSiteVariables() {
+        Map<String, Object> vars = new HashMap<>();
+        if (systemConfigStorage != null) {
+            Map<String, String> siteConfig = systemConfigStorage.loadGroupValues(SITE_CONFIG_GROUP);
+            vars.put("siteName", siteConfig.getOrDefault("site.name", DEFAULT_SITE_NAME));
+            vars.put("siteLogo", siteConfig.getOrDefault("site.logo", ""));
+            vars.put("siteDescription", siteConfig.getOrDefault("site.description", ""));
+        } else {
+            vars.put("siteName", DEFAULT_SITE_NAME);
+            vars.put("siteLogo", "");
+            vars.put("siteDescription", "");
+        }
+        return vars;
     }
 }
