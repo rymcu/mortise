@@ -1,15 +1,18 @@
 package com.rymcu.mortise.system.controller;
 
 import com.rymcu.mortise.web.annotation.AdminController;
-import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.common.model.BatchUpdateInfo;
+import com.rymcu.mortise.core.model.PageQuery;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.log.annotation.ApiLog;
 import com.rymcu.mortise.log.annotation.OperationLog;
-import com.rymcu.mortise.system.entity.Menu;
+import com.rymcu.mortise.system.controller.facade.MenuAdminFacade;
+import com.rymcu.mortise.system.controller.request.MenuStatusRequest;
+import com.rymcu.mortise.system.controller.request.MenuUpsertRequest;
+import com.rymcu.mortise.system.controller.vo.MenuVO;
 import com.rymcu.mortise.system.model.MenuSearch;
 import com.rymcu.mortise.system.model.MenuTreeInfo;
-import com.rymcu.mortise.system.service.MenuService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -35,7 +38,7 @@ import java.util.List;
 @RequestMapping("/menus")
 public class MenuController {
     @Resource
-    private MenuService menuService;
+    private MenuAdminFacade menuAdminFacade;
 
     @Operation(summary = "获取菜单列表", description = "查询菜单信息")
     @ApiResponses(value = {
@@ -45,11 +48,8 @@ public class MenuController {
     @GetMapping
     @PreAuthorize("hasAuthority('system:menu:list')")
     @ApiLog("查询菜单列表")
-    public GlobalResult<Page<Menu>> listMenu(@Parameter(description = "菜单查询条件") @Valid MenuSearch search) {
-        Page<Menu> page = new Page<>(search.getPageNum(), search.getPageSize());
-        List<Menu> list = menuService.findMenus(page, search);
-        page.setRecords(list);
-        return GlobalResult.success(page);
+    public GlobalResult<PageResult<MenuVO>> listMenu(@Parameter(description = "菜单查询条件") @Valid MenuSearch search) {
+        return GlobalResult.success(menuAdminFacade.listMenus(search));
     }
 
     @Operation(summary = "获取菜单详情", description = "根据ID获取菜单详细信息")
@@ -61,8 +61,8 @@ public class MenuController {
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('system:menu:query')")
     @ApiLog("获取菜单详情")
-    public GlobalResult<Menu> getMenuById(@Parameter(description = "菜单ID", required = true) @PathVariable("id") Long idMenu) {
-        return GlobalResult.success(menuService.getById(idMenu));
+    public GlobalResult<MenuVO> getMenuById(@Parameter(description = "菜单ID", required = true) @PathVariable("id") Long idMenu) {
+        return GlobalResult.success(menuAdminFacade.getMenuById(idMenu));
     }
 
     @Operation(summary = "创建菜单", description = "新增菜单数据")
@@ -75,8 +75,8 @@ public class MenuController {
     @PreAuthorize("hasAuthority('system:menu:add')")
     @ApiLog("创建菜单")
     @OperationLog(module = "菜单管理", operation = "创建菜单", recordParams = true, recordResult = true)
-    public GlobalResult<Long> createMenu(@Parameter(description = "菜单信息", required = true) @Valid @RequestBody Menu menu) {
-        return GlobalResult.success(menuService.createMenu(menu));
+    public GlobalResult<Long> createMenu(@Parameter(description = "菜单信息", required = true) @Valid @RequestBody MenuUpsertRequest request) {
+        return GlobalResult.success(menuAdminFacade.createMenu(request));
     }
 
     @Operation(summary = "更新菜单", description = "修改菜单数据")
@@ -91,9 +91,8 @@ public class MenuController {
     @ApiLog("更新菜单")
     @OperationLog(module = "菜单管理", operation = "更新菜单", recordParams = true)
     public GlobalResult<Boolean> updateMenu(@Parameter(description = "菜单ID", required = true) @PathVariable("id") Long idMenu,
-                                           @Parameter(description = "菜单信息", required = true) @Valid @RequestBody Menu menu) {
-        menu.setId(idMenu);
-        return GlobalResult.success(menuService.updateMenu(menu));
+                                           @Parameter(description = "菜单信息", required = true) @Valid @RequestBody MenuUpsertRequest request) {
+        return GlobalResult.success(menuAdminFacade.updateMenu(idMenu, request));
     }
 
     @Operation(summary = "更新菜单状态", description = "启用/禁用菜单")
@@ -107,8 +106,8 @@ public class MenuController {
     @ApiLog("更新菜单状态")
     @OperationLog(module = "菜单管理", operation = "更新菜单状态", recordParams = true)
     public GlobalResult<Boolean> updateMenuStatus(@Parameter(description = "菜单ID", required = true) @PathVariable("id") Long idMenu,
-                                                  @Parameter(description = "菜单状态信息", required = true) @Valid @RequestBody Menu menu) {
-        return GlobalResult.success(menuService.updateStatus(idMenu, menu.getStatus()));
+                                                  @Parameter(description = "菜单状态信息", required = true) @Valid @RequestBody MenuStatusRequest request) {
+        return GlobalResult.success(menuAdminFacade.updateMenuStatus(idMenu, request));
     }
 
     @Operation(summary = "删除菜单", description = "软删除菜单数据")
@@ -122,7 +121,7 @@ public class MenuController {
     @ApiLog("删除菜单")
     @OperationLog(module = "菜单管理", operation = "删除菜单")
     public GlobalResult<Boolean> deleteMenu(@Parameter(description = "菜单ID", required = true) @PathVariable("id") Long idMenu) {
-        return GlobalResult.success(menuService.deleteMenu(idMenu));
+        return GlobalResult.success(menuAdminFacade.deleteMenu(idMenu));
     }
 
     @Operation(summary = "获取菜单树", description = "查询菜单树形结构")
@@ -134,8 +133,7 @@ public class MenuController {
     @PreAuthorize("hasAuthority('system:menu:list')")
     @ApiLog("获取菜单树")
     public GlobalResult<List<MenuTreeInfo>> getMenuTree(@Parameter(description = "菜单查询条件") @Valid MenuSearch search) {
-        List<MenuTreeInfo> menus = menuService.findMenuTree(search);
-        return GlobalResult.success(menus);
+        return GlobalResult.success(menuAdminFacade.getMenuTree(search));
     }
 
     @Operation(summary = "批量删除菜单", description = "批量软删除菜单数据")
@@ -149,7 +147,7 @@ public class MenuController {
     @ApiLog("批量删除菜单")
     @OperationLog(module = "菜单管理", operation = "批量删除菜单", recordParams = true)
     public GlobalResult<Boolean> batchDeleteMenus(@Parameter(description = "批量更新信息", required = true) @Valid @RequestBody BatchUpdateInfo batchUpdateInfo) {
-        return GlobalResult.success(menuService.batchDeleteMenus(batchUpdateInfo.getIds()));
+        return GlobalResult.success(menuAdminFacade.batchDeleteMenus(batchUpdateInfo));
     }
 }
 

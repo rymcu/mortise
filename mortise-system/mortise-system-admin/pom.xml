@@ -17,7 +17,7 @@
     <description>Mortise System - Admin API Layer</description>
 
     <properties>
-        <layer.guard.skip>false</layer.guard.skip>
+        <layer.guard.admin-api.skip>false</layer.guard.admin-api.skip>
     </properties>
 
     <dependencies>
@@ -40,6 +40,18 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-test-support</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 

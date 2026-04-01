@@ -46,7 +46,7 @@ public class ApplicationPerformanceConfig {
 
         // 注册堆内存使用率 Gauge
         meterRegistry.gauge("application.memory.heap.usage.percent", memoryBean, bean -> {
-            var heapMemory = bean.getHeapMemoryUsage();
+            MemoryUsage heapMemory = bean.getHeapMemoryUsage();
             long heapMax = heapMemory.getMax();
             return heapMax <= 0 ? 0.0 : (double) heapMemory.getUsed() / heapMax * 100;
         });
@@ -67,8 +67,8 @@ public class ApplicationPerformanceConfig {
             MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
             ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
 
-            var heapMemory = memoryBean.getHeapMemoryUsage();
-            var nonHeapMemory = memoryBean.getNonHeapMemoryUsage();
+            MemoryUsage heapMemory = memoryBean.getHeapMemoryUsage();
+            MemoryUsage nonHeapMemory = memoryBean.getNonHeapMemoryUsage();
 
             long heapUsed = heapMemory.getUsed();
             long heapMax = heapMemory.getMax();
@@ -105,7 +105,7 @@ public class ApplicationPerformanceConfig {
             MemoryMXBean memoryBean = ManagementFactory.getMemoryMXBean();
             ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
 
-            var heapMemory = memoryBean.getHeapMemoryUsage();
+            MemoryUsage heapMemory = memoryBean.getHeapMemoryUsage();
             long heapMax = heapMemory.getMax();
             double heapUsage = heapMax <= 0 ? 0.0 : (double) heapMemory.getUsed() / heapMax;
 

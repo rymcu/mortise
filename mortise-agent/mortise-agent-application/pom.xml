@@ -16,6 +16,10 @@
     <name>mortise-agent-application</name>
     <description>Mortise Agent - Application Layer</description>
 
+    <properties>
+        <layer.guard.application.skip>false</layer.guard.application.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.rymcu</groupId>
@@ -27,16 +31,15 @@
         </dependency>
         <dependency>
             <groupId>com.rymcu</groupId>
-            <artifactId>mortise-agent-infra</artifactId>
+            <artifactId>mortise-agent-kernel</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-core</artifactId>
         </dependency>
         <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
         </dependency>
 
         <!-- 可选模型提供者（用于自动配置条件装配） -->

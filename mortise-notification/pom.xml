@@ -16,6 +16,13 @@
     <name>mortise-notification</name>
     <description>Mortise Notification - 通知模块</description>
 
+    <properties>
+        <layer.guard.admin-api.skip>true</layer.guard.admin-api.skip>
+        <layer.guard.application.skip>true</layer.guard.application.skip>
+        <layer.guard.domain.skip>true</layer.guard.domain.skip>
+        <no.var.guard.skip>false</no.var.guard.skip>
+    </properties>
+
     <dependencies>
         <!-- Mortise Persistence（提供 MyBatis-Flex 支持，用于渠道配置持久化） -->
         <dependency>

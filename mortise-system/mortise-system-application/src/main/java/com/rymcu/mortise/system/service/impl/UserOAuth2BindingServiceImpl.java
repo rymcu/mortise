@@ -1,11 +1,9 @@
 package com.rymcu.mortise.system.service.impl;
 
-import com.mybatisflex.core.query.QueryWrapper;
-import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.system.entity.UserOAuth2Binding;
-import com.rymcu.mortise.system.mapper.UserOAuth2BindingMapper;
+import com.rymcu.mortise.system.repository.UserOAuth2BindingRepository;
 import com.rymcu.mortise.system.service.UserOAuth2BindingService;
-import org.apache.commons.lang3.StringUtils;
+import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
 
 /**
@@ -15,39 +13,33 @@ import org.springframework.stereotype.Service;
  * @since 1.0.0
  */
 @Service
-public class UserOAuth2BindingServiceImpl extends ServiceImpl<UserOAuth2BindingMapper, UserOAuth2Binding>
-        implements UserOAuth2BindingService {
+public class UserOAuth2BindingServiceImpl implements UserOAuth2BindingService {
+
+    @Resource
+    private UserOAuth2BindingRepository userOAuth2BindingRepository;
 
     @Override
     public UserOAuth2Binding findByProviderAndOpenId(String provider, String openId) {
-        if (StringUtils.isBlank(provider) || StringUtils.isBlank(openId)) {
-            return null;
-        }
-        return getOne(QueryWrapper.create()
-                .where(UserOAuth2Binding::getProvider).eq(provider)
-                .and(UserOAuth2Binding::getOpenId).eq(openId)
-        );
+        return userOAuth2BindingRepository.findByProviderAndOpenId(provider, openId);
     }
 
     @Override
     public UserOAuth2Binding findByProviderAndUnionId(String provider, String unionId) {
-        if (StringUtils.isBlank(provider) || StringUtils.isBlank(unionId)) {
-            return null;
-        }
-        return getOne(QueryWrapper.create()
-                .where(UserOAuth2Binding::getProvider).eq(provider)
-                .and(UserOAuth2Binding::getUnionId).eq(unionId)
-        );
+        return userOAuth2BindingRepository.findByProviderAndUnionId(provider, unionId);
     }
 
     @Override
     public UserOAuth2Binding findByUserIdAndProvider(Long userId, String provider) {
-        if (userId == null || StringUtils.isBlank(provider)) {
-            return null;
-        }
-        return getOne(QueryWrapper.create()
-                .where(UserOAuth2Binding::getUserId).eq(userId)
-                .and(UserOAuth2Binding::getProvider).eq(provider)
-        );
+        return userOAuth2BindingRepository.findByUserIdAndProvider(userId, provider);
+    }
+
+    @Override
+    public boolean save(UserOAuth2Binding binding) {
+        return userOAuth2BindingRepository.save(binding);
+    }
+
+    @Override
+    public boolean update(UserOAuth2Binding binding) {
+        return userOAuth2BindingRepository.update(binding);
     }
 }

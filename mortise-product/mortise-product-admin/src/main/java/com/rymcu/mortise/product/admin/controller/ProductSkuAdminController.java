@@ -3,8 +3,8 @@ package com.rymcu.mortise.product.admin.controller;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.log.annotation.ApiLog;
 import com.rymcu.mortise.log.annotation.OperationLog;
+import com.rymcu.mortise.product.admin.facade.ProductSkuAdminFacade;
 import com.rymcu.mortise.product.entity.ProductSku;
-import com.rymcu.mortise.product.service.ProductSkuService;
 import com.rymcu.mortise.web.annotation.AdminController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,7 +30,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductSkuAdminController {
 
-    private final ProductSkuService productSkuService;
+    private final ProductSkuAdminFacade productSkuAdminFacade;
 
     @GetMapping
     @ApiLog("查询SKU列表")
@@ -38,7 +38,7 @@ public class ProductSkuAdminController {
     @PreAuthorize("hasAuthority('product:sku:list')")
     public GlobalResult<List<ProductSku>> listSkus(
             @Parameter(description = "产品ID") @PathVariable Long productId) {
-        return GlobalResult.success(productSkuService.findByProductId(productId));
+        return GlobalResult.success(productSkuAdminFacade.listSkus(productId));
     }
 
     @GetMapping("/{skuId}")
@@ -48,7 +48,7 @@ public class ProductSkuAdminController {
     public GlobalResult<ProductSku> getSku(
             @Parameter(description = "产品ID") @PathVariable Long productId,
             @Parameter(description = "SKU ID") @PathVariable Long skuId) {
-        return GlobalResult.success(productSkuService.getById(skuId));
+        return GlobalResult.success(productSkuAdminFacade.getSku(skuId));
     }
 
     @PostMapping
@@ -59,9 +59,7 @@ public class ProductSkuAdminController {
     public GlobalResult<ProductSku> createSku(
             @Parameter(description = "产品ID") @PathVariable Long productId,
             @Valid @RequestBody ProductSku sku) {
-        sku.setProductId(productId);
-        productSkuService.save(sku);
-        return GlobalResult.success(sku);
+        return GlobalResult.success(productSkuAdminFacade.createSku(productId, sku));
     }
 
     @PutMapping("/{skuId}")
@@ -73,9 +71,7 @@ public class ProductSkuAdminController {
             @Parameter(description = "产品ID") @PathVariable Long productId,
             @Parameter(description = "SKU ID") @PathVariable Long skuId,
             @Valid @RequestBody ProductSku sku) {
-        sku.setId(skuId);
-        sku.setProductId(productId);
-        return GlobalResult.success(productSkuService.updateById(sku));
+        return GlobalResult.success(productSkuAdminFacade.updateSku(productId, skuId, sku));
     }
 
     @PatchMapping("/{skuId}/status")
@@ -87,7 +83,7 @@ public class ProductSkuAdminController {
             @Parameter(description = "产品ID") @PathVariable Long productId,
             @Parameter(description = "SKU ID") @PathVariable Long skuId,
             @Parameter(description = "状态：active / inactive / discontinued") @RequestParam String status) {
-        return GlobalResult.success(productSkuService.updateStatus(skuId, status));
+        return GlobalResult.success(productSkuAdminFacade.updateSkuStatus(skuId, status));
     }
 
     @PatchMapping("/{skuId}/default")
@@ -98,7 +94,7 @@ public class ProductSkuAdminController {
     public GlobalResult<Boolean> setDefaultSku(
             @Parameter(description = "产品ID") @PathVariable Long productId,
             @Parameter(description = "SKU ID") @PathVariable Long skuId) {
-        return GlobalResult.success(productSkuService.setDefault(productId, skuId));
+        return GlobalResult.success(productSkuAdminFacade.setDefaultSku(productId, skuId));
     }
 
     @DeleteMapping("/{skuId}")
@@ -109,6 +105,6 @@ public class ProductSkuAdminController {
     public GlobalResult<Boolean> deleteSku(
         @Parameter(description = "产品ID") @PathVariable Long productId,
         @Parameter(description = "SKU ID") @PathVariable Long skuId) {
-        return GlobalResult.success(productSkuService.removeById(skuId));
+        return GlobalResult.success(productSkuAdminFacade.deleteSku(skuId));
     }
 }

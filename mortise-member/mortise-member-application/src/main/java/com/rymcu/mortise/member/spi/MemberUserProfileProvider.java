@@ -41,7 +41,7 @@ public class MemberUserProfileProvider implements UserProfileProvider {
 
     @Override
     public UserProfile getUserProfile(Long userId) {
-        var member = memberService.getOne(
+        Member member = memberService.getOne(
                 QueryWrapper.create()
                         .select(MEMBER.ID, MEMBER.NICKNAME, MEMBER.AVATAR_URL, MEMBER.PROFILE)
                         .where(MEMBER.ID.eq(userId))
@@ -67,9 +67,9 @@ public class MemberUserProfileProvider implements UserProfileProvider {
         if (!StringUtils.hasText(keyword)) {
             return List.of();
         }
-        var normalizedKeyword = keyword.trim();
-        var safeLimit = limit > 0 ? Math.min(limit, 20) : 8;
-        var query = QueryWrapper.create()
+        String normalizedKeyword = keyword.trim();
+        int safeLimit = limit > 0 ? Math.min(limit, 20) : 8;
+        QueryWrapper query = QueryWrapper.create()
                 .select(MEMBER.ID, MEMBER.NICKNAME, MEMBER.AVATAR_URL, MEMBER.PROFILE)
                 .where(MEMBER.STATUS.eq(Status.ENABLED.getCode()));
         if (normalizedKeyword.chars().allMatch(Character::isDigit)) {
@@ -94,7 +94,7 @@ public class MemberUserProfileProvider implements UserProfileProvider {
 
     @Override
     public List<UserLeaderboardEntry> listLeaderboardEntries(int limit) {
-        var safeLimit = limit > 0 ? Math.min(limit, 50) : 20;
+        int safeLimit = limit > 0 ? Math.min(limit, 50) : 20;
         return memberService.list(
                         QueryWrapper.create()
                                 .select(MEMBER.ID, MEMBER.NICKNAME, MEMBER.AVATAR_URL, MEMBER.POINTS, MEMBER.MEMBER_LEVEL)
@@ -118,7 +118,7 @@ public class MemberUserProfileProvider implements UserProfileProvider {
      * bio、website、location、github、weibo、wechat、qq 等扩展字段存储于 profile JSONB 列。
      */
     private UserProfile toUserProfile(Member member) {
-        var ext = member.getProfile();
+        Map<String, Object> ext = member.getProfile();
         return new UserProfile(
                 member.getId(),
                 member.getNickname(),

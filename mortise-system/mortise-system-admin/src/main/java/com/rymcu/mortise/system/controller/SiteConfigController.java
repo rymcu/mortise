@@ -3,10 +3,10 @@ package com.rymcu.mortise.system.controller;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.log.annotation.ApiLog;
 import com.rymcu.mortise.log.annotation.OperationLog;
+import com.rymcu.mortise.system.controller.facade.SiteConfigAdminFacade;
 import com.rymcu.mortise.system.model.SiteConfigGroupVO;
 import com.rymcu.mortise.system.model.SiteConfigPublicVO;
 import com.rymcu.mortise.system.model.SiteConfigSaveRequest;
-import com.rymcu.mortise.system.service.SiteConfigService;
 import com.rymcu.mortise.web.annotation.AdminController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -35,14 +35,14 @@ import java.util.List;
 public class SiteConfigController {
 
     @Resource
-    private SiteConfigService siteConfigService;
+    private SiteConfigAdminFacade siteConfigAdminFacade;
 
     @Operation(summary = "查询所有配置分组", description = "返回所有配置分组（含 Schema 字段定义 + 当前值）")
     @GetMapping
     @PreAuthorize("hasAuthority('system:website-config:query')")
     @ApiLog("查询网站配置分组列表")
     public GlobalResult<List<SiteConfigGroupVO>> listGroups() {
-        return GlobalResult.success(siteConfigService.listAllGroups());
+        return siteConfigAdminFacade.listGroups();
     }
 
     @Operation(summary = "查询指定配置分组", description = "返回指定分组的配置详情")
@@ -52,7 +52,7 @@ public class SiteConfigController {
     public GlobalResult<SiteConfigGroupVO> getGroup(
             @Parameter(description = "分组标识，如 site / seo", required = true)
             @PathVariable String group) {
-        return GlobalResult.success(siteConfigService.getGroup(group));
+        return siteConfigAdminFacade.getGroup(group);
     }
 
     @Operation(summary = "保存配置分组", description = "全量覆盖保存指定分组的配置，保存后立即刷新缓存")
@@ -65,14 +65,13 @@ public class SiteConfigController {
             @PathVariable String group,
             @Parameter(description = "配置内容", required = true)
             @Valid @RequestBody SiteConfigSaveRequest request) {
-        siteConfigService.saveGroup(group, request);
-        return GlobalResult.success();
+        return siteConfigAdminFacade.saveGroup(group, request);
     }
 
     @Operation(summary = "获取公开配置", description = "无需鉴权，供前端启动时加载系统名称、Logo 等基础信息")
     @GetMapping("/public")
     @ApiLog("获取网站公开配置")
     public GlobalResult<SiteConfigPublicVO> getPublicConfig() {
-        return GlobalResult.success(siteConfigService.getPublicConfig());
+        return siteConfigAdminFacade.getPublicConfig();
     }
 }

@@ -18,6 +18,7 @@
 
     <modules>
         <module>mortise-agent-domain</module>
+        <module>mortise-agent-kernel</module>
         <module>mortise-agent-infra</module>
         <module>mortise-agent-application</module>
         <module>mortise-agent-admin</module>
@@ -26,6 +27,10 @@
 
     <properties>
         <spring-ai.version>1.0.0-M5</spring-ai.version>
+        <layer.guard.admin-api.skip>true</layer.guard.admin-api.skip>
+        <layer.guard.application.skip>true</layer.guard.application.skip>
+        <layer.guard.domain.skip>true</layer.guard.domain.skip>
+        <no.var.guard.skip>false</no.var.guard.skip>
     </properties>
 
     <repositories>

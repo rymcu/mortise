@@ -7,7 +7,6 @@ import com.rymcu.mortise.auth.spi.OAuth2UserInfoExtractor;
 import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
 import com.rymcu.mortise.common.util.Utils;
 import com.rymcu.mortise.core.result.GlobalResult;
-import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.model.TokenUser;
 import com.rymcu.mortise.system.service.AuthService;
 import io.micrometer.common.util.StringUtils;
@@ -73,11 +72,8 @@ public class SystemOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
             log.info("系统管理员 OAuth2 登录: registrationId={}, provider={}, openId={}, email={}",
                     registrationId, userInfo.getProvider(), userInfo.getOpenId(), userInfo.getEmail());
 
-            // 2. 查找或创建系统用户（简化：无需上下文参数）
-            User user = authService.findOrCreateUserFromOAuth2(userInfo);
-
-            // 3. 生成 JWT Token
-            TokenUser tokenUser = authService.generateTokens(user);
+            // 2. 查找或创建用户并直接生成 Token，避免 admin 层依赖实体对象
+            TokenUser tokenUser = authService.oauth2Login(userInfo);
             // 4. 获取传递的 parameterMap
             MultiValueMap<String, String> parameterMap;
             String state = request.getParameter("state");
@@ -100,8 +96,8 @@ public class SystemOAuth2LoginSuccessHandler implements AuthenticationSuccessHan
             // 5. 根据 registrationId 决定响应方式
             handleSuccessResponse(response, registrationId, tokenUser, userInfo.getRedirectUri(), state, parameterMap);
 
-            log.info("系统管理员 OAuth2 登录成功: userId={}, account={}",
-                    user.getId(), user.getAccount());
+            log.info("系统管理员 OAuth2 登录成功: provider={}, openId={}",
+                    userInfo.getProvider(), userInfo.getOpenId());
 
         } catch (Exception e) {
             log.error("系统管理员 OAuth2 登录失败: registrationId={}", registrationId, e);

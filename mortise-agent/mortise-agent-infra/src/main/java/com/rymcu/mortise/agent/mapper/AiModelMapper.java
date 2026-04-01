@@ -1,7 +1,7 @@
 package com.rymcu.mortise.agent.mapper;
 
 import com.mybatisflex.core.BaseMapper;
-import com.rymcu.mortise.agent.entity.AiModel;
+import com.rymcu.mortise.agent.infra.persistence.entity.AiModelPO;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -10,5 +10,5 @@ import org.apache.ibatis.annotations.Mapper;
  * @author ronger
  */
 @Mapper
-public interface AiModelMapper extends BaseMapper<AiModel> {
+public interface AiModelMapper extends BaseMapper<AiModelPO> {
 }

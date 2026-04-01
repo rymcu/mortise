@@ -4,9 +4,8 @@ import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.log.annotation.ApiLog;
 import com.rymcu.mortise.log.annotation.OperationLog;
-import com.rymcu.mortise.product.dto.ProductQueryParam;
+import com.rymcu.mortise.product.admin.facade.ProductAdminFacade;
 import com.rymcu.mortise.product.entity.Product;
-import com.rymcu.mortise.product.service.ProductService;
 import com.rymcu.mortise.web.annotation.AdminController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -33,7 +32,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ProductAdminController {
 
-    private final ProductService productService;
+    private final ProductAdminFacade productAdminFacade;
 
     @GetMapping
     @ApiLog("查询产品列表")
@@ -47,9 +46,9 @@ public class ProductAdminController {
             @Parameter(description = "分类ID") @RequestParam(required = false) Long categoryId,
             @Parameter(description = "状态：0-草稿, 1-上架, 2-下架, 3-停产") @RequestParam(required = false) Integer status,
             @Parameter(description = "是否推荐") @RequestParam(required = false) Boolean isFeatured) {
-        var page = new Page<Product>(pageNum, pageSize);
-        var param = new ProductQueryParam(keyword, productType, categoryId, status, isFeatured);
-        return GlobalResult.success(productService.pageByParam(page, param));
+        return GlobalResult.success(
+                productAdminFacade.listProducts(pageNum, pageSize, keyword, productType, categoryId, status, isFeatured)
+        );
     }
 
     @GetMapping("/{id}")
@@ -58,7 +57,7 @@ public class ProductAdminController {
     @PreAuthorize("hasAuthority('product:catalog:query')")
     public GlobalResult<Product> getProduct(
             @Parameter(description = "产品ID") @PathVariable Long id) {
-        return GlobalResult.success(productService.getById(id));
+        return GlobalResult.success(productAdminFacade.getProduct(id));
     }
 
     @PostMapping
@@ -67,7 +66,7 @@ public class ProductAdminController {
     @Operation(summary = "创建产品（仅填写描述型元数据，不含定价/库存）")
     @PreAuthorize("hasAuthority('product:catalog:add')")
     public GlobalResult<Boolean> createProduct(@Valid @RequestBody Product product) {
-        return GlobalResult.success(productService.save(product));
+        return GlobalResult.success(productAdminFacade.createProduct(product));
     }
 
     @PutMapping("/{id}")
@@ -78,8 +77,7 @@ public class ProductAdminController {
     public GlobalResult<Boolean> updateProduct(
             @Parameter(description = "产品ID") @PathVariable Long id,
             @Valid @RequestBody Product product) {
-        product.setId(id);
-        return GlobalResult.success(productService.updateById(product));
+        return GlobalResult.success(productAdminFacade.updateProduct(id, product));
     }
 
     @PatchMapping("/{id}/status")
@@ -90,7 +88,7 @@ public class ProductAdminController {
     public GlobalResult<Boolean> updateStatus(
             @Parameter(description = "产品ID") @PathVariable Long id,
             @Parameter(description = "状态：0-草稿, 1-上架, 2-下架, 3-停产") @RequestParam Integer status) {
-        return GlobalResult.success(productService.updateStatus(id, status));
+        return GlobalResult.success(productAdminFacade.updateStatus(id, status));
     }
 
     @PatchMapping("/batch/status")
@@ -101,7 +99,7 @@ public class ProductAdminController {
     public GlobalResult<Integer> batchUpdateStatus(
             @Parameter(description = "产品ID列表") @RequestBody List<Long> ids,
             @Parameter(description = "目标状态") @RequestParam Integer status) {
-        return GlobalResult.success(productService.batchUpdateStatus(ids, status));
+        return GlobalResult.success(productAdminFacade.batchUpdateStatus(ids, status));
     }
 
     @DeleteMapping("/{id}")
@@ -111,7 +109,7 @@ public class ProductAdminController {
     @PreAuthorize("hasAuthority('product:catalog:delete')")
     public GlobalResult<Boolean> deleteProduct(
             @Parameter(description = "产品ID") @PathVariable Long id) {
-        return GlobalResult.success(productService.removeById(id));
+        return GlobalResult.success(productAdminFacade.deleteProduct(id));
     }
 
     @GetMapping("/types")
@@ -119,6 +117,6 @@ public class ProductAdminController {
     @Operation(summary = "获取所有可用产品类型（内置 + SPI 扩展）")
     @PreAuthorize("hasAuthority('product:catalog:query')")
     public GlobalResult<Map<String, String>> listProductTypes() {
-        return GlobalResult.success(productService.getAllProductTypes());
+        return GlobalResult.success(productAdminFacade.listProductTypes());
     }
 }

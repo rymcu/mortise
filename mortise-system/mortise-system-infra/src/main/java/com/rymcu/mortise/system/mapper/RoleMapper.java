@@ -1,7 +1,7 @@
 package com.rymcu.mortise.system.mapper;
 
 import com.mybatisflex.core.BaseMapper;
-import com.rymcu.mortise.system.entity.Role;
+import com.rymcu.mortise.system.infra.persistence.entity.RolePO;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -12,5 +12,5 @@ import org.apache.ibatis.annotations.Mapper;
  * @desc : com.rymcu.mortise.mapper
  */
 @Mapper
-public interface RoleMapper extends BaseMapper<Role> {
+public interface RoleMapper extends BaseMapper<RolePO> {
 }

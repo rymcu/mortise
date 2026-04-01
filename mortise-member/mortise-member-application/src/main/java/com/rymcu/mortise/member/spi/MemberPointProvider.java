@@ -49,7 +49,7 @@ public class MemberPointProvider implements UserPointProvider {
             return false;
         }
 
-        var duplicate = memberPointHistoryMapper.selectCountByQuery(
+        long duplicate = memberPointHistoryMapper.selectCountByQuery(
                 QueryWrapper.create()
                         .where(MEMBER_POINT_HISTORY.USER_ID.eq(command.userId()))
                         .and(MEMBER_POINT_HISTORY.BIZ_KEY.eq(command.bizKey()))
@@ -58,7 +58,7 @@ public class MemberPointProvider implements UserPointProvider {
             return false;
         }
 
-        var member = memberService.getOne(
+        Member member = memberService.getOne(
                 QueryWrapper.create()
                         .select(MEMBER.ID, MEMBER.POINTS)
                         .where(MEMBER.ID.eq(command.userId()))
@@ -69,16 +69,16 @@ public class MemberPointProvider implements UserPointProvider {
 
         int currentPoints = member.getPoints() != null ? member.getPoints() : 0;
         int updatedPoints = currentPoints + command.changeAmount();
-        var levelLabel = MemberPointLevelResolver.resolveLabel(updatedPoints);
-        var now = LocalDateTime.now();
+        String levelLabel = MemberPointLevelResolver.resolveLabel(updatedPoints);
+        LocalDateTime now = LocalDateTime.now();
 
-        var update = UpdateEntity.of(Member.class, member.getId());
+        Member update = UpdateEntity.of(Member.class, member.getId());
         update.setPoints(updatedPoints);
         update.setMemberLevel(levelLabel);
         update.setUpdatedTime(now);
         memberService.updateById(update);
 
-        var history = new MemberPointHistory();
+        MemberPointHistory history = new MemberPointHistory();
         history.setUserId(command.userId());
         history.setChangeAmount(command.changeAmount());
         history.setCurrentPoints(updatedPoints);
@@ -98,7 +98,7 @@ public class MemberPointProvider implements UserPointProvider {
         if (userId == null) {
             return new UserPointSummary(null, 0, MemberPointLevelResolver.resolveLabel(0));
         }
-        var member = memberService.getOne(
+        Member member = memberService.getOne(
                 QueryWrapper.create()
                         .select(MEMBER.ID, MEMBER.POINTS)
                         .where(MEMBER.ID.eq(userId))
@@ -115,7 +115,7 @@ public class MemberPointProvider implements UserPointProvider {
         if (userId == null) {
             return List.of();
         }
-        var safeLimit = limit > 0 ? Math.min(limit, 50) : 20;
+        int safeLimit = limit > 0 ? Math.min(limit, 50) : 20;
         return memberPointHistoryMapper.selectListByQuery(
                         QueryWrapper.create()
                                 .select(MEMBER_POINT_HISTORY.ALL_COLUMNS)

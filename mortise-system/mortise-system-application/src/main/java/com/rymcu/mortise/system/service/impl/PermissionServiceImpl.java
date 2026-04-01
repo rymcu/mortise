@@ -2,9 +2,9 @@ package com.rymcu.mortise.system.service.impl;
 
 import com.rymcu.mortise.system.entity.Menu;
 import com.rymcu.mortise.system.entity.Role;
-import com.rymcu.mortise.system.service.MenuService;
+import com.rymcu.mortise.system.query.MenuQueryService;
+import com.rymcu.mortise.system.query.RoleQueryService;
 import com.rymcu.mortise.system.service.PermissionService;
-import com.rymcu.mortise.system.service.RoleService;
 import jakarta.annotation.Resource;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -25,17 +25,17 @@ import java.util.Set;
 public class PermissionServiceImpl implements PermissionService {
 
     @Resource
-    private MenuService menuService;
+    private MenuQueryService menuQueryService;
 
     @Resource
-    private RoleService roleService;
+    private RoleQueryService roleQueryService;
 
     @Override
     public Set<String> findUserPermissionsByIdUser(Long idUser) {
         Set<String> permissions = new HashSet<>();
 
         // 获取用户菜单权限
-        List<Menu> menus = menuService.findMenusByIdUser(idUser);
+        List<Menu> menus = menuQueryService.findMenusByIdUser(idUser);
         for (Menu menu : menus) {
             if (StringUtils.isNotBlank(menu.getPermission())) {
                 permissions.add(menu.getPermission());
@@ -50,7 +50,7 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public Set<String> findUserRolePermissionsByIdUser(Long idUser) {
-        List<Role> roles = roleService.findRolesByIdUser(idUser);
+        List<Role> roles = roleQueryService.findRolesByIdUser(idUser);
         Set<String> permissions = new HashSet<>();
         for (Role role : roles) {
             if (StringUtils.isNotBlank(role.getPermission())) {

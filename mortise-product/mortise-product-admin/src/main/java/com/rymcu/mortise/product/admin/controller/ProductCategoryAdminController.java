@@ -3,8 +3,8 @@ package com.rymcu.mortise.product.admin.controller;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.log.annotation.ApiLog;
 import com.rymcu.mortise.log.annotation.OperationLog;
+import com.rymcu.mortise.product.admin.facade.ProductCategoryAdminFacade;
 import com.rymcu.mortise.product.entity.ProductCategory;
-import com.rymcu.mortise.product.service.ProductCategoryService;
 import com.rymcu.mortise.web.annotation.AdminController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,14 +30,14 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductCategoryAdminController {
 
-    private final ProductCategoryService productCategoryService;
+    private final ProductCategoryAdminFacade productCategoryAdminFacade;
 
     @GetMapping("/tree")
     @ApiLog("查询分类树")
     @Operation(summary = "查询完整分类树（含禁用，供后台管理使用）")
     @PreAuthorize("hasAuthority('product:category:list')")
     public GlobalResult<List<ProductCategory>> getFullTree() {
-        return GlobalResult.success(productCategoryService.getFullTree());
+        return GlobalResult.success(productCategoryAdminFacade.getFullTree());
     }
 
     @GetMapping("/{id}")
@@ -46,7 +46,7 @@ public class ProductCategoryAdminController {
     @PreAuthorize("hasAuthority('product:category:query')")
     public GlobalResult<ProductCategory> getCategory(
             @Parameter(description = "分类ID") @PathVariable Long id) {
-        return GlobalResult.success(productCategoryService.getById(id));
+        return GlobalResult.success(productCategoryAdminFacade.getCategory(id));
     }
 
     @PostMapping
@@ -55,7 +55,7 @@ public class ProductCategoryAdminController {
     @Operation(summary = "创建产品分类")
     @PreAuthorize("hasAuthority('product:category:add')")
     public GlobalResult<Boolean> createCategory(@Valid @RequestBody ProductCategory category) {
-        return GlobalResult.success(productCategoryService.save(category));
+        return GlobalResult.success(productCategoryAdminFacade.createCategory(category));
     }
 
     @PutMapping("/{id}")
@@ -66,8 +66,7 @@ public class ProductCategoryAdminController {
     public GlobalResult<Boolean> updateCategory(
             @Parameter(description = "分类ID") @PathVariable Long id,
             @Valid @RequestBody ProductCategory category) {
-        category.setId(id);
-        return GlobalResult.success(productCategoryService.updateById(category));
+        return GlobalResult.success(productCategoryAdminFacade.updateCategory(id, category));
     }
 
     @PatchMapping("/{id}/status")
@@ -78,7 +77,7 @@ public class ProductCategoryAdminController {
     public GlobalResult<Boolean> updateStatus(
             @Parameter(description = "分类ID") @PathVariable Long id,
             @Parameter(description = "状态：0-正常, 1-禁用") @RequestParam Integer status) {
-        return GlobalResult.success(productCategoryService.updateStatus(id, status));
+        return GlobalResult.success(productCategoryAdminFacade.updateStatus(id, status));
     }
 
     @DeleteMapping("/{id}")
@@ -88,6 +87,6 @@ public class ProductCategoryAdminController {
     @PreAuthorize("hasAuthority('product:category:delete')")
     public GlobalResult<Boolean> deleteCategory(
         @Parameter(description = "分类ID") @PathVariable Long id) {
-        return GlobalResult.success(productCategoryService.removeById(id));
+        return GlobalResult.success(productCategoryAdminFacade.deleteCategory(id));
     }
 }

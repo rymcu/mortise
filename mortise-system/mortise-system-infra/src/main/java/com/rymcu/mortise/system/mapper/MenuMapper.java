@@ -2,6 +2,7 @@ package com.rymcu.mortise.system.mapper;
 
 import com.mybatisflex.core.BaseMapper;
 import com.rymcu.mortise.system.entity.Menu;
+import com.rymcu.mortise.system.infra.persistence.entity.MenuPO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -16,7 +17,7 @@ import java.util.List;
  * @desc : com.rymcu.mortise.mapper
  */
 @Mapper
-public interface MenuMapper extends BaseMapper<Menu> {
+public interface MenuMapper extends BaseMapper<MenuPO> {
 
     /**
      * 根据用户ID查询菜单列表（通过用户角色关联）

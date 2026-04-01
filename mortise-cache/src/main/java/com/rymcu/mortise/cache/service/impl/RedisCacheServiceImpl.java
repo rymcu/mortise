@@ -3,6 +3,7 @@ package com.rymcu.mortise.cache.service.impl;
 import com.rymcu.mortise.cache.service.CacheService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.SerializationException;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,17 @@ public class RedisCacheServiceImpl implements CacheService {
      * 缓存键分隔符
      */
     private static final String KEY_SEPARATOR = ":";
+
+    private static final DefaultRedisScript<Long> INCREMENT_WITH_EXPIRE_SCRIPT = new DefaultRedisScript<>(
+            """
+                    local current = redis.call('INCRBY', KEYS[1], ARGV[1])
+                    if current == tonumber(ARGV[1]) then
+                        redis.call('PEXPIRE', KEYS[1], ARGV[2])
+                    end
+                    return current
+                    """,
+            Long.class
+    );
 
     /**
      * 构建完整的缓存键
@@ -120,6 +132,27 @@ public class RedisCacheServiceImpl implements CacheService {
     @Override
     public Long getExpire(String key, TimeUnit unit) {
         return redisTemplate.getExpire(key, unit);
+    }
+
+    @Override
+    public Long increment(String key) {
+        return increment(key, 1L);
+    }
+
+    @Override
+    public Long increment(String key, long delta) {
+        return redisTemplate.opsForValue().increment(key, delta);
+    }
+
+    @Override
+    public Long increment(String key, long delta, Duration timeout) {
+        Objects.requireNonNull(timeout, "timeout must not be null");
+        return redisTemplate.execute(
+                INCREMENT_WITH_EXPIRE_SCRIPT,
+                Collections.singletonList(key),
+                String.valueOf(delta),
+                String.valueOf(timeout.toMillis())
+        );
     }
 
     @Override

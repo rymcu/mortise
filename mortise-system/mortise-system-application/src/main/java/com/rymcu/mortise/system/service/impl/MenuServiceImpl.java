@@ -1,20 +1,18 @@
 package com.rymcu.mortise.system.service.impl;
 
-import com.mybatisflex.core.paginate.Page;
-import com.mybatisflex.core.query.QueryWrapper;
-import com.mybatisflex.core.util.UpdateEntity;
-import com.mybatisflex.spring.service.impl.ServiceImpl;
-import com.rymcu.mortise.common.enumerate.MenuType;
 import com.rymcu.mortise.common.exception.ServiceException;
 import com.rymcu.mortise.common.model.Link;
+import com.rymcu.mortise.core.model.PageQuery;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.system.entity.Menu;
-import com.rymcu.mortise.system.mapper.MenuMapper;
 import com.rymcu.mortise.system.model.MenuSearch;
 import com.rymcu.mortise.system.model.MenuTreeInfo;
+import com.rymcu.mortise.system.query.MenuQueryService;
+import com.rymcu.mortise.system.repository.MenuRepository;
+import com.rymcu.mortise.system.service.command.MenuCommandService;
 import com.rymcu.mortise.system.service.MenuService;
 import com.rymcu.mortise.system.service.SystemCacheService;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,55 +25,51 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import static com.rymcu.mortise.system.entity.table.MenuTableDef.MENU;
-
-
 /**
- * Created on 2024/4/17 9:49.
- *
- * @author ronger
- * @email ronger-x@outlook.com
- * @desc : com.rymcu.mortise.service.impl
+ * 菜单应用服务
  */
 @Service
-public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements MenuService {
+public class MenuServiceImpl implements MenuService, MenuCommandService {
+
+    @Resource
+    private MenuRepository menuRepository;
 
     @Resource
     private SystemCacheService systemCacheService;
+    @Resource
+    private MenuQueryService menuQueryService;
 
     @Override
     public List<Menu> findMenusByIdUser(Long idUser) {
-        // 使用 Mapper 方法，避免参数绑定问题
-        return mapper.findMenusByIdUser(idUser);
+        return menuRepository.findMenusByUserId(idUser);
     }
 
     @Override
     public List<Link> findLinksByIdUser(Long idUser) {
-        return findLinkTreeMode(idUser, 0L);
+        return buildLinkTree(
+                menuRepository.findAllLinksByUserId(idUser).stream().collect(Collectors.groupingBy(Menu::getParentId)),
+                0L
+        );
     }
 
     @Override
-    public List<Menu> findMenus(Page<Menu> page, MenuSearch search) {
-        Page<Menu> menuPage = new Page<>(search.getPageNum(), search.getPageSize());
-        QueryWrapper queryWrapper = QueryWrapper.create()
-                .select(MENU.ID, MENU.LABEL, MENU.PERMISSION, MENU.HREF, MENU.MENU_TYPE, MENU.PARENT_ID, MENU.ICON, MENU.SORT_NO, MENU.STATUS, MENU.CREATED_TIME)
-                .where(MENU.LABEL.like(search.getQuery(), StringUtils.isNotBlank(search.getQuery())))
-                .and(MENU.PARENT_ID.eq(search.getParentId(), Objects.nonNull(search.getParentId())))
-                .orderBy(MENU.SORT_NO.asc());
-        Page<Menu> menuPageResult = mapper.paginate(menuPage, queryWrapper);
-        return menuPageResult.getRecords();
+    public PageResult<Menu> findMenus(PageQuery pageQuery, MenuSearch search) {
+        return menuQueryService.findMenus(pageQuery, search);
+    }
+
+    @Override
+    public Menu findById(Long idMenu) {
+        return menuRepository.findById(idMenu);
     }
 
     @Override
     public Boolean updateStatus(Long idMenu, Integer status) {
-        Menu menu = UpdateEntity.of(Menu.class, idMenu);
-        menu.setStatus(status);
-        return mapper.update(menu) > 0;
+        return menuRepository.updateStatus(idMenu, status);
     }
 
     @Override
     public Boolean deleteMenu(Long idMenu) {
-        boolean result = mapper.deleteById(idMenu) > 0;
+        boolean result = menuRepository.deleteById(idMenu);
         if (result) {
             systemCacheService.cacheMenuCount(count());
         }
@@ -83,11 +77,16 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     }
 
     @Override
+    public List<MenuTreeInfo> findMenuTree(MenuSearch search) {
+        return buildMenuTree(search.getParentId() != null ? search.getParentId() : 0L);
+    }
+
+    @Override
     public Boolean batchDeleteMenus(List<Long> idMenuList) {
         if (idMenuList == null || idMenuList.isEmpty()) {
             return false;
         }
-        boolean result = mapper.deleteBatchByIds(idMenuList) > 0;
+        boolean result = menuRepository.deleteByIds(idMenuList);
         if (result) {
             systemCacheService.cacheMenuCount(count());
         }
@@ -97,7 +96,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createMenu(Menu menu) {
-        mapper.insertSelective(menu);
+        menuRepository.save(menu);
         systemCacheService.cacheMenuCount(count());
         return menu.getId();
     }
@@ -105,7 +104,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateMenu(Menu menu) {
-        Menu oldMenu = mapper.selectOneById(menu.getId());
+        Menu oldMenu = menuRepository.findById(menu.getId());
         if (Objects.isNull(oldMenu)) {
             throw new ServiceException("数据不存在");
         }
@@ -118,41 +117,29 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         oldMenu.setSortNo(menu.getSortNo());
         oldMenu.setParentId(menu.getParentId());
         oldMenu.setUpdatedTime(LocalDateTime.now());
-        return mapper.update(menu) > 0;
+        return menuRepository.update(oldMenu);
     }
 
     @Override
-    public List<MenuTreeInfo> findMenuTree(MenuSearch search) {
-        Long rootParentId = search.getParentId() != null ? search.getParentId() : 0L;
-        // 一次性查询所有菜单，避免递归 N+1 查询
-        QueryWrapper queryWrapper = QueryWrapper.create()
-                .select(MENU.ID, MENU.LABEL, MENU.PERMISSION, MENU.PARENT_ID, MENU.SORT_NO,
-                        MENU.MENU_TYPE, MENU.ICON, MENU.HREF, MENU.CREATED_TIME, MENU.UPDATED_TIME, MENU.STATUS)
-                .orderBy(MENU.SORT_NO.asc());
-        List<Menu> allMenus = mapper.selectListByQuery(queryWrapper);
-        Map<Long, List<Menu>> menusByParentId = allMenus.stream()
-                .collect(Collectors.groupingBy(Menu::getParentId));
-        return buildMenuTree(menusByParentId, rootParentId);
+    public long count() {
+        return menuRepository.count();
     }
 
-    private List<MenuTreeInfo> buildMenuTree(Map<Long, List<Menu>> menusByParentId, Long parentId) {
-        List<Menu> children = menusByParentId.getOrDefault(parentId, Collections.emptyList());
-        List<MenuTreeInfo> result = new ArrayList<>(children.size());
-        for (Menu menu : children) {
-            MenuTreeInfo menuTreeInfo = new MenuTreeInfo();
-            BeanUtils.copyProperties(menu, menuTreeInfo);
-            menuTreeInfo.setChildren(buildMenuTree(menusByParentId, menu.getId()));
-            result.add(menuTreeInfo);
+    @Override
+    public long countEnabled() {
+        return menuRepository.countEnabled();
+    }
+
+    private List<MenuTreeInfo> buildMenuTree(Long parentId) {
+        List<Menu> menus = menuRepository.findTreeMenus(parentId);
+        List<MenuTreeInfo> result = new ArrayList<>(menus.size());
+        for (Menu menu : menus) {
+            MenuTreeInfo treeInfo = new MenuTreeInfo();
+            BeanUtils.copyProperties(menu, treeInfo);
+            treeInfo.setChildren(buildMenuTree(menu.getId()));
+            result.add(treeInfo);
         }
         return result;
-    }
-
-    private List<Link> findLinkTreeMode(Long idUser, Long parentId) {
-        // 一次性查询该用户所有授权菜单，避免递归 N+1 查询
-        List<Menu> allMenus = mapper.findAllLinksByUserId(idUser);
-        Map<Long, List<Menu>> menusByParentId = allMenus.stream()
-                .collect(Collectors.groupingBy(Menu::getParentId));
-        return buildLinkTree(menusByParentId, parentId);
     }
 
     private List<Link> buildLinkTree(Map<Long, List<Menu>> menusByParentId, Long parentId) {

@@ -1,11 +1,11 @@
 package com.rymcu.mortise.system.controller;
 
-import com.mybatisflex.core.paginate.Page;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.core.result.GlobalResult;
-import com.rymcu.mortise.persistence.log.entity.ApiLog;
-import com.rymcu.mortise.persistence.log.entity.OperationLog;
+import com.rymcu.mortise.system.controller.facade.LogAdminFacade;
+import com.rymcu.mortise.system.controller.vo.ApiLogVO;
+import com.rymcu.mortise.system.controller.vo.OperationLogVO;
 import com.rymcu.mortise.system.model.LogSearch;
-import com.rymcu.mortise.system.service.LogQueryService;
 import com.rymcu.mortise.web.annotation.AdminController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -30,7 +30,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class LogController {
 
     @Resource
-    private LogQueryService logQueryService;
+    private LogAdminFacade logAdminFacade;
 
     // ==================== 操作日志 ====================
 
@@ -38,11 +38,9 @@ public class LogController {
     @GetMapping("/operation")
     @PreAuthorize("hasAuthority('system:operation-log:list')")
     @com.rymcu.mortise.log.annotation.ApiLog(recordParams = false, recordResponseBody = false, value = "查询操作日志")
-    public GlobalResult<Page<OperationLog>> listOperationLogs(
+    public GlobalResult<PageResult<OperationLogVO>> listOperationLogs(
             @Parameter(description = "查询条件") @Valid LogSearch search) {
-        Page<OperationLog> page = new Page<>(search.getPageNum(), search.getPageSize());
-        page = logQueryService.findOperationLogs(page, search);
-        return GlobalResult.success(page);
+        return logAdminFacade.listOperationLogs(search);
     }
 
     @Operation(summary = "删除操作日志", description = "根据 ID 删除指定操作日志记录")
@@ -52,7 +50,7 @@ public class LogController {
     @com.rymcu.mortise.log.annotation.OperationLog(module = "日志管理", operation = "删除操作日志", recordParams = true)
     public GlobalResult<Boolean> deleteOperationLog(
             @Parameter(description = "日志ID", required = true) @PathVariable Long id) {
-        return GlobalResult.success(logQueryService.deleteOperationLog(id));
+        return logAdminFacade.deleteOperationLog(id);
     }
 
     // ==================== API 日志 ====================
@@ -61,11 +59,9 @@ public class LogController {
     @GetMapping("/api")
     @PreAuthorize("hasAuthority('system:api-log:list')")
     @com.rymcu.mortise.log.annotation.ApiLog(recordParams = false, recordResponseBody = false, value = "查询 API 日志")
-    public GlobalResult<Page<ApiLog>> listApiLogs(
+    public GlobalResult<PageResult<ApiLogVO>> listApiLogs(
             @Parameter(description = "查询条件") @Valid LogSearch search) {
-        Page<ApiLog> page = new Page<>(search.getPageNum(), search.getPageSize());
-        page = logQueryService.findApiLogs(page, search);
-        return GlobalResult.success(page);
+        return logAdminFacade.listApiLogs(search);
     }
 
     @Operation(summary = "删除 API 日志", description = "根据 ID 删除指定 API 日志记录")
@@ -75,6 +71,6 @@ public class LogController {
     @com.rymcu.mortise.log.annotation.OperationLog(module = "日志管理", operation = "删除 API 日志", recordParams = true)
     public GlobalResult<Boolean> deleteApiLog(
             @Parameter(description = "日志ID", required = true) @PathVariable Long id) {
-        return GlobalResult.success(logQueryService.deleteApiLog(id));
+        return logAdminFacade.deleteApiLog(id);
     }
 }

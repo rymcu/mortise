@@ -1,10 +1,12 @@
 package com.rymcu.mortise.agent.admin.controller;
 
-import com.mybatisflex.core.paginate.Page;
-import com.rymcu.mortise.agent.admin.model.AiModelInfo;
-import com.rymcu.mortise.agent.admin.model.AiModelSearch;
-import com.rymcu.mortise.agent.admin.service.AdminAiModelService;
-import com.rymcu.mortise.agent.entity.AiModel;
+import com.rymcu.mortise.agent.admin.contract.query.AiModelSearch;
+import com.rymcu.mortise.agent.admin.contract.request.AiModelUpsertRequest;
+import com.rymcu.mortise.agent.admin.contract.request.StatusUpdateRequest;
+import com.rymcu.mortise.agent.admin.contract.response.AiModelInfo;
+import com.rymcu.mortise.agent.admin.facade.AdminAiModelFacade;
+import com.rymcu.mortise.core.model.PageQuery;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.log.annotation.ApiLog;
 import com.rymcu.mortise.log.annotation.OperationLog;
@@ -17,7 +19,14 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 /**
  * AI 模型管理控制器
@@ -30,7 +39,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AiModelController {
 
-    private final AdminAiModelService adminAiModelService;
+    private final AdminAiModelFacade adminAiModelFacade;
 
     @Operation(summary = "获取模型列表", description = "分页查询 AI 模型信息")
     @ApiResponses(value = {
@@ -40,10 +49,8 @@ public class AiModelController {
     @GetMapping
     @PreAuthorize("hasAuthority('agent:model:list')")
     @ApiLog(recordParams = false, recordResponseBody = false, value = "查询 AI 模型列表")
-    public GlobalResult<Page<AiModelInfo>> listModels(@Parameter(description = "查询条件") @Valid AiModelSearch search) {
-        Page<AiModelInfo> page = new Page<>(search.getPageNum(), search.getPageSize());
-        page = adminAiModelService.findModelList(page, search);
-        return GlobalResult.success(page);
+    public GlobalResult<PageResult<AiModelInfo>> listModels(@Parameter(description = "查询条件") @Valid AiModelSearch search) {
+        return GlobalResult.success(adminAiModelFacade.findModelList(PageQuery.of(search.getPageNum(), search.getPageSize()), search));
     }
 
     @Operation(summary = "获取模型详情", description = "根据 ID 获取 AI 模型详细信息")
@@ -57,7 +64,7 @@ public class AiModelController {
     @ApiLog(recordParams = true, recordResponseBody = false, value = "获取 AI 模型详情")
     public GlobalResult<AiModelInfo> getModelById(
             @Parameter(description = "模型 ID", required = true) @PathVariable("id") Long id) {
-        return GlobalResult.success(adminAiModelService.findModelInfoById(id));
+        return GlobalResult.success(adminAiModelFacade.findModelInfoById(id));
     }
 
     @Operation(summary = "新增模型", description = "创建新的 AI 模型")
@@ -70,8 +77,8 @@ public class AiModelController {
     @ApiLog(recordParams = true, recordResponseBody = false, value = "新增 AI 模型")
     @OperationLog(module = "AI 配置", operation = "新增模型", recordParams = true)
     public GlobalResult<Boolean> addModel(
-            @Parameter(description = "模型信息", required = true) @Valid @RequestBody AiModel model) {
-        return GlobalResult.success(adminAiModelService.save(model));
+            @Parameter(description = "模型信息", required = true) @Valid @RequestBody AiModelUpsertRequest request) {
+        return GlobalResult.success(adminAiModelFacade.createModel(request));
     }
 
     @Operation(summary = "编辑模型", description = "更新 AI 模型信息")
@@ -86,9 +93,8 @@ public class AiModelController {
     @OperationLog(module = "AI 配置", operation = "编辑模型", recordParams = true)
     public GlobalResult<Boolean> updateModel(
             @Parameter(description = "模型 ID", required = true) @PathVariable("id") Long id,
-            @Parameter(description = "模型信息", required = true) @Valid @RequestBody AiModel model) {
-        model.setId(id);
-        return GlobalResult.success(adminAiModelService.updateById(model));
+            @Parameter(description = "模型信息", required = true) @Valid @RequestBody AiModelUpsertRequest request) {
+        return GlobalResult.success(adminAiModelFacade.updateModel(id, request));
     }
 
     @Operation(summary = "删除模型", description = "逻辑删除 AI 模型")
@@ -103,7 +109,7 @@ public class AiModelController {
     @OperationLog(module = "AI 配置", operation = "删除模型", recordParams = true)
     public GlobalResult<Boolean> deleteModel(
             @Parameter(description = "模型 ID", required = true) @PathVariable("id") Long id) {
-        return GlobalResult.success(adminAiModelService.removeById(id));
+        return GlobalResult.success(adminAiModelFacade.deleteModel(id));
     }
 
     @Operation(summary = "启用模型", description = "启用指定 AI 模型")
@@ -113,7 +119,7 @@ public class AiModelController {
     @OperationLog(module = "AI 配置", operation = "启用模型", recordParams = true)
     public GlobalResult<Boolean> enableModel(
             @Parameter(description = "模型 ID", required = true) @PathVariable("id") Long id) {
-        return GlobalResult.success(adminAiModelService.enableModel(id));
+        return GlobalResult.success(adminAiModelFacade.enableModel(id));
     }
 
     @Operation(summary = "禁用模型", description = "禁用指定 AI 模型")
@@ -123,7 +129,7 @@ public class AiModelController {
     @OperationLog(module = "AI 配置", operation = "禁用模型", recordParams = true)
     public GlobalResult<Boolean> disableModel(
             @Parameter(description = "模型 ID", required = true) @PathVariable("id") Long id) {
-        return GlobalResult.success(adminAiModelService.disableModel(id));
+        return GlobalResult.success(adminAiModelFacade.disableModel(id));
     }
 
     @Operation(summary = "更新模型状态", description = "更新 AI 模型状态")
@@ -133,7 +139,7 @@ public class AiModelController {
     @OperationLog(module = "AI 配置", operation = "更新模型状态", recordParams = true)
     public GlobalResult<Boolean> updateModelStatus(
             @Parameter(description = "模型 ID", required = true) @PathVariable("id") Long id,
-            @Parameter(description = "状态信息", required = true) @Valid @RequestBody AiModelInfo modelInfo) {
-        return GlobalResult.success(adminAiModelService.updateStatus(id, modelInfo.status()));
+            @Parameter(description = "状态信息", required = true) @Valid @RequestBody StatusUpdateRequest request) {
+        return GlobalResult.success(adminAiModelFacade.updateStatus(id, request.status()));
     }
 }

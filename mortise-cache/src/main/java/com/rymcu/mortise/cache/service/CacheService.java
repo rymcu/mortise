@@ -113,6 +113,21 @@ public interface CacheService {
      */
     Long getExpire(String key, TimeUnit unit);
 
+    /**
+     * 原子递增
+     */
+    Long increment(String key);
+
+    /**
+     * 原子递增指定步长
+     */
+    Long increment(String key, long delta);
+
+    /**
+     * 原子递增并在首次创建时设置过期时间
+     */
+    Long increment(String key, long delta, Duration timeout);
+
     // ==================== Hash 操作 ====================
 
     /**

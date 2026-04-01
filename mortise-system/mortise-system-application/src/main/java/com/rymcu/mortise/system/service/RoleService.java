@@ -1,7 +1,7 @@
 package com.rymcu.mortise.system.service;
 
-import com.mybatisflex.core.paginate.Page;
-import com.mybatisflex.core.service.IService;
+import com.rymcu.mortise.core.model.PageQuery;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.system.entity.Menu;
 import com.rymcu.mortise.system.entity.Role;
 import com.rymcu.mortise.system.entity.User;
@@ -18,10 +18,12 @@ import java.util.List;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.service
  */
-public interface RoleService extends IService<Role> {
+public interface RoleService {
     List<Role> findRolesByIdUser(Long idUser);
 
-    Page<Role> findRoles(Page<Role> page, RoleSearch search);
+    PageResult<Role> findRoles(PageQuery pageQuery, RoleSearch search);
+
+    Role findById(Long idRole);
 
     Boolean bindRoleMenu(BindRoleMenuInfo bindRoleMenuInfo);
 
@@ -46,4 +48,8 @@ public interface RoleService extends IService<Role> {
     Long createRole(Role role);
 
     Boolean updateRole(Role role);
+
+    long count();
+
+    long countEnabled();
 }

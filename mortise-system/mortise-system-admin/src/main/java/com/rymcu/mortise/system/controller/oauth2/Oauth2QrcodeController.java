@@ -1,12 +1,9 @@
 package com.rymcu.mortise.system.controller.oauth2;
 
 import com.rymcu.mortise.web.annotation.AdminController;
-import com.rymcu.mortise.auth.enumerate.QrcodeState;
-import com.rymcu.mortise.auth.service.AuthCacheService;
-import com.rymcu.mortise.auth.support.UnifiedOAuth2AuthorizationRequestResolver;
 import com.rymcu.mortise.core.result.GlobalResult;
+import com.rymcu.mortise.system.controller.facade.OAuth2QrcodeAdminFacade;
 import com.rymcu.mortise.log.annotation.ApiLog;
-import io.micrometer.common.util.StringUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -14,16 +11,10 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.oauth2.client.registration.ClientRegistration;
-import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
-import org.springframework.security.oauth2.client.web.AuthorizationRequestRepository;
-import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequest;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -34,16 +25,12 @@ import java.util.Map;
  * @desc : com.rymcu.mortise.auth.controller
  */
 @Tag(name = "OAuth2 授权二维码", description = "OAuth2 授权二维码生成接口")
-@Slf4j
 @AdminController
 @RequestMapping("/oauth2/qrcode")
 @RequiredArgsConstructor
 public class Oauth2QrcodeController {
 
-    private final UnifiedOAuth2AuthorizationRequestResolver authorizationRequestResolver;
-    private final ClientRegistrationRepository clientRegistrationRepository;
-    private final AuthorizationRequestRepository<OAuth2AuthorizationRequest> authorizationRequestRepository;
-    private final AuthCacheService authCacheService;
+    private final OAuth2QrcodeAdminFacade oauth2QrcodeAdminFacade;
 
     @Operation(
         summary = "获取微信 OAuth2 授权二维码链接",
@@ -59,46 +46,13 @@ public class Oauth2QrcodeController {
     @GetMapping("/wechat/{registrationId}")
     @ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "获取微信OAuth2授权二维码链接")
     public GlobalResult<Map<String, String>> getWeChatQRCode(@PathVariable String registrationId, HttpServletRequest request, HttpServletResponse response) {
-        ClientRegistration clientRegistration = this.clientRegistrationRepository.findByRegistrationId(registrationId);
-        if (clientRegistration == null) {
-            throw new IllegalArgumentException("Unknown client registrationId: " + registrationId);
-        }
-
-        // 使用 Spring Security 的能力来构建标准的授权请求
-        OAuth2AuthorizationRequest authRequest = authorizationRequestResolver.resolve(request, registrationId);
-        if (authRequest == null) {
-            throw new IllegalStateException("Could not resolve AuthorizationRequest for registrationId: " + registrationId);
-        }
-
-        // 2. 手动调用 save 方法，将 state 等信息存入缓存
-        // 这一步是关键，它替代了被我们绕过的 OAuth2AuthorizationRequestRedirectFilter 的工作
-        this.authorizationRequestRepository.saveAuthorizationRequest(authRequest, request, response);
-
-        String state = authRequest.getState();
-
-        if (StringUtils.isNotBlank(state)) {
-            authCacheService.storeOAuth2QrcodeState(state, QrcodeState.WAITED.getValue());
-        }
-
-        // 获取构建好的、包含 state 等参数的完整授权 URL
-        String authorizationUri = authRequest.getAuthorizationRequestUri();
-        Map<String, String> map = new HashMap<>();
-        map.put("state", state);
-        map.put("appid", authRequest.getClientId());
-        map.put("scope", "snsapi_login");
-        map.put("redirectUri", authRequest.getRedirectUri());
-        map.put("authorizationUri", authorizationUri);
-        return GlobalResult.success(map);
+        return oauth2QrcodeAdminFacade.getWeChatQRCode(registrationId, request, response);
     }
 
     @GetMapping("/state/{state}")
     @ApiLog(recordParams = false, recordRequestBody = false, recordResponseBody = false, value = "查询OAuth2二维码状态")
     public GlobalResult<Map<String, Object>> getStateQRCode(@PathVariable String state) {
-        int qrcodeState = authCacheService.getOAuth2QrcodeState(state);
-        Map<String, Object> map = new HashMap<>();
-        map.put("state", state);
-        map.put("qrcodeState", qrcodeState);
-        return GlobalResult.success(map);
+        return oauth2QrcodeAdminFacade.getStateQRCode(state);
     }
 }
 

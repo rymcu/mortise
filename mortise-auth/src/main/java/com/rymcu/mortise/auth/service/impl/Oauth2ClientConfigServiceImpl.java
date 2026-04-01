@@ -3,6 +3,7 @@ package com.rymcu.mortise.auth.service.impl;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.mybatisflex.spring.service.impl.ServiceImpl;
+import com.rymcu.mortise.cache.service.CacheVersionService;
 import com.rymcu.mortise.auth.entity.Oauth2ClientConfig;
 import com.rymcu.mortise.auth.mapper.Oauth2ClientConfigMapper;
 import com.rymcu.mortise.auth.model.OAuth2ClientConfigSearch;
@@ -30,10 +31,15 @@ import static com.rymcu.mortise.auth.entity.table.Oauth2ClientConfigTableDef.OAU
 @Service
 public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfigMapper, Oauth2ClientConfig> implements Oauth2ClientConfigService {
 
-    private final StringEncryptor stringEncryptor;
+    private static final String CACHE_NAMESPACE = "auth:oauth2-client-config";
 
-    public Oauth2ClientConfigServiceImpl(@Qualifier("jasyptStringEncryptor") StringEncryptor stringEncryptor) {
+    private final StringEncryptor stringEncryptor;
+    private final CacheVersionService cacheVersionService;
+
+    public Oauth2ClientConfigServiceImpl(@Qualifier("jasyptStringEncryptor") StringEncryptor stringEncryptor,
+                                         CacheVersionService cacheVersionService) {
         this.stringEncryptor = stringEncryptor;
+        this.cacheVersionService = cacheVersionService;
     }
 
     @Override
@@ -81,7 +87,11 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         log.info("删除客户端配置: id={}", id);
-        return mapper.deleteById(id) > 0;
+        boolean deleted = mapper.deleteById(id) > 0;
+        if (deleted) {
+            cacheVersionService.bumpVersion(CACHE_NAMESPACE);
+        }
+        return deleted;
     }
 
     @Override
@@ -92,7 +102,11 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
         QueryWrapper queryWrapper = QueryWrapper.create()
                 .where(OAUTH2_CLIENT_CONFIG.REGISTRATION_ID.eq(registrationId));
 
-        return mapper.deleteByQuery(queryWrapper) > 0;
+        boolean deleted = mapper.deleteByQuery(queryWrapper) > 0;
+        if (deleted) {
+            cacheVersionService.bumpVersion(CACHE_NAMESPACE);
+        }
+        return deleted;
     }
 
     @Override
@@ -110,7 +124,11 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
         if (idOAuth2ClientConfigs == null || idOAuth2ClientConfigs.isEmpty()) {
             return false;
         }
-        return mapper.deleteBatchByIds(idOAuth2ClientConfigs) > 0;
+        boolean deleted = mapper.deleteBatchByIds(idOAuth2ClientConfigs) > 0;
+        if (deleted) {
+            cacheVersionService.bumpVersion(CACHE_NAMESPACE);
+        }
+        return deleted;
     }
 
     @Override
@@ -130,6 +148,7 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
         mapper.insertSelective(config);
         log.info("创建 OAuth2 配置成功，id: {}, registrationId: {}, name: {}",
                 config.getId(), config.getRegistrationId(), config.getClientName());
+        cacheVersionService.bumpVersion(CACHE_NAMESPACE);
         return config.getId();
     }
 
@@ -149,6 +168,9 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
         config.setUpdatedTime(LocalDateTime.now());
         int rows = mapper.insertOrUpdateSelective(config);
         log.info("更新微信账号成功，id: {}", config.getId());
+        if (rows > 0) {
+            cacheVersionService.bumpVersion(CACHE_NAMESPACE);
+        }
         return rows > 0;
     }
 
@@ -158,7 +180,11 @@ public class Oauth2ClientConfigServiceImpl extends ServiceImpl<Oauth2ClientConfi
                 .where(OAUTH2_CLIENT_CONFIG.CLIENT_ID.eq(clientId))
                 .and(OAUTH2_CLIENT_CONFIG.STATUS.eq(Status.ENABLED.getCode()));
 
-        return mapper.selectOneByQuery(queryWrapper);
+        Oauth2ClientConfig config = mapper.selectOneByQuery(queryWrapper);
+        if (config != null) {
+            config.setClientSecret(decryptValue(config.getClientSecret()));
+        }
+        return config;
     }
 
 

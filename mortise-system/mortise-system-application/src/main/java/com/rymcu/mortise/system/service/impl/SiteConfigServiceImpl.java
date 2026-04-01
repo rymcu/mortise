@@ -24,8 +24,6 @@ import java.util.stream.Collectors;
 
 /**
  * 网站配置服务实现
- *
- * @author ronger
  */
 @Slf4j
 @Service
@@ -33,8 +31,6 @@ import java.util.stream.Collectors;
 public class SiteConfigServiceImpl implements SiteConfigService {
 
     private final SystemConfigStorage systemConfigStorage;
-
-    // ─── SiteConfigService ────────────────────────────────────────────────────
 
     @Override
     public List<SiteConfigGroupVO> listAllGroups() {
@@ -46,7 +42,7 @@ public class SiteConfigServiceImpl implements SiteConfigService {
     @Override
     @Cacheable(cacheNames = SystemCacheConstant.SITE_CONFIG_GROUP_CACHE, key = "#group")
     public SiteConfigGroupVO getGroup(String group) {
-        var schema = SiteConfigSchema.ofGroup(group);
+        SiteConfigSchema schema = SiteConfigSchema.ofGroup(group);
         return buildGroupVO(schema, loadFromDb(group));
     }
 
@@ -57,53 +53,37 @@ public class SiteConfigServiceImpl implements SiteConfigService {
             @CacheEvict(cacheNames = SystemCacheConstant.SITE_CONFIG_PUBLIC_CACHE, allEntries = true)
     })
     public void saveGroup(String group, SiteConfigSaveRequest request) {
-        // 校验分组合法性
-        var schema = SiteConfigSchema.ofGroup(group);
-        var incoming = request.values() != null ? request.values() : Map.<String, String>of();
-
-        // 按 Schema 字段顺序逐一 upsert
+        SiteConfigSchema schema = SiteConfigSchema.ofGroup(group);
+        Map<String, String> incoming = request.values() != null ? request.values() : Map.of();
         for (SiteConfigFieldDef field : schema.getFields()) {
-            var value = incoming.get(field.key());
+            String value = incoming.get(field.key());
             if (value == null) {
-                continue; // 未传该字段则保持原值不变
+                continue;
             }
             systemConfigStorage.upsertValue(group, field.key(), value);
         }
-
         log.info("保存网站配置成功: group={}", group);
     }
 
     @Override
     @Cacheable(cacheNames = SystemCacheConstant.SITE_CONFIG_PUBLIC_CACHE, key = "'public'")
     public SiteConfigPublicVO getPublicConfig() {
-        // 聚合所有分组的所有配置项
-        var allValues = Arrays.stream(SiteConfigSchema.values())
+        Map<String, String> allValues = Arrays.stream(SiteConfigSchema.values())
                 .flatMap(schema -> loadFromDb(schema.getGroup()).entrySet().stream())
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (a, b) -> b));
         return new SiteConfigPublicVO(allValues);
     }
 
-    // ─── 私有辅助方法 ──────────────────────────────────────────────────────────
-
-    /**
-     * 从数据库加载指定分组的所有配置项（key → value）
-     */
     private Map<String, String> loadFromDb(String group) {
         return systemConfigStorage.loadGroupValues(group);
     }
 
-    /**
-     * 构建配置分组视图对象
-     */
     private SiteConfigGroupVO buildGroupVO(SiteConfigSchema schema, Map<String, String> dbValues) {
-        // 用 defaultValue 填充数据库中不存在的字段
-        var values = schema.getFields().stream()
+        Map<String, String> values = schema.getFields().stream()
                 .collect(Collectors.toMap(
                         SiteConfigFieldDef::key,
-                        f -> dbValues.getOrDefault(f.key(),
-                                Objects.toString(f.defaultValue(), ""))
+                        f -> dbValues.getOrDefault(f.key(), Objects.toString(f.defaultValue(), ""))
                 ));
         return new SiteConfigGroupVO(schema.getGroup(), schema.getLabel(), schema.getFields(), values);
     }
-
 }

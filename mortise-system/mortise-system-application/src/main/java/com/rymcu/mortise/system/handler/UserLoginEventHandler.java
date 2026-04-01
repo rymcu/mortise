@@ -1,7 +1,7 @@
 package com.rymcu.mortise.system.handler;
 
 import com.rymcu.mortise.system.handler.event.UserLoginEvent;
-import com.rymcu.mortise.system.service.UserService;
+import com.rymcu.mortise.system.service.command.UserCommandService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -20,12 +20,12 @@ import org.springframework.stereotype.Component;
 public class UserLoginEventHandler {
 
     @Resource
-    private UserService userService;
+    private UserCommandService userCommandService;
 
     @Async
     @EventListener
     public void processUserLoginEvent(UserLoginEvent userLoginEvent) {
-        userService.updateLastLoginTimeByAccount(userLoginEvent.getAccount());
+        userCommandService.updateLastLoginTimeByAccount(userLoginEvent.getAccount());
     }
 
 }

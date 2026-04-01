@@ -1,6 +1,5 @@
 package com.rymcu.mortise.system.model;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.rymcu.mortise.common.model.Avatar;
 import com.rymcu.mortise.system.annotation.DictFormat;
 import lombok.Data;
@@ -36,13 +35,10 @@ public class UserInfo {
 
     private String phone;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime lastLoginTime;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime lastOnlineTime;
 
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdTime;
 
     private Integer onlineStatus;

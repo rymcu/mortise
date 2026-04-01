@@ -16,6 +16,10 @@
     <name>mortise-agent-api</name>
     <description>Mortise Agent - Public API Layer</description>
 
+    <properties>
+        <layer.guard.admin-api.skip>false</layer.guard.admin-api.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.rymcu</groupId>

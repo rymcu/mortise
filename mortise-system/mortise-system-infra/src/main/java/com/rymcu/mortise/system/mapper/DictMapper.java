@@ -1,7 +1,7 @@
 package com.rymcu.mortise.system.mapper;
 
 import com.mybatisflex.core.BaseMapper;
-import com.rymcu.mortise.system.entity.Dict;
+import com.rymcu.mortise.system.infra.persistence.entity.DictPO;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -12,6 +12,6 @@ import org.apache.ibatis.annotations.Mapper;
  * @desc : com.rymcu.mortise.mapper
  */
 @Mapper
-public interface DictMapper extends BaseMapper<Dict> {
+public interface DictMapper extends BaseMapper<DictPO> {
 
 }

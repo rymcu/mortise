@@ -1,11 +1,5 @@
 package com.rymcu.mortise.system.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.mybatisflex.annotation.Column;
-import com.mybatisflex.annotation.Id;
-import com.mybatisflex.annotation.KeyType;
-import com.mybatisflex.annotation.Table;
-import com.mybatisflex.core.keygen.KeyGenerators;
 import com.rymcu.mortise.system.annotation.DictFormat;
 import lombok.Data;
 
@@ -19,13 +13,11 @@ import java.time.LocalDateTime;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.entity
  */
-@Table(value = "mortise_dict_type", schema = "mortise")
 @Data
 public class DictType implements Serializable {
     /**
      * 主键
      */
-    @Id(keyType = KeyType.Generator, value = KeyGenerators.flexId)
     private Long id;
     /**
      * 名称
@@ -52,7 +44,6 @@ public class DictType implements Serializable {
      * 删除标记
      */
     @DictFormat(value = "DelFlag")
-    @Column(isLogicDelete = true)
     private Integer delFlag;
     /**
      * 创建人
@@ -61,7 +52,6 @@ public class DictType implements Serializable {
     /**
      * 创建时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdTime;
     /**
      * 更新人
@@ -70,6 +60,5 @@ public class DictType implements Serializable {
     /**
      * 更新时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedTime;
 }

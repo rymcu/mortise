@@ -2,8 +2,8 @@ package com.rymcu.mortise.system.annotation;
 
 import com.fasterxml.jackson.databind.introspect.Annotated;
 import com.fasterxml.jackson.databind.introspect.JacksonAnnotationIntrospector;
+import com.rymcu.mortise.system.query.DictQueryService;
 import com.rymcu.mortise.system.serializer.DictSerializer;
-import com.rymcu.mortise.system.service.DictService;
 
 /**
  * Created on 2025/4/12 17:36.
@@ -13,17 +13,17 @@ import com.rymcu.mortise.system.service.DictService;
  * @desc : com.rymcu.mortise.annotation
  */
 public class DictAnnotationIntrospector extends JacksonAnnotationIntrospector {
-    private final DictService dictService;
+    private final DictQueryService dictQueryService;
 
-    public DictAnnotationIntrospector(DictService dictService) {
-        this.dictService = dictService;
+    public DictAnnotationIntrospector(DictQueryService dictQueryService) {
+        this.dictQueryService = dictQueryService;
     }
 
     @Override
     public Object findSerializer(Annotated a) {
         DictFormat dictFormat = a.getAnnotation(DictFormat.class);
         if (dictFormat != null) {
-            DictSerializer dictSerializer = new DictSerializer(dictService);
+            DictSerializer dictSerializer = new DictSerializer(dictQueryService);
             dictSerializer.setDictType(dictFormat.value());
             dictSerializer.setSuffix(dictFormat.suffix());
             dictSerializer.setCover(dictFormat.cover());

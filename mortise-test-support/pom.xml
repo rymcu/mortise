@@ -16,11 +16,24 @@
     <name>mortise-test-support</name>
     <description>Mortise Test Support - Shared testing utilities</description>
 
+    <properties>
+        <layer.guard.admin-api.skip>true</layer.guard.admin-api.skip>
+        <layer.guard.application.skip>true</layer.guard.application.skip>
+        <layer.guard.domain.skip>true</layer.guard.domain.skip>
+        <no.var.guard.skip>false</no.var.guard.skip>
+    </properties>
+
     <dependencies>
+        <dependency>
+            <groupId>com.tngtech.archunit</groupId>
+            <artifactId>archunit</artifactId>
+            <version>1.4.1</version>
+        </dependency>
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <scope>compile</scope>
+            <scope>test</scope>
         </dependency>
 
         <dependency>

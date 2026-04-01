@@ -23,16 +23,15 @@
         </dependency>
         <dependency>
             <groupId>com.rymcu</groupId>
+            <artifactId>mortise-agent-kernel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.rymcu</groupId>
             <artifactId>mortise-persistence</artifactId>
         </dependency>
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-core</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-configuration-processor</artifactId>
-            <optional>true</optional>
         </dependency>
 
         <!-- 可选模型提供者 -->
@@ -56,6 +55,27 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-test-support</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-agent-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-agent-admin</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 </project>

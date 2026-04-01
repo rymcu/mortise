@@ -38,6 +38,11 @@
         </dependency>
 
         <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-system-application</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <optional>true</optional>

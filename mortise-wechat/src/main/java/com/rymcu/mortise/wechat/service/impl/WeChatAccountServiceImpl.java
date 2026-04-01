@@ -6,6 +6,8 @@ import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.common.enumerate.DefaultFlag;
 import com.rymcu.mortise.common.enumerate.DelFlag;
 import com.rymcu.mortise.common.enumerate.Status;
+import com.rymcu.mortise.cache.service.CacheVersionService;
+import com.rymcu.mortise.wechat.constant.WeChatCacheConstant;
 import com.rymcu.mortise.wechat.entity.WeChatAccount;
 import com.rymcu.mortise.wechat.entity.WeChatConfig;
 import com.rymcu.mortise.wechat.mapper.WeChatAccountMapper;
@@ -40,11 +42,14 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
     private final WeChatConfigMapper configMapper;
 
     private final StringEncryptor stringEncryptor;
+    private final CacheVersionService cacheVersionService;
 
     public WeChatAccountServiceImpl(WeChatConfigMapper weChatConfigMapper,
-                                    @Qualifier("jasyptStringEncryptor") StringEncryptor stringEncryptor) {
+                                    @Qualifier("jasyptStringEncryptor") StringEncryptor stringEncryptor,
+                                    CacheVersionService cacheVersionService) {
         this.configMapper = weChatConfigMapper;
         this.stringEncryptor = stringEncryptor;
+        this.cacheVersionService = cacheVersionService;
     }
 
     @Override
@@ -130,6 +135,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
         mapper.insertSelective(account);
         log.info("创建微信账号成功，id: {}, type: {}, name: {}",
                 account.getId(), account.getAccountType(), account.getAccountName());
+        cacheVersionService.bumpVersion(WeChatCacheConstant.CONFIG_VERSION_NAMESPACE);
         return account.getId();
     }
 
@@ -156,6 +162,9 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
         account.setUpdatedTime(LocalDateTime.now());
         int rows = mapper.update(account);
         log.info("更新微信账号成功，id: {}", account.getId());
+        if (rows > 0) {
+            cacheVersionService.bumpVersion(WeChatCacheConstant.CONFIG_VERSION_NAMESPACE);
+        }
         return rows > 0;
     }
 
@@ -171,6 +180,9 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
         // 删除账号
         int rows = mapper.deleteById(accountId);
         log.info("删除微信账号成功，id: {}", accountId);
+        if (rows > 0) {
+            cacheVersionService.bumpVersion(WeChatCacheConstant.CONFIG_VERSION_NAMESPACE);
+        }
         return rows > 0;
     }
 
@@ -191,6 +203,9 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
         account.setUpdatedTime(LocalDateTime.now());
         int rows = mapper.update(account);
         log.info("设置默认账号成功，id: {}, type: {}", accountId, account.getAccountType());
+        if (rows > 0) {
+            cacheVersionService.bumpVersion(WeChatCacheConstant.CONFIG_VERSION_NAMESPACE);
+        }
         return rows > 0;
     }
 
@@ -207,6 +222,9 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
         account.setUpdatedTime(LocalDateTime.now());
         int rows = mapper.update(account);
         log.info("{}账号成功，id: {}", enabled ? "启用" : "禁用", accountId);
+        if (rows > 0) {
+            cacheVersionService.bumpVersion(WeChatCacheConstant.CONFIG_VERSION_NAMESPACE);
+        }
         return rows > 0;
     }
 
@@ -242,6 +260,9 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
             existing.setUpdatedTime(LocalDateTime.now());
             int rows = configMapper.update(existing);
             log.info("更新配置成功，accountId: {}, key: {}", accountId, configKey);
+            if (rows > 0) {
+                cacheVersionService.bumpVersion(WeChatCacheConstant.CONFIG_VERSION_NAMESPACE);
+            }
             return rows > 0;
         } else {
             // 新增
@@ -255,6 +276,9 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
             config.setCreatedTime(LocalDateTime.now());
             int rows = configMapper.insertSelective(config);
             log.info("新增配置成功，accountId: {}, key: {}", accountId, configKey);
+            if (rows > 0) {
+                cacheVersionService.bumpVersion(WeChatCacheConstant.CONFIG_VERSION_NAMESPACE);
+            }
             return rows > 0;
         }
     }
@@ -289,6 +313,9 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
                 .where(WE_CHAT_CONFIG.ACCOUNT_ID.eq(accountId))
                 .and(WE_CHAT_CONFIG.CONFIG_KEY.eq(configKey)));
         log.info("删除配置成功，accountId: {}, key: {}", accountId, configKey);
+        if (rows > 0) {
+            cacheVersionService.bumpVersion(WeChatCacheConstant.CONFIG_VERSION_NAMESPACE);
+        }
         return rows > 0;
     }
 
@@ -296,6 +323,7 @@ public class WeChatAccountServiceImpl extends ServiceImpl<WeChatAccountMapper, W
     @CacheEvict(value = "wechat:config", allEntries = true)
     public void refreshCache() {
         log.info("微信配置缓存已刷新");
+        cacheVersionService.bumpVersion(WeChatCacheConstant.CONFIG_VERSION_NAMESPACE);
     }
 
     // ==================== 私有方法 ====================

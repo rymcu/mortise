@@ -1,6 +1,7 @@
 package com.rymcu.mortise.system.service;
 
-import com.mybatisflex.core.paginate.Page;
+import com.rymcu.mortise.core.model.PageQuery;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.system.entity.DictType;
 import com.rymcu.mortise.system.model.DictTypeSearch;
 
@@ -14,7 +15,7 @@ import java.util.List;
  * @desc : com.rymcu.mortise.service
  */
 public interface DictTypeService {
-    Page<DictType> findDictTypeList(Page<DictType> page, DictTypeSearch search);
+    PageResult<DictType> findDictTypeList(PageQuery pageQuery, DictTypeSearch search);
 
     Boolean updateStatus(Long idDictType, Integer status);
 

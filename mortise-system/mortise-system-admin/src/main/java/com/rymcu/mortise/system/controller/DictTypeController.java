@@ -1,16 +1,18 @@
 package com.rymcu.mortise.system.controller;
 
 import com.rymcu.mortise.web.annotation.AdminController;
-import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.common.model.BatchUpdateInfo;
+import com.rymcu.mortise.core.model.CurrentUser;
+import com.rymcu.mortise.core.model.PageQuery;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.log.annotation.ApiLog;
 import com.rymcu.mortise.log.annotation.OperationLog;
-import com.rymcu.mortise.system.entity.DictType;
-import com.rymcu.mortise.system.entity.User;
+import com.rymcu.mortise.system.controller.facade.DictTypeAdminFacade;
+import com.rymcu.mortise.system.controller.request.DictTypeStatusRequest;
+import com.rymcu.mortise.system.controller.request.DictTypeUpsertRequest;
+import com.rymcu.mortise.system.controller.vo.DictTypeVO;
 import com.rymcu.mortise.system.model.DictTypeSearch;
-import com.rymcu.mortise.system.model.UserDetailInfo;
-import com.rymcu.mortise.system.service.DictTypeService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -36,7 +38,7 @@ import org.springframework.web.bind.annotation.*;
 public class DictTypeController {
 
     @Resource
-    private DictTypeService dictTypeService;
+    private DictTypeAdminFacade dictTypeAdminFacade;
 
     @Operation(summary = "获取字典类型列表", description = "分页查询字典类型数据")
     @ApiResponses(value = {
@@ -45,10 +47,9 @@ public class DictTypeController {
     })
     @GetMapping
     @PreAuthorize("hasAuthority('system:dict-type:list')")
-	@ApiLog("查询字典类型列表")
-    public GlobalResult<Page<DictType>> listDictType(@Parameter(description = "字典类型查询条件") @Valid DictTypeSearch search) {
-        Page<DictType> page = new Page<>(search.getPageNum(), search.getPageSize());
-        return GlobalResult.success(dictTypeService.findDictTypeList(page, search));
+    @ApiLog("查询字典类型列表")
+    public GlobalResult<PageResult<DictTypeVO>> listDictType(@Parameter(description = "字典类型查询条件") @Valid DictTypeSearch search) {
+        return GlobalResult.success(dictTypeAdminFacade.listDictTypes(search));
     }
 
     @Operation(summary = "获取字典类型详情", description = "根据ID获取字典类型详细信息")
@@ -59,10 +60,9 @@ public class DictTypeController {
     })
     @GetMapping("/{id}")
     @PreAuthorize("hasAuthority('system:dict-type:query')")
-	@ApiLog("获取字典类型详情")
-    public GlobalResult<DictType> getDictTypeById(@Parameter(description = "字典类型ID", required = true) @PathVariable("id") Long idDictType) {
-        DictType dictType = dictTypeService.findById(idDictType);
-        return GlobalResult.success(dictType);
+    @ApiLog("获取字典类型详情")
+    public GlobalResult<DictTypeVO> getDictTypeById(@Parameter(description = "字典类型ID", required = true) @PathVariable("id") Long idDictType) {
+        return GlobalResult.success(dictTypeAdminFacade.getDictTypeById(idDictType));
     }
 
     @Operation(summary = "创建字典类型", description = "新增字典类型数据")
@@ -73,14 +73,11 @@ public class DictTypeController {
     })
     @PostMapping
     @PreAuthorize("hasAuthority('system:dict-type:add')")
-	@ApiLog("创建字典类型")
-	@OperationLog(module = "字典类型管理", operation = "创建字典类型", recordParams = true, recordResult = true)
-    public GlobalResult<Long> createDictType(@Parameter(description = "字典类型信息", required = true) @Valid @RequestBody DictType dictType,
-                                                @AuthenticationPrincipal UserDetailInfo userDetails) {
-        User user = userDetails.getUser();
-        dictType.setCreatedBy(user.getId());
-        Long result = dictTypeService.createDictType(dictType);
-        return GlobalResult.success(result);
+    @ApiLog("创建字典类型")
+    @OperationLog(module = "字典类型管理", operation = "创建字典类型", recordParams = true, recordResult = true)
+    public GlobalResult<Long> createDictType(@Parameter(description = "字典类型信息", required = true) @Valid @RequestBody DictTypeUpsertRequest request,
+                                                @AuthenticationPrincipal CurrentUser currentUser) {
+        return GlobalResult.success(dictTypeAdminFacade.createDictType(request, currentUser));
     }
 
     @Operation(summary = "更新字典类型", description = "修改字典类型数据")
@@ -92,16 +89,12 @@ public class DictTypeController {
     })
     @PutMapping("/{id}")
     @PreAuthorize("hasAuthority('system:dict-type:edit')")
-	@ApiLog("更新字典类型")
-	@OperationLog(module = "字典类型管理", operation = "更新字典类型", recordParams = true)
+    @ApiLog("更新字典类型")
+    @OperationLog(module = "字典类型管理", operation = "更新字典类型", recordParams = true)
     public GlobalResult<Boolean> updateDictType(@Parameter(description = "字典类型ID", required = true) @PathVariable("id") Long idDictType,
-                                                @Parameter(description = "字典类型信息", required = true) @Valid @RequestBody DictType dictType,
-                                                @AuthenticationPrincipal UserDetailInfo userDetails) {
-        User user = userDetails.getUser();
-        dictType.setId(idDictType);
-        dictType.setUpdatedBy(user.getId());
-        Boolean result = dictTypeService.updateDictType(dictType);
-        return GlobalResult.success(result);
+                                                @Parameter(description = "字典类型信息", required = true) @Valid @RequestBody DictTypeUpsertRequest request,
+                                                @AuthenticationPrincipal CurrentUser currentUser) {
+        return GlobalResult.success(dictTypeAdminFacade.updateDictType(idDictType, request, currentUser));
     }
 
     @Operation(summary = "更新字典类型状态", description = "启用/禁用字典类型")
@@ -112,11 +105,11 @@ public class DictTypeController {
     })
     @PatchMapping("/{id}/status")
     @PreAuthorize("hasAuthority('system:dict-type:edit')")
-	@ApiLog("更新字典类型状态")
-	@OperationLog(module = "字典类型管理", operation = "更新字典类型状态", recordParams = true)
+    @ApiLog("更新字典类型状态")
+    @OperationLog(module = "字典类型管理", operation = "更新字典类型状态", recordParams = true)
     public GlobalResult<Boolean> updateDictTypeStatus(@Parameter(description = "字典类型ID", required = true) @PathVariable("id") Long idDictType,
-                                                      @Parameter(description = "字典类型状态信息", required = true) @Valid @RequestBody DictType dictType) {
-        return GlobalResult.success(dictTypeService.updateStatus(idDictType, dictType.getStatus()));
+                                                      @Parameter(description = "字典类型状态信息", required = true) @Valid @RequestBody DictTypeStatusRequest request) {
+        return GlobalResult.success(dictTypeAdminFacade.updateDictTypeStatus(idDictType, request));
     }
 
     @Operation(summary = "删除字典类型", description = "软删除字典类型数据")
@@ -127,10 +120,10 @@ public class DictTypeController {
     })
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('system:dict-type:delete')")
-	@ApiLog("删除字典类型")
-	@OperationLog(module = "字典类型管理", operation = "删除字典类型")
+    @ApiLog("删除字典类型")
+    @OperationLog(module = "字典类型管理", operation = "删除字典类型")
     public GlobalResult<Boolean> deleteDictType(@Parameter(description = "字典类型ID", required = true) @PathVariable("id") Long idDictType) {
-        return GlobalResult.success(dictTypeService.deleteDictType(idDictType));
+        return GlobalResult.success(dictTypeAdminFacade.deleteDictType(idDictType));
     }
 
     @Operation(summary = "批量删除字典类型", description = "批量软删除字典类型数据")
@@ -141,10 +134,10 @@ public class DictTypeController {
     })
     @DeleteMapping("/batch")
     @PreAuthorize("hasAuthority('system:dict-type:delete')")
-	@ApiLog("批量删除字典类型")
-	@OperationLog(module = "字典类型管理", operation = "批量删除字典类型", recordParams = true)
+    @ApiLog("批量删除字典类型")
+    @OperationLog(module = "字典类型管理", operation = "批量删除字典类型", recordParams = true)
     public GlobalResult<Boolean> batchDeleteDictTypes(@Parameter(description = "批量更新信息", required = true) @Valid @RequestBody BatchUpdateInfo batchUpdateInfo) {
-        return GlobalResult.success(dictTypeService.batchDeleteDictTypes(batchUpdateInfo.getIds()));
+        return GlobalResult.success(dictTypeAdminFacade.batchDeleteDictTypes(batchUpdateInfo));
     }
 
 }

@@ -16,6 +16,13 @@
     <name>mortise-app</name>
     <description>Mortise App - 主应用模块</description>
 
+    <properties>
+        <layer.guard.admin-api.skip>true</layer.guard.admin-api.skip>
+        <layer.guard.application.skip>true</layer.guard.application.skip>
+        <layer.guard.domain.skip>true</layer.guard.domain.skip>
+        <no.var.guard.skip>false</no.var.guard.skip>
+    </properties>
+
     <dependencies>
         <!-- Spring Boot Starter -->
         <dependency>
@@ -70,6 +77,11 @@
 
         <dependency>
             <groupId>com.rymcu</groupId>
+            <artifactId>mortise-system-infra</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.rymcu</groupId>
             <artifactId>mortise-system-api</artifactId>
         </dependency>
 
@@ -99,6 +111,10 @@
         <dependency>
             <groupId>com.rymcu</groupId>
             <artifactId>mortise-agent-admin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-agent-infra</artifactId>
         </dependency>
 
         <dependency>

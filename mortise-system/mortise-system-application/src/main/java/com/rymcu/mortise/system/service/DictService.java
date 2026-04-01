@@ -1,8 +1,8 @@
 package com.rymcu.mortise.system.service;
 
-import com.mybatisflex.core.paginate.Page;
-import com.mybatisflex.core.service.IService;
 import com.rymcu.mortise.common.model.BaseOption;
+import com.rymcu.mortise.core.model.PageQuery;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.system.entity.Dict;
 import com.rymcu.mortise.system.model.DictInfo;
 import com.rymcu.mortise.system.model.DictSearch;
@@ -16,8 +16,8 @@ import java.util.List;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.service
  */
-public interface DictService extends IService<Dict> {
-    Page<Dict> findDictList(Page<Dict> page, DictSearch search);
+public interface DictService {
+    PageResult<Dict> findDictList(PageQuery pageQuery, DictSearch search);
 
     Boolean updateStatus(Long idDict, Integer status);
 

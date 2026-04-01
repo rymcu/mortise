@@ -3,7 +3,6 @@ package com.rymcu.mortise.system.handler;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rymcu.mortise.system.handler.event.OidcUserEvent;
-import com.rymcu.mortise.system.service.UserService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
@@ -22,8 +21,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class OidcUserEventHandler {
 
-    @Resource
-    private UserService userService;
     @Resource
     private ObjectMapper objectMapper;
 

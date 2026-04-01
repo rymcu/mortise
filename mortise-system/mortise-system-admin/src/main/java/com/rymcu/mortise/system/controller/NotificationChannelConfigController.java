@@ -5,7 +5,7 @@ import com.rymcu.mortise.log.annotation.ApiLog;
 import com.rymcu.mortise.log.annotation.OperationLog;
 import com.rymcu.mortise.notification.model.ChannelConfigSaveRequest;
 import com.rymcu.mortise.notification.model.ChannelConfigVO;
-import com.rymcu.mortise.notification.service.NotificationChannelConfigService;
+import com.rymcu.mortise.system.controller.facade.NotificationChannelConfigAdminFacade;
 import com.rymcu.mortise.web.annotation.AdminController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -35,14 +35,14 @@ import java.util.List;
 public class NotificationChannelConfigController {
 
     @Resource
-    private NotificationChannelConfigService notificationChannelConfigService;
+    private NotificationChannelConfigAdminFacade notificationChannelConfigAdminFacade;
 
     @Operation(summary = "查询所有渠道配置", description = "返回所有已定义渠道的配置（含 Schema 字段定义 + 当前值），密码字段已脱敏")
     @GetMapping
     @PreAuthorize("hasAuthority('system:notification-channel:list')")
     @ApiLog("查询通知渠道配置列表")
     public GlobalResult<List<ChannelConfigVO>> listChannels() {
-        return GlobalResult.success(notificationChannelConfigService.listAllChannels());
+        return notificationChannelConfigAdminFacade.listChannels();
     }
 
     @Operation(summary = "查询指定渠道配置", description = "返回指定渠道的配置详情，密码字段已脱敏")
@@ -52,7 +52,7 @@ public class NotificationChannelConfigController {
     public GlobalResult<ChannelConfigVO> getChannel(
             @Parameter(description = "渠道标识，如 email、sms、WeChat", required = true)
             @PathVariable String channel) {
-        return GlobalResult.success(notificationChannelConfigService.getChannel(channel));
+        return notificationChannelConfigAdminFacade.getChannel(channel);
     }
 
     @Operation(summary = "保存渠道配置", description = "全量覆盖保存指定渠道的配置，保存后立即刷新缓存")
@@ -65,7 +65,6 @@ public class NotificationChannelConfigController {
             @PathVariable String channel,
             @Parameter(description = "配置内容", required = true)
             @Valid @RequestBody ChannelConfigSaveRequest request) {
-        notificationChannelConfigService.saveChannel(channel, request);
-        return GlobalResult.success();
+        return notificationChannelConfigAdminFacade.saveChannel(channel, request);
     }
 }

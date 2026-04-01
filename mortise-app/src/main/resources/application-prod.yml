@@ -1,0 +1,282 @@
+spring:
+  thymeleaf:
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: LEGACYHTML5
+    encoding: UTF-8
+    servlet:
+      content-type: text/html
+    cache: false
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      database: ${REDIS_DATABASE:2}
+      timeout: ${REDIS_TIMEOUT:3000}
+      jedis:
+        pool:
+          max-active: 8
+          max-wait: 1
+          max-idle: 500
+          min-idle: 0
+  datasource:
+    url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT:5432}/${POSTGRES_DB:postgres}?currentSchema=${POSTGRES_SCHEMA:mortise}
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      connection-timeout: 20000
+      idle-timeout: 300000
+      max-lifetime: 1200000
+      maximum-pool-size: 20
+      minimum-idle: 8
+      pool-name: mortisePool
+      connection-test-query: SELECT 1
+      schema: ${POSTGRES_SCHEMA:mortise}
+      register-mbeans: true
+      leak-detection-threshold: 30000
+      validation-timeout: 5000
+      data-source-properties:
+        cachePrepStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
+        useServerPrepStmts: true
+        useLocalSessionState: true
+        rewriteBatchedStatements: true
+        cacheResultSetMetadata: true
+        cacheServerConfiguration: true
+        elideSetAutoCommits: true
+        maintainTimeStats: false
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    baseline-version: 0
+    locations: classpath:db/migration
+    encoding: UTF-8
+    validate-on-migrate: true
+    out-of-order: true
+    clean-disabled: true
+    schemas: mortise
+    create-schemas: false
+    table: flyway_schema_history
+    placeholder-replacement: true
+    sql-migration-prefix: V
+    sql-migration-separator: __
+    sql-migration-suffixes: .sql
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+logging:
+  file:
+    path: ${LOG_PATH:/logs/mortise}
+  level:
+    com:
+      rymcu: info
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "health,ratelimiters,info,metrics"
+        exclude: shutdown
+      base-path: /actuator
+      cors:
+        allowed-origins: "*"
+        allowed-methods: GET,POST
+  endpoint:
+    health:
+      show-details: always
+      show-components: always
+      group:
+        readiness:
+          include: db,redis
+        liveness:
+          include: diskSpace,ping
+    env:
+      show-values: when-authorized
+    configprops:
+      show-values: when-authorized
+  metrics:
+    enable:
+      jvm: true
+      system: true
+      web: true
+      jdbc: true
+      cache: true
+    tags:
+      application: mortise
+      environment: ${MANAGEMENT_ENVIRONMENT_TAG:prod}
+      version: ${MANAGEMENT_VERSION_TAG:${project.version:0.0.1}}
+      team: ${MANAGEMENT_TEAM_TAG:backend}
+    web:
+      server:
+        max-uri-tags: 100
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true
+      percentiles:
+        http.server.requests: 0.5,0.9,0.95,0.99
+  info:
+    env:
+      enabled: true
+    java:
+      enabled: true
+    os:
+      enabled: true
+    git:
+      enabled: true
+      mode: full
+    build:
+      enabled: true
+  auditevents:
+    enabled: true
+  prometheus:
+    metrics:
+      export:
+        enabled: true
+
+resilience4j:
+  ratelimiter:
+    configs:
+      default:
+        limit-for-period: 10
+        limit-refresh-period: 1s
+        timeout-duration: 100ms
+        register-health-indicator: true
+        event-consumer-buffer-size: 50
+      strict:
+        limit-for-period: 5
+        limit-refresh-period: 1s
+        timeout-duration: 50ms
+        register-health-indicator: true
+        event-consumer-buffer-size: 50
+      loose:
+        limit-for-period: 50
+        limit-refresh-period: 1s
+        timeout-duration: 200ms
+        register-health-indicator: true
+        event-consumer-buffer-size: 50
+    instances:
+      auth-login:
+        base-config: strict
+        limit-for-period: 5
+        limit-refresh-period: 300s
+      auth-register:
+        base-config: strict
+        limit-for-period: 3
+        limit-refresh-period: 600s
+      api-default:
+        base-config: default
+
+info:
+  app:
+    name: Mortise
+    description: 一款现代化的后台管理脚手架项目
+    version: ${project.version:0.0.1}
+    encoding: ${project.build.sourceEncoding:UTF-8}
+    java:
+      version: ${java.version:21}
+
+server:
+  port: ${SERVER_PORT:9999}
+  servlet:
+    context-path: /mortise
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+    min-response-size: 10240
+  max-http-request-header-size: 10240
+
+baseUrl: ${BASE_URL}
+
+jwt:
+  secret: ${JWT_SECRET}
+  expiration: ${JWT_EXPIRATION:3600000}
+  header: ${JWT_HEADER:Authorization}
+  token-prefix: ${JWT_TOKEN_PREFIX:Bearer }
+  refresh-window: ${JWT_REFRESH_WINDOW:300000}
+
+executor:
+  thread:
+    async:
+      corePoolSize: 4
+      maxPoolSize: 8
+      queueCapacity: 100
+      keepAliveSeconds: 60
+      name:
+        prefix: mortise-async-executor
+
+dromara:
+  x-file-storage:
+    default-platform: ${FILE_STORAGE_DEFAULT_PLATFORM:aliyun-oss-1}
+    thumbnail-suffix: .min
+    aliyun-oss:
+      - platform: aliyun-oss-1
+        enable-storage: true
+        access-key: ${OSS_ACCESS_KEY}
+        secret-key: ${OSS_SECRET_KEY}
+        end-point: ${OSS_ENDPOINT}
+        bucket-name: ${OSS_BUCKET}
+        domain: ${OSS_DOMAIN}
+        base-path: ${OSS_BASE_PATH:mortise/}
+
+mybatis-flex:
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.rymcu.mortise.system.entity,com.rymcu.mortise.member.entity,com.rymcu.mortise.product.entity,com.rymcu.mortise.commerce.entity,com.rymcu.mortise.payment.entity
+  configuration:
+    map-underscore-to-camel-case: true
+    default-executor-type: reuse
+    cache-enabled: true
+    lazy-loading-enabled: true
+    lazy-load-trigger-methods: equals,clone,hashCode,toString
+    aggressive-lazy-loading: false
+    default-statement-timeout: 30
+    default-fetch-size: 100
+    safe-row-bounds-enabled: true
+    safe-result-handler-enabled: true
+    local-cache-scope: SESSION
+  global-config:
+    print-banner: false
+    logic-delete-column: del_flag
+    deleted-value-of-logic-delete: 1
+    normal-value-of-logic-delete: 0
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: /v3/api-docs
+  swagger-ui:
+    enabled: true
+    path: /index.html
+    operations-sorter: alpha
+    tags-sorter: alpha
+  show-actuator: false
+  writer-with-default-pretty-printer: true
+  default-consumes-media-type: application/json
+  default-produces-media-type: application/json
+  group-configs:
+    - group: 'auth'
+      display-name: '认证接口'
+      paths-to-match: '/api/v1/auth/**'
+    - group: 'admin'
+      display-name: '管理接口'
+      paths-to-match: '/api/v1/admin/**'
+    - group: 'system-init'
+      display-name: '系统初始化接口'
+      paths-to-match: '/api/v1/system-init/**'
+
+mortise:
+  github:
+    api-base-url: https://api.github.com
+    token: ${GITHUB_TOKEN:}
+  auth:
+    sms:
+      login-url: /api/v1/auth/login/sms
+      mobile-parameter: mobile
+      code-parameter: smsCode
+      user-type-parameter: userType
+      post-only: true

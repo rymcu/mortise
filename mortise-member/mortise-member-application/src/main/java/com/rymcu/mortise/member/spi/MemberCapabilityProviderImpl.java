@@ -30,7 +30,7 @@ public class MemberCapabilityProviderImpl implements MemberCapabilityProvider {
         if (userId == null) {
             return Optional.empty();
         }
-        var member = memberService.getOne(QueryWrapper.create()
+        Member member = memberService.getOne(QueryWrapper.create()
                 .select(MEMBER.ID, MEMBER.STATUS, MEMBER.MEMBER_LEVEL)
                 .where(MEMBER.ID.eq(userId)));
         if (member == null) {
@@ -40,7 +40,7 @@ public class MemberCapabilityProviderImpl implements MemberCapabilityProvider {
     }
 
     private MemberCapability toCapability(Member member) {
-        var active = Integer.valueOf(0).equals(member.getStatus())
+        boolean active = Integer.valueOf(0).equals(member.getStatus())
                 && StringUtils.isNotBlank(member.getMemberLevel());
         return new MemberCapability(member.getId(), active, member.getMemberLevel());
     }

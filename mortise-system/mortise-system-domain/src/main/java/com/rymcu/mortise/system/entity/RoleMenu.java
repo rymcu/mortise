@@ -1,7 +1,5 @@
 package com.rymcu.mortise.system.entity;
 
-import com.mybatisflex.annotation.Id;
-import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -13,20 +11,17 @@ import java.io.Serializable;
  * @email ronger-x@outlook.com
  * @since 2025/9/29
  */
-@Table(value = "mortise_role_menu", schema = "mortise")
 @Data
 public class RoleMenu implements Serializable {
 
     /**
      * 角色ID
      */
-    @Id
     private Long idMortiseRole;
 
     /**
      * 菜单ID
      */
-    @Id
     private Long idMortiseMenu;
 
     /**

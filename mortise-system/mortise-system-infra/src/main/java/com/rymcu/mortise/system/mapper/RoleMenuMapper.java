@@ -2,7 +2,7 @@ package com.rymcu.mortise.system.mapper;
 
 import com.mybatisflex.core.BaseMapper;
 import com.rymcu.mortise.system.entity.Menu;
-import com.rymcu.mortise.system.entity.RoleMenu;
+import com.rymcu.mortise.system.infra.persistence.entity.RoleMenuPO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -16,7 +16,7 @@ import java.util.List;
  * @since 2025-10-02
  */
 @Mapper
-public interface RoleMenuMapper extends BaseMapper<RoleMenu> {
+public interface RoleMenuMapper extends BaseMapper<RoleMenuPO> {
 
 
     /**

@@ -1,8 +1,8 @@
 package com.rymcu.mortise.system.service;
 
-import com.mybatisflex.core.paginate.Page;
-import com.mybatisflex.core.service.IService;
 import com.rymcu.mortise.common.model.Link;
+import com.rymcu.mortise.core.model.PageQuery;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.system.entity.Menu;
 import com.rymcu.mortise.system.model.MenuSearch;
 import com.rymcu.mortise.system.model.MenuTreeInfo;
@@ -16,12 +16,14 @@ import java.util.List;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.service
  */
-public interface MenuService extends IService<Menu> {
+public interface MenuService {
     List<Menu> findMenusByIdUser(Long idUser);
 
     List<Link> findLinksByIdUser(Long idUser);
 
-    List<Menu> findMenus(Page<Menu> page, MenuSearch search);
+    PageResult<Menu> findMenus(PageQuery pageQuery, MenuSearch search);
+
+    Menu findById(Long idMenu);
 
     Boolean updateStatus(Long idMenu, Integer status);
 
@@ -34,4 +36,8 @@ public interface MenuService extends IService<Menu> {
     Long createMenu(Menu menu);
 
     Boolean updateMenu(Menu menu);
+
+    long count();
+
+    long countEnabled();
 }

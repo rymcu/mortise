@@ -1,20 +1,26 @@
 package com.rymcu.mortise.wechat.service;
 
 import com.rymcu.mortise.wechat.config.WeChatMpProperties;
+import com.rymcu.mortise.cache.service.CacheVersionService;
+import com.rymcu.mortise.wechat.constant.WeChatCacheConstant;
 import com.rymcu.mortise.wechat.entity.WeChatAccount;
 import com.rymcu.mortise.wechat.enumerate.WeChatAccountType;
 import com.rymcu.mortise.wechat.exception.WeChatAccountNotFoundException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import me.chanjar.weixin.common.redis.RedisTemplateWxRedisOps;
 import me.chanjar.weixin.mp.api.WxMpService;
 import me.chanjar.weixin.mp.config.WxMpConfigStorage;
 import me.chanjar.weixin.mp.config.impl.WxMpDefaultConfigImpl;
+import me.chanjar.weixin.mp.config.impl.WxMpRedisConfigImpl;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 微信公众号动态管理器
@@ -33,12 +39,15 @@ public class DynamicWeChatServiceManager {
     private final WxMpService wxMpService;
     private final WeChatAccountService accountService;
     private final WeChatConfigService configService;
+    private final CacheVersionService cacheVersionService;
+    private final StringRedisTemplate stringRedisTemplate;
 
     // 内部维护一个 accountId -> appId 的映射缓存
     private final Map<Long, String> accountIdToAppIdMap = new ConcurrentHashMap<>();
 
     // 内部维护 appId -> config 的映射，用于重新设置多配置
     private final Map<String, WxMpConfigStorage> configStorageMap = new ConcurrentHashMap<>();
+    private final AtomicLong observedVersion = new AtomicLong(-1L);
 
     /**
      * 在 Bean 初始化后，执行一次全量加载
@@ -76,6 +85,7 @@ public class DynamicWeChatServiceManager {
             }
 
             log.info("Finished reloading all WeChat MP accounts. Total loaded: {}", accountIdToAppIdMap.size());
+            observedVersion.set(cacheVersionService.currentVersion(WeChatCacheConstant.CONFIG_VERSION_NAMESPACE));
         } catch (Exception e) {
             log.error("Failed to reload WeChat MP accounts from database", e);
             throw e;
@@ -110,7 +120,7 @@ public class DynamicWeChatServiceManager {
         try {
             WeChatMpProperties properties = configService.loadMpConfigByAccountId(account.getId());
             if (properties != null && properties.isEnabled()) {
-                WxMpDefaultConfigImpl config = new WxMpDefaultConfigImpl();
+                WxMpDefaultConfigImpl config = createConfigStorage(properties.getAppId());
                 config.setAppId(properties.getAppId());
                 config.setSecret(properties.getAppSecret());
                 config.setToken(properties.getToken());
@@ -164,6 +174,7 @@ public class DynamicWeChatServiceManager {
      * @throws WeChatAccountNotFoundException 当找不到对应配置时
      */
     public WxMpService getServiceByAccountId(Long accountId) {
+        refreshIfStale();
         String appId = accountIdToAppIdMap.get(accountId);
         if (appId == null) {
             throw new WeChatAccountNotFoundException(accountId);
@@ -188,6 +199,7 @@ public class DynamicWeChatServiceManager {
      * @throws WeChatAccountNotFoundException 当找不到对应配置时
      */
     public WxMpService getServiceByAppId(String appId) {
+        refreshIfStale();
         if (!configStorageMap.containsKey(appId)) {
             throw new WeChatAccountNotFoundException("No WeChat MP configuration found for appId: " + appId);
         }
@@ -205,6 +217,7 @@ public class DynamicWeChatServiceManager {
      * 检查指定账号是否已配置
      */
     public boolean isAccountConfigured(Long accountId) {
+        refreshIfStale();
         return accountIdToAppIdMap.containsKey(accountId);
     }
 
@@ -212,6 +225,7 @@ public class DynamicWeChatServiceManager {
      * 检查指定 appId 是否已配置
      */
     public boolean isAppIdConfigured(String appId) {
+        refreshIfStale();
         return configStorageMap.containsKey(appId);
     }
 
@@ -219,6 +233,7 @@ public class DynamicWeChatServiceManager {
      * 获取所有已配置的账号ID
      */
     public java.util.Set<Long> getAllConfiguredAccountIds() {
+        refreshIfStale();
         return accountIdToAppIdMap.keySet();
     }
 
@@ -226,6 +241,7 @@ public class DynamicWeChatServiceManager {
      * 获取所有已配置的 appId
      */
     public java.util.Set<String> getAllConfiguredAppIds() {
+        refreshIfStale();
         return configStorageMap.keySet();
     }
 
@@ -255,9 +271,29 @@ public class DynamicWeChatServiceManager {
     }
 
     public String getAppIdByAccountId(Long accountId) {
+        refreshIfStale();
         if (accountIdToAppIdMap.containsKey(accountId)) {
             return accountIdToAppIdMap.get(accountId);
         }
         throw new WeChatAccountNotFoundException(accountId);
+    }
+
+    private void refreshIfStale() {
+        long currentVersion = cacheVersionService.currentVersion(WeChatCacheConstant.CONFIG_VERSION_NAMESPACE);
+        if (observedVersion.get() == currentVersion) {
+            return;
+        }
+        synchronized (this) {
+            long latestVersion = cacheVersionService.currentVersion(WeChatCacheConstant.CONFIG_VERSION_NAMESPACE);
+            if (observedVersion.get() != latestVersion) {
+                log.info("检测到微信公众号配置版本变更，重新加载本地配置: {} -> {}",
+                        observedVersion.get(), latestVersion);
+                reloadAll();
+            }
+        }
+    }
+
+    private WxMpDefaultConfigImpl createConfigStorage(String appId) {
+        return new WxMpRedisConfigImpl(new RedisTemplateWxRedisOps(stringRedisTemplate), appId);
     }
 }

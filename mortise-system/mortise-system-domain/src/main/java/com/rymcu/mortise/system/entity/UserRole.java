@@ -1,7 +1,5 @@
 package com.rymcu.mortise.system.entity;
 
-import com.mybatisflex.annotation.Id;
-import com.mybatisflex.annotation.Table;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -13,14 +11,11 @@ import java.io.Serializable;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.entity
  */
-@Table(value = "mortise_user_role", schema = "mortise")
 @Data
 public class UserRole implements Serializable {
 
-    @Id
     private Long idMortiseUser;
 
-    @Id
     private Long idMortiseRole;
 
     public UserRole() {

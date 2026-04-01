@@ -5,7 +5,7 @@ import com.rymcu.mortise.cache.spi.CacheExpirationHandler;
 import com.rymcu.mortise.common.constant.ProjectConstant;
 import com.rymcu.mortise.system.constant.SystemCacheConstant;
 import com.rymcu.mortise.system.constant.SystemSpiOrderConstants;
-import com.rymcu.mortise.system.service.UserService;
+import com.rymcu.mortise.system.service.command.UserCommandService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 public class UserOnlineStatusExpirationHandler implements CacheExpirationHandler {
 
     @Resource
-    private UserService userService;
+    private UserCommandService userCommandService;
 
     @Override
     public int getOrder() {
@@ -41,7 +41,7 @@ public class UserOnlineStatusExpirationHandler implements CacheExpirationHandler
             log.info("用户在线状态缓存过期：{}, 用户账号：{}", expiredKey, account);
 
             try {
-                boolean flag = userService.updateLastOnlineTimeByAccount(account);
+                boolean flag = userCommandService.updateLastOnlineTimeByAccount(account);
                 log.info("更新用户 {} 最后在线时间结果：{}", account, flag ? "成功" : "失败");
             } catch (Exception e) {
                 log.error("更新用户 {} 最后在线时间失败", account, e);

@@ -4,9 +4,11 @@ import com.rymcu.mortise.common.util.BeanCopierUtil;
 import com.rymcu.mortise.system.constant.SystemCacheConstant;
 import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.model.AuthInfo;
-import com.rymcu.mortise.system.service.MenuService;
+import com.rymcu.mortise.system.query.MenuQueryService;
+import com.rymcu.mortise.system.query.UserQueryService;
+import com.rymcu.mortise.system.service.PermissionService;
 import com.rymcu.mortise.system.service.SystemCacheService;
-import com.rymcu.mortise.system.service.UserService;
+import com.rymcu.mortise.system.service.command.UserCommandService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.CacheEvict;
@@ -27,9 +29,13 @@ import java.util.Set;
 public class UserCacheServiceImpl {
 
     @Resource
-    private UserService userService;
+    private UserQueryService userQueryService;
     @Resource
-    private MenuService menuService;
+    private MenuQueryService menuQueryService;
+    @Resource
+    private PermissionService permissionService;
+    @Resource
+    private UserCommandService userCommandService;
     @Resource
     private SystemCacheService systemCacheService;
 
@@ -43,7 +49,7 @@ public class UserCacheServiceImpl {
     @Cacheable(value = SystemCacheConstant.USER_INFO_CACHE, key = "#userId", unless = "#result == null")
     public User getCachedUserInfo(Long userId) {
         log.info("从数据库查询用户信息，用户ID: {}", userId);
-        return userService.getById(userId);
+        return userQueryService.findById(userId);
     }
 
     /**
@@ -56,16 +62,16 @@ public class UserCacheServiceImpl {
     @Cacheable(value = SystemCacheConstant.USER_SESSION_CACHE, key = "#userId", unless = "#result == null")
     public AuthInfo getCachedUserSession(Long userId) {
         log.info("构建用户会话信息，用户ID: {}", userId);
-        User user = userService.getById(userId);
+        User user = userQueryService.findById(userId);
         if (user == null) {
             return null;
         }
 
         AuthInfo authInfo = new AuthInfo();
         BeanCopierUtil.copy(user, authInfo);
-        authInfo.setScope(userService.findUserPermissionsByIdUser(userId));
-        authInfo.setRole(userService.findUserRoleListByIdUser(userId));
-        authInfo.setLinks(menuService.findLinksByIdUser(userId));
+        authInfo.setScope(permissionService.findUserPermissionsByIdUser(userId));
+        authInfo.setRole(permissionService.findUserRolePermissionsByIdUser(userId));
+        authInfo.setLinks(menuQueryService.findLinksByIdUser(userId));
         return authInfo;
     }
 
@@ -78,7 +84,7 @@ public class UserCacheServiceImpl {
     @Cacheable(value = SystemCacheConstant.USER_PERMISSIONS_CACHE, key = "#userId", unless = "#result == null")
     public Set<String> getCachedUserPermissions(Long userId) {
         log.info("查询用户权限，用户ID: {}", userId);
-        return userService.findUserPermissionsByIdUser(userId);
+        return permissionService.findUserPermissionsByIdUser(userId);
     }
 
     /**
@@ -91,7 +97,7 @@ public class UserCacheServiceImpl {
     @CachePut(value = SystemCacheConstant.USER_INFO_CACHE, key = "#user.id")
     public User updateUserInfo(User user) {
         log.info("更新用户信息并刷新缓存，用户ID: {}", user.getId());
-        userService.updateById(user);
+        userCommandService.update(user);
         return user;
     }
 
@@ -148,7 +154,7 @@ public class UserCacheServiceImpl {
         log.info("获取到临时数据: {}", tempData);
 
         // 存储对象
-        User user = userService.getById(userId);
+        User user = userQueryService.findById(userId);
         if (user != null) {
             systemCacheService.putObject(SystemCacheConstant.HOT_DATA_CACHE, "user:" + userId, user);
 

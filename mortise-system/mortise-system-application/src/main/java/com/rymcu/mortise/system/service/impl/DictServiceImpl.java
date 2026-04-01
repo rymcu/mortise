@@ -1,29 +1,25 @@
 package com.rymcu.mortise.system.service.impl;
 
-import com.mybatisflex.core.paginate.Page;
-import com.mybatisflex.core.query.QueryWrapper;
-import com.mybatisflex.core.util.UpdateEntity;
-import com.mybatisflex.spring.service.impl.ServiceImpl;
 import com.rymcu.mortise.common.exception.ServiceException;
 import com.rymcu.mortise.common.model.BaseOption;
+import com.rymcu.mortise.core.model.PageQuery;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.system.constant.SystemCacheConstant;
 import com.rymcu.mortise.system.entity.Dict;
-import com.rymcu.mortise.system.mapper.DictMapper;
 import com.rymcu.mortise.system.model.DictInfo;
 import com.rymcu.mortise.system.model.DictSearch;
+import com.rymcu.mortise.system.query.DictQueryService;
+import com.rymcu.mortise.system.repository.DictRepository;
+import com.rymcu.mortise.system.service.command.DictCommandService;
 import com.rymcu.mortise.system.service.DictService;
 import com.rymcu.mortise.system.service.SystemCacheService;
 import jakarta.annotation.Resource;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Objects;
-
-import static com.rymcu.mortise.system.entity.table.DictTableDef.DICT;
 
 /**
  * Created on 2024/9/22 20:04.
@@ -33,101 +29,75 @@ import static com.rymcu.mortise.system.entity.table.DictTableDef.DICT;
  * @desc : com.rymcu.mortise.service.impl
  */
 @Service
-public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements DictService {
+public class DictServiceImpl implements DictService, DictCommandService {
+
+    @Resource
+    private DictRepository dictRepository;
 
     @Resource
     private SystemCacheService systemCacheService;
+    @Resource
+    private DictQueryService dictQueryService;
 
     @Override
-    public Page<Dict> findDictList(Page<Dict> page, DictSearch search) {
-        QueryWrapper queryWrapper = QueryWrapper.create()
-                .select()
-                .where(DICT.LABEL.eq(search.getQuery(), StringUtils.isNotBlank(search.getQuery())))
-                .and(DICT.DICT_TYPE_CODE.eq(search.getDictTypeCode(), StringUtils.isNotBlank(search.getDictTypeCode())))
-                .and(DICT.STATUS.eq(search.getStatus(), Objects.nonNull(search.getStatus())));
-        return mapper.paginate(page, queryWrapper);
+    public PageResult<Dict> findDictList(PageQuery pageQuery, DictSearch search) {
+        return dictQueryService.findDictList(pageQuery, search);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean updateStatus(Long idDict, Integer status) {
-        // 获取原始记录以确定字典类型代码
-        Dict originalDict = mapper.selectOneById(idDict);
+        Dict originalDict = dictRepository.findById(idDict);
         if (originalDict == null) {
             return false;
         }
-
-        Dict dict = UpdateEntity.of(Dict.class, idDict);
-        dict.setStatus(status);
-        boolean result = mapper.update(dict) > 0;
-
-        // 清除相关缓存
+        boolean result = dictRepository.updateStatus(idDict, status);
         if (result) {
             systemCacheService.removeDictOptions(originalDict.getDictTypeCode());
         }
-
         return result;
     }
 
     @Override
     public Boolean deleteDict(Long idDict) {
-        // 获取原始记录以确定字典类型代码
-        Dict originalDict = mapper.selectOneById(idDict);
+        Dict originalDict = dictRepository.findById(idDict);
         if (originalDict == null) {
             return false;
         }
-
-        boolean result = mapper.deleteById(idDict) > 0;
-
-        // 清除相关缓存
+        boolean result = dictRepository.deleteById(idDict);
         if (result) {
             systemCacheService.removeDictOptions(originalDict.getDictTypeCode());
         }
-
         return result;
     }
 
     @Override
     public Dict findById(Long idDict) {
-        return mapper.selectOneById(idDict);
+        return dictRepository.findById(idDict);
     }
 
     @Override
     public String findLabelByTypeCodeAndValue(String dictTypeCode, String value) {
-        return mapper.selectOneByQueryAs(QueryWrapper.create()
-                .select(DICT.LABEL)
-                .where(DICT.DICT_TYPE_CODE.eq(dictTypeCode)
-                        .and(DICT.VALUE.eq(value))), String.class);
+        return dictRepository.findLabelByTypeCodeAndValue(dictTypeCode, value);
     }
 
     @Override
     public DictInfo findDictInfo(String dictTypeCode, String value) {
-        return mapper.selectOneByQueryAs(QueryWrapper.create()
-                .select(DICT.LABEL, DICT.VALUE, DICT.ICON, DICT.IMAGE, DICT.COLOR)
-                .where(DICT.DICT_TYPE_CODE.eq(dictTypeCode)
-                        .and(DICT.VALUE.eq(value))), DictInfo.class);
+        return dictRepository.findDictInfo(dictTypeCode, value);
     }
 
     @Override
     @Cacheable(value = SystemCacheConstant.DICT_DATA_CACHE, key = "#dictTypeCode")
     public List<BaseOption> queryDictOptions(String dictTypeCode) {
-        // 先尝试从缓存获取
         @SuppressWarnings("unchecked")
         List<BaseOption> cachedOptions = systemCacheService.getDictOptions(dictTypeCode, List.class);
         if (cachedOptions != null) {
             return cachedOptions;
         }
-
-        // 缓存未命中，从数据库查询
-        List<BaseOption> options = mapper.selectListByQueryAs(QueryWrapper.create()
-                .select(DICT.LABEL, DICT.VALUE)
-                .where(DICT.DICT_TYPE_CODE.eq(dictTypeCode)), BaseOption.class);
-
-        // 存储到缓存
+        List<BaseOption> options = dictRepository.findOptions(dictTypeCode);
         if (options != null && !options.isEmpty()) {
             systemCacheService.storeDictOptions(dictTypeCode, options);
         }
-
         return options;
     }
 
@@ -136,21 +106,14 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
         if (idDictList == null || idDictList.isEmpty()) {
             return false;
         }
-
-        // 获取所有受影响记录的字典类型代码
-        List<Dict> affectedDictionaries = mapper.selectListByIds(idDictList);
-        List<String> affectedDictTypeCodes = affectedDictionaries.stream()
+        List<String> affectedDictTypeCodes = dictRepository.findByIds(idDictList).stream()
                 .map(Dict::getDictTypeCode)
                 .distinct()
                 .toList();
-
-        boolean result = mapper.deleteBatchByIds(idDictList) > 0;
-
-        // 清除相关缓存
+        boolean result = dictRepository.deleteByIds(idDictList);
         if (result && !affectedDictTypeCodes.isEmpty()) {
             systemCacheService.removeDictOptionsBatch(affectedDictTypeCodes);
         }
-
         return result;
     }
 
@@ -159,9 +122,7 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
     @CacheEvict(value = SystemCacheConstant.DICT_DATA_CACHE, key = "#dict.dictTypeCode")
     public Long createDict(Dict dict) {
         String dictTypeCode = dict.getDictTypeCode();
-
-        boolean result = mapper.insertSelective(dict) > 0;
-        // 清除相关缓存
+        boolean result = dictRepository.save(dict);
         if (result) {
             systemCacheService.removeDictOptions(dictTypeCode);
         }
@@ -173,31 +134,30 @@ public class DictServiceImpl extends ServiceImpl<DictMapper, Dict> implements Di
     @CacheEvict(value = SystemCacheConstant.DICT_DATA_CACHE, key = "#dict.dictTypeCode")
     public Boolean updateDict(Dict dict) {
         String dictTypeCode = dict.getDictTypeCode();
-
-        Dict oldDict = mapper.selectOneById(dict.getId());
+        Dict oldDict = dictRepository.findById(dict.getId());
         if (oldDict == null) {
             throw new ServiceException("数据不存在");
         }
-        // 如果字典类型代码发生变化，需要清除两个类型的缓存
         String oldDictTypeCode = oldDict.getDictTypeCode();
 
+        oldDict.setDictTypeCode(dict.getDictTypeCode());
         oldDict.setLabel(dict.getLabel());
         oldDict.setValue(dict.getValue());
         oldDict.setSortNo(dict.getSortNo());
         oldDict.setStatus(dict.getStatus());
         oldDict.setUpdatedBy(dict.getUpdatedBy());
         oldDict.setUpdatedTime(dict.getUpdatedTime());
+        oldDict.setIcon(dict.getIcon());
+        oldDict.setImage(dict.getImage());
+        oldDict.setColor(dict.getColor());
 
-        boolean result = mapper.update(oldDict) > 0;
-
-        // 清除相关缓存
+        boolean result = dictRepository.update(oldDict);
         if (result) {
             systemCacheService.removeDictOptions(dictTypeCode);
             if (!oldDictTypeCode.equals(dictTypeCode)) {
                 systemCacheService.removeDictOptions(oldDictTypeCode);
             }
         }
-
         return result;
     }
 }

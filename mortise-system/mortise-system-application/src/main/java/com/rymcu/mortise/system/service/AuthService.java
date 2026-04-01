@@ -69,6 +69,14 @@ public interface AuthService {
     TokenUser oauth2Login(OidcUser oidcUser, String registrationId);
 
     /**
+     * OAuth2 登录。
+     *
+     * @param userInfo 标准化的 OAuth2 用户信息
+     * @return Token 信息
+     */
+    TokenUser oauth2Login(StandardOAuth2UserInfo userInfo);
+
+    /**
      * 从 OAuth2 用户信息查找或创建系统用户
      * <p>
      * 简化版本：registrationId 已经包含在 userInfo.provider 中，无需额外上下文参数
@@ -89,6 +97,8 @@ public interface AuthService {
     void requestPasswordReset(String email) throws AccountNotFoundException, MessagingException;
 
     void requestEmailVerify(String email) throws AccountExistsException, MessagingException;
+
+    AuthInfo userSession(Long userId);
 
     AuthInfo userSession(User user);
 

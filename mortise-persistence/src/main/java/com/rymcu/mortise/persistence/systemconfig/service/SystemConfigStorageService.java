@@ -37,13 +37,13 @@ public class SystemConfigStorageService implements SystemConfigStorage {
     }
 
     public void upsertValue(String group, String key, String value) {
-        var now = LocalDateTime.now();
-        var existing = systemConfigMapper.selectOneByQuery(
+        LocalDateTime now = LocalDateTime.now();
+        SystemConfig existing = systemConfigMapper.selectOneByQuery(
                 QueryWrapper.create().where(
                         SYSTEM_CONFIG.CONFIG_GROUP.eq(group)
                                 .and(SYSTEM_CONFIG.CONFIG_KEY.eq(key))));
         if (existing == null) {
-            var config = new SystemConfig();
+            SystemConfig config = new SystemConfig();
             config.setConfigGroup(group);
             config.setConfigKey(key);
             config.setConfigValue(value);

@@ -1,6 +1,7 @@
 package com.rymcu.mortise.monitor.config;
 
 import com.zaxxer.hikari.HikariDataSource;
+import com.zaxxer.hikari.HikariPoolMXBean;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.actuate.health.Health;
@@ -58,19 +59,19 @@ public class DatabasePerformanceConfig {
             try {
                 // 注册活跃连接数 Gauge
                 meterRegistry.gauge("hikari.connections.active", hikariDataSource, ds -> {
-                    var poolMXBean = ds.getHikariPoolMXBean();
+                    HikariPoolMXBean poolMXBean = ds.getHikariPoolMXBean();
                     return poolMXBean != null ? poolMXBean.getActiveConnections() : 0;
                 });
 
                 // 注册空闲连接数 Gauge
                 meterRegistry.gauge("hikari.connections.idle", hikariDataSource, ds -> {
-                    var poolMXBean = ds.getHikariPoolMXBean();
+                    HikariPoolMXBean poolMXBean = ds.getHikariPoolMXBean();
                     return poolMXBean != null ? poolMXBean.getIdleConnections() : 0;
                 });
 
                 // 注册总连接数 Gauge
                 meterRegistry.gauge("hikari.connections.total", hikariDataSource, ds -> {
-                    var poolMXBean = ds.getHikariPoolMXBean();
+                    HikariPoolMXBean poolMXBean = ds.getHikariPoolMXBean();
                     return poolMXBean != null ? poolMXBean.getTotalConnections() : 0;
                 });
 
@@ -82,13 +83,13 @@ public class DatabasePerformanceConfig {
 
                 // 注册等待线程数 Gauge
                 meterRegistry.gauge("hikari.threads.awaiting", hikariDataSource, ds -> {
-                    var poolMXBean = ds.getHikariPoolMXBean();
+                    HikariPoolMXBean poolMXBean = ds.getHikariPoolMXBean();
                     return poolMXBean != null ? poolMXBean.getThreadsAwaitingConnection() : 0;
                 });
 
                 // 注册连接池使用率 Gauge
                 meterRegistry.gauge("hikari.connections.usage", hikariDataSource, ds -> {
-                    var poolMXBean = ds.getHikariPoolMXBean();
+                    HikariPoolMXBean poolMXBean = ds.getHikariPoolMXBean();
                     if (poolMXBean == null) {
                         return 0.0;
                     }
@@ -120,7 +121,7 @@ public class DatabasePerformanceConfig {
                                     .build();
                         }
 
-                        var poolMXBean = hikariDataSource.getHikariPoolMXBean();
+                        HikariPoolMXBean poolMXBean = hikariDataSource.getHikariPoolMXBean();
                         if (poolMXBean == null) {
                             return Health.up()
                                     .withDetail("database", "PostgreSQL")
@@ -171,7 +172,7 @@ public class DatabasePerformanceConfig {
                     registerConnectionPoolGauges(hikariDataSource);
                 }
 
-                var poolMXBean = hikariDataSource.getHikariPoolMXBean();
+                HikariPoolMXBean poolMXBean = hikariDataSource.getHikariPoolMXBean();
                 if (poolMXBean == null) {
                     log.debug("HikariPoolMXBean尚未可用，跳过监控");
                     return;
@@ -214,7 +215,7 @@ public class DatabasePerformanceConfig {
                     return;
                 }
 
-                var poolMXBean = hikariDataSource.getHikariPoolMXBean();
+                HikariPoolMXBean poolMXBean = hikariDataSource.getHikariPoolMXBean();
                 if (poolMXBean == null) {
                     log.debug("HikariPoolMXBean尚未可用，跳过状态日志");
                     return;

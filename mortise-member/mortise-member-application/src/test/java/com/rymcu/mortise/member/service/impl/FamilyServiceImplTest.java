@@ -1,6 +1,7 @@
 package com.rymcu.mortise.member.service.impl;
 
 import com.rymcu.mortise.common.enumerate.DelFlag;
+import com.rymcu.mortise.core.model.FamilyInfo;
 import com.rymcu.mortise.common.exception.BusinessException;
 import com.rymcu.mortise.member.entity.Family;
 import com.rymcu.mortise.member.entity.FamilyInvitation;
@@ -129,7 +130,7 @@ class FamilyServiceImplTest {
         when(familyMemberMapper.selectCountByQuery(any())).thenReturn(1L);
         when(familyMapper.selectOneByQuery(any())).thenReturn(family);
 
-        var result = familyService.switchCurrentFamily(2L, 10L);
+        FamilyInfo result = familyService.switchCurrentFamily(2L, 10L);
 
         assertEquals(10L, result.id());
         verify(memberMapper).update(any(Member.class));

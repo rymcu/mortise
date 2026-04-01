@@ -1,14 +1,13 @@
 package com.rymcu.mortise.system.service.impl;
 
-import com.mybatisflex.core.query.QueryWrapper;
 import com.rymcu.mortise.auth.enumerate.UserType;
 import com.rymcu.mortise.auth.service.CustomUserDetailsService;
 import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.core.result.ResultCode;
 import com.rymcu.mortise.system.constant.SystemAuthConstants;
 import com.rymcu.mortise.system.entity.User;
-import com.rymcu.mortise.system.mapper.UserMapper;
 import com.rymcu.mortise.system.model.UserDetailInfo;
+import com.rymcu.mortise.system.repository.UserRepository;
 import com.rymcu.mortise.system.service.PermissionService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -23,8 +22,6 @@ import org.springframework.stereotype.Service;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
-
-import static com.rymcu.mortise.system.entity.table.UserTableDef.USER;
 
 /**
  * Spring Security 系统用户详情服务实现
@@ -44,7 +41,7 @@ import static com.rymcu.mortise.system.entity.table.UserTableDef.USER;
 public class UserDetailsServiceImpl implements CustomUserDetailsService {
 
     @Resource
-    private UserMapper userMapper;
+    private UserRepository userRepository;
 
     @Resource
     private PermissionService permissionService;
@@ -70,11 +67,7 @@ public class UserDetailsServiceImpl implements CustomUserDetailsService {
         log.debug("尝试加载用户信息: {}", username);
 
         // 2. 查询用户信息（支持账号、邮箱、手机号登录）
-        User user = userMapper.selectOneByQuery(QueryWrapper.create()
-                .select(USER.ID, USER.ACCOUNT, USER.PASSWORD, USER.EMAIL, USER.PHONE, USER.STATUS, USER.NICKNAME)
-                .where(USER.ACCOUNT.eq(username))
-                .or(USER.EMAIL.eq(username))
-                .or(USER.PHONE.eq(username)));
+        User user = userRepository.findByLoginIdentity(username);
 
         // 3. 用户存在性检查
         if (Objects.isNull(user)) {

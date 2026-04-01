@@ -2,6 +2,7 @@ package com.rymcu.mortise.auth.repository;
 
 import com.rymcu.mortise.auth.entity.Oauth2ClientConfig;
 import com.rymcu.mortise.auth.service.Oauth2ClientConfigService;
+import com.rymcu.mortise.cache.service.CacheVersionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -14,6 +15,7 @@ import org.springframework.util.StringUtils;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 动态的、数据库驱动的 ClientRegistrationRepository。
@@ -45,7 +47,10 @@ import java.util.concurrent.ConcurrentHashMap;
 )
 public class DynamicClientRegistrationRepository implements ClientRegistrationRepository {
 
+    private static final String CACHE_NAMESPACE = "auth:oauth2-client-config";
+
     private final Oauth2ClientConfigService clientConfigService;
+    private final CacheVersionService cacheVersionService;
 
     /**
      * 内存缓存，避免每次请求都查库
@@ -53,9 +58,11 @@ public class DynamicClientRegistrationRepository implements ClientRegistrationRe
      * value: ClientRegistration
      */
     private final Map<String, ClientRegistration> registrationCache = new ConcurrentHashMap<>();
+    private final AtomicLong observedVersion = new AtomicLong(-1L);
 
     @Override
     public ClientRegistration findByRegistrationId(String registrationId) {
+        refreshCacheIfStale();
         log.debug("尝试查找客户端注册配置: registrationId={}", registrationId);
 
         // 1. 优先从缓存中获取
@@ -184,6 +191,7 @@ public class DynamicClientRegistrationRepository implements ClientRegistrationRe
      * 可在应用启动时调用，提前加载常用配置
      */
     public void preloadCache() {
+        refreshCacheIfStale();
         log.info("预加载所有启用的客户端配置到缓存");
 
         clientConfigService.loadOauth2ClientConfigAllEnabled().forEach(config -> {
@@ -197,5 +205,23 @@ public class DynamicClientRegistrationRepository implements ClientRegistrationRe
         });
 
         log.info("预加载完成，已缓存 {} 个客户端配置", registrationCache.size());
+    }
+
+    private void refreshCacheIfStale() {
+        long currentVersion = cacheVersionService.currentVersion(CACHE_NAMESPACE);
+        if (observedVersion.get() == currentVersion) {
+            return;
+        }
+        synchronized (this) {
+            long latestVersion = cacheVersionService.currentVersion(CACHE_NAMESPACE);
+            if (observedVersion.get() != latestVersion) {
+                if (!registrationCache.isEmpty()) {
+                    log.info("检测到 OAuth2 客户端配置版本变更，清空本地缓存: {} -> {}",
+                            observedVersion.get(), latestVersion);
+                    registrationCache.clear();
+                }
+                observedVersion.set(latestVersion);
+            }
+        }
     }
 }

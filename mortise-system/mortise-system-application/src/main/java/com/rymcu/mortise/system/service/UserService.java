@@ -1,7 +1,7 @@
 package com.rymcu.mortise.system.service;
 
-import com.mybatisflex.core.paginate.Page;
-import com.mybatisflex.core.service.IService;
+import com.rymcu.mortise.core.model.PageQuery;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.system.entity.Role;
 import com.rymcu.mortise.system.entity.User;
 import com.rymcu.mortise.system.model.BindUserRoleInfo;
@@ -19,7 +19,7 @@ import java.util.Set;
  * @email ronger-x@outlook.com
  * @desc : com.rymcu.mortise.service
  */
-public interface UserService extends IService<User> {
+public interface UserService {
 
     /**
      * @param account 用户账号
@@ -51,13 +51,15 @@ public interface UserService extends IService<User> {
      */
     User findByAccount(String account);
 
+    User findById(Long idUser);
+
     /**
      * 查询用户
      *
      * @param search 查询条件
      * @return 用户信息列表
      */
-    Page<UserInfo> findUsers(Page<UserInfo> page, UserSearch search);
+    PageResult<UserInfo> findUsers(PageQuery pageQuery, UserSearch search);
 
     UserInfo findUserInfoById(Long idUser);
 
@@ -73,6 +75,8 @@ public interface UserService extends IService<User> {
 
     Boolean updateUserProfileInfo(UserProfileInfo userProfileInfo, Long userId);
 
+    UserProfileInfo getUserProfileInfo(Long userId);
+
     void updateLastLoginTimeByAccount(String account);
 
     String checkNickname(String nickname);
@@ -86,6 +90,8 @@ public interface UserService extends IService<User> {
     Long createUser(UserInfo userInfo);
 
     Boolean updateUser(UserInfo userInfo);
+
+    Boolean update(User user);
 
     /**
      * 发送邮箱更换验证码
@@ -106,4 +112,8 @@ public interface UserService extends IService<User> {
      * @return 更新成功返回 true
      */
     Boolean confirmEmailUpdate(Long userId, String newEmail, String code);
+
+    long count();
+
+    long countEnabled();
 }

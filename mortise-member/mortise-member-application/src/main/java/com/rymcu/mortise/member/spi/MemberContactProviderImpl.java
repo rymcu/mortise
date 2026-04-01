@@ -3,6 +3,7 @@ package com.rymcu.mortise.member.spi;
 import com.mybatisflex.core.query.QueryWrapper;
 import com.rymcu.mortise.core.model.MemberContact;
 import com.rymcu.mortise.core.spi.MemberContactProvider;
+import com.rymcu.mortise.member.entity.Member;
 import com.rymcu.mortise.member.service.MemberService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -29,13 +30,13 @@ public class MemberContactProviderImpl implements MemberContactProvider {
         if (userId == null) {
             return Optional.empty();
         }
-        var member = memberService.getOne(QueryWrapper.create()
+        Member member = memberService.getOne(QueryWrapper.create()
                 .select(MEMBER.ID, MEMBER.EMAIL, MEMBER.EMAIL_VERIFIED_TIME, MEMBER.STATUS)
                 .where(MEMBER.ID.eq(userId)));
         if (member == null || StringUtils.isBlank(member.getEmail())) {
             return Optional.empty();
         }
-        var emailVerified = Integer.valueOf(0).equals(member.getStatus())
+        boolean emailVerified = Integer.valueOf(0).equals(member.getStatus())
                 && member.getEmailVerifiedTime() != null;
         return Optional.of(new MemberContact(member.getId(), member.getEmail(), emailVerified));
     }

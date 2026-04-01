@@ -16,6 +16,10 @@
     <name>mortise-system-application</name>
     <description>Mortise System - Application Layer</description>
 
+    <properties>
+        <layer.guard.application.skip>false</layer.guard.application.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.rymcu</groupId>
@@ -49,19 +53,8 @@
 
         <dependency>
             <groupId>com.rymcu</groupId>
-            <artifactId>mortise-persistence</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>com.rymcu</groupId>
             <artifactId>mortise-system-domain</artifactId>
         </dependency>
-
-        <dependency>
-            <groupId>com.rymcu</groupId>
-            <artifactId>mortise-system-infra</artifactId>
-        </dependency>
-
 
         <dependency>
             <groupId>org.projectlombok</groupId>

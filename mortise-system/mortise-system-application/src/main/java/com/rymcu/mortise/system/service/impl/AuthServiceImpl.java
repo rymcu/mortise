@@ -1,7 +1,6 @@
 package com.rymcu.mortise.system.service.impl;
 
 import com.github.f4b6a3.ulid.UlidCreator;
-import com.mybatisflex.core.update.UpdateChain;
 import com.rymcu.mortise.auth.service.TokenManager;
 import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
 import com.rymcu.mortise.auth.util.OAuth2ProviderUtils;
@@ -19,7 +18,15 @@ import com.rymcu.mortise.system.handler.event.RegisterEvent;
 import com.rymcu.mortise.system.handler.event.UserLoginEvent;
 import com.rymcu.mortise.system.model.AuthInfo;
 import com.rymcu.mortise.system.model.TokenUser;
-import com.rymcu.mortise.system.service.*;
+import com.rymcu.mortise.system.query.MenuQueryService;
+import com.rymcu.mortise.system.query.UserQueryService;
+import com.rymcu.mortise.system.repository.UserRepository;
+import com.rymcu.mortise.system.service.AuthService;
+import com.rymcu.mortise.system.service.PermissionService;
+import com.rymcu.mortise.system.service.SystemCacheService;
+import com.rymcu.mortise.system.service.SystemNotificationService;
+import com.rymcu.mortise.system.service.UserOAuth2BindingService;
+import com.rymcu.mortise.system.service.command.UserCommandService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
@@ -54,9 +61,13 @@ import java.util.Objects;
 public class AuthServiceImpl implements AuthService {
 
     @Resource
-    private UserService userService;
+    private UserQueryService userQueryService;
     @Resource
-    private MenuService menuService;
+    private UserCommandService userCommandService;
+    @Resource
+    private MenuQueryService menuQueryService;
+    @Resource
+    private PermissionService permissionService;
     @Resource
     private SystemNotificationService systemNotificationService;
     @Resource
@@ -71,6 +82,8 @@ public class AuthServiceImpl implements AuthService {
     private ApplicationEventPublisher applicationEventPublisher;
     @Resource
     private UserOAuth2BindingService userOAuth2BindingService;
+    @Resource
+    private UserRepository userRepository;
 
     private final static String DEFAULT_AVATAR = "https://static.rymcu.com/article/1578475481946.png";
 
@@ -84,12 +97,12 @@ public class AuthServiceImpl implements AuthService {
         }
         try {
             User user = new User();
-            user.setNickname(userService.checkNickname(nickname));
-            user.setAccount(userService.nextAccount());
+            user.setNickname(userCommandService.checkNickname(nickname));
+            user.setAccount(userCommandService.nextAccount());
             user.setEmail(email);
             user.setPassword(passwordEncoder.encode(password));
             user.setAvatar(DEFAULT_AVATAR);
-            boolean result = userService.save(user);
+            boolean result = userRepository.save(user);
             if (result) {
                 // 注册成功后执行相关初始化事件
                 applicationEventPublisher.publishEvent(new RegisterEvent(user.getId(), user.getAccount(), ""));
@@ -118,7 +131,7 @@ public class AuthServiceImpl implements AuthService {
         
         // 认证成功，可以获取用户信息
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        User user = userService.findByAccount(userDetails.getUsername());
+        User user = userQueryService.findByLoginIdentity(userDetails.getUsername());
         if (Objects.isNull(user)) {
             throw new UsernameNotFoundException(ResultCode.UNKNOWN_ACCOUNT.getMessage());
         }
@@ -138,7 +151,7 @@ public class AuthServiceImpl implements AuthService {
             }
 
             // 查询用户信息
-            User user = userService.findByAccount(account);
+            User user = userQueryService.findByLoginIdentity(account);
             if (Objects.isNull(user)) {
                 log.warn("刷新令牌关联的用户不存在: account={}", account);
                 throw new UsernameNotFoundException(ResultCode.UNKNOWN_ACCOUNT.getMessage());
@@ -165,7 +178,7 @@ public class AuthServiceImpl implements AuthService {
     public String refreshAccessToken(String accessToken, String account) {
         try {
             // 验证用户是否存在
-            User user = userService.findByAccount(account);
+            User user = userQueryService.findByLoginIdentity(account);
             if (Objects.isNull(user)) {
                 log.warn("用户不存在: account={}", account);
                 return null;
@@ -206,6 +219,13 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public TokenUser oauth2Login(StandardOAuth2UserInfo userInfo) {
+        User user = findOrCreateUserFromOAuth2(userInfo);
+        return generateAndStoreTokens(user);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public User findOrCreateUserFromOAuth2(StandardOAuth2UserInfo userInfo) {
         log.info("从 OAuth2 查找或创建用户: provider={}, openId={}, unionId={}, email={}",
                 userInfo.getProvider(), userInfo.getOpenId(), userInfo.getUnionId(), userInfo.getEmail());
@@ -215,7 +235,7 @@ public class AuthServiceImpl implements AuthService {
 
         if (existingBinding != null) {
             // 找到绑定关系，获取用户信息
-            User existingUser = userService.getById(existingBinding.getUserId());
+            User existingUser = userRepository.findById(existingBinding.getUserId());
             if (existingUser != null) {
                 log.info("找到已存在的用户: userId={}, account={}",
                         existingUser.getId(), existingUser.getAccount());
@@ -229,7 +249,7 @@ public class AuthServiceImpl implements AuthService {
         // 2. 尝试通过邮箱匹配现有用户（可选功能）
         User existingUser;
         if (StringUtils.isNotBlank(userInfo.getEmail())) {
-            existingUser = userService.findByAccount(userInfo.getEmail());
+            existingUser = userQueryService.findByLoginIdentity(userInfo.getEmail());
             if (existingUser != null) {
                 log.info("通过邮箱匹配到现有用户: userId={}, email={}",
                         existingUser.getId(), userInfo.getEmail());
@@ -241,7 +261,7 @@ public class AuthServiceImpl implements AuthService {
         }
         // 3. 尝试通过手机号匹配现有用户
         if (StringUtils.isNotBlank(userInfo.getPhone())) {
-            existingUser = userService.findByAccount(userInfo.getPhone());
+            existingUser = userQueryService.findByLoginIdentity(userInfo.getPhone());
             if (existingUser != null) {
                 log.info("通过手机号匹配到现有用户: userId={}, phone={}",
                         existingUser.getId(), userInfo.getPhone());
@@ -258,7 +278,7 @@ public class AuthServiceImpl implements AuthService {
         try {
             String randomPassword = Utils.genKey();
             newUser.setPassword(passwordEncoder.encode(randomPassword));
-            boolean saved = userService.save(newUser);
+            boolean saved = userRepository.save(newUser);
 
             if (saved) {
                 log.info("创建新用户成功: userId={}, account={}", newUser.getId(), newUser.getAccount());
@@ -282,7 +302,7 @@ public class AuthServiceImpl implements AuthService {
             );
 
             if (retryBinding != null) {
-                User retryUser = userService.getById(retryBinding.getUserId());
+                User retryUser = userRepository.findById(retryBinding.getUserId());
                 if (retryUser != null) {
                     return retryUser;
                 }
@@ -302,8 +322,8 @@ public class AuthServiceImpl implements AuthService {
      */
     private User createNewUserFromOAuth2(StandardOAuth2UserInfo userInfo) {
         User newUser = new User();
-        newUser.setNickname(userService.checkNickname(userInfo.getNickname()));
-        newUser.setAccount(userService.nextAccount());
+        newUser.setNickname(userCommandService.checkNickname(userInfo.getNickname()));
+        newUser.setAccount(userCommandService.nextAccount());
         newUser.setEmail(userInfo.getEmail());
         newUser.setPhone(userInfo.getPhone());
 
@@ -371,7 +391,7 @@ public class AuthServiceImpl implements AuthService {
 
         if (needsUpdate) {
             binding.setUpdatedTime(LocalDateTime.now());
-            userOAuth2BindingService.updateById(binding);
+            userOAuth2BindingService.update(binding);
             log.debug("更新 OAuth2 绑定信息: bindingId={}", binding.getId());
         }
     }
@@ -406,7 +426,7 @@ public class AuthServiceImpl implements AuthService {
                 if (!Objects.equals(binding.getOpenId(), userInfo.getOpenId())) {
                     binding.setOpenId(userInfo.getOpenId());
                     binding.setUpdatedTime(LocalDateTime.now());
-                    userOAuth2BindingService.updateById(binding);
+                    userOAuth2BindingService.update(binding);
                     log.debug("更新微信绑定的 openId: bindingId={}, newOpenId={}",
                             binding.getId(), userInfo.getOpenId());
                 }
@@ -419,28 +439,28 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public void requestPasswordReset(String email) throws AccountNotFoundException {
-        User user = userService.findByAccount(email);
+        User user = userQueryService.findByLoginIdentity(email);
         if (Objects.isNull(user)) {
             throw new AccountNotFoundException(ResultCode.UNKNOWN_ACCOUNT.getMessage());
         }
         String resetToken = Utils.genKey();
         systemCacheService.storePasswordResetToken(resetToken, email);
         boolean result = systemNotificationService.sendPasswordResetEmail(email, resetToken);
-        if (result) {
+        if (!result) {
             throw new ServiceException(ResultCode.SEND_EMAIL_FAIL.getMessage());
         }
     }
 
     @Override
     public void requestEmailVerify(String email) throws AccountExistsException {
-        User user = userService.findByAccount(email);
+        User user = userQueryService.findByLoginIdentity(email);
         if (user != null) {
             throw new AccountExistsException(ResultCode.EMAIL_EXISTS.getMessage());
         } else {
             String code = String.valueOf(Utils.genCode());
             systemCacheService.storeVerificationCode(email, code);
             boolean result = systemNotificationService.sendVerificationCodeEmail(email, code);
-            if (result) {
+            if (!result) {
                 throw new BusinessException(ResultCode.SEND_EMAIL_FAIL.getMessage());
             }
         }
@@ -453,10 +473,7 @@ public class AuthServiceImpl implements AuthService {
         if (StringUtils.isBlank(email)) {
             throw new CaptchaException();
         } else {
-            boolean result = UpdateChain.of(User.class)
-                    .set(User::getPassword, passwordEncoder.encode(password))
-                    .where(User::getEmail).eq(email)
-                    .update();
+            boolean result = userRepository.updatePasswordByEmail(email, passwordEncoder.encode(password));
             if (result) {
                 // 删除已使用的密码重置令牌
                 systemCacheService.removePasswordResetToken(code);
@@ -477,18 +494,27 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public AuthInfo userSession(Long userId) {
+        User user = userQueryService.findById(userId);
+        if (user == null) {
+            throw new UsernameNotFoundException(ResultCode.UNKNOWN_ACCOUNT.getMessage());
+        }
+        return userSession(user);
+    }
+
+    @Override
     public AuthInfo userSession(User user) {
         AuthInfo authInfo = new AuthInfo();
         BeanCopierUtil.copy(user, authInfo);
-        authInfo.setScope(userService.findUserPermissionsByIdUser(user.getId()));
-        authInfo.setRole(userService.findUserRoleListByIdUser(user.getId()));
+        authInfo.setScope(permissionService.findUserPermissionsByIdUser(user.getId()));
+        authInfo.setRole(permissionService.findUserRolePermissionsByIdUser(user.getId()));
         authInfo.setLinks(userMenus(user.getId()));
         return authInfo;
     }
 
     @Override
     public List<Link> userMenus(Long userId) {
-        return menuService.findLinksByIdUser(userId);
+        return menuQueryService.findLinksByIdUser(userId);
     }
 
     /**

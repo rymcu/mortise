@@ -9,6 +9,9 @@ package com.rymcu.mortise.wechat.constant;
  */
 public class WeChatCacheConstant {
 
+    public static final String CONFIG_CACHE = "wechat:config";
+    public static final String CONFIG_VERSION_NAMESPACE = "wechat:config";
+
     public static final String STATE = "wechat:state";
     public static final long STATE_EXPIRE_MINUTES = 10;
 

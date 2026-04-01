@@ -2,8 +2,8 @@ package com.rymcu.mortise.product.api.controller;
 
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.log.annotation.ApiLog;
+import com.rymcu.mortise.product.api.facade.ProductCatalogApiFacade;
 import com.rymcu.mortise.product.entity.Product;
-import com.rymcu.mortise.product.service.ProductService;
 import com.rymcu.mortise.web.annotation.ApiController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -28,14 +28,14 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class ProductApiController {
 
-    private final ProductService productService;
+    private final ProductCatalogApiFacade productCatalogApiFacade;
 
     @GetMapping
     @ApiLog("查询产品列表")
     @Operation(summary = "根据产品类型查询产品列表")
     public GlobalResult<List<Product>> listProducts(
             @Parameter(description = "产品类型") @RequestParam String productType) {
-        return GlobalResult.success(productService.findByProductType(productType));
+        return GlobalResult.success(productCatalogApiFacade.listProducts(productType));
     }
 
     @GetMapping("/{id}")
@@ -43,13 +43,13 @@ public class ProductApiController {
     @Operation(summary = "获取上架产品详情")
     public GlobalResult<Product> getProductDetail(
             @Parameter(description = "产品ID") @PathVariable("id") Long id) {
-        return GlobalResult.success(productService.findPublishedById(id));
+        return GlobalResult.success(productCatalogApiFacade.getProductDetail(id));
     }
 
     @GetMapping("/types")
     @ApiLog("查询产品类型列表")
     @Operation(summary = "获取所有可用产品类型（内置 + SPI 扩展）")
     public GlobalResult<Map<String, String>> listProductTypes() {
-        return GlobalResult.success(productService.getAllProductTypes());
+        return GlobalResult.success(productCatalogApiFacade.listProductTypes());
     }
 }

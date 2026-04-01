@@ -1,7 +1,7 @@
 package com.rymcu.mortise.system.mapper;
 
 import com.mybatisflex.core.BaseMapper;
-import com.rymcu.mortise.system.entity.UserOAuth2Binding;
+import com.rymcu.mortise.system.infra.persistence.entity.UserOAuth2BindingPO;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -11,5 +11,5 @@ import org.apache.ibatis.annotations.Mapper;
  * @since 1.0.0
  */
 @Mapper
-public interface UserOAuth2BindingMapper extends BaseMapper<UserOAuth2Binding> {
+public interface UserOAuth2BindingMapper extends BaseMapper<UserOAuth2BindingPO> {
 }

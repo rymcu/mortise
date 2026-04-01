@@ -16,6 +16,13 @@
     <name>mortise-web-support</name>
     <description>Mortise Web Support - Web 基础支撑模块</description>
 
+    <properties>
+        <layer.guard.admin-api.skip>true</layer.guard.admin-api.skip>
+        <layer.guard.application.skip>true</layer.guard.application.skip>
+        <layer.guard.domain.skip>true</layer.guard.domain.skip>
+        <no.var.guard.skip>false</no.var.guard.skip>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.rymcu</groupId>
@@ -30,6 +37,11 @@
         <dependency>
             <groupId>com.rymcu</groupId>
             <artifactId>mortise-log</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-cache</artifactId>
         </dependency>
 
         <dependency>

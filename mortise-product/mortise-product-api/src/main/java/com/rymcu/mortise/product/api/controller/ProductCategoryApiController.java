@@ -2,8 +2,8 @@ package com.rymcu.mortise.product.api.controller;
 
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.log.annotation.ApiLog;
+import com.rymcu.mortise.product.api.facade.ProductCategoryApiFacade;
 import com.rymcu.mortise.product.entity.ProductCategory;
-import com.rymcu.mortise.product.service.ProductCategoryService;
 import com.rymcu.mortise.web.annotation.ApiController;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -24,12 +24,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ProductCategoryApiController {
 
-    private final ProductCategoryService productCategoryService;
+    private final ProductCategoryApiFacade productCategoryApiFacade;
 
     @GetMapping("/tree")
     @ApiLog("查询分类树")
     @Operation(summary = "获取激活的产品分类树（用于前端导航/筛选）")
     public GlobalResult<List<ProductCategory>> getTree() {
-        return GlobalResult.success(productCategoryService.getTree());
+        return GlobalResult.success(productCategoryApiFacade.getTree());
     }
 }

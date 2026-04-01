@@ -3,8 +3,8 @@ package com.rymcu.mortise.system.handler;
 import com.rymcu.mortise.system.entity.Role;
 import com.rymcu.mortise.system.handler.event.RegisterEvent;
 import com.rymcu.mortise.system.model.BindUserRoleInfo;
-import com.rymcu.mortise.system.service.RoleService;
-import com.rymcu.mortise.system.service.UserService;
+import com.rymcu.mortise.system.query.RoleQueryService;
+import com.rymcu.mortise.system.service.command.UserCommandService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -27,21 +27,21 @@ import java.util.stream.Collectors;
 public class RegisterHandler {
 
     @Resource
-    private UserService userService;
+    private UserCommandService userCommandService;
     @Resource
-    private RoleService roleService;
+    private RoleQueryService roleQueryService;
 
     @Async
     @TransactionalEventListener
     public void processRegisterEvent(RegisterEvent registerEvent) {
         // 获取默认角色，不再使用硬编码的 "user"
-        List<Role> roles = roleService.findDefaultRole();
+        List<Role> roles = roleQueryService.findDefaultRole();
         if (roles == null) {
             log.warn("未找到默认角色，用户 {} 注册后未分配角色", registerEvent.getIdUser());
             return;
         }
         Set<Long> roleIds = roles.stream().map(Role::getId).collect(Collectors.toSet());
-        userService.bindUserRole(new BindUserRoleInfo(registerEvent.getIdUser(), roleIds));
+        userCommandService.bindUserRole(new BindUserRoleInfo(registerEvent.getIdUser(), roleIds));
     }
 
 }

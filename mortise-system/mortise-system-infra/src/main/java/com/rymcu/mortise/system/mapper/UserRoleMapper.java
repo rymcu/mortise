@@ -3,7 +3,7 @@ package com.rymcu.mortise.system.mapper;
 import com.mybatisflex.core.BaseMapper;
 import com.rymcu.mortise.system.entity.Role;
 import com.rymcu.mortise.system.entity.User;
-import com.rymcu.mortise.system.entity.UserRole;
+import com.rymcu.mortise.system.infra.persistence.entity.UserRolePO;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -17,7 +17,7 @@ import java.util.List;
  * @since 2025-10-02
  */
 @Mapper
-public interface UserRoleMapper extends BaseMapper<UserRole> {
+public interface UserRoleMapper extends BaseMapper<UserRolePO> {
     /**
      * 根据角色ID查询用户列表
      */

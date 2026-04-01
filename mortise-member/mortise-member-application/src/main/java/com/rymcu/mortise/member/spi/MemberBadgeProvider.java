@@ -48,7 +48,7 @@ public class MemberBadgeProvider implements UserBadgeProvider {
             return Optional.empty();
         }
 
-        var badge = memberBadgeMapper.selectOneByQuery(
+        MemberBadge badge = memberBadgeMapper.selectOneByQuery(
                 QueryWrapper.create()
                         .where(MEMBER_BADGE.CODE.eq(command.badgeCode()))
         );
@@ -65,8 +65,8 @@ public class MemberBadgeProvider implements UserBadgeProvider {
             return Optional.empty();
         }
 
-        var now = LocalDateTime.now();
-        var userBadge = new MemberUserBadge();
+        LocalDateTime now = LocalDateTime.now();
+        MemberUserBadge userBadge = new MemberUserBadge();
         userBadge.setUserId(command.userId());
         userBadge.setBadgeId(badge.getId());
         userBadge.setSourceType(command.sourceType());
@@ -84,8 +84,8 @@ public class MemberBadgeProvider implements UserBadgeProvider {
         if (userId == null) {
             return List.of();
         }
-        var safeLimit = limit > 0 ? Math.min(limit, 24) : 12;
-        var userBadges = memberUserBadgeMapper.selectListByQuery(
+        int safeLimit = limit > 0 ? Math.min(limit, 24) : 12;
+        List<MemberUserBadge> userBadges = memberUserBadgeMapper.selectListByQuery(
                 QueryWrapper.create()
                         .where(MEMBER_USER_BADGE.USER_ID.eq(userId))
                         .orderBy(MEMBER_USER_BADGE.EARNED_TIME.desc(), MEMBER_USER_BADGE.ID.desc())
@@ -94,12 +94,12 @@ public class MemberBadgeProvider implements UserBadgeProvider {
         if (userBadges.isEmpty()) {
             return List.of();
         }
-        var badgeIds = userBadges.stream()
+        List<Long> badgeIds = userBadges.stream()
                 .map(MemberUserBadge::getBadgeId)
                 .filter(Objects::nonNull)
                 .distinct()
                 .toList();
-        var badgeMap = memberBadgeMapper.selectListByQuery(
+        java.util.Map<Long, MemberBadge> badgeMap = memberBadgeMapper.selectListByQuery(
                         QueryWrapper.create()
                                 .where(MEMBER_BADGE.ID.in(badgeIds))
                 ).stream()
@@ -107,7 +107,7 @@ public class MemberBadgeProvider implements UserBadgeProvider {
 
         return userBadges.stream()
                 .map(item -> {
-                    var badge = badgeMap.get(item.getBadgeId());
+                    MemberBadge badge = badgeMap.get(item.getBadgeId());
                     return badge == null ? null : toEntry(badge, item.getEarnedTime());
                 })
                 .filter(Objects::nonNull)
@@ -137,16 +137,16 @@ public class MemberBadgeProvider implements UserBadgeProvider {
                 || !StringUtils.hasText(command.name())) {
             return Optional.empty();
         }
-        var normalizedCode = command.code().trim();
-        var exists = memberBadgeMapper.selectCountByQuery(
+        String normalizedCode = command.code().trim();
+        long exists = memberBadgeMapper.selectCountByQuery(
                 QueryWrapper.create()
                         .where(MEMBER_BADGE.CODE.eq(normalizedCode))
         );
         if (exists > 0) {
             return Optional.empty();
         }
-        var now = LocalDateTime.now();
-        var badge = new MemberBadge();
+        LocalDateTime now = LocalDateTime.now();
+        MemberBadge badge = new MemberBadge();
         badge.setCode(normalizedCode);
         badge.setName(command.name().trim());
         badge.setIcon(normalizeNullableText(command.icon()));
@@ -171,15 +171,15 @@ public class MemberBadgeProvider implements UserBadgeProvider {
                 || !StringUtils.hasText(command.name())) {
             return Optional.empty();
         }
-        var badge = memberBadgeMapper.selectOneByQuery(
+        MemberBadge badge = memberBadgeMapper.selectOneByQuery(
                 QueryWrapper.create()
                         .where(MEMBER_BADGE.CODE.eq(command.code().trim()))
         );
         if (badge == null) {
             return Optional.empty();
         }
-        var now = LocalDateTime.now();
-        var update = UpdateEntity.of(MemberBadge.class, badge.getId());
+        LocalDateTime now = LocalDateTime.now();
+        MemberBadge update = UpdateEntity.of(MemberBadge.class, badge.getId());
         update.setName(command.name().trim());
         update.setIcon(normalizeNullableText(command.icon()));
         update.setDescription(normalizeNullableText(command.description()));

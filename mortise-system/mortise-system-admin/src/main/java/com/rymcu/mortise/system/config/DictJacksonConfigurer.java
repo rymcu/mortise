@@ -3,7 +3,7 @@ package com.rymcu.mortise.system.config;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.rymcu.mortise.system.annotation.DictAnnotationIntrospector;
 import com.rymcu.mortise.system.constant.SystemSpiOrderConstants;
-import com.rymcu.mortise.system.service.DictService;
+import com.rymcu.mortise.system.query.DictQueryService;
 import com.rymcu.mortise.web.spi.JacksonConfigurer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
@@ -35,19 +35,19 @@ import org.springframework.stereotype.Component;
  */
 @Slf4j
 @Component
-@ConditionalOnClass({DictService.class, ObjectMapper.class})
+@ConditionalOnClass({DictQueryService.class, ObjectMapper.class})
 public class DictJacksonConfigurer implements JacksonConfigurer {
 
-    private final DictService dictService;
+    private final DictQueryService dictQueryService;
 
-    public DictJacksonConfigurer(DictService dictService) {
-        this.dictService = dictService;
+    public DictJacksonConfigurer(DictQueryService dictQueryService) {
+        this.dictQueryService = dictQueryService;
     }
 
     @Override
     public void configureObjectMapper(ObjectMapper objectMapper) {
         // 设置字典注解内省器
-        DictAnnotationIntrospector dictIntrospector = new DictAnnotationIntrospector(dictService);
+        DictAnnotationIntrospector dictIntrospector = new DictAnnotationIntrospector(dictQueryService);
         objectMapper.setAnnotationIntrospector(dictIntrospector);
         
         log.info("字典翻译序列化配置已应用");
@@ -61,7 +61,7 @@ public class DictJacksonConfigurer implements JacksonConfigurer {
 
     @Override
     public boolean isEnabled() {
-        // 只有在 DictService 存在时才启用
-        return dictService != null;
+        // 只有在 DictQueryService 存在时才启用
+        return dictQueryService != null;
     }
 }

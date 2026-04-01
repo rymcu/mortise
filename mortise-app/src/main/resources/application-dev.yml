@@ -75,23 +75,6 @@ spring:
     sql-migration-separator: __          # SQL迁移脚本分隔符
     sql-migration-suffixes: .sql         # SQL迁移脚本后缀
 
-  mail:
-    host: ${MAIL_HOST:smtp.larksuite.com}
-    port: ${MAIL_PORT:465}
-    person: ${MAIL_PERSON:ATDAK}
-    username: ${MAIL_USERNAME:services@atdak.com}
-    password: ${MAIL_PASSWORD:changeme}
-    protocol: smtp
-    properties:
-      mail:
-        smtp:
-          auth: true
-          ssl:
-            enable: true
-            trust: "*"
-          socketFactory:
-            port: 465
-            class: javax.net.ssl.SSLSocketFactory
   servlet:
     multipart:
       max-file-size: 10MB

@@ -4,8 +4,8 @@ import com.rymcu.mortise.web.annotation.AdminController;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.log.annotation.ApiLog;
 import com.rymcu.mortise.log.annotation.OperationLog;
+import com.rymcu.mortise.system.controller.facade.SystemInitAdminFacade;
 import com.rymcu.mortise.system.model.SystemInitInfo;
-import com.rymcu.mortise.system.service.SystemInitService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.ExampleObject;
@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -34,7 +33,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class SystemInitController {
 
-    private final SystemInitService systemInitService;
+    private final SystemInitAdminFacade systemInitAdminFacade;
 
     /**
      * 检查系统是否已初始化
@@ -59,9 +58,7 @@ public class SystemInitController {
     @GetMapping("/status")
     @ApiLog("检查系统初始化状态")
     public GlobalResult<Map<String, Object>> checkInitStatus() {
-        Map<String, Object> result = new HashMap<>();
-        result.put("initialized", systemInitService.isSystemInitialized());
-        return GlobalResult.success(result);
+        return systemInitAdminFacade.checkInitStatus();
     }
 
     /**
@@ -126,17 +123,7 @@ public class SystemInitController {
     @ApiLog(recordRequestBody = false, recordResponseBody = false, recordParams = false, value = "执行系统初始化")
     @OperationLog(module = "系统初始化", operation = "执行系统初始化", recordParams = false, recordResult = false)
     public GlobalResult<String> initializeSystem(@org.springframework.web.bind.annotation.RequestBody SystemInitInfo initInfo) {
-        // 检查是否已初始化
-        if (systemInitService.isSystemInitialized()) {
-            return GlobalResult.error("系统已经初始化，无法重复初始化");
-        }
-
-        // 执行初始化
-        boolean success = systemInitService.initializeSystem(initInfo);
-        if (!success) {
-            return GlobalResult.error("系统初始化失败");
-        }
-        return GlobalResult.success("系统初始化成功");
+        return systemInitAdminFacade.initializeSystem(initInfo);
     }
 
     /**
@@ -173,9 +160,7 @@ public class SystemInitController {
     @GetMapping("/progress")
     @ApiLog("获取初始化进度")
     public GlobalResult<Map<String, Object>> getInitProgress() {
-        Map<String, Object> result = new HashMap<>();
-        result.put("progress", systemInitService.getInitializationProgress());
-        return GlobalResult.success(result);
+        return systemInitAdminFacade.getInitProgress();
     }
 }
 

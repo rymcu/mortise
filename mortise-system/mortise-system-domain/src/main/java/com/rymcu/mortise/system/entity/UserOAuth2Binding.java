@@ -1,11 +1,5 @@
 package com.rymcu.mortise.system.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.mybatisflex.annotation.Column;
-import com.mybatisflex.annotation.Id;
-import com.mybatisflex.annotation.KeyType;
-import com.mybatisflex.annotation.Table;
-import com.mybatisflex.core.keygen.KeyGenerators;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -21,10 +15,8 @@ import java.time.LocalDateTime;
  * @since 1.0.0
  */
 @Data
-@Table(value = "mortise_user_oauth2_binding", schema = "mortise")
 public class UserOAuth2Binding implements Serializable {
 
-    @Id(keyType = KeyType.Generator, value = KeyGenerators.flexId)
     private Long id;
 
     /**
@@ -71,36 +63,30 @@ public class UserOAuth2Binding implements Serializable {
     /**
      * 访问令牌（可选，如需调用第三方 API）
      */
-    @Column(isLarge = true)
     private String accessToken;
 
     /**
      * 刷新令牌（可选）
      */
-    @Column(isLarge = true)
     private String refreshToken;
 
     /**
      * 令牌过期时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime expiresAt;
 
     /**
      * 原始用户数据 (JSON)
      */
-    @Column(isLarge = true)
     private String rawData;
 
     /**
      * 创建时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime createdTime;
 
     /**
      * 更新时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime updatedTime;
 }

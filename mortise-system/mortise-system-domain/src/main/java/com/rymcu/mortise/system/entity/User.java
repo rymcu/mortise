@@ -1,11 +1,5 @@
 package com.rymcu.mortise.system.entity;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.mybatisflex.annotation.Column;
-import com.mybatisflex.annotation.Id;
-import com.mybatisflex.annotation.KeyType;
-import com.mybatisflex.annotation.Table;
-import com.mybatisflex.core.keygen.KeyGenerators;
 import com.rymcu.mortise.system.annotation.DictFormat;
 import lombok.Data;
 
@@ -20,10 +14,8 @@ import java.time.LocalDateTime;
  * @desc : com.rymcu.mortise.entity
  */
 @Data
-@Table(value = "mortise_user", schema = "mortise")
 public class User implements Serializable {
 
-    @Id(keyType = KeyType.Generator, value = KeyGenerators.flexId)
     private Long id;
     /**
      * 登录账号
@@ -69,24 +61,20 @@ public class User implements Serializable {
      * 删除标记
      */
     @DictFormat(value = "DelFlag")
-    @Column(isLogicDelete = true)
     private Integer delFlag;
 
     /**
      * 最后登录时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime lastLoginTime;
 
     /**
      * 创建时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm")
     private LocalDateTime createdTime;
 
     /**
      * 最后在线时间
      */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastOnlineTime;
 }

@@ -1,7 +1,7 @@
 package com.rymcu.mortise.system.mapper;
 
 import com.mybatisflex.core.BaseMapper;
-import com.rymcu.mortise.system.entity.User;
+import com.rymcu.mortise.system.infra.persistence.entity.UserPO;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -12,6 +12,6 @@ import org.apache.ibatis.annotations.Mapper;
  * @desc : com.rymcu.mortise.mapper
  */
 @Mapper
-public interface UserMapper extends BaseMapper<User> {
+public interface UserMapper extends BaseMapper<UserPO> {
 
 }

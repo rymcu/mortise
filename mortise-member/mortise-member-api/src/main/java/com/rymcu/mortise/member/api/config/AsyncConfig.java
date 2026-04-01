@@ -8,7 +8,6 @@ import org.springframework.core.task.TaskDecorator;
 import org.springframework.lang.Nullable;
 import org.springframework.scheduling.annotation.AsyncConfigurer;
 import org.springframework.scheduling.annotation.EnableAsync;
-import org.springframework.scheduling.annotation.EnableScheduling;
 
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -27,7 +26,6 @@ import java.util.concurrent.Executors;
 @Slf4j
 @Configuration
 @EnableAsync
-@EnableScheduling
 public class AsyncConfig implements AsyncConfigurer {
 
     @Nullable

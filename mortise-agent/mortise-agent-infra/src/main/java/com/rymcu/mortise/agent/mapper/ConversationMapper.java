@@ -1,7 +1,7 @@
 package com.rymcu.mortise.agent.mapper;
 
 import com.mybatisflex.core.BaseMapper;
-import com.rymcu.mortise.agent.entity.Conversation;
+import com.rymcu.mortise.agent.infra.persistence.entity.ConversationPO;
 import org.apache.ibatis.annotations.Mapper;
 
 /**
@@ -10,5 +10,5 @@ import org.apache.ibatis.annotations.Mapper;
  * @author ronger
  */
 @Mapper
-public interface ConversationMapper extends BaseMapper<Conversation> {
+public interface ConversationMapper extends BaseMapper<ConversationPO> {
 }

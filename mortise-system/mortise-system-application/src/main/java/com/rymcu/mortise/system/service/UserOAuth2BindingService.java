@@ -1,6 +1,5 @@
 package com.rymcu.mortise.system.service;
 
-import com.mybatisflex.core.service.IService;
 import com.rymcu.mortise.system.entity.UserOAuth2Binding;
 
 /**
@@ -9,7 +8,7 @@ import com.rymcu.mortise.system.entity.UserOAuth2Binding;
  * @author ronger
  * @since 1.0.0
  */
-public interface UserOAuth2BindingService extends IService<UserOAuth2Binding> {
+public interface UserOAuth2BindingService {
 
     /**
      * 根据提供商和 OpenID 查找绑定关系
@@ -37,4 +36,8 @@ public interface UserOAuth2BindingService extends IService<UserOAuth2Binding> {
      * @return 绑定关系，如果不存在则返回 null
      */
     UserOAuth2Binding findByUserIdAndProvider(Long userId, String provider);
+
+    boolean save(UserOAuth2Binding binding);
+
+    boolean update(UserOAuth2Binding binding);
 }

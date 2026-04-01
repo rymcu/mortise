@@ -1,13 +1,18 @@
 package com.rymcu.mortise.wechat.service;
 
+import com.rymcu.mortise.cache.service.CacheVersionService;
+import com.rymcu.mortise.wechat.constant.WeChatCacheConstant;
 import com.rymcu.mortise.wechat.config.WeChatOpenProperties;
 import com.rymcu.mortise.wechat.exception.WeChatOpenNotConfiguredException;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import me.chanjar.weixin.open.api.WxOpenService;
-import me.chanjar.weixin.open.api.impl.WxOpenInMemoryConfigStorage;
+import me.chanjar.weixin.open.api.impl.WxOpenInRedisTemplateConfigStorage;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * 微信公众号动态管理器
@@ -24,9 +29,12 @@ public class DynamicWeChatOpenServiceManager {
 
     private final WeChatConfigService configService;
     private final WxOpenService wxOpenService; // 注入空的 WxOpenService Bean
+    private final CacheVersionService cacheVersionService;
+    private final StringRedisTemplate stringRedisTemplate;
 
     // 使用 volatile 保证多线程下的可见性
     private volatile boolean isConfigured = false;
+    private final AtomicLong observedVersion = new AtomicLong(-1L);
 
     /**
      * Bean 初始化后，从数据库加载初始配置
@@ -47,15 +55,18 @@ public class DynamicWeChatOpenServiceManager {
             WeChatOpenProperties properties = configService.loadDefaultOpenConfig();
 
             if (properties != null && properties.isEnabled()) {
-                WxOpenInMemoryConfigStorage config = new WxOpenInMemoryConfigStorage();
+                WxOpenInRedisTemplateConfigStorage config =
+                        new WxOpenInRedisTemplateConfigStorage(stringRedisTemplate, properties.getAppId());
                 config.setComponentAppId(properties.getAppId());
                 config.setComponentAppSecret(properties.getSecret());
                 wxOpenService.setWxOpenConfigStorage(config);
                 this.isConfigured = true;
+                observedVersion.set(cacheVersionService.currentVersion(WeChatCacheConstant.CONFIG_VERSION_NAMESPACE));
                 log.info("✓ WeChat Open Platform configuration loaded successfully. AppID: {}", properties.getAppId());
             } else {
                 // 如果数据库中配置被禁用或删除，则清空内存中的配置
                 this.isConfigured = false;
+                observedVersion.set(cacheVersionService.currentVersion(WeChatCacheConstant.CONFIG_VERSION_NAMESPACE));
                 log.info("WeChat Open Platform is not configured or disabled in the database.");
             }
         } catch (Exception e) {
@@ -69,6 +80,7 @@ public class DynamicWeChatOpenServiceManager {
      * @return true 如果可用
      */
     public boolean isAvailable() {
+        refreshIfStale();
         return this.isConfigured;
     }
 
@@ -79,9 +91,25 @@ public class DynamicWeChatOpenServiceManager {
      * @throws WeChatOpenNotConfiguredException 如果服务未配置或不可用
      */
     public WxOpenService getService() {
+        refreshIfStale();
         if (!isConfigured) {
             throw new WeChatOpenNotConfiguredException("WeChat Open Platform service is not configured or disabled.");
         }
         return this.wxOpenService;
+    }
+
+    private void refreshIfStale() {
+        long currentVersion = cacheVersionService.currentVersion(WeChatCacheConstant.CONFIG_VERSION_NAMESPACE);
+        if (observedVersion.get() == currentVersion) {
+            return;
+        }
+        synchronized (this) {
+            long latestVersion = cacheVersionService.currentVersion(WeChatCacheConstant.CONFIG_VERSION_NAMESPACE);
+            if (observedVersion.get() != latestVersion) {
+                log.info("检测到微信开放平台配置版本变更，重新加载本地配置: {} -> {}",
+                        observedVersion.get(), latestVersion);
+                reload();
+            }
+        }
     }
 }
