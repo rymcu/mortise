@@ -150,8 +150,8 @@ public class RedisCacheServiceImpl implements CacheService {
         return redisTemplate.execute(
                 INCREMENT_WITH_EXPIRE_SCRIPT,
                 Collections.singletonList(key),
-                String.valueOf(delta),
-                String.valueOf(timeout.toMillis())
+                delta,
+                timeout.toMillis()
         );
     }
 
