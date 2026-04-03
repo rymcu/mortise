@@ -119,6 +119,7 @@ export function useAgentChat() {
     // 中止上一次请求
     stop()
     abortController = new AbortController()
+    let fullContent = ''
 
     try {
       const response = await fetch(url, {
@@ -156,7 +157,6 @@ export function useAgentChat() {
 
       const decoder = new TextDecoder()
       let buffer = ''
-      let fullContent = ''
 
       while (true) {
         const { done, value } = await reader.read()

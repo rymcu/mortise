@@ -1,21 +1,7 @@
 <script setup lang="ts">
-defineProps<{
-  currentPassword: string
-  newPassword: string
-  confirmPassword: string
-  showCurrent: boolean
-  showNew: boolean
-  showConfirm: boolean
-  loading: boolean
-  score: number
-  strength: Array<{ met: boolean; text: string }>
-  color: string
-  strengthText: string
-  confirmMatched: boolean
-  canChangePassword: boolean
-  error: string
-  success: string
-}>()
+import type { PasswordFormProps } from '~/types/profile'
+
+defineProps<PasswordFormProps>()
 
 const emit = defineEmits<{
   'update:currentPassword': [value: string]

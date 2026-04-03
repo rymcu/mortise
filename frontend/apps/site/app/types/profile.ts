@@ -1,14 +1,4 @@
-export interface MemberProfile {
-  id?: string
-  username?: string
-  nickname?: string
-  avatarUrl?: string | null
-  gender?: string | null
-  birthDate?: string | null
-  email?: string | null
-  phone?: string | null
-}
-
+export type UiColor = 'primary' | 'secondary' | 'success' | 'info' | 'warning' | 'error' | 'neutral'
 export type ProfileSection = 'info' | 'security'
 
 export interface ProfileNavItem {
@@ -18,15 +8,35 @@ export interface ProfileNavItem {
   description: string
 }
 
-export interface ProfileUpdateForm {
-  nickname: string
-  avatarUrl: string
-  gender: string
-  birthDate: string
+export interface MemberProfile {
+  username: string
+  nickname?: string | null
+  avatarUrl?: string | null
+  email?: string | null
+  phone?: string | null
+  gender?: string | null
+  birthDate?: string | null
 }
 
-export interface PasswordUpdateForm {
-  oldPassword: string
+export interface PasswordStrengthRule {
+  met: boolean
+  text: string
+}
+
+export interface PasswordFormProps {
+  currentPassword: string
   newPassword: string
   confirmPassword: string
+  showCurrent: boolean
+  showNew: boolean
+  showConfirm: boolean
+  loading: boolean
+  score: number
+  strength: PasswordStrengthRule[]
+  color: UiColor
+  strengthText: string
+  confirmMatched: boolean
+  canChangePassword: boolean
+  error: string
+  success: string
 }
