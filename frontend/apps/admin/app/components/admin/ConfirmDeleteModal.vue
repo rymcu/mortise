@@ -8,11 +8,13 @@ const props = withDefaults(
     open: boolean
     title?: string
     message?: string
+    errorMessage?: string
     loading?: boolean
   }>(),
   {
     title: '确认删除',
     message: '确定要删除此记录吗？删除后无法恢复。',
+    errorMessage: '',
     loading: false
   }
 )
@@ -31,6 +33,12 @@ const isOpen = computed({
 <template>
   <UModal v-model:open="isOpen" :title="title">
     <template #body>
+      <UAlert
+        v-if="errorMessage"
+        color="error"
+        :title="errorMessage"
+        class="mb-4"
+      />
       <p class="text-muted text-sm">
         {{ message }}
       </p>

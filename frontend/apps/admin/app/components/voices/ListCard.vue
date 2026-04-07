@@ -1,0 +1,185 @@
+<script setup lang="ts">
+import type { VoiceTableColumn } from '~/types/voice'
+
+const props = withDefaults(
+  defineProps<{
+    columns: VoiceTableColumn[]
+    rows: Record<string, unknown>[]
+    loading: boolean
+    errorMessage?: string
+    total: number
+    pageNum?: number
+    totalPage?: number
+    hasNext?: boolean
+    hasPrevious?: boolean
+    keyword: string
+    searchPlaceholder?: string
+    emptyText?: string
+    showActions?: boolean
+    actionsLabel?: string
+  }>(),
+  {
+    errorMessage: '',
+    searchPlaceholder: '搜索',
+    emptyText: '暂无数据',
+    showActions: false,
+    actionsLabel: '操作',
+  }
+)
+
+const emit = defineEmits<{
+  (e: 'update:keyword', value: string): void
+  (e: 'update:pageNum', value: number): void
+  (e: 'refresh' | 'searchEnter'): void
+}>()
+
+const allColumns = computed(() => {
+  const base = [...props.columns]
+  if (props.showActions) {
+    base.push({ key: '_actions', label: props.actionsLabel, align: 'right' })
+  }
+  return base
+})
+
+function cellText(row: Record<string, unknown>, key: string): string {
+  const value = row[key]
+  if (value === null || value === undefined || value === '') {
+    return '-'
+  }
+
+  return String(value)
+}
+
+const showPagination = computed(() => typeof props.pageNum === 'number')
+
+function prevPage() {
+  if (props.hasPrevious && typeof props.pageNum === 'number') {
+    emit('update:pageNum', props.pageNum - 1)
+  }
+}
+
+function nextPage() {
+  if (props.hasNext && typeof props.pageNum === 'number') {
+    emit('update:pageNum', props.pageNum + 1)
+  }
+}
+</script>
+
+<template>
+  <div>
+    <UAlert
+      v-if="errorMessage"
+      color="error"
+      variant="soft"
+      :title="errorMessage"
+      class="mb-4"
+    />
+
+    <UCard>
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+        <div class="flex flex-wrap items-center gap-2">
+          <UInput
+            :model-value="keyword"
+            :placeholder="searchPlaceholder"
+            icon="i-lucide-search"
+            class="w-72"
+            @update:model-value="emit('update:keyword', String($event || ''))"
+            @keyup.enter="emit('searchEnter')"
+          />
+          <UButton
+            color="neutral"
+            variant="soft"
+            icon="i-lucide-refresh-cw"
+            :loading="loading"
+            @click="emit('refresh')"
+          >
+            刷新
+          </UButton>
+          <slot name="filters" />
+        </div>
+
+        <div class="flex items-center gap-2">
+          <slot name="toolbar" />
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr class="border-default border-b">
+              <th
+                v-for="column in allColumns"
+                :key="column.key"
+                class="px-2 py-2"
+                :class="{
+                  'text-left': (column.align || 'left') === 'left',
+                  'text-center': column.align === 'center',
+                  'text-right': column.align === 'right'
+                }"
+              >
+                {{ column.label }}
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr
+              v-for="row in rows"
+              :key="String(row.id || JSON.stringify(row))"
+              class="border-default/60 hover:bg-elevated/50 border-b transition-colors"
+            >
+              <td
+                v-for="column in allColumns"
+                :key="column.key"
+                class="px-2 py-2"
+                :class="{
+                  'text-left': (column.align || 'left') === 'left',
+                  'text-center': column.align === 'center',
+                  'text-right': column.align === 'right'
+                }"
+              >
+                <template v-if="column.key === '_actions'">
+                  <div class="flex items-center justify-end gap-1">
+                    <slot name="actions" :row="row" />
+                  </div>
+                </template>
+                <slot v-else :name="`cell-${column.key}`" :row="row">
+                  {{ cellText(row, column.key) }}
+                </slot>
+              </td>
+            </tr>
+
+            <tr v-if="!rows.length && !loading">
+              <td :colspan="allColumns.length" class="text-muted py-6 text-center">
+                {{ emptyText }}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="text-muted mt-4 flex items-center justify-between text-sm">
+        <span>共 {{ total }} 条</span>
+        <div v-if="showPagination" class="flex items-center gap-2">
+          <UButton
+            color="neutral"
+            variant="ghost"
+            :disabled="!hasPrevious"
+            @click="prevPage"
+          >
+            上一页
+          </UButton>
+          <span>第 {{ pageNum }} 页<span v-if="totalPage"> / 共 {{ totalPage }} 页</span></span>
+          <UButton
+            color="neutral"
+            variant="ghost"
+            :disabled="!hasNext"
+            @click="nextPage"
+          >
+            下一页
+          </UButton>
+        </div>
+      </div>
+    </UCard>
+  </div>
+</template>

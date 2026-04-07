@@ -1,0 +1,17 @@
+[Unit]
+Description=Mortise Voice Runtime
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/opt/mortise-voice-runtime
+ExecStart=/usr/bin/docker compose -f /opt/mortise-voice-runtime/compose.yaml up -d --build --remove-orphans
+ExecStop=/usr/bin/docker compose -f /opt/mortise-voice-runtime/compose.yaml down
+ExecReload=/usr/bin/docker compose -f /opt/mortise-voice-runtime/compose.yaml up -d --build --remove-orphans
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target

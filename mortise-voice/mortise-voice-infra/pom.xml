@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.rymcu</groupId>
+        <artifactId>mortise-voice</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>mortise-voice-infra</artifactId>
+    <packaging>jar</packaging>
+    <name>mortise-voice-infra</name>
+    <description>Mortise Voice - Infrastructure Layer</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-voice-domain</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-voice-kernel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-persistence</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-test-support</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-voice-admin</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-voice-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
+</project>

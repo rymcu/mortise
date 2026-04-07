@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.rymcu</groupId>
+        <artifactId>mortise-voice</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>mortise-voice-domain</artifactId>
+    <packaging>jar</packaging>
+    <name>mortise-voice-domain</name>
+    <description>Mortise Voice - Domain Layer</description>
+
+    <properties>
+        <layer.guard.domain.skip>false</layer.guard.domain.skip>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+</project>

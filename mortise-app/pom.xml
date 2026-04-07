@@ -116,6 +116,18 @@
             <groupId>com.rymcu</groupId>
             <artifactId>mortise-agent-infra</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-voice-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-voice-admin</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.rymcu</groupId>
+            <artifactId>mortise-voice-infra</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>com.rymcu</groupId>
@@ -217,6 +229,10 @@
                     <groupId>com.rymcu</groupId>
                     <artifactId>mortise-commerce-api</artifactId>
                 </dependency>
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-commerce-infra</artifactId>
+                </dependency>
                 <!-- Payment 模块 -->
                 <dependency>
                     <groupId>com.rymcu</groupId>
@@ -225,6 +241,10 @@
                 <dependency>
                     <groupId>com.rymcu</groupId>
                     <artifactId>mortise-payment-api</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-payment-infra</artifactId>
                 </dependency>
                 <!-- Community 模块 -->
                 <dependency>
@@ -235,6 +255,10 @@
                     <groupId>com.rymcu</groupId>
                     <artifactId>mortise-community-api</artifactId>
                 </dependency>
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-community-infra</artifactId>
+                </dependency>
                 <!-- IM 模块 -->
                 <dependency>
                     <groupId>com.rymcu</groupId>
@@ -244,6 +268,10 @@
                     <groupId>com.rymcu</groupId>
                     <artifactId>mortise-im-api</artifactId>
                 </dependency>
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-im-infra</artifactId>
+                </dependency>
                 <!-- AIoT 模块 -->
                 <dependency>
                     <groupId>com.rymcu</groupId>
@@ -252,6 +280,10 @@
                 <dependency>
                     <groupId>com.rymcu</groupId>
                     <artifactId>mortise-aiot-api</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-aiot-infra</artifactId>
                 </dependency>
                 <dependency>
                     <groupId>com.rymcu</groupId>
@@ -266,6 +298,10 @@
                     <groupId>com.rymcu</groupId>
                     <artifactId>mortise-ota-api</artifactId>
                 </dependency>
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-ota-infra</artifactId>
+                </dependency>
                 <!-- Automation 模块 -->
                 <dependency>
                     <groupId>com.rymcu</groupId>
@@ -274,6 +310,10 @@
                 <dependency>
                     <groupId>com.rymcu</groupId>
                     <artifactId>mortise-automation-api</artifactId>
+                </dependency>
+                <dependency>
+                    <groupId>com.rymcu</groupId>
+                    <artifactId>mortise-automation-infra</artifactId>
                 </dependency>
             </dependencies>
         </profile>
