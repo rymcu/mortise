@@ -218,10 +218,17 @@ function Convert-ToSqlValue {
         return (Convert-ToSqlNumber $Value)
     }
 
-    if ($Value -is [System.Collections.IDictionary] -or
-        ($Value -is [System.Collections.IEnumerable] -and -not ($Value -is [string]))) {
+    if ($Value -is [System.Collections.IDictionary]) {
         $json = ($Value | ConvertTo-Json -Compress -Depth 30).Replace("'", "''")
         return "'$json'::jsonb"
+    }
+
+    if ($Value -is [object[]] -or ($Value -is [System.Collections.IEnumerable] -and -not ($Value -is [string]))) {
+        $elements = @($Value | ForEach-Object {
+            $escaped = ([string]$_).Replace("'", "''")
+            "'$escaped'"
+        })
+        return "ARRAY[" + ($elements -join ", ") + "]::varchar[]"
     }
 
     $text = [string]$Value
@@ -281,6 +288,9 @@ function New-LegacyKey {
         "forest_tag_article" { [string]$Row["id"] }
         "forest_topic" { [string]$Row["id"] }
         "forest_topic_tag" { [string]$Row["id"] }
+        "forest_follow" { [string]$Row["id"] }
+        "forest_product" { [string]$Row["id"] }
+        "forest_product_content" { [string]$Row["id_product"] }
         default { throw "未定义 legacy key: $TableName" }
     }
     return $result
@@ -532,6 +542,40 @@ SELECT JSON_OBJECT(
 ) FROM forest_topic_tag
 ORDER BY id;
 "@
+    forest_follow = @"
+SELECT JSON_OBJECT(
+    'id', id,
+    'follower_id', follower_id,
+    'following_id', following_id,
+    'following_type', following_type
+) FROM forest_follow
+ORDER BY id;
+"@
+    forest_product = @"
+SELECT JSON_OBJECT(
+    'id', id,
+    'product_title', product_title,
+    'product_price', product_price,
+    'product_img_url', product_img_url,
+    'product_description', product_description,
+    'weights', weights,
+    'tags', tags,
+    'status', status,
+    'created_time', created_time,
+    'updated_time', updated_time
+) FROM forest_product
+ORDER BY id;
+"@
+    forest_product_content = @"
+SELECT JSON_OBJECT(
+    'id_product', id_product,
+    'product_content', product_content,
+    'product_content_html', product_content_html,
+    'created_time', created_time,
+    'updated_time', updated_time
+) FROM forest_product_content
+ORDER BY id_product;
+"@
 }
 
 $sourceData = @{}
@@ -554,6 +598,9 @@ $tags = @($sourceData["forest_tag"])
 $tagArticles = @($sourceData["forest_tag_article"])
 $topics = @($sourceData["forest_topic"])
 $topicTags = @($sourceData["forest_topic_tag"])
+$follows = @($sourceData["forest_follow"])
+$products = @($sourceData["forest_product"])
+$productContents = @($sourceData["forest_product_content"])
 
 $anomalies = [ordered]@{
     phase0 = [ordered]@{
@@ -566,6 +613,9 @@ $anomalies = [ordered]@{
     filtered_tag_article_relations = [System.Collections.Generic.List[hashtable]]::new()
     filtered_topic_tag_relations = [System.Collections.Generic.List[hashtable]]::new()
     tag_fallbacks = [System.Collections.Generic.List[hashtable]]::new()
+    filtered_self_follows = [System.Collections.Generic.List[hashtable]]::new()
+    filtered_null_follows = [System.Collections.Generic.List[hashtable]]::new()
+    filtered_non_user_follows = [System.Collections.Generic.List[hashtable]]::new()
 }
 
 $extendByUserId = @{}
@@ -1199,8 +1249,148 @@ foreach ($relation in ($portfolioArticles | Sort-Object { [long]$_["id"] })) {
     })
 }
 
-$mappingReport = @"
-# Forest -> Mortise 第一批迁移字段映射
+# ==================== 第二批：关注关系 ====================
+
+$followRelationRows = [System.Collections.Generic.List[hashtable]]::new()
+$followSeen = @{}
+$migrationTimestamp = [datetime]::UtcNow.ToString("yyyy-MM-dd HH:mm:ss")
+Write-Stage "转换关注关系"
+foreach ($follow in ($follows | Sort-Object { [long]$_["id"] })) {
+    $followId = To-Long $follow["id"]
+    $followerId = To-Long $follow["follower_id"]
+    $followingId = To-Long $follow["following_id"]
+    $followingType = Null-IfBlank $follow["following_type"]
+
+    # 过滤非用户关注
+    if ($followingType -ne "0") {
+        $anomalies.filtered_non_user_follows.Add([ordered]@{
+            id = $followId; follower_id = $followerId; following_id = $followingId; following_type = $followingType
+        })
+        continue
+    }
+
+    # 过滤 NULL following_id
+    if ($null -eq $followingId) {
+        $anomalies.filtered_null_follows.Add([ordered]@{
+            id = $followId; follower_id = $followerId; following_id = $null
+        })
+        continue
+    }
+
+    # 过滤自关注
+    if ($followerId -eq $followingId) {
+        $anomalies.filtered_self_follows.Add([ordered]@{
+            id = $followId; follower_id = $followerId; following_id = $followingId
+        })
+        continue
+    }
+
+    # 过滤不存在的用户
+    if (-not $memberIds.ContainsKey([string]$followerId) -or -not $memberIds.ContainsKey([string]$followingId)) {
+        continue
+    }
+
+    $uniqueKey = "$followerId::$followingId"
+    if ($followSeen.ContainsKey($uniqueKey)) {
+        continue
+    }
+    $followSeen[$uniqueKey] = $true
+
+    $followRelationRows.Add([ordered]@{
+        id = $followId
+        follower_user_id = $followerId
+        following_user_id = $followingId
+        status = 1
+        ext_data = $null
+        created_time = $migrationTimestamp
+        updated_time = $null
+        del_flag = 0
+    })
+}
+Write-Host "  有效关注关系: $($followRelationRows.Count) 行 (过滤自关注 $($anomalies.filtered_self_follows.Count), NULL $($anomalies.filtered_null_follows.Count), 非用户类型 $($anomalies.filtered_non_user_follows.Count))" -ForegroundColor DarkGray
+
+# 回刷 communityStats 的 follower_count / following_count
+$followerCountByUser = @{}
+$followingCountByUser = @{}
+foreach ($rel in $followRelationRows) {
+    $followerKey = [string]$rel["follower_user_id"]
+    $followingKey = [string]$rel["following_user_id"]
+    if (-not $followingCountByUser.ContainsKey($followerKey)) { $followingCountByUser[$followerKey] = 0 }
+    $followingCountByUser[$followerKey]++
+    if (-not $followerCountByUser.ContainsKey($followingKey)) { $followerCountByUser[$followingKey] = 0 }
+    $followerCountByUser[$followingKey]++
+}
+foreach ($stat in $communityStats) {
+    $userId = [string]$stat["user_id"]
+    $stat["follower_count"] = if ($followerCountByUser.ContainsKey($userId)) { $followerCountByUser[$userId] } else { 0 }
+    $stat["following_count"] = if ($followingCountByUser.ContainsKey($userId)) { $followingCountByUser[$userId] } else { 0 }
+}
+
+# ==================== 第二批：产品 ====================
+
+$productContentById = @{}
+foreach ($row in $productContents) {
+    $productContentById[[string]$row["id_product"]] = $row
+}
+
+$productRows = [System.Collections.Generic.List[hashtable]]::new()
+Write-Stage "转换产品"
+foreach ($product in ($products | Sort-Object { [long]$_["id"] })) {
+    $productId = [long]$product["id"]
+    $contentRow = Get-Value -Map $productContentById -Key ([string]$productId)
+    $createdTime = To-DateTimeString $product["created_time"]
+    $updatedTime = To-DateTimeString $product["updated_time"]
+
+    # tags: 逗号分隔 → PostgreSQL 数组
+    $tagsRaw = Null-IfBlank $product["tags"]
+    $tagsArray = $null
+    if ($null -ne $tagsRaw) {
+        $tagsArray = @($tagsRaw.Split(",") | ForEach-Object { $_.Trim() } | Where-Object { $_ -ne "" })
+    }
+
+    $extData = [ordered]@{
+        legacy = [ordered]@{
+            priceInCents = To-Int $product["product_price"] 0
+        }
+    }
+    if ($null -ne $contentRow) {
+        $html = Null-IfBlank $contentRow["product_content_html"]
+        if ($null -ne $html) {
+            $extData.legacy["contentHtml"] = $html
+        }
+    }
+
+    $productRows.Add([ordered]@{
+        id = $productId
+        title = Null-IfBlank $product["product_title"]
+        subtitle = $null
+        description = if ($null -ne $contentRow) { (Null-IfBlank $contentRow["product_content"]) ?? '' } else { '' }
+        short_description = Null-IfBlank $product["product_description"]
+        cover_image_url = Null-IfBlank $product["product_img_url"]
+        gallery_images = $null
+        product_type = "hardware"
+        category_id = $null
+        tags = $tagsArray
+        features = $null
+        specifications = $extData
+        seo_title = $null
+        seo_description = $null
+        seo_keywords = $null
+        status = 1
+        is_featured = $false
+        sort_no = To-Int $product["weights"] 0
+        created_by = $null
+        created_time = $createdTime
+        updated_time = $updatedTime
+        published_time = $createdTime
+        product_code = "PRD-" + ([string]$productId).PadLeft(6, '0')
+        del_flag = 0
+    })
+}
+Write-Host "  产品: $($productRows.Count) 行" -ForegroundColor DarkGray
+
+$mappingReport = @'
+# Forest -> Mortise 迁移字段映射
 
 ## 执行摘要
 
@@ -1264,7 +1454,30 @@ $mappingReport = @"
 - `forest_tag_article -> mortise_article_tag`
 - `forest_topic_tag -> mortise_topic_tag`
 - `mortise_article_topic` 由有效 `article-tag` 与 `topic-tag` 关系推导
-"@
+
+## 关注关系
+
+- `forest_follow` (type=0) -> `mortise_community_follow_relation`
+- `follower_id -> follower_user_id`
+- `following_id -> following_user_id`
+- `status = 1`, `del_flag = 0`
+- 无 `created_time` → 使用迁移时间戳
+- 过滤: 自关注、NULL following_id、非用户类型
+- 导入后回刷 `mortise_community_user_stat.follower_count / following_count`
+
+## 产品
+
+- `forest_product` + `forest_product_content` -> `mortise_product`
+- `product_title -> title`
+- `product_description -> short_description`
+- `product_content -> description`
+- `product_img_url -> cover_image_url`
+- `weights -> sort_no`
+- `tags` 逗号分隔 -> PostgreSQL `VARCHAR[]`
+- `product_type = 'hardware'`
+- `product_code = 'PRD-' + LPAD(id, 6, '0')`
+- `product_price / product_content_html -> specifications.legacy`
+'@
 Set-Content -Path (Join-Path $reportDir "field-mapping.md") -Value $mappingReport -Encoding utf8
 
 Save-JsonFile -Path (Join-Path $reportDir "anomalies.json") -Value $anomalies
@@ -1295,6 +1508,7 @@ Write-Stage "生成正式表导入 SQL"
 $loadBuilder = [System.Text.StringBuilder]::new()
 [void]$loadBuilder.AppendLine("BEGIN;")
 [void]$loadBuilder.AppendLine("TRUNCATE TABLE")
+[void]$loadBuilder.AppendLine("    mortise.mortise_product,")
 [void]$loadBuilder.AppendLine("    mortise.mortise_collection_article,")
 [void]$loadBuilder.AppendLine("    mortise.mortise_collection_member,")
 [void]$loadBuilder.AppendLine("    mortise.mortise_collection,")
@@ -1378,6 +1592,18 @@ Add-InsertSql -Builder $loadBuilder -TableName "mortise.mortise_collection_artic
     "id", "collection_id", "article_id", "sort_no", "note", "added_by", "created_time", "updated_time"
 ) -Rows $collectionArticleRows
 
+Add-InsertSql -Builder $loadBuilder -TableName "mortise.mortise_community_follow_relation" -Columns @(
+    "id", "follower_user_id", "following_user_id", "status", "ext_data", "created_time", "updated_time", "del_flag"
+) -Rows $followRelationRows
+
+Add-InsertSql -Builder $loadBuilder -TableName "mortise.mortise_product" -Columns @(
+    "id", "title", "subtitle", "description", "short_description", "cover_image_url", "gallery_images",
+    "product_type", "category_id", "tags", "features", "specifications",
+    "seo_title", "seo_description", "seo_keywords",
+    "status", "is_featured", "sort_no", "created_by", "created_time", "updated_time", "published_time",
+    "product_code", "del_flag"
+) -Rows $productRows
+
 [void]$loadBuilder.AppendLine("SELECT setval('mortise.seq_topic_tag_id', COALESCE((SELECT MAX(id) FROM mortise.mortise_topic_tag), 1), true);")
 [void]$loadBuilder.AppendLine("COMMIT;")
 
@@ -1407,6 +1633,8 @@ $expectedCounts = [ordered]@{
     mortise_collection = $collectionRows.Count
     mortise_collection_member = $collectionMemberRows.Count
     mortise_collection_article = $collectionArticleRows.Count
+    mortise_community_follow_relation = $followRelationRows.Count
+    mortise_product = $productRows.Count
 }
 $expectedSourceCounts = [ordered]@{
     forest_user = $users.Count
@@ -1420,6 +1648,9 @@ $expectedSourceCounts = [ordered]@{
     forest_tag_article = $tagArticles.Count
     forest_topic = $topics.Count
     forest_topic_tag = $topicTags.Count
+    forest_follow = $follows.Count
+    forest_product = $products.Count
+    forest_product_content = $productContents.Count
 }
 
 $overallPass = $true
@@ -1445,7 +1676,9 @@ UNION ALL SELECT 'mortise_article_topic', COUNT(*)::text FROM $TargetSchema.mort
 UNION ALL SELECT 'mortise_comment', COUNT(*)::text FROM $TargetSchema.mortise_comment
 UNION ALL SELECT 'mortise_collection', COUNT(*)::text FROM $TargetSchema.mortise_collection
 UNION ALL SELECT 'mortise_collection_member', COUNT(*)::text FROM $TargetSchema.mortise_collection_member
-UNION ALL SELECT 'mortise_collection_article', COUNT(*)::text FROM $TargetSchema.mortise_collection_article;
+UNION ALL SELECT 'mortise_collection_article', COUNT(*)::text FROM $TargetSchema.mortise_collection_article
+UNION ALL SELECT 'mortise_community_follow_relation', COUNT(*)::text FROM $TargetSchema.mortise_community_follow_relation
+UNION ALL SELECT 'mortise_product', COUNT(*)::text FROM $TargetSchema.mortise_product;
 "@
     $countRows = Invoke-TargetPostgres -Sql $countSql -AsQuery
     $actualCounts = @{}
@@ -1475,7 +1708,10 @@ UNION ALL SELECT 'forest_portfolio_article', COUNT(*)::text FROM $TargetLegacySc
 UNION ALL SELECT 'forest_tag', COUNT(*)::text FROM $TargetLegacySchema.forest_tag
 UNION ALL SELECT 'forest_tag_article', COUNT(*)::text FROM $TargetLegacySchema.forest_tag_article
 UNION ALL SELECT 'forest_topic', COUNT(*)::text FROM $TargetLegacySchema.forest_topic
-UNION ALL SELECT 'forest_topic_tag', COUNT(*)::text FROM $TargetLegacySchema.forest_topic_tag;
+UNION ALL SELECT 'forest_topic_tag', COUNT(*)::text FROM $TargetLegacySchema.forest_topic_tag
+UNION ALL SELECT 'forest_follow', COUNT(*)::text FROM $TargetLegacySchema.forest_follow
+UNION ALL SELECT 'forest_product', COUNT(*)::text FROM $TargetLegacySchema.forest_product
+UNION ALL SELECT 'forest_product_content', COUNT(*)::text FROM $TargetLegacySchema.forest_product_content;
 "@
     $legacyCountRows = Invoke-TargetPostgres -Sql $legacyCountSql -AsQuery
     $legacyCounts = @{}
@@ -1546,7 +1782,31 @@ WHERE (c.parent_id IS NULL AND (c.root_id <> c.id OR c.depth <> 0 OR c.path <> c
 UNION ALL
 SELECT 'dup_member_username', (COUNT(*) - COUNT(DISTINCT username))::text FROM $TargetSchema.mortise_member WHERE username IS NOT NULL
 UNION ALL
-SELECT 'dup_member_email', (COUNT(*) - COUNT(DISTINCT email))::text FROM $TargetSchema.mortise_member WHERE email IS NOT NULL;
+SELECT 'dup_member_email', (COUNT(*) - COUNT(DISTINCT email))::text FROM $TargetSchema.mortise_member WHERE email IS NOT NULL
+UNION ALL
+SELECT 'orphan_follow_follower', COUNT(*)::text
+FROM $TargetSchema.mortise_community_follow_relation f
+LEFT JOIN $TargetSchema.mortise_member m ON m.id = f.follower_user_id
+WHERE m.id IS NULL
+UNION ALL
+SELECT 'orphan_follow_following', COUNT(*)::text
+FROM $TargetSchema.mortise_community_follow_relation f
+LEFT JOIN $TargetSchema.mortise_member m ON m.id = f.following_user_id
+WHERE m.id IS NULL
+UNION ALL
+SELECT 'dup_follow_relation', (COUNT(*) - COUNT(DISTINCT (follower_user_id::text || '::' || following_user_id::text)))::text
+FROM $TargetSchema.mortise_community_follow_relation
+UNION ALL
+SELECT 'self_follow', COUNT(*)::text
+FROM $TargetSchema.mortise_community_follow_relation
+WHERE follower_user_id = following_user_id
+UNION ALL
+SELECT 'dup_product_code', (COUNT(*) - COUNT(DISTINCT product_code))::text FROM $TargetSchema.mortise_product
+UNION ALL
+SELECT 'follow_stat_mismatch', COUNT(*)::text
+FROM $TargetSchema.mortise_community_user_stat s
+WHERE s.follower_count <> (SELECT COUNT(*) FROM $TargetSchema.mortise_community_follow_relation WHERE following_user_id = s.user_id AND del_flag = 0)
+   OR s.following_count <> (SELECT COUNT(*) FROM $TargetSchema.mortise_community_follow_relation WHERE follower_user_id = s.user_id AND del_flag = 0);
 "@
     $orphanRows = Invoke-TargetPostgres -Sql $orphanSql -AsQuery
     foreach ($line in $orphanRows) {
@@ -1610,7 +1870,22 @@ UNION ALL
 SELECT 'comment_author', COUNT(*)::text
 FROM $TargetSchema.mortise_comment c
 JOIN $TargetLegacySchema.forest_comment l ON l.source_key = c.id::text
-WHERE c.author_id::text IS DISTINCT FROM l.payload->>'comment_author_id';
+WHERE c.author_id::text IS DISTINCT FROM l.payload->>'comment_author_id'
+UNION ALL
+SELECT 'follow_follower', COUNT(*)::text
+FROM $TargetSchema.mortise_community_follow_relation f
+JOIN $TargetLegacySchema.forest_follow l ON l.source_key = f.id::text
+WHERE f.follower_user_id::text IS DISTINCT FROM l.payload->>'follower_id'
+UNION ALL
+SELECT 'follow_following', COUNT(*)::text
+FROM $TargetSchema.mortise_community_follow_relation f
+JOIN $TargetLegacySchema.forest_follow l ON l.source_key = f.id::text
+WHERE f.following_user_id::text IS DISTINCT FROM l.payload->>'following_id'
+UNION ALL
+SELECT 'product_title', COUNT(*)::text
+FROM $TargetSchema.mortise_product p
+JOIN $TargetLegacySchema.forest_product l ON l.source_key = p.id::text
+WHERE p.title IS DISTINCT FROM TRIM(l.payload->>'product_title');
 "@
     $fieldCheckRows = Invoke-TargetPostgres -Sql $fieldCheckSql -AsQuery
     foreach ($line in $fieldCheckRows) {
@@ -1694,6 +1969,39 @@ ORDER BY RANDOM() LIMIT 10;
 "@
         $sampleCollections = Invoke-TargetPostgres -Sql $sampleCollectionSql -AsQuery | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
         $sampleData["collections"] = @($sampleCollections | ForEach-Object { $_ | ConvertFrom-Json -AsHashtable })
+
+        $sampleFollowSql = @"
+SELECT jsonb_build_object(
+    'id', f.id, 'follower_user_id', f.follower_user_id, 'following_user_id', f.following_user_id,
+    'status', f.status,
+    'follower_nickname', m1.nickname, 'following_nickname', m2.nickname,
+    'src_follower_id', l.payload->>'follower_id',
+    'src_following_id', l.payload->>'following_id'
+)::text
+FROM $TargetSchema.mortise_community_follow_relation f
+JOIN $TargetSchema.mortise_member m1 ON m1.id = f.follower_user_id
+JOIN $TargetSchema.mortise_member m2 ON m2.id = f.following_user_id
+JOIN $TargetLegacySchema.forest_follow l ON l.source_key = f.id::text
+ORDER BY RANDOM() LIMIT 20;
+"@
+        $sampleFollows = Invoke-TargetPostgres -Sql $sampleFollowSql -AsQuery | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+        $sampleData["follows"] = @($sampleFollows | ForEach-Object { $_ | ConvertFrom-Json -AsHashtable })
+
+        $sampleProductSql = @"
+SELECT jsonb_build_object(
+    'id', p.id, 'title', p.title, 'product_code', p.product_code, 'product_type', p.product_type,
+    'short_description', p.short_description, 'cover_image_url', p.cover_image_url,
+    'tags', p.tags, 'sort_no', p.sort_no, 'status', p.status,
+    'src_title', l.payload->>'product_title',
+    'src_price', l.payload->>'product_price',
+    'src_img_url', l.payload->>'product_img_url'
+)::text
+FROM $TargetSchema.mortise_product p
+JOIN $TargetLegacySchema.forest_product l ON l.source_key = p.id::text
+ORDER BY p.id;
+"@
+        $sampleProducts = Invoke-TargetPostgres -Sql $sampleProductSql -AsQuery | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
+        $sampleData["products"] = @($sampleProducts | ForEach-Object { $_ | ConvertFrom-Json -AsHashtable })
     } catch {
         Write-Host "  ⚠️ 抽样查询出错，跳过: $_" -ForegroundColor Yellow
     }
@@ -1716,13 +2024,16 @@ $validationReport = [ordered]@{
         filtered_invalid_topic_tag_relations = $anomalies.filtered_topic_tag_relations.Count
         email_conflicts = $anomalies.email_conflicts.Count
         tag_fallbacks = $anomalies.tag_fallbacks.Count
+        filtered_self_follows = $anomalies.filtered_self_follows.Count
+        filtered_null_follows = $anomalies.filtered_null_follows.Count
+        filtered_non_user_follows = $anomalies.filtered_non_user_follows.Count
     }
 }
 Save-JsonFile -Path (Join-Path $reportDir "validation.json") -Value $validationReport
 
 # --- 生成 Markdown 校验报告 ---
 $sb = [System.Text.StringBuilder]::new()
-[void]$sb.AppendLine("# Forest → Mortise 第一批迁移校验报告")
+[void]$sb.AppendLine("# Forest → Mortise 迁移校验报告")
 [void]$sb.AppendLine()
 $overallIcon = if ($overallPass) { "✅ PASS" } else { "❌ FAIL" }
 [void]$sb.AppendLine("**整体结果: $overallIcon**")
@@ -1799,6 +2110,9 @@ if ($fieldCheckResults.Count -gt 0) {
 [void]$sb.AppendLine("| 过滤坏专题标签关系 | $($anomalies.filtered_topic_tag_relations.Count) |")
 [void]$sb.AppendLine("| 邮箱冲突处理 | $($anomalies.email_conflicts.Count) |")
 [void]$sb.AppendLine("| 空标签回填 | $($anomalies.tag_fallbacks.Count) |")
+[void]$sb.AppendLine("| 自关注过滤 | $($anomalies.filtered_self_follows.Count) |")
+[void]$sb.AppendLine("| NULL following_id 过滤 | $($anomalies.filtered_null_follows.Count) |")
+[void]$sb.AppendLine("| 非用户关注排除 | $($anomalies.filtered_non_user_follows.Count) |")
 [void]$sb.AppendLine()
 
 if ($sampleData.Count -gt 0) {
@@ -1809,6 +2123,8 @@ if ($sampleData.Count -gt 0) {
     [void]$sb.AppendLine("- 20 篇文章（含标题、状态、作者、标签数）")
     [void]$sb.AppendLine("- 20 条评论（含层级结构、正文预览）")
     [void]$sb.AppendLine("- 10 个作品集（含标题、作者、文章数）")
+    [void]$sb.AppendLine("- 20 条关注关系（含关注者/被关注者昵称）")
+    [void]$sb.AppendLine("- 全部产品（含标题、编码、标签、价格）")
 }
 
 Set-Content -Path (Join-Path $reportDir "summary.md") -Value $sb.ToString() -Encoding utf8
