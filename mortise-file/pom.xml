@@ -44,10 +44,11 @@
             <version>2.3.0</version>
         </dependency>
 
+        <!-- Amazon S3 SDK（用于 RustFS 等 S3 兼容存储） -->
         <dependency>
-            <groupId>com.aliyun.oss</groupId>
-            <artifactId>aliyun-sdk-oss</artifactId>
-            <version>3.17.4</version>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <version>1.12.429</version>
         </dependency>
 
         <!-- Jakarta Validation -->

@@ -80,21 +80,42 @@ services:
     networks:
       - mortise-net
 
+  rustfs-perms:
+    image: busybox:1.36
+    container_name: mortise-rustfs-perms
+    command:
+      - /bin/sh
+      - -c
+      - mkdir -p /data /logs && chown -R 10001:10001 /data /logs
+    volumes:
+      - ./app/rustfs/data:/data
+      - ./app/rustfs/logs:/logs
+    restart: "no"
+    networks:
+      - mortise-net
+
   rustfs:
     image: rustfs/rustfs:latest
     container_name: mortise-rustfs
     restart: unless-stopped
+    depends_on:
+      rustfs-perms:
+        condition: service_completed_successfully
     ports:
       - '${RUSTFS_PORT:-9000}:9000'
+      - '${RUSTFS_CONSOLE_PORT:-9001}:9001'
     environment:
       TZ: ${TZ}
       RUSTFS_CONSOLE_ENABLE: 'true'
+      RUSTFS_CONSOLE_ADDRESS: ':9001'
       RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY}
       RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY}
+      RUSTFS_OBS_LOG_DIRECTORY: /logs
     volumes:
-      - rustfs-data:/data
+      - ./app/rustfs/data:/data
+      - ./app/rustfs/logs:/logs
     healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:9000/health >/dev/null 2>&1 || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9000/health >/dev/null 2>&1 && wget -qO- http://localhost:9001/rustfs/console/health >/dev/null 2>&1 || exit 1"]
       interval: 5s
       timeout: 3s
       retries: 30
@@ -183,7 +204,6 @@ services:
       - mortise-net
 
 volumes:
-  rustfs-data:
   emqx-data:
   emqx-log:
 

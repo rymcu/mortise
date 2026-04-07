@@ -5,7 +5,7 @@
 ## 功能特性
 
 - ✅ 统一文件上传接口
-- ✅ 支持多种存储平台（本地、阿里云OSS、腾讯云COS、MinIO等）
+- ✅ 支持多种存储平台（本地、Amazon S3 兼容（RustFS/MinIO）、阿里云OSS等）
 - ✅ 自动生成缩略图
 - ✅ 文件信息持久化
 - ✅ 文件上传/删除监听
@@ -51,10 +51,36 @@ mortise:
     max-file-size: 10485760  # 10MB
 ```
 
-### 3. 数据库迁移
+### 3. 生产环境配置（RustFS / S3 兼容）
 
-文件模块的数据库表由 Flyway 自动创建：
-- `V7__Create_File_Tables.sql` - 创建文件记录表和分片表
+生产环境默认使用 Amazon S3 兼容协议对接 RustFS：
+
+```yaml
+dromara:
+  x-file-storage:
+    default-platform: amazon-s3-1
+    thumbnail-suffix: .min
+    amazon-s3:
+      - platform: amazon-s3-1
+        enable-storage: true
+        access-key: ${RUSTFS_ACCESS_KEY}
+        secret-key: ${RUSTFS_SECRET_KEY}
+        end-point: ${RUSTFS_ENDPOINT:http://localhost:9000}
+        bucket-name: ${RUSTFS_BUCKET:mortise}
+        domain: ${RUSTFS_DOMAIN:http://localhost:9000/mortise/}
+        base-path: ${RUSTFS_BASE_PATH:public/}
+```
+
+需要在环境变量或 `.env` 中配置：
+
+| 变量 | 说明 | 示例 |
+|------|------|------|
+| `RUSTFS_ACCESS_KEY` | S3 AccessKey | `changeme` |
+| `RUSTFS_SECRET_KEY` | S3 SecretKey | `changeme` |
+| `RUSTFS_ENDPOINT` | S3 端点地址 | `http://mortise-rustfs:9000` |
+| `RUSTFS_BUCKET` | 桶名称 | `mortise` |
+| `RUSTFS_DOMAIN` | 文件访问域名（"/"结尾） | `http://localhost:9000/mortise/` |
+| `RUSTFS_BASE_PATH` | 基础路径 | `public/` |
 
 ### 4. 使用示例
 
@@ -319,11 +345,10 @@ fileStorageService.of(file)
 
 x-file-storage 支持多种存储平台，可根据需要配置：
 
-- 本地存储 (local)
+- 本地存储 (local-plus) — 开发环境
+- Amazon S3 / RustFS / MinIO (amazon-s3) — **生产环境默认**
 - 阿里云 OSS (aliyun-oss)
 - 腾讯云 COS (tencent-cos)
-- MinIO (minio)
-- AWS S3 (aws-s3)
 - 更多...
 
 ### 文件监听器

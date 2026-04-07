@@ -212,17 +212,17 @@ executor:
 
 dromara:
   x-file-storage:
-    default-platform: ${FILE_STORAGE_DEFAULT_PLATFORM:aliyun-oss-1}
+    default-platform: ${FILE_STORAGE_DEFAULT_PLATFORM:amazon-s3-1}
     thumbnail-suffix: .min
-    aliyun-oss:
-      - platform: aliyun-oss-1
+    amazon-s3:
+      - platform: amazon-s3-1
         enable-storage: true
-        access-key: ${OSS_ACCESS_KEY}
-        secret-key: ${OSS_SECRET_KEY}
-        end-point: ${OSS_ENDPOINT}
-        bucket-name: ${OSS_BUCKET}
-        domain: ${OSS_DOMAIN}
-        base-path: ${OSS_BASE_PATH:mortise/}
+        access-key: ${RUSTFS_ACCESS_KEY}
+        secret-key: ${RUSTFS_SECRET_KEY}
+        end-point: ${RUSTFS_ENDPOINT:http://localhost:9000}
+        bucket-name: ${RUSTFS_BUCKET:mortise}
+        domain: ${RUSTFS_DOMAIN:http://localhost:9000/mortise/}
+        base-path: ${RUSTFS_BASE_PATH:public/}
 
 mybatis-flex:
   mapper-locations: classpath*:/mapper/**/*.xml
