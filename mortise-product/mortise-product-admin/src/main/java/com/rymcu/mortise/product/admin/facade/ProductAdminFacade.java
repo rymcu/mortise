@@ -1,6 +1,6 @@
 package com.rymcu.mortise.product.admin.facade;
 
-import com.mybatisflex.core.paginate.Page;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.product.entity.Product;
 
 import java.util.List;
@@ -8,8 +8,8 @@ import java.util.Map;
 
 public interface ProductAdminFacade {
 
-    Page<Product> listProducts(Integer pageNum, Integer pageSize, String keyword, String productType,
-                               Long categoryId, Integer status, Boolean isFeatured);
+    PageResult<Product> listProducts(Integer pageNum, Integer pageSize, String keyword, String productType,
+                                     Long categoryId, Integer status, Boolean isFeatured);
 
     Product getProduct(Long id);
 

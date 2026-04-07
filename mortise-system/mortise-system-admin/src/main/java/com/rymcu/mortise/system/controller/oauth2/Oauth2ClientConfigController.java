@@ -1,9 +1,9 @@
 package com.rymcu.mortise.system.controller.oauth2;
 
 import com.rymcu.mortise.web.annotation.AdminController;
-import com.mybatisflex.core.paginate.Page;
 import com.rymcu.mortise.auth.model.OAuth2ClientConfigSearch;
 import com.rymcu.mortise.common.model.BatchUpdateInfo;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.log.annotation.ApiLog;
 import com.rymcu.mortise.log.annotation.OperationLog;
@@ -40,7 +40,7 @@ public class Oauth2ClientConfigController {
 	@GetMapping
 	@PreAuthorize("hasAuthority('system:oauth2-client:list')")
 	@ApiLog(recordResponseBody = false, value = "获取OAuth2客户端配置列表")
-	public GlobalResult<Page<OAuth2ClientConfigVO>> list(@Parameter(description = "查询条件") OAuth2ClientConfigSearch search) {
+	public GlobalResult<PageResult<OAuth2ClientConfigVO>> list(@Parameter(description = "查询条件") OAuth2ClientConfigSearch search) {
 		return oauth2ClientConfigAdminFacade.list(search);
 	}
 

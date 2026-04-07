@@ -1,6 +1,7 @@
 package com.rymcu.mortise.product.admin.facade.impl;
 
 import com.mybatisflex.core.paginate.Page;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.product.admin.facade.ProductAdminFacade;
 import com.rymcu.mortise.product.dto.ProductQueryParam;
 import com.rymcu.mortise.product.entity.Product;
@@ -24,11 +25,12 @@ public class ProductAdminFacadeImpl implements ProductAdminFacade {
     }
 
     @Override
-    public Page<Product> listProducts(Integer pageNum, Integer pageSize, String keyword, String productType,
-                                      Long categoryId, Integer status, Boolean isFeatured) {
+    public PageResult<Product> listProducts(Integer pageNum, Integer pageSize, String keyword, String productType,
+                                            Long categoryId, Integer status, Boolean isFeatured) {
         Page<Product> page = new Page<>(pageNum, pageSize);
         ProductQueryParam param = new ProductQueryParam(keyword, productType, categoryId, status, isFeatured);
-        return productQueryService.pageByParam(page, param);
+        Page<Product> result = productQueryService.pageByParam(page, param);
+        return PageResult.of(result.getPageNumber(), result.getPageSize(), result.getTotalRow(), result.getRecords());
     }
 
     @Override

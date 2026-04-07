@@ -1,6 +1,6 @@
 package com.rymcu.mortise.system.controller;
 
-import com.mybatisflex.core.paginate.Page;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.system.controller.facade.SystemFileAdminFacade;
 import com.rymcu.mortise.system.controller.vo.FileDetailVO;
@@ -40,7 +40,7 @@ public class SystemFileController {
     @GetMapping
     @PreAuthorize("hasAuthority('system:file:list')")
     @com.rymcu.mortise.log.annotation.ApiLog(value = "查询文件列表", recordParams = false, recordResponseBody = false)
-    public GlobalResult<Page<FileDetailVO>> listFiles(
+    public GlobalResult<PageResult<FileDetailVO>> listFiles(
             @Parameter(description = "页码，从 1 开始") @RequestParam(defaultValue = "1") @Min(1) int pageNumber,
             @Parameter(description = "每页条数") @RequestParam(defaultValue = "20") @Min(1) int pageSize,
             @Parameter(description = "文件名关键词") @RequestParam(required = false) String keyword) {

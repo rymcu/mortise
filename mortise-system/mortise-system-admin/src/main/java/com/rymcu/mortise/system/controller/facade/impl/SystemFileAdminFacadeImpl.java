@@ -3,6 +3,7 @@ package com.rymcu.mortise.system.controller.facade.impl;
 import com.mybatisflex.core.paginate.Page;
 import com.mybatisflex.core.query.QueryColumn;
 import com.mybatisflex.core.query.QueryWrapper;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.file.entity.FileDetail;
 import com.rymcu.mortise.file.mapper.FileDetailMapper;
@@ -34,7 +35,7 @@ public class SystemFileAdminFacadeImpl implements SystemFileAdminFacade {
     }
 
     @Override
-    public GlobalResult<Page<FileDetailVO>> listFiles(int pageNumber, int pageSize, String keyword) {
+    public GlobalResult<PageResult<FileDetailVO>> listFiles(int pageNumber, int pageSize, String keyword) {
         QueryWrapper queryWrapper = QueryWrapper.create();
         if (StringUtils.hasText(keyword)) {
             QueryColumn colOriginalFilename = new QueryColumn("original_filename");
@@ -43,12 +44,14 @@ public class SystemFileAdminFacadeImpl implements SystemFileAdminFacade {
         queryWrapper.orderBy(new QueryColumn(FileDetail.COL_ID), false);
         Page<FileDetail> page = fileDetailMapper.paginate(new Page<>(pageNumber, pageSize), queryWrapper);
 
-        Page<FileDetailVO> voPage = new Page<>(page.getPageNumber(), page.getPageSize());
-        voPage.setTotalRow(page.getTotalRow());
-        voPage.setRecords(page.getRecords().stream()
+        return GlobalResult.success(PageResult.of(
+            page.getPageNumber(),
+            page.getPageSize(),
+            page.getTotalRow(),
+            page.getRecords().stream()
                 .map(FileDetailAdminAssembler::toVO)
-                .toList());
-        return GlobalResult.success(voPage);
+            .toList()
+        ));
     }
 
     @Override

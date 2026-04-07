@@ -1,6 +1,6 @@
 package com.rymcu.mortise.product.admin.controller;
 
-import com.mybatisflex.core.paginate.Page;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.log.annotation.ApiLog;
 import com.rymcu.mortise.log.annotation.OperationLog;
@@ -38,7 +38,7 @@ public class ProductAdminController {
     @ApiLog("查询产品列表")
     @Operation(summary = "分页查询产品列表（支持按类型、分类、状态、关键字过滤）")
     @PreAuthorize("hasAuthority('product:catalog:list')")
-    public GlobalResult<Page<Product>> listProducts(
+    public GlobalResult<PageResult<Product>> listProducts(
             @Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer pageNum,
             @Parameter(description = "每页数量") @RequestParam(defaultValue = "10") Integer pageSize,
             @Parameter(description = "标题关键字") @RequestParam(required = false) String keyword,

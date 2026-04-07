@@ -1,6 +1,6 @@
 package com.rymcu.mortise.member.admin.controller;
 
-import com.mybatisflex.core.paginate.Page;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.log.annotation.ApiLog;
 import com.rymcu.mortise.log.annotation.OperationLog;
@@ -44,10 +44,8 @@ public class MemberController {
     @GetMapping
     @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('member:list')")
     @ApiLog(recordParams = false, recordResponseBody = false, value = "查询会员列表")
-    public GlobalResult<Page<MemberInfo>> listMembers(@Parameter(description = "会员查询条件") @Valid MemberSearch search) {
-        Page<MemberInfo> page = new Page<>(search.getPageNum(), search.getPageSize());
-        page = adminMemberFacade.listMembers(page, search);
-        return GlobalResult.success(page);
+    public GlobalResult<PageResult<MemberInfo>> listMembers(@Parameter(description = "会员查询条件") @Valid MemberSearch search) {
+        return GlobalResult.success(adminMemberFacade.listMembers(search));
     }
 
     @Operation(summary = "获取会员详情", description = "根据ID获取会员详细信息")

@@ -1,6 +1,7 @@
 package com.rymcu.mortise.system.controller.facade;
 
 import com.mybatisflex.core.paginate.Page;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.system.controller.vo.FileDetailVO;
 import jakarta.validation.constraints.Min;
@@ -10,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface SystemFileAdminFacade {
 
-    GlobalResult<Page<FileDetailVO>> listFiles(@Min(1) int pageNumber, @Min(1) int pageSize, String keyword);
+    GlobalResult<PageResult<FileDetailVO>> listFiles(@Min(1) int pageNumber, @Min(1) int pageSize, String keyword);
 
     GlobalResult<Boolean> deleteFile(Long id);
 

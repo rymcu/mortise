@@ -3,17 +3,15 @@ package com.rymcu.mortise.wechat.controller;
 import com.rymcu.mortise.web.annotation.ApiController;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.wechat.entity.TemplateMessage;
-import com.rymcu.mortise.wechat.service.WeChatMessageService;
+import com.rymcu.mortise.wechat.facade.WeChatMessageFacade;
+import com.rymcu.mortise.wechat.facade.WeChatMessageFacade.NewsMessageRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import me.chanjar.weixin.common.error.WxErrorException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -22,15 +20,14 @@ import java.util.Map;
  * @author ronger
  * @since 1.0.0
  */
-@Slf4j
 @ApiController
 @RequestMapping("/wechat/messages")
 @RequiredArgsConstructor
-@ConditionalOnBean(WeChatMessageService.class)
+@ConditionalOnBean(WeChatMessageFacade.class)
 @Tag(name = "微信消息", description = "微信消息发送相关接口")
 public class WeChatMessageController {
 
-    private final WeChatMessageService weChatMessageService;
+    private final WeChatMessageFacade weChatMessageFacade;
 
     /**
      * 发送模板消息
@@ -46,20 +43,7 @@ public class WeChatMessageController {
             @RequestBody TemplateMessage message,
             @Parameter(description = "账号ID（可选，不传则使用默认账号）")
             @RequestParam(required = false) Long accountId) {
-
-        try {
-            String msgId = weChatMessageService.sendTemplateMessage(accountId, message);
-
-            Map<String, String> result = new HashMap<>();
-            result.put("msgId", msgId);
-            result.put("status", "success");
-
-            return GlobalResult.success(result);
-
-        } catch (WxErrorException e) {
-            log.error("发送模板消息失败", e);
-            return GlobalResult.error("发送模板消息失败: " + e.getMessage());
-        }
+        return GlobalResult.success(weChatMessageFacade.sendTemplateMessage(accountId, message));
     }
 
     /**
@@ -79,19 +63,7 @@ public class WeChatMessageController {
             @RequestParam String content,
             @Parameter(description = "账号ID（可选，不传则使用默认账号）")
             @RequestParam(required = false) Long accountId) {
-
-        try {
-            weChatMessageService.sendTextMessage(accountId, openId, content);
-
-            Map<String, String> result = new HashMap<>();
-            result.put("status", "success");
-
-            return GlobalResult.success(result);
-
-        } catch (WxErrorException e) {
-            log.error("发送文本消息失败", e);
-            return GlobalResult.error("发送文本消息失败: " + e.getMessage());
-        }
+        return GlobalResult.success(weChatMessageFacade.sendTextMessage(accountId, openId, content));
     }
 
     /**
@@ -108,38 +80,7 @@ public class WeChatMessageController {
             @RequestBody NewsMessageRequest request,
             @Parameter(description = "账号ID（可选，不传则使用默认账号）")
             @RequestParam(required = false) Long accountId) {
-
-        try {
-            weChatMessageService.sendNewsMessage(
-                    accountId,
-                    request.getOpenId(),
-                    request.getTitle(),
-                    request.getDescription(),
-                    request.getUrl(),
-                    request.getPicUrl()
-            );
-
-            Map<String, String> result = new HashMap<>();
-            result.put("status", "success");
-
-            return GlobalResult.success(result);
-
-        } catch (WxErrorException e) {
-            log.error("发送图文消息失败", e);
-            return GlobalResult.error("发送图文消息失败: " + e.getMessage());
-        }
-    }
-
-    /**
-     * 图文消息请求对象
-     */
-    @lombok.Data
-    public static class NewsMessageRequest {
-        private String openId;
-        private String title;
-        private String description;
-        private String url;
-        private String picUrl;
+        return GlobalResult.success(weChatMessageFacade.sendNewsMessage(accountId, request));
     }
 }
 

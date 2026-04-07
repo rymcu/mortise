@@ -1,6 +1,7 @@
 package com.rymcu.mortise.member.admin.facade.impl;
 
 import com.mybatisflex.core.paginate.Page;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.member.admin.facade.AdminMemberFacade;
 import com.rymcu.mortise.member.admin.model.MemberInfo;
 import com.rymcu.mortise.member.admin.model.MemberSearch;
@@ -17,8 +18,15 @@ public class AdminMemberFacadeImpl implements AdminMemberFacade {
     }
 
     @Override
-    public Page<MemberInfo> listMembers(Page<MemberInfo> page, MemberSearch search) {
-        return adminMemberService.findMemberList(page, search);
+    public PageResult<MemberInfo> listMembers(MemberSearch search) {
+        Page<MemberInfo> page = new Page<>(search.getPageNum(), search.getPageSize());
+        page = adminMemberService.findMemberList(page, search);
+        return PageResult.of(
+                page.getPageNumber(),
+                page.getPageSize(),
+                page.getTotalRow(),
+                page.getRecords()
+        );
     }
 
     @Override

@@ -1,5 +1,6 @@
 package com.rymcu.mortise.core.model;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Function;
@@ -22,17 +23,20 @@ public final class PageResult<T> {
     private final Long offset;
 
     private PageResult(long pageNumber, long pageSize, long totalRow, List<T> records) {
+        long normalizedPageNumber = Math.max(pageNumber, 1L);
+        long normalizedPageSize = Math.max(pageSize, 0L);
+        long normalizedTotalRow = Math.max(totalRow, 0L);
         this.records = records == null ? List.of() : List.copyOf(records);
-        this.pageNumber = pageNumber;
-        this.pageSize = pageSize;
-        this.totalRow = totalRow;
-        this.totalPage = calculateTotalPage(pageSize, totalRow);
+        this.pageNumber = normalizedPageNumber;
+        this.pageSize = normalizedPageSize;
+        this.totalRow = normalizedTotalRow;
+        this.totalPage = calculateTotalPage(normalizedPageSize, normalizedTotalRow);
         this.maxPageSize = null;
         this.optimizeCountQuery = null;
-        this.hasNext = totalPage > 0 && pageNumber < totalPage;
-        this.hasPrevious = totalPage > 0 && pageNumber > 1;
+        this.hasNext = totalPage > 0 && normalizedPageNumber < totalPage;
+        this.hasPrevious = totalPage > 0 && normalizedPageNumber > 1;
         this.hasRecords = !this.records.isEmpty();
-        this.offset = pageSize > 0 ? Math.max(pageNumber - 1, 0) * pageSize : 0L;
+        this.offset = normalizedPageSize > 0 ? (normalizedPageNumber - 1) * normalizedPageSize : 0L;
     }
 
     public static <T> PageResult<T> of(PageQuery pageQuery, long totalRow, List<T> records) {
@@ -45,7 +49,7 @@ public final class PageResult<T> {
 
     public <R> PageResult<R> map(Function<? super T, ? extends R> mapper) {
         Objects.requireNonNull(mapper, "mapper");
-        List<R> mappedRecords = records.stream().map(mapper).<R>map(value -> value).toList();
+        List<R> mappedRecords = new ArrayList<>(records.stream().map(mapper).toList());
         return PageResult.of(pageNumber, pageSize, totalRow, mappedRecords);
     }
 

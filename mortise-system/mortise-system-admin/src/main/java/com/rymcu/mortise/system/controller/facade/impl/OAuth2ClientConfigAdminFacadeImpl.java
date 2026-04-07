@@ -5,6 +5,7 @@ import com.rymcu.mortise.auth.entity.Oauth2ClientConfig;
 import com.rymcu.mortise.auth.model.OAuth2ClientConfigSearch;
 import com.rymcu.mortise.auth.service.Oauth2ClientConfigService;
 import com.rymcu.mortise.common.model.BatchUpdateInfo;
+import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.system.controller.assembler.OAuth2ClientConfigAdminAssembler;
 import com.rymcu.mortise.system.controller.facade.OAuth2ClientConfigAdminFacade;
@@ -24,15 +25,17 @@ public class OAuth2ClientConfigAdminFacadeImpl implements OAuth2ClientConfigAdmi
     }
 
     @Override
-    public GlobalResult<Page<OAuth2ClientConfigVO>> list(OAuth2ClientConfigSearch search) {
+    public GlobalResult<PageResult<OAuth2ClientConfigVO>> list(OAuth2ClientConfigSearch search) {
         Page<Oauth2ClientConfig> page = new Page<>(search.getPageNum(), search.getPageSize());
         Page<Oauth2ClientConfig> result = oauth2ClientConfigService.findOauth2ClientConfigs(page, search);
-        Page<OAuth2ClientConfigVO> voPage = new Page<>(result.getPageNumber(), result.getPageSize());
-        voPage.setTotalRow(result.getTotalRow());
-        voPage.setRecords(result.getRecords().stream()
+        return GlobalResult.success(PageResult.of(
+                result.getPageNumber(),
+                result.getPageSize(),
+                result.getTotalRow(),
+                result.getRecords().stream()
                 .map(OAuth2ClientConfigAdminAssembler::toVO)
-                .toList());
-        return GlobalResult.success(voPage);
+                .toList()
+        ));
     }
 
     @Override
