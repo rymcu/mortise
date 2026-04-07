@@ -17,7 +17,7 @@ function toNumber(value: unknown, fallback = 0) {
 }
 
 export function usePagedAdminResource<T>(
-  options: UsePagedAdminResourceOptions
+  options: UsePagedAdminResourceOptions<T>
 ) {
   const { $api } = useNuxtApp()
 
@@ -44,7 +44,9 @@ export function usePagedAdminResource<T>(
         ...options.buildQuery?.()
       })
 
-      records.value = page.records || []
+      records.value = options.transform
+        ? options.transform(page.records)
+        : (page.records || [])
       total.value = toNumber(page.totalRow)
       totalPage.value = toNumber(page.totalPage)
 

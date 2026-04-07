@@ -36,6 +36,9 @@
 - [security/security-configuration-guide.md](security/security-configuration-guide.md)
 - [security/USER_CONTEXT_SERVICE_USAGE.md](security/USER_CONTEXT_SERVICE_USAGE.md)
 
+### 语音
+- [voice/VOICE_RUNTIME_PRODUCTION_DEPLOYMENT_GUIDE.md](voice/VOICE_RUNTIME_PRODUCTION_DEPLOYMENT_GUIDE.md)
+
 ### 微信
 - [wechat/WECHAT_QUICK_START.md](wechat/WECHAT_QUICK_START.md)
 - [wechat/WECHAT_DEPLOYMENT_GUIDE.md](wechat/WECHAT_DEPLOYMENT_GUIDE.md)

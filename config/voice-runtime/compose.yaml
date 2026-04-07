@@ -1,0 +1,38 @@
+services:
+  voice-runtime:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ${VOICE_RUNTIME_CONTAINER_NAME:-mortise-voice-runtime}
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-Asia/Shanghai}
+      SENSEVOICE_MODEL: ${SENSEVOICE_MODEL}
+      SENSEVOICE_TOKENS: ${SENSEVOICE_TOKENS}
+      SENSEVOICE_LANGUAGE: ${SENSEVOICE_LANGUAGE:-auto}
+      SENSEVOICE_USE_ITN: ${SENSEVOICE_USE_ITN:-true}
+      SENSEVOICE_MODEL_ALIAS: ${SENSEVOICE_MODEL_ALIAS:-sense-voice}
+      LOG_LEVEL: INFO
+    ports:
+      - "${VOICE_RUNTIME_BIND_HOST:-127.0.0.1}:${VOICE_RUNTIME_HOST_PORT:-17778}:7778"
+    volumes:
+      - ${VOICE_MODEL_DIR}:/models:ro
+      - ${VOICE_RUNTIME_LOG_DIR}:/logs
+    tmpfs:
+      - /tmp
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:7778/health').read()"]
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 20s
+    logging:
+      driver: json-file
+      options:
+        max-size: "20m"
+        max-file: "5"

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         https://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.rymcu</groupId>
+        <artifactId>mortise</artifactId>
+        <version>${revision}</version>
+    </parent>
+
+    <artifactId>mortise-voice</artifactId>
+    <packaging>pom</packaging>
+    <name>mortise-voice</name>
+    <description>Mortise Voice - 模块聚合</description>
+
+    <modules>
+        <module>mortise-voice-domain</module>
+        <module>mortise-voice-kernel</module>
+        <module>mortise-voice-application</module>
+        <module>mortise-voice-infra</module>
+        <module>mortise-voice-admin</module>
+        <module>mortise-voice-api</module>
+    </modules>
+
+    <properties>
+        <layer.guard.admin-api.skip>true</layer.guard.admin-api.skip>
+        <layer.guard.application.skip>true</layer.guard.application.skip>
+        <layer.guard.domain.skip>true</layer.guard.domain.skip>
+        <no.var.guard.skip>false</no.var.guard.skip>
+    </properties>
+</project>
