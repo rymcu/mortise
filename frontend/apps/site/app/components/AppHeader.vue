@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { DropdownMenuItem } from '@nuxt/ui'
 import type { AppProduct, AppProductCategory } from '@mortise/core-sdk'
-import type { ProductMenuSection } from '~/types/product-menu'
+import type { ProductMenuSection } from '../types/product-menu'
 import { chunkItems } from '~/utils/chunk'
 
 const route = useRoute()

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { AgentModelItem } from '~/types/agent'
-import { DEFAULT_PROVIDER_ICON, PROVIDER_ICON_MAP } from '~/types/agent'
+import type { AgentModelItem } from '../../types/agent'
+import { DEFAULT_PROVIDER_ICON, PROVIDER_ICON_MAP } from '../../types/agent'
 
 interface ProviderGroup {
   providerCode: string

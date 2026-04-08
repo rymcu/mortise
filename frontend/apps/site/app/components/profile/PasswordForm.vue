@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { PasswordFormProps } from '~/types/profile'
+import type { PasswordFormProps } from '../../types/profile'
 
 defineProps<PasswordFormProps>()
 

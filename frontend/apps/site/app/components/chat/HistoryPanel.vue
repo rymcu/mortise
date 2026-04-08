@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import type { SiteChatMessage, SiteSessionItem } from '~/types/im'
-import { SESSION_STATUS } from '~/types/im'
+import type { SiteChatMessage, SiteSessionItem } from '../../types/im'
+import { SESSION_STATUS } from '../../types/im'
 
 const props = defineProps<{
   view: 'history' | 'detail'

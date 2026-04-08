@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SiteChatMessage } from '~/types/im'
+import type { SiteChatMessage } from '../../types/im'
 
 const props = defineProps<{
   messages: SiteChatMessage[]

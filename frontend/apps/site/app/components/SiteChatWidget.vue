@@ -1,5 +1,5 @@
 ﻿<script setup lang="ts">
-import type { ConsultContext, SiteSessionItem } from '~/types/im'
+import type { ConsultContext, SiteSessionItem } from '../types/im'
 
 /**
  * 浮动咨询聊天组件

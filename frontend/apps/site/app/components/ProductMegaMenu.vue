@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ProductMenuSection, CategoryEntry } from '~/types/product-menu'
+import type { ProductMenuSection, CategoryEntry } from '../types/product-menu'
 
 defineProps<{
   activeCategoryEntry: CategoryEntry

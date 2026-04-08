@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ProfileNavItem, ProfileSection } from '~/types/profile'
+import type { ProfileNavItem, ProfileSection } from '../../types/profile'
 
 defineProps<{
   displayAvatar: string | null

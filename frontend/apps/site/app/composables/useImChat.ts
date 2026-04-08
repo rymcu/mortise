@@ -1,4 +1,4 @@
-﻿import type { SiteSession, SiteChatMessage, ConsultContext, SiteSessionItem } from '~/types/im'
+import type { SiteSession, SiteChatMessage, ConsultContext, SiteSessionItem } from '~/types/im'
 import { SESSION_STATUS } from '~/types/im'
 
 /**
