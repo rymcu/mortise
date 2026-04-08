@@ -18,6 +18,7 @@ const props = withDefaults(
     hasNext?: boolean
     hasPrevious?: boolean
     keyword: string
+    showSearch?: boolean
     searchPlaceholder?: string
     emptyText?: string
     /** 是否显示操作列 */
@@ -27,6 +28,7 @@ const props = withDefaults(
   }>(),
   {
     errorMessage: '',
+    showSearch: true,
     searchPlaceholder: '搜索',
     emptyText: '暂无数据',
     showActions: false,
@@ -84,6 +86,7 @@ function nextPage() {
       <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
         <div class="flex flex-wrap items-center gap-2">
           <UInput
+            v-if="showSearch"
             :model-value="keyword"
             :placeholder="searchPlaceholder"
             icon="i-lucide-search"
