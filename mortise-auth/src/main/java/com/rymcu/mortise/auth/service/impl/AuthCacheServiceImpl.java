@@ -266,7 +266,8 @@ public class AuthCacheServiceImpl implements AuthCacheService {
 
     @Override
     public Long getMemberIdByRefreshToken(String refreshToken) {
-        return cacheService.get(AuthCacheConstant.MEMBER_REFRESH_TOKEN_CACHE, refreshToken, Long.class);
+        Number memberId = cacheService.get(AuthCacheConstant.MEMBER_REFRESH_TOKEN_CACHE, refreshToken, Number.class);
+        return memberId != null ? memberId.longValue() : null;
     }
 
     @Override

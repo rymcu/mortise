@@ -1,78 +1,96 @@
-interface SiteConfigPublicVO {
-  values: Record<string, string>
+interface FooterLink {
+  label: string
+  to?: string
+}
+
+function normalizeConfigValue(value: string | null | undefined) {
+  const trimmed = value?.trim()
+  return trimmed ? trimmed : null
+}
+
+function createFooterLink(values: Record<string, string>, labelKey: string, linkKey: string): FooterLink | null {
+  const label = normalizeConfigValue(values[labelKey])
+  if (!label) {
+    return null
+  }
+
+  return {
+    label,
+    to: normalizeConfigValue(values[linkKey]) ?? undefined,
+  }
 }
 
 /**
- * 网站公开配置 composable
+ * 站点展示配置视图层。
  *
- * 使用 useAsyncData 缓存，SSR 期间只请求一次，客户端路由跳转时直接复用缓存。
- * 可在任意组件 / 布局中调用，无需手动触发。
+ * 基于公开站点配置组装出站点页头、页脚、SEO 等可直接消费的字段，
+ * 与底层的 usePublicSiteConfig 请求层分离。
  */
 export const useSiteConfig = () => {
-  const config = useRuntimeConfig()
-  const baseURL = config.public.apiBase as string | undefined
+  const { values, pending, error } = usePublicSiteConfig()
   const { resolveUrl } = useMediaUrl()
 
-  const nuxtApp = useNuxtApp()
-
-  const { data, pending, error } = useAsyncData<SiteConfigPublicVO | null>(
-    'site-config-public',
-    async () => {
-      if (!baseURL) return null
-      try {
-        const result = await $fetch<{ data: SiteConfigPublicVO }>(
-          '/api/v1/admin/system/site-config/public',
-            { baseURL }
-        )
-        return result.data ?? null
-      }
-      catch {
-        return null
-      }
-    },
-    {
-      server: true,
-      lazy: false,
-      // 有缓存时直接返回，避免客户端路由跳转时重复请求
-      getCachedData: (key) => nuxtApp.payload.data[key] ?? nuxtApp.static.data[key]
-    }
-  )
-
   /** 系统名称，默认 Mortise */
-  const siteName = computed(() => data.value?.values?.['site.name'] ?? 'Mortise')
+  const siteName = computed(() => normalizeConfigValue(values.value['site.name']) ?? 'Mortise')
+
+  /** 社区名称 */
+  const communityName = computed(() => `${siteName.value} 社区`)
 
   /** 网站描述 */
-  const siteDescription = computed(() => data.value?.values?.['site.description'] ?? '')
+  const siteDescription = computed(() => normalizeConfigValue(values.value['site.description']) ?? '')
 
   /** Logo URL（为空时降级显示图标） */
-  const siteLogo = computed(() => resolveUrl(data.value?.values?.['site.logo'] || '') || null)
+  const siteLogo = computed(() => {
+    const raw = normalizeConfigValue(values.value['site.logo'])
+    return raw ? resolveUrl(raw) ?? null : null
+  })
 
   /** Favicon URL（为空时使用默认 /favicon.ico） */
   const siteFavicon = computed(() => {
-    const raw = data.value?.values?.['site.favicon'] || ''
+    const raw = normalizeConfigValue(values.value['site.favicon'])
     return raw ? resolveUrl(raw) : '/favicon.ico'
   })
 
-  /** ICP 备案号 */
-  const icp = computed(() => data.value?.values?.['site.icp'] || null)
+  /** 页脚版权 */
+  const footerCopyright = computed(() =>
+    normalizeConfigValue(values.value['footer.copyright']) ?? `${communityName.value} • © ${new Date().getFullYear()}`,
+  )
+
+  /** ICP 备案号（兼容旧调用别名） */
+  const icp = computed(() => normalizeConfigValue(values.value['footer.icp']))
+
+  /** 页脚备案 / 资质链接 */
+  const footerLinks = computed<FooterLink[]>(() => {
+    const rawLinks: Array<FooterLink | null> = [
+      createFooterLink(values.value, 'footer.icp', 'footer.icp_link'),
+      createFooterLink(values.value, 'footer.gov_beian', 'footer.gov_link'),
+      createFooterLink(values.value, 'footer.telecom', 'footer.telecom_link'),
+    ]
+
+    return rawLinks.filter((item): item is FooterLink => item !== null)
+  })
 
   /**
    * 页面标题模板：{page} → %s，{site} → 系统名称。
    * 默认值：%s - Mortise
    */
   const titleTemplate = computed<string>(() => {
-    const tpl = data.value?.values?.['seo.title_template'] ?? '{page} - {site}'
+    const tpl = values.value['seo.title_template'] ?? '{page} - {site}'
     return tpl.replace('{page}', '%s').replace('{site}', siteName.value)
   })
 
   return {
+    values,
     pending,
     error,
     siteName,
+    communityName,
     siteDescription,
     siteLogo,
     siteFavicon,
     icp,
+    footerCopyright,
+    footerLinks,
     titleTemplate
   }
 }
