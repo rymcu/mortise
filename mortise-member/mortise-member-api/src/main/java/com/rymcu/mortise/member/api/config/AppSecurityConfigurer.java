@@ -21,6 +21,17 @@ import org.springframework.stereotype.Component;
 @Component
 public class AppSecurityConfigurer implements SecurityConfigurer {
 
+    static final String[] PUBLIC_AUTH_ENDPOINTS = {
+            "/api/v1/app/auth/register",
+            "/api/v1/app/auth/login",
+            "/api/v1/app/auth/login-by-phone",
+            "/api/v1/app/auth/refresh-token",
+            "/api/v1/app/auth/refresh-token-by-jwt",
+            "/api/v1/app/auth/send-code",
+            "/api/v1/app/auth/reset-password",
+            "/api/v1/app/auth/verify-code"
+    };
+
     /**
      * 配置授权规则
      * <p>
@@ -34,21 +45,15 @@ public class AppSecurityConfigurer implements SecurityConfigurer {
         registry
                 // 公开的认证接口 (注册、登录、验证码、刷新Token)
                 .requestMatchers(
-                        "/api/v1/app/common/**",
-                        "/api/v1/app/auth/register",
-                        "/api/v1/app/auth/login",
-                        "/api/v1/app/auth/login-by-phone",
-                        "/api/v1/app/auth/refresh-token",
-                        "/api/v1/app/auth/refresh-token-by-jwt",
-                        "/api/v1/app/auth/send-code",
-                        "/api/v1/app/auth/verify-code"
+                        "/api/v1/app/common/**"
                 ).permitAll()
+                .requestMatchers(PUBLIC_AUTH_ENDPOINTS).permitAll()
                 // OAuth2 认证相关接口 (二维码、授权URL、状态查询、回调)
                 .requestMatchers("/api/v1/app/oauth2/**").permitAll()
                 // 其他商城接口需要会员角色
                 .requestMatchers("/api/v1/app/**").hasRole("MEMBER");
 
-        log.info("商城安全配置完成: /api/v1/app/auth/*, /api/v1/app/oauth2/** (公开), /api/v1/app/** (需要 ROLE_MEMBER)");
+        log.info("商城安全配置完成: app 公共认证接口、/api/v1/app/oauth2/** (公开), /api/v1/app/** (需要 ROLE_MEMBER)");
     }
 
     /**
