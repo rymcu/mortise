@@ -72,7 +72,7 @@ public class MemberAuthFacadeImpl implements MemberAuthFacade {
     @Override
     public GlobalResult<MemberLoginResponse> login(MemberLoginRequest request) {
         Member member = memberService.login(request.account(), request.password());
-        MemberLoginResponse response = buildLoginResponse(member, null, null);
+        MemberLoginResponse response = buildLoginResponse(member);
         log.info("会员登录成功: memberId={}", member.getId());
         return GlobalResult.success(response);
     }
@@ -271,6 +271,14 @@ public class MemberAuthFacadeImpl implements MemberAuthFacade {
         if (extraClaimKey != null && extraClaimValue != null) {
             claims.put(extraClaimKey, extraClaimValue);
         }
+        String jwtToken = jwtTokenUtil.generateToken(resolveSubject(member), claims);
+        String refreshToken = Utils.genKey();
+        authCacheService.storeMemberRefreshToken(refreshToken, member.getId());
+        return buildLoginResponse(member, jwtToken, refreshToken);
+    }
+
+    private MemberLoginResponse buildLoginResponse(Member member) {
+        Map<String, Object> claims = buildBaseClaims(member);
         String jwtToken = jwtTokenUtil.generateToken(resolveSubject(member), claims);
         String refreshToken = Utils.genKey();
         authCacheService.storeMemberRefreshToken(refreshToken, member.getId());
