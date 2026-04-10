@@ -59,7 +59,7 @@ jobs:
 ## GitLab CI
 
 ```yaml
-image: node:20
+image: node:22
 
 variables:
   PNPM_HOME: /root/.local/share/pnpm
@@ -85,7 +85,7 @@ install:
 ### Multi-Stage Build
 
 ```dockerfile
-FROM node:20-slim AS builder
+FROM node:22-slim AS builder
 RUN corepack enable
 WORKDIR /app
 
@@ -96,7 +96,7 @@ RUN pnpm install --frozen-lockfile
 COPY . .
 RUN pnpm build
 
-FROM node:20-slim AS runner
+FROM node:22-slim AS runner
 RUN corepack enable
 WORKDIR /app
 
