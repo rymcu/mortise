@@ -48,11 +48,11 @@ WHERE NOT EXISTS (SELECT 1 FROM mortise.mortise_dict_type WHERE type_code = 'Vis
 -- ========== 字典条目：Status ==========
 
 INSERT INTO mortise.mortise_dict (id, dict_type_code, label, value, sort_no, icon, color, status, del_flag, created_time, updated_time)
-SELECT 10000000000004001, 'Status', '禁用', '0', 2, 'i-lucide-square-x', 'error', 1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+SELECT 10000000000004001, 'Status', '正常', '0', 1, 'i-lucide-square-check', 'success', 1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 WHERE NOT EXISTS (SELECT 1 FROM mortise.mortise_dict WHERE dict_type_code = 'Status' AND value = '0');
 
 INSERT INTO mortise.mortise_dict (id, dict_type_code, label, value, sort_no, icon, color, status, del_flag, created_time, updated_time)
-SELECT 10000000000004002, 'Status', '启用', '1', 1, 'i-lucide-square-check', 'success', 1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+SELECT 10000000000004002, 'Status', '禁用', '1', 2, 'i-lucide-square-x', 'error', 1, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
 WHERE NOT EXISTS (SELECT 1 FROM mortise.mortise_dict WHERE dict_type_code = 'Status' AND value = '1');
 
 -- ========== 字典条目：DelFlag ==========
