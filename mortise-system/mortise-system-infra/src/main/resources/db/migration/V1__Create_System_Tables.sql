@@ -58,7 +58,7 @@ CREATE TABLE IF NOT EXISTS mortise.mortise_role
     id           BIGINT PRIMARY KEY,
     label        VARCHAR(100) NOT NULL,
     permission   VARCHAR(200) NOT NULL UNIQUE,
-    status       INTEGER   DEFAULT 0,
+    status       INTEGER   DEFAULT 1,
     is_default   INTEGER   DEFAULT 0,
     del_flag     INTEGER   DEFAULT 0,
     created_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -70,7 +70,7 @@ COMMENT ON TABLE mortise.mortise_role IS '角色表';
 COMMENT ON COLUMN mortise.mortise_role.id IS '主键ID';
 COMMENT ON COLUMN mortise.mortise_role.label IS '角色名称';
 COMMENT ON COLUMN mortise.mortise_role.permission IS '角色权限标识';
-COMMENT ON COLUMN mortise.mortise_role.status IS '状态: 0-正常, 1-禁用';
+COMMENT ON COLUMN mortise.mortise_role.status IS '状态: 0-禁用, 1-启用';
 COMMENT ON COLUMN mortise.mortise_role.is_default IS '是否为默认角色: 0-否, 1-是';
 COMMENT ON COLUMN mortise.mortise_role.del_flag IS '删除标记: 0-未删除, 1-已删除';
 COMMENT ON COLUMN mortise.mortise_role.created_time IS '创建时间';

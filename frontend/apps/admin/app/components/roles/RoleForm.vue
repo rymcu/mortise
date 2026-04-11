@@ -17,20 +17,38 @@ const emit = defineEmits<{
   (e: 'change', data: Record<string, unknown>): void
 }>()
 
+const statusOptions = [
+  { label: '启用', value: 1 },
+  { label: '禁用', value: 0 }
+]
+
 const schema = z.object({
   label: z.string().min(1, '请输入角色名'),
-  permission: z.string().min(1, '请输入权限标识')
+  permission: z.string().min(1, '请输入权限标识'),
+  status: z.coerce.number().default(1)
 })
 
-const state = reactive({
-  label: '',
-  permission: '',
-  ...props.data
-})
+function createDefaultState() {
+  return {
+    label: '',
+    permission: '',
+    status: 1
+  }
+}
+
+const state = reactive(createDefaultState())
+
+watch(
+  () => props.data,
+  (value) => {
+    Object.assign(state, createDefaultState(), value ?? {})
+  },
+  { immediate: true, deep: true }
+)
+
+watch(state, (v) => emit('change', { ...v }), { deep: true, immediate: true })
 
 const formRef = ref()
-
-watch(state, (v) => emit('change', { ...v }), { deep: true })
 
 async function validate(): Promise<boolean> {
   try {
@@ -57,6 +75,14 @@ defineExpose({ validate, state })
         v-model="state.permission"
         placeholder="如：admin、editor"
         class="w-full"
+      />
+    </UFormField>
+
+    <UFormField label="状态" name="status">
+      <URadioGroup
+        v-model="state.status"
+        :items="statusOptions"
+        orientation="horizontal"
       />
     </UFormField>
   </UForm>

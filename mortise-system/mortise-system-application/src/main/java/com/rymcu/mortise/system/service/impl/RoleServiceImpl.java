@@ -1,6 +1,7 @@
 package com.rymcu.mortise.system.service.impl;
 
 import com.rymcu.mortise.common.exception.ServiceException;
+import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.core.model.PageQuery;
 import com.rymcu.mortise.core.model.PageResult;
 import com.rymcu.mortise.system.entity.Menu;
@@ -125,6 +126,9 @@ public class RoleServiceImpl implements RoleService, RoleCommandService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Long createRole(Role role) {
+        if (role.getStatus() == null) {
+            role.setStatus(Status.ENABLED.getCode());
+        }
         roleRepository.save(role);
         systemCacheService.cacheRoleCount(count());
         return role.getId();
@@ -142,7 +146,9 @@ public class RoleServiceImpl implements RoleService, RoleCommandService {
         }
         oldRole.setLabel(role.getLabel());
         oldRole.setPermission(role.getPermission());
-        oldRole.setStatus(role.getStatus());
+        if (role.getStatus() != null) {
+            oldRole.setStatus(role.getStatus());
+        }
         if (role.getIsDefault() != null) {
             oldRole.setIsDefault(role.getIsDefault());
         }
