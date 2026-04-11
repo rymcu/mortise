@@ -2,25 +2,32 @@
 const colorMode = useColorMode()
 const color = computed(() => (colorMode.value === 'dark' ? '#1b1718' : 'white'))
 
-// ★ 修改应用名称和描述
-const APP_NAME = 'Mortise'
-const APP_DESC = 'Mortise 独立应用'
+const publicSiteConfig = usePublicSiteConfig()
 
-useHead({
-  titleTemplate: `%s - ${APP_NAME}`,
+if (import.meta.server && publicSiteConfig.pending.value) {
+  await publicSiteConfig.refresh()
+}
+
+const { siteName, siteDescription, siteFavicon, seoKeywords, titleTemplate } =
+  publicSiteConfig
+
+useHead(() => ({
+  titleTemplate: titleTemplate.value,
+  link: [{ rel: 'icon', href: siteFavicon.value }],
   meta: [
     { charset: 'utf-8' },
     { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-    { key: 'theme-color', name: 'theme-color', content: color },
+    { key: 'theme-color', name: 'theme-color', content: color.value }
   ],
-  htmlAttrs: { lang: 'zh-CN' },
-})
+  htmlAttrs: { lang: 'zh-CN' }
+}))
 
 useSeoMeta({
-  title: APP_NAME,
-  description: APP_DESC,
-  ogTitle: APP_NAME,
-  ogDescription: APP_DESC,
+  title: siteName.value,
+  description: siteDescription.value,
+  keywords: seoKeywords.value,
+  ogTitle: siteName.value,
+  ogDescription: siteDescription.value
 })
 </script>
 

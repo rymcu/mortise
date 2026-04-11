@@ -2,7 +2,7 @@ import type { AuthApiRequestOptions } from '@mortise/auth'
 
 type AppApiInvoker = <T>(
   request: string,
-  options?: AuthApiRequestOptions,
+  options?: AuthApiRequestOptions
 ) => Promise<T>
 
 declare module '#app' {

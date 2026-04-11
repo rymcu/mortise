@@ -25,26 +25,22 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => [
     {
       type: 'label' as const,
       label: displayName.value,
-      avatar: { src: avatarSrc.value, alt: displayName.value },
-    },
+      avatar: { src: avatarSrc.value, alt: displayName.value }
+    }
   ],
-  [
-    { label: '个人中心', icon: 'i-lucide-user', to: '/profile' },
-  ],
+  [{ label: '个人中心', icon: 'i-lucide-user', to: '/profile' }],
   [
     {
       label: '退出登录',
       icon: 'i-lucide-log-out',
       color: 'error' as const,
-      onSelect: handleLogout,
-    },
-  ],
+      onSelect: handleLogout
+    }
+  ]
 ])
 
 // ★ 自定义导航菜单
-const items = [
-  { label: '首页', to: '/' },
-]
+const items = [{ label: '首页', to: '/' }]
 </script>
 
 <template>
@@ -52,17 +48,13 @@ const items = [
     <template #left>
       <!-- ★ 自定义品牌 Logo 和名称 -->
       <NuxtLink to="/" class="flex items-center gap-2">
-        <UIcon name="i-lucide-box" class="size-6 text-primary-500" />
-        <span class="font-bold text-lg">Mortise</span>
+        <UIcon name="i-lucide-box" class="text-primary-500 size-6" />
+        <span class="text-lg font-bold">Mortise</span>
       </NuxtLink>
     </template>
 
     <template #right>
-      <UNavigationMenu
-        :items="items"
-        variant="link"
-        class="hidden lg:block"
-      />
+      <UNavigationMenu :items="items" variant="link" class="hidden lg:block" />
 
       <!-- 用户状态 -->
       <template v-if="auth.isAuthenticated">
@@ -75,23 +67,22 @@ const items = [
         </UDropdownMenu>
       </template>
       <template v-else>
-        <UButton variant="ghost" color="neutral" to="/auth/login" class="hidden sm:block">
+        <UButton
+          variant="ghost"
+          color="neutral"
+          to="/auth/login"
+          class="hidden sm:block"
+        >
           登录
         </UButton>
-        <UButton to="/auth/register" class="hidden sm:block">
-          注册
-        </UButton>
+        <UButton to="/auth/register" class="hidden sm:block"> 注册 </UButton>
       </template>
 
       <UColorModeButton />
     </template>
 
     <template #body>
-      <UNavigationMenu
-        :items="items"
-        orientation="vertical"
-        class="-mx-2.5"
-      />
+      <UNavigationMenu :items="items" orientation="vertical" class="-mx-2.5" />
     </template>
   </UHeader>
 </template>

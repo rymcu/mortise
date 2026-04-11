@@ -10,7 +10,14 @@
  */
 
 import { createInterface } from 'node:readline'
-import { existsSync, readdirSync, readFileSync, writeFileSync, cpSync, mkdirSync } from 'node:fs'
+import {
+  existsSync,
+  readdirSync,
+  readFileSync,
+  writeFileSync,
+  cpSync,
+  mkdirSync
+} from 'node:fs'
 import { resolve, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -23,16 +30,30 @@ const TEMPLATE_DIR = resolve(ROOT, 'templates', 'standalone')
 
 // ── Nuxt UI 可用主色 ─────────────────────────────────────────────────────
 const COLORS = [
-  'red', 'orange', 'amber', 'yellow', 'lime', 'green', 'emerald',
-  'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple',
-  'fuchsia', 'pink', 'rose',
+  'red',
+  'orange',
+  'amber',
+  'yellow',
+  'lime',
+  'green',
+  'emerald',
+  'teal',
+  'cyan',
+  'sky',
+  'blue',
+  'indigo',
+  'violet',
+  'purple',
+  'fuchsia',
+  'pink',
+  'rose'
 ]
 
 // ── readline 工具 ─────────────────────────────────────────────────────────
 const rl = createInterface({ input: process.stdin, output: process.stdout })
 
 function ask(question) {
-  return new Promise(resolve => rl.question(question, resolve))
+  return new Promise((resolve) => rl.question(question, resolve))
 }
 
 function print(msg = '') {
@@ -65,8 +86,8 @@ function detectLayers() {
     try {
       const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'))
       layers.push({
-        dirName: entry.name,            // e.g. 'community'
-        packageName: pkg.name || '',     // e.g. '@mortise/community-layer'
+        dirName: entry.name, // e.g. 'community'
+        packageName: pkg.name || '' // e.g. '@mortise/community-layer'
       })
     } catch {
       // 无效 package.json，跳过
@@ -85,8 +106,10 @@ async function stepSelectLayers(availableLayers) {
   })
   print()
 
-  const input = await ask(`请选择要部署的 Layer（输入编号，多个用逗号分隔，如 1,2）: `)
-  const indices = input.split(',').map(s => parseInt(s.trim(), 10) - 1)
+  const input = await ask(
+    `请选择要部署的 Layer（输入编号，多个用逗号分隔，如 1,2）: `
+  )
+  const indices = input.split(',').map((s) => parseInt(s.trim(), 10) - 1)
 
   const selected = []
   for (const idx of indices) {
@@ -101,24 +124,27 @@ async function stepSelectLayers(availableLayers) {
   }
 
   print()
-  print(`✅ 已选择: ${selected.map(l => l.packageName).join(', ')}`)
+  print(`✅ 已选择: ${selected.map((l) => l.packageName).join(', ')}`)
   return selected
 }
 
 // ── 步骤 2：部署名称 ──────────────────────────────────────────────────────
 
 async function stepAppName(selectedLayers) {
-  const defaultName = selectedLayers.length === 1
-    ? `my-${selectedLayers[0].dirName}`
-    : 'my-app'
+  const defaultName =
+    selectedLayers.length === 1 ? `my-${selectedLayers[0].dirName}` : 'my-app'
 
   print()
-  const input = await ask(`请输入应用名称（用于 apps/<name> 目录和 @mortise/<name> 包名）[${defaultName}]: `)
+  const input = await ask(
+    `请输入应用名称（用于 apps/<name> 目录和 @mortise/<name> 包名）[${defaultName}]: `
+  )
   const appName = input.trim() || defaultName
 
   // 校验名称
   if (!/^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/.test(appName)) {
-    print('❌ 应用名称只能包含小写字母、数字和连字符，且不能以连字符开头或结尾。')
+    print(
+      '❌ 应用名称只能包含小写字母、数字和连字符，且不能以连字符开头或结尾。'
+    )
     process.exit(1)
   }
 
@@ -148,13 +174,16 @@ async function stepOptionalParams(selectedLayers) {
   const colorInput = await ask(`  主题色 (${COLORS.join('/')}) [green]: `)
   const primaryColor = colorInput.trim() || 'green'
   if (!COLORS.includes(primaryColor)) {
-    print(`  ⚠️  "${primaryColor}" 不在预设色值中，将直接使用（可能需要自定义）`)
+    print(
+      `  ⚠️  "${primaryColor}" 不在预设色值中，将直接使用（可能需要自定义）`
+    )
   }
 
   // 应用显示名称
-  const defaultDisplayName = selectedLayers.length === 1
-    ? `Mortise ${selectedLayers[0].dirName.charAt(0).toUpperCase() + selectedLayers[0].dirName.slice(1)}`
-    : 'Mortise'
+  const defaultDisplayName =
+    selectedLayers.length === 1
+      ? `Mortise ${selectedLayers[0].dirName.charAt(0).toUpperCase() + selectedLayers[0].dirName.slice(1)}`
+      : 'Mortise'
   const displayNameInput = await ask(`  应用显示名称 [${defaultDisplayName}]: `)
   const displayName = displayNameInput.trim() || defaultDisplayName
 
@@ -194,34 +223,16 @@ function generateApp(appName, selectedLayers, params) {
   const nuxtCfgPath = join(targetDir, 'nuxt.config.ts')
   let nuxtCfg = readFileSync(nuxtCfgPath, 'utf-8')
 
-  const layerExtends = ['\'@mortise/base-layer\'', ...selectedLayers.map(l => `'${l.packageName}'`)].join(', ')
-  nuxtCfg = nuxtCfg.replace(
-    /const LAYER_EXTENDS = \[.*?\]/,
-    `const LAYER_EXTENDS = [${layerExtends}]`,
-  )
-
-  const routePrefixes = selectedLayers.map(l => `'${l.dirName}'`).join(', ')
-  nuxtCfg = nuxtCfg.replace(
-    /const ROUTE_PREFIXES = \[.*?\]\s*as\s*string\[\]/,
-    `const ROUTE_PREFIXES = [${routePrefixes}]`,
-  )
-  // 如果替换掉了 as string[]，没有 as 也要处理
-  nuxtCfg = nuxtCfg.replace(
-    /const ROUTE_PREFIXES = \[.*?\](\s+\/\/)/,
-    `const ROUTE_PREFIXES = [${routePrefixes}]$1`,
-  )
-
-  nuxtCfg = nuxtCfg.replace(
-    /port:\s*\d+,/,
-    `port: ${params.port},`,
-  )
+  nuxtCfg = nuxtCfg.replace(/port:\s*\d+,/, `port: ${params.port},`)
 
   writeFileSync(nuxtCfgPath, nuxtCfg, 'utf-8')
 
   // 4.4 修改 app/app.config.ts
   print('  📝 配置 app.config.ts')
   const appCfgPath = join(targetDir, 'app', 'app.config.ts')
-  const basePathEntries = selectedLayers.map(l => `  ${l.dirName}: {\n    basePath: '',\n  },`).join('\n')
+  const basePathEntries = selectedLayers
+    .map(l => `  ${l.dirName}: {\n    basePath: ''\n  }`)
+    .join(',\n')
 
   const appCfgContent = `/**
  * ${params.displayName} 独立应用配置
@@ -231,9 +242,9 @@ ${basePathEntries}
   ui: {
     colors: {
       primary: '${params.primaryColor}',
-      neutral: 'zinc',
-    },
-  },
+      neutral: 'zinc'
+    }
+  }
 })
 `
   writeFileSync(appCfgPath, appCfgContent, 'utf-8')
@@ -244,11 +255,11 @@ ${basePathEntries}
   let appVue = readFileSync(appVuePath, 'utf-8')
   appVue = appVue.replace(
     /const APP_NAME = '.*?'/,
-    `const APP_NAME = '${params.displayName}'`,
+    `const APP_NAME = '${params.displayName}'`
   )
   appVue = appVue.replace(
     /const APP_DESC = '.*?'/,
-    `const APP_DESC = '${params.description}'`,
+    `const APP_DESC = '${params.description}'`
   )
   writeFileSync(appVuePath, appVue, 'utf-8')
 
@@ -258,7 +269,7 @@ ${basePathEntries}
   let header = readFileSync(headerPath, 'utf-8')
   header = header.replace(
     /<span class="font-bold text-lg">.*?<\/span>/,
-    `<span class="font-bold text-lg">${params.displayName}</span>`,
+    `<span class="font-bold text-lg">${params.displayName}</span>`
   )
   writeFileSync(headerPath, header, 'utf-8')
 
@@ -266,10 +277,7 @@ ${basePathEntries}
   print('  📝 配置 AppFooter.vue')
   const footerPath = join(targetDir, 'app', 'components', 'AppFooter.vue')
   let footer = readFileSync(footerPath, 'utf-8')
-  footer = footer.replace(
-    /Mortise • ©/,
-    `${params.displayName} • ©`,
-  )
+  footer = footer.replace(/Mortise • ©/, `${params.displayName} • ©`)
   writeFileSync(footerPath, footer, 'utf-8')
 
   return targetDir
@@ -285,7 +293,7 @@ function printSummary(appName, selectedLayers, params) {
   print()
   print(`  📁 目录:   apps/${appName}`)
   print(`  📦 包名:   @mortise/${appName}`)
-  print(`  🔗 Layer:  ${selectedLayers.map(l => l.packageName).join(', ')}`)
+  print(`  🔗 Layer:  ${selectedLayers.map((l) => l.packageName).join(', ')}`)
   print(`  🎨 主题色: ${params.primaryColor}`)
   print(`  🌐 端口:   ${params.port}`)
   print()
@@ -332,8 +340,10 @@ async function main() {
   print('────────────────────────────────────────────────')
   print('  即将创建应用：')
   print(`    目录:    apps/${appName}`)
-  print(`    Layer:   ${selectedLayers.map(l => l.packageName).join(', ')}`)
-  print(`    前缀:    ${selectedLayers.map(l => '/' + l.dirName).join(', ')} → /`)
+  print(`    Layer:   ${selectedLayers.map((l) => l.packageName).join(', ')}`)
+  print(
+    `    前缀:    ${selectedLayers.map((l) => '/' + l.dirName).join(', ')} → /`
+  )
   print(`    端口:    ${params.port}`)
   print(`    主题色:  ${params.primaryColor}`)
   print(`    名称:    ${params.displayName}`)

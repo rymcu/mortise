@@ -6,21 +6,33 @@
  *
  * ── 使用方式 ──────────────────────────────────────
  * 1. cp -r templates/standalone apps/<your-app>
- * 2. 修改下方 ★ 标记的配置项
- * 3. 修改 package.json 的 name 和 layer 依赖
- * 4. 修改 app/app.config.ts 中的 basePath 覆盖
- * 5. 按需修改 app/app.vue、AppHeader.vue 中的品牌信息
+ * 2. 修改 package.json 的 name 和 layer 依赖
+ * 3. 修改 app/app.config.ts 中的 basePath 覆盖
+ * 4. 按需修改 app/app.vue、AppHeader.vue 中的品牌信息
+ * 5. 如需修改开发端口，调整 devServer.port
  * ─────────────────────────────────────────────────
  */
+import { resolve } from 'node:path'
+import { resolveAppLayerEntries } from '../../scripts/layer-discovery.mjs'
 
-// ★ 自定义区域 — 修改以下两项即可适配不同 Layer ★
-const LAYER_EXTENDS = ['@mortise/base-layer'] // 添加你的业务 Layer，如 '@mortise/community-layer'
-const ROUTE_PREFIXES = [] as string[] // Layer 页面的路由前缀，如 ['community']，多个 Layer 可列多个
+const appRoot = __dirname
+const layersRoot = resolve(__dirname, '../../layers')
+const layerEntries = resolveAppLayerEntries({
+  appRoot,
+  layersRoot,
+  localLayersBase: '../../layers',
+  appKind: 'site'
+})
+const layers = layerEntries.map(entry => entry.localPath)
+const routePrefixes = layerEntries
+  .filter(entry => !entry.isBase)
+  .map(entry => entry.routePrefix)
+  .filter(Boolean)
 
 export default defineNuxtConfig({
-  extends: LAYER_EXTENDS,
+  extends: layers,
 
-  modules: ['@nuxt/eslint', '@nuxt/ui', '@pinia/nuxt', '@nuxt/image'],
+  modules: ['@nuxt/eslint', '@nuxt/ui', '@pinia/nuxt', '@nuxt/content', '@nuxt/image'],
 
   ssr: true,
 
@@ -28,13 +40,21 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  mdc: {
+    highlight: {
+      noApiRoute: false,
+      langs: ['diff', 'ts', 'vue', 'css', 'java', 'xml', 'yaml', 'json', 'bash', 'sql']
+    }
+  },
+
   ui: {
     fonts: false
   },
 
   runtimeConfig: {
     public: {
-      apiBase: process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:9999/mortise',
+      apiBase:
+        process.env.NUXT_PUBLIC_API_BASE || 'http://localhost:9999/mortise',
       auth: {
         loginPath: '/api/v1/app/auth/login',
         refreshPath: '/api/v1/app/auth/refresh-token',
@@ -52,7 +72,11 @@ export default defineNuxtConfig({
   compatibilityDate: '2025-01-15',
 
   vite: {
+    ssr: {
+      external: ['isomorphic-dompurify']
+    },
     optimizeDeps: {
+      exclude: ['@nuxtjs/mdc'],
       include: ['extend']
     },
     server: {
@@ -67,12 +91,12 @@ export default defineNuxtConfig({
 
   /**
    * 路由重写：将 Layer 页面的前缀路由提升到根路径。
-   * 依据 ROUTE_PREFIXES 自动处理，无需手动编写。
+   * 依据已启用 Layer 自动推导的前缀处理，无需手动编写。
    */
   hooks: {
     'pages:extend'(pages) {
-      if (ROUTE_PREFIXES.length) {
-        liftLayerRoutes(pages, ROUTE_PREFIXES)
+      if (routePrefixes.length) {
+        liftLayerRoutes(pages, routePrefixes)
       }
     }
   },
@@ -87,11 +111,11 @@ export default defineNuxtConfig({
   }
 })
 
-type NuxtPage = { path: string; children?: NuxtPage[] }
+type NuxtPage = { path: string, children?: NuxtPage[] }
 
 /**
  * 递归重写路由路径：去除指定前缀，将 Layer 页面提升到根路径。
- * 例如 ROUTE_PREFIXES = ['community'] 时：
+ * 例如已启用 community-layer 时：
  *   /community       → /
  *   /community/topic  → /topic
  */

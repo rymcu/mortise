@@ -1,6 +1,6 @@
 <script setup lang="ts">
 definePageMeta({
-  layout: 'auth',
+  layout: 'auth'
 })
 
 const route = useRoute()
@@ -24,8 +24,7 @@ onMounted(async () => {
     await navigateTo(redirect)
   } catch (error) {
     hasError.value = true
-    statusText.value =
-      error instanceof Error ? error.message : '登录回调处理失败'
+    statusText.value = error instanceof Error ? error.message : '登录回调处理失败'
   }
 })
 </script>

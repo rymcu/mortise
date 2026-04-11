@@ -3,12 +3,12 @@ import * as z from 'zod'
 import type { FormSubmitEvent } from '@nuxt/ui'
 
 definePageMeta({
-  layout: 'auth',
+  layout: 'auth'
 })
 
 useSeoMeta({
   title: '用户登录',
-  description: '登录您的账号以继续',
+  description: '登录您的账号以继续'
 })
 
 const auth = useAuthStore()
@@ -21,39 +21,39 @@ const fields = [
     type: 'text' as const,
     label: '账号',
     placeholder: '请输入账号/邮箱/手机号',
-    required: true,
+    required: true
   },
   {
     name: 'password',
     type: 'password' as const,
     label: '密码',
     placeholder: '请输入密码',
-    required: true,
+    required: true
   },
   {
     name: 'remember',
     type: 'checkbox' as const,
-    label: '记住我',
-  },
+    label: '记住我'
+  }
 ]
 
 const providers = [
   {
     label: '使用微信登录',
     icon: 'i-simple-icons-wechat',
-    onClick: () => loginWithOAuth('wechat-app'),
+    onClick: () => loginWithOAuth('wechat-app')
   },
   {
     label: '使用 GitHub 登录',
     icon: 'i-simple-icons-github',
-    onClick: () => loginWithOAuth('github-app'),
-  },
+    onClick: () => loginWithOAuth('github-app')
+  }
 ]
 
 const schema = z.object({
   account: z.string().min(1, '请输入账号/邮箱/手机号'),
   password: z.string().min(6, '密码至少为 6 个字符'),
-  remember: z.boolean().optional(),
+  remember: z.boolean().optional()
 })
 
 type Schema = z.output<typeof schema>
@@ -76,8 +76,7 @@ async function loginWithOAuth(provider: string) {
   try {
     await auth.startOAuthLogin(provider)
   } catch (error) {
-    errorMessage.value =
-      error instanceof Error ? error.message : 'OAuth2 登录失败'
+    errorMessage.value = error instanceof Error ? error.message : 'OAuth2 登录失败'
   }
 }
 </script>
@@ -98,7 +97,11 @@ async function loginWithOAuth(provider: string) {
     </template>
 
     <template #password-hint>
-      <ULink to="/auth/forgot-password" class="text-primary font-medium" tabindex="-1">
+      <ULink
+        to="/auth/forgot-password"
+        class="text-primary font-medium"
+        tabindex="-1"
+      >
         忘记密码？
       </ULink>
     </template>

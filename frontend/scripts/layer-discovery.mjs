@@ -30,11 +30,10 @@ function walkLayers(rootDir, baseDir = rootDir, prefix = '') {
         results.push({
           relativeDir: normalizeRelativeDir(nextPrefix),
           absoluteDir: entryDir,
-          packageName: pkg.name,
+          packageName: pkg.name
         })
         continue
-      }
-      catch {
+      } catch {
         continue
       }
     }
@@ -51,7 +50,7 @@ function readDeclaredLayerDeps(appRoot) {
   return new Set([
     ...Object.keys(appPkg.dependencies ?? {}),
     ...Object.keys(appPkg.devDependencies ?? {}),
-    ...Object.keys(appPkg.optionalDependencies ?? {}),
+    ...Object.keys(appPkg.optionalDependencies ?? {})
   ])
 }
 
@@ -81,7 +80,12 @@ export function collectLayerEntries(layersRoot) {
   return walkLayers(layersRoot)
 }
 
-export function resolveAppLayerExtends({ appRoot, layersRoot, localLayersBase, appKind }) {
+export function resolveAppLayerEntries({
+  appRoot,
+  layersRoot,
+  localLayersBase,
+  appKind
+}) {
   const declaredLayerDeps = readDeclaredLayerDeps(appRoot)
   const entries = collectLayerEntries(layersRoot)
   const layers = []
@@ -100,35 +104,53 @@ export function resolveAppLayerExtends({ appRoot, layersRoot, localLayersBase, a
       }
     }
 
-    layers.push(join(localLayersBase, relativeDir).replace(/\\/g, '/'))
+    const routePrefix =
+      relativeDir === 'base' ? '' : (relativeDir.split('/').at(-1) ?? '')
+
+    layers.push({
+      ...entry,
+      isBase: relativeDir === 'base',
+      localPath: join(localLayersBase, relativeDir).replace(/\\/g, '/'),
+      routePrefix
+    })
   }
 
   return layers
 }
 
+export function resolveAppLayerExtends(options) {
+  return resolveAppLayerEntries(options).map((entry) => entry.localPath)
+}
+
 export function resolveLayerEntry(layerInput, appName, layersRoot) {
-  const entries = collectLayerEntries(layersRoot)
-    .filter(entry => entry.relativeDir !== 'base')
+  const entries = collectLayerEntries(layersRoot).filter(
+    (entry) => entry.relativeDir !== 'base'
+  )
 
   const normalizedInput = normalizeRelativeDir(
     layerInput
       .replace(/^@mortise\//, '')
       .replace(/-layer$/, '')
-      .replace(/^layers\//, ''),
+      .replace(/^layers\//, '')
   )
 
-  const preferredDirs = appName === 'admin'
-    ? [`admin/${normalizedInput}`, normalizedInput]
-    : [normalizedInput, `admin/${normalizedInput}`]
+  const preferredDirs =
+    appName === 'admin'
+      ? [`admin/${normalizedInput}`, normalizedInput]
+      : [normalizedInput, `admin/${normalizedInput}`]
 
   for (const dir of preferredDirs) {
-    const matched = entries.find(entry => entry.relativeDir === dir)
+    const matched = entries.find((entry) => entry.relativeDir === dir)
     if (matched) {
       return matched
     }
   }
 
-  return entries.find(entry => entry.packageName === layerInput)
-    ?? entries.find(entry => entry.packageName === `@mortise/${normalizedInput}-layer`)
-    ?? null
+  return (
+    entries.find((entry) => entry.packageName === layerInput) ??
+    entries.find(
+      (entry) => entry.packageName === `@mortise/${normalizedInput}-layer`
+    ) ??
+    null
+  )
 }
