@@ -1,15 +1,96 @@
 <script setup lang="ts">
+const defaultColumns = [{
+  label: '资源',
+  children: [{
+    label: '文档',
+    to: '/docs'
+  }, {
+    label: '快速开始',
+    to: '/docs/getting-started'
+  }, {
+    label: '架构介绍',
+    to: '/docs/architecture'
+  }]
+}, {
+  label: '产品',
+  children: [{
+    label: '模块总览',
+    to: '/modules'
+  }, {
+    label: '定价方案',
+    to: '/pricing'
+  }, {
+    label: '下载',
+    to: '/download'
+  }]
+}, {
+  label: '社区',
+  children: [{
+    label: '博客',
+    to: '/blog'
+  }, {
+    label: '关于我们',
+    to: '/about'
+  }]
+}, {
+  label: '项目',
+  children: [{
+    label: 'GitHub',
+    to: 'https://github.com/rymcu/mortise',
+    target: '_blank'
+  }, {
+    label: '开源协议',
+    to: '/about#license'
+  }, {
+    label: '更新日志',
+    to: '/changelog'
+  }]
+}]
+
+const { footerColumns, footerCopyright, footerLinks } = useSiteConfig()
+
+const columns = computed(() => footerColumns.value.length ? footerColumns.value : defaultColumns)
 </script>
 
 <template>
   <USeparator class="h-px" />
 
-  <UFooter>
+  <UFooter :ui="{ top: 'border-b border-default' }">
+    <template #top>
+      <UContainer>
+        <UFooterColumns :columns="columns">
+          <template #right>
+            <div class="flex flex-col gap-2">
+              <p class="text-sm font-medium">
+                开源协议
+              </p>
+              <p class="text-sm text-muted">
+                主仓库基础模块 MIT 协议永久免费开源，商业扩展模块单独定价授权。
+              </p>
+            </div>
+          </template>
+        </UFooterColumns>
+      </UContainer>
+    </template>
+
     <template #left>
-      <!-- ★ 自定义版权信息 -->
-      <p class="text-sm text-muted">
-        Mortise • © {{ new Date().getFullYear() }} • MIT License
-      </p>
+      <div class="space-y-1 text-sm text-muted">
+        <p>{{ footerCopyright }}</p>
+        <div v-if="footerLinks.length" class="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <template v-for="item in footerLinks" :key="item.label">
+            <NuxtLink
+              v-if="item.to"
+              :to="item.to"
+              external
+              target="_blank"
+              class="transition hover:text-primary"
+            >
+              {{ item.label }}
+            </NuxtLink>
+            <span v-else>{{ item.label }}</span>
+          </template>
+        </div>
+      </div>
     </template>
 
     <template #right>

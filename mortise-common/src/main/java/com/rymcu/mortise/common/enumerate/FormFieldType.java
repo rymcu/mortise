@@ -14,6 +14,7 @@ package com.rymcu.mortise.common.enumerate;
  *   <li>{@link #BOOLEAN}  → {@code <USwitch />}</li>
  *   <li>{@link #EMAIL}    → {@code <UInput type="email" />}</li>
  *   <li>{@link #SELECT}   → {@code <USelect />}，字段定义中附带 options 列表</li>
+ *   <li>{@link #TEXTAREA} → {@code <UTextarea />}</li>
  * </ul>
  *
  * @author ronger
@@ -37,6 +38,9 @@ public enum FormFieldType {
 
     /** 下拉选择框，字段定义中需提供 options 列表 */
     SELECT,
+
+    /** 多行文本输入框 */
+    TEXTAREA,
 
     /**
      * 图片上传控件，接口返回已存储的文件相对路径；

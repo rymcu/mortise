@@ -68,7 +68,7 @@ export interface ProfileInfo {
 }
 
 /** 表单字段 UI 渲染类型（与后端 FormFieldType 对应） */
-export type FormFieldType = 'TEXT' | 'PASSWORD' | 'NUMBER' | 'BOOLEAN' | 'EMAIL' | 'SELECT' | 'IMAGE'
+export type FormFieldType = 'TEXT' | 'PASSWORD' | 'NUMBER' | 'BOOLEAN' | 'EMAIL' | 'SELECT' | 'TEXTAREA' | 'IMAGE'
 
 export interface ChannelFieldOption {
   label: string

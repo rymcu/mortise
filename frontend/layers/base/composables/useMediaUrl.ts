@@ -18,6 +18,44 @@ export function useMediaUrl() {
   const config = useRuntimeConfig()
   const base = (config.public.apiBase as string ?? '').replace(/\/$/, '')
 
+  function tryParseUrl(value: string): URL | null {
+    try {
+      return new URL(value)
+    } catch {
+      return null
+    }
+  }
+
+  function toSameOriginMortisePath(url: URL): string | null {
+    if (!url.pathname.startsWith('/mortise/')) {
+      return null
+    }
+
+    return `${url.pathname}${url.search}${url.hash}`
+  }
+
+  function rewriteAbsoluteMediaUrl(url: string): string {
+    const parsed = tryParseUrl(url)
+
+    if (!parsed) {
+      return url
+    }
+
+    const sameOriginPath = toSameOriginMortisePath(parsed)
+    if (sameOriginPath) {
+      if (!base || base.startsWith('/') || parsed.protocol === 'http:') {
+        return sameOriginPath
+      }
+
+      const parsedBase = tryParseUrl(base)
+      if (parsedBase) {
+        return `${parsedBase.origin}${sameOriginPath}`
+      }
+    }
+
+    return url
+  }
+
   function normalizeLegacyMarkdownUrls(markdown: string | null | undefined): string {
     if (!markdown) return ''
 
@@ -33,7 +71,8 @@ export function useMediaUrl() {
   function resolveUrl(url: string | null | undefined): string | null {
     if (!url) return null
     // 已是完整 URL，直接返回
-    if (/^(https?:|data:)/.test(url)) return url
+    if (/^data:/.test(url)) return url
+    if (/^https?:/.test(url)) return rewriteAbsoluteMediaUrl(url)
     if (url.startsWith('/')) {
       // 防止重复拼接：如后端已返回 /mortise/files/...，
       // 而 base 也是 /mortise，避免生成 /mortise/mortise/files/...

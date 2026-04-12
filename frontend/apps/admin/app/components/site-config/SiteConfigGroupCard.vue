@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { SiteConfigGroupVO, SiteConfigSaveRequest } from '~/types'
+import FooterColumnsEditor from '~/components/site-config/FooterColumnsEditor.vue'
 
 /**
  * 网站配置分组卡片组件
@@ -28,6 +29,10 @@ watch(
   }
 )
 
+function isFooterColumnsField(fieldKey: string) {
+  return props.group.group === 'footer' && fieldKey === 'footer.columns'
+}
+
 function handleSave() {
   emit('save', { values: { ...localValues } })
 }
@@ -40,13 +45,23 @@ function handleSave() {
     </template>
 
     <div class="space-y-4">
-      <DynamicFormField
+      <template
         v-for="field in group.schema"
         :key="field.key"
-        :field="field"
-        :model-value="localValues[field.key]"
-        @update:model-value="localValues[field.key] = $event"
-      />
+      >
+        <FooterColumnsEditor
+          v-if="isFooterColumnsField(field.key)"
+          :field="field"
+          :model-value="localValues[field.key]"
+          @update:model-value="localValues[field.key] = $event"
+        />
+        <DynamicFormField
+          v-else
+          :field="field"
+          :model-value="localValues[field.key]"
+          @update:model-value="localValues[field.key] = $event"
+        />
+      </template>
     </div>
 
     <template #footer>

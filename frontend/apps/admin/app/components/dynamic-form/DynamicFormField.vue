@@ -5,7 +5,7 @@ import type { FormFieldDef } from '~/types'
  * 通用动态表单字段渲染组件
  * <p>
  * 根据字段类型（FormFieldType）渲染对应的表单控件，支持所有后端定义的字段类型：
- * TEXT / EMAIL / NUMBER / PASSWORD / BOOLEAN / SELECT / IMAGE
+ * TEXT / EMAIL / NUMBER / PASSWORD / BOOLEAN / SELECT / TEXTAREA / IMAGE
  * <p>
  * IMAGE 类型内置图片上传逻辑：选文件后自动上传至 /api/v1/admin/files，
  * 上传成功后将文件 URL 通过 update:modelValue 事件传出。
@@ -165,6 +165,16 @@ function clearImage() {
         </UFileUpload>
       </div>
     </div>
+
+    <UTextarea
+      v-else-if="field.type === 'TEXTAREA'"
+      :model-value="modelValue"
+      :placeholder="field.placeholder"
+      :rows="8"
+      autoresize
+      class="w-full"
+      @update:model-value="$emit('update:modelValue', $event)"
+    />
 
     <!-- TEXT / EMAIL / NUMBER（默认） -->
     <UInput

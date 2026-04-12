@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const columns = [{
+const defaultColumns = [{
   label: '资源',
   children: [{
     label: '文档',
@@ -46,6 +46,10 @@ const columns = [{
     to: '/changelog'
   }]
 }]
+
+const { footerColumns, footerCopyright, footerLinks } = useSiteConfig()
+
+const columns = computed(() => footerColumns.value.length ? footerColumns.value : defaultColumns)
 </script>
 
 <template>
@@ -70,9 +74,23 @@ const columns = [{
     </template>
 
     <template #left>
-      <p class="text-sm text-muted">
-        Mortise Framework • © {{ new Date().getFullYear() }} • MIT License
-      </p>
+      <div class="space-y-1 text-sm text-muted">
+        <p>{{ footerCopyright }}</p>
+        <div v-if="footerLinks.length" class="flex flex-wrap items-center gap-x-3 gap-y-1">
+          <template v-for="item in footerLinks" :key="item.label">
+            <NuxtLink
+              v-if="item.to"
+              :to="item.to"
+              external
+              target="_blank"
+              class="transition hover:text-primary"
+            >
+              {{ item.label }}
+            </NuxtLink>
+            <span v-else>{{ item.label }}</span>
+          </template>
+        </div>
+      </div>
     </template>
 
     <template #right>

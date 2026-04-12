@@ -3,6 +3,17 @@ interface FooterLink {
   to?: string
 }
 
+interface FooterColumnLink {
+  label: string
+  to?: string
+  target?: string
+}
+
+interface FooterColumn {
+  label: string
+  children?: FooterColumnLink[]
+}
+
 function normalizeConfigValue(value: string | null | undefined) {
   const trimmed = value?.trim()
   return trimmed ? trimmed : null
@@ -17,6 +28,61 @@ function createFooterLink(values: Record<string, string>, labelKey: string, link
   return {
     label,
     to: normalizeConfigValue(values[linkKey]) ?? undefined,
+  }
+}
+
+function isFooterColumnLink(value: unknown): value is FooterColumnLink {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  const item = value as Record<string, unknown>
+  return typeof item.label === 'string'
+    && item.label.trim().length > 0
+    && (item.to === undefined || typeof item.to === 'string')
+    && (item.target === undefined || typeof item.target === 'string')
+}
+
+function isFooterColumn(value: unknown): value is FooterColumn {
+  if (!value || typeof value !== 'object') {
+    return false
+  }
+
+  const item = value as Record<string, unknown>
+  return typeof item.label === 'string'
+    && item.label.trim().length > 0
+    && (item.children === undefined || (Array.isArray(item.children) && item.children.every(isFooterColumnLink)))
+}
+
+function parseFooterColumns(value: string | null | undefined): FooterColumn[] {
+  const normalized = normalizeConfigValue(value)
+  if (!normalized) {
+    return []
+  }
+
+  try {
+    const parsed = JSON.parse(normalized)
+    if (!Array.isArray(parsed)) {
+      return []
+    }
+
+    return parsed
+      .filter(isFooterColumn)
+      .map(column => ({
+        label: column.label.trim(),
+        children: column.children
+          ?.filter(isFooterColumnLink)
+          .map(link => ({
+            label: link.label.trim(),
+            to: normalizeConfigValue(link.to) ?? undefined,
+            target: normalizeConfigValue(link.target) ?? undefined,
+          }))
+          .filter(link => link.label),
+      }))
+      .filter(column => column.label)
+  }
+  catch {
+    return []
   }
 }
 
@@ -70,6 +136,8 @@ export const useSiteConfig = () => {
     return rawLinks.filter((item): item is FooterLink => item !== null)
   })
 
+  const footerColumns = computed<FooterColumn[]>(() => parseFooterColumns(values.value['footer.columns']))
+
   /**
    * 页面标题模板：{page} → %s，{site} → 系统名称。
    * 默认值：%s - Mortise
@@ -91,6 +159,7 @@ export const useSiteConfig = () => {
     icp,
     footerCopyright,
     footerLinks,
+    footerColumns,
     titleTemplate
   }
 }
