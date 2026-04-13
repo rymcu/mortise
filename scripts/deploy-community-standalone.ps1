@@ -176,7 +176,15 @@ $siteArtifact = $null
 
 try {
     if (-not $SkipSite) {
-        $siteArtifact = Build-SiteArtifact -FrontendRootPath $frontendRoot -Mode $SiteMode -AppName $StandaloneAppName
+        $siteArtifact = @(Build-SiteArtifact -FrontendRootPath $frontendRoot -Mode $SiteMode -AppName $StandaloneAppName | Where-Object {
+            $_ -is [psobject] -and $_.PSObject.Properties.Match('OutputPath').Count -gt 0
+        } | Select-Object -Last 1)
+
+        if ($siteArtifact.Count -eq 0) {
+            throw '未能生成站点产物元数据'
+        }
+
+        $siteArtifact = $siteArtifact[0]
 
         if (-not (Test-Path -LiteralPath $siteArtifact.OutputPath)) {
             throw "未找到待部署站点产物: $($siteArtifact.OutputPath)"

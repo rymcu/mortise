@@ -165,6 +165,9 @@ importers:
       '@pinia/nuxt':
         specifier: ^0.11.2
         version: 0.11.3(magicast@0.5.2)(pinia@3.0.4(typescript@5.9.3)(vue@3.5.30(typescript@5.9.3)))
+      '@vueuse/core':
+        specifier: ^14.2.1
+        version: 14.2.1(vue@3.5.30(typescript@5.9.3))
       better-sqlite3:
         specifier: ^12.6.2
         version: 12.8.0
@@ -253,6 +256,9 @@ importers:
       '@mortise/core-sdk':
         specifier: workspace:*
         version: link:../../packages/core-sdk
+      '@vueuse/core':
+        specifier: ^14.2.1
+        version: 14.2.1(vue@3.5.30(typescript@5.9.3))
 
   packages/auth:
     dependencies:

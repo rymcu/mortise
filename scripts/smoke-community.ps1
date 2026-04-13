@@ -41,14 +41,26 @@ function Invoke-RemoteBash {
 function Assert-Http200 {
     param(
         [string]$Uri,
-        [hashtable]$Headers = @{}
+        [hashtable]$Headers = @{},
+        [int]$RetryCount = 10,
+        [int]$RetryDelaySeconds = 5
     )
 
-    $response = Invoke-WebRequest -Uri $Uri -Headers $Headers -SkipHttpErrorCheck
-    if ($response.StatusCode -ne 200) {
+    for ($attempt = 1; $attempt -le $RetryCount; $attempt++) {
+        $response = Invoke-WebRequest -Uri $Uri -Headers $Headers -SkipHttpErrorCheck
+        if ($response.StatusCode -eq 200) {
+            Write-Host "$Uri => 200"
+            return
+        }
+
+        if ($attempt -lt $RetryCount) {
+            Write-Host "$Uri => $($response.StatusCode)，等待 $RetryDelaySeconds 秒后重试 ($attempt/$RetryCount)"
+            Start-Sleep -Seconds $RetryDelaySeconds
+            continue
+        }
+
         throw "接口校验失败: $Uri => $($response.StatusCode)"
     }
-    Write-Host "$Uri => 200"
 }
 
 Assert-Command 'ssh'

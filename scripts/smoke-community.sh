@@ -32,15 +32,30 @@ assert_http_200() {
   local uri="$1"
   shift || true
   local args=()
+  local retry_count=10
+  local retry_delay=5
   while [[ $# -gt 0 ]]; do
     args+=("$1")
     shift
   done
 
   local status
-  status="$(curl -sS -o /dev/null -w '%{http_code}' "${args[@]}" "${uri}")"
-  [[ "${status}" == "200" ]] || fail "接口校验失败: ${uri} => ${status}"
-  printf '%s => 200\n' "${uri}"
+  local attempt
+  for ((attempt=1; attempt<=retry_count; attempt++)); do
+    status="$(curl -sS -o /dev/null -w '%{http_code}' "${args[@]}" "${uri}")"
+    if [[ "${status}" == "200" ]]; then
+      printf '%s => 200\n' "${uri}"
+      return
+    fi
+
+    if [[ ${attempt} -lt ${retry_count} ]]; then
+      printf '%s => %s，等待 %s 秒后重试 (%s/%s)\n' "${uri}" "${status}" "${retry_delay}" "${attempt}" "${retry_count}"
+      sleep "${retry_delay}"
+      continue
+    fi
+
+    fail "接口校验失败: ${uri} => ${status}"
+  done
 }
 
 usage() {
