@@ -2,6 +2,54 @@
 
 以下命令以当前 88.146 主机和 `/opt/mortise` 目录为准。
 
+## 标准脚本入口
+
+优先使用仓库根目录脚本，避免重复手抄命令：
+
+```powershell
+# 仅发布后端
+pwsh .\scripts\deploy-mortise-app.ps1
+
+# 发布 standalone 社区到根路径，并同时发布后端
+pwsh .\scripts\deploy-community-standalone.ps1 -SiteMode standalone-root
+
+# 仅发布站点，不动后端
+pwsh .\scripts\deploy-community-standalone.ps1 -SiteMode standalone-root -SkipBackend
+
+# 发布官网社区模式（/community/*）
+pwsh .\scripts\deploy-community-standalone.ps1 -SiteMode site-community -SkipBackend
+
+# 单独执行 smoke
+pwsh .\scripts\smoke-community.ps1 -SiteMode standalone-root
+```
+
+```bash
+# 仅发布后端
+./scripts/deploy-mortise-app.sh
+
+# 发布 standalone 社区到根路径，并同时发布后端
+./scripts/deploy-community-standalone.sh --site-mode standalone-root
+
+# 仅重发前端，不动后端
+./scripts/deploy-community-standalone.sh --site-mode standalone-root --skip-backend
+
+# 发布官网社区模式（/community/*）
+./scripts/deploy-community-standalone.sh --site-mode site-community --skip-backend
+
+# 单独执行 smoke
+./scripts/smoke-community.sh --site-mode standalone-root
+```
+
+脚本约定：
+
+- `-Host` 默认 `192.168.88.146`
+- `--host` 默认 `192.168.88.146`
+- `deploy-community-standalone.ps1` 支持 `-SiteMode standalone-root|site-community`
+- `deploy-community-standalone.sh` 支持 `--site-mode standalone-root|site-community`
+- 管理端 dashboard 验收通过环境变量注入认证：
+  - `MORTISE_ADMIN_BEARER_TOKEN`
+  - `MORTISE_ADMIN_COOKIE`
+
 ## 后端：发布 `mortise-app`
 
 适用场景：后端 jar 已在本地构建完成，准备替换线上运行包。
@@ -88,6 +136,13 @@ ssh root@192.168.88.146 "curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0
 - `/community` 返回 `200`
 - 日志只显示 `Listening on http://0.0.0.0:3000` 之类正常启动信息
 
+### standalone-root 与 site-community 的验证口径
+
+| `SiteMode` | 发布槽位 | 路由验证 |
+|---|---|---|
+| `standalone-root` | 仍复用 `/opt/mortise/frontend/site/.output` | `/topics`、`/collections` |
+| `site-community` | `/opt/mortise/frontend/site/.output` | `/community`、`/community/collections` |
+
 ## 前端 Admin：本地打包后部署
 
 Admin 与 Site 流程类似，但通常没有 `better-sqlite3` 这个坑。
@@ -114,3 +169,24 @@ ssh root@192.168.88.146 "docker build -f /opt/mortise/frontend/Dockerfile.admin 
 ```powershell
 ssh root@192.168.88.146 "curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:3001/admin/"
 ```
+
+## 回滚与首轮观察
+
+### 回滚
+
+- 后端：恢复最近的 `/opt/mortise/mortise.jar.bak-*`，重建 `mortise-app`
+- 站点：恢复最近的 `/opt/mortise/frontend/site/.output.bak-*`，重建 `mortise-site`
+- 优先使用发布脚本输出的回滚命令，避免手工拼接路径
+
+### 首轮观察项
+
+- `http://127.0.0.1:9999/mortise/actuator/health` 返回 `UP`
+- 站点业务路由返回 `200`
+- `docker logs --tail 80 mortise-site` 中没有：
+  - `ERR_DLOPEN_FAILED`
+  - `better_sqlite3.node`
+  - `Module did not self-register`
+- 登录态下可额外检查：
+  - `/api/v1/admin/community/dashboard/overview`
+  - `/api/v1/admin/community/dashboard/trends`
+  - `/api/v1/admin/community/dashboard/pending`

@@ -67,7 +67,8 @@ $script | ssh root@192.168.88.146 "bash -s"
 
 优先验证具体业务路由：
 
-- 社区站点：`http://127.0.0.1:3000/community`
+- standalone 社区根路径：`http://127.0.0.1:3000/topics`、`http://127.0.0.1:3000/collections`
+- 官网社区模式：`http://127.0.0.1:3000/community`、`http://127.0.0.1:3000/community/collections`
 - 管理端：`http://127.0.0.1:3001/admin/`
 - 后端：`http://127.0.0.1:9999/mortise/actuator/health`
 
@@ -91,3 +92,16 @@ $script | ssh root@192.168.88.146 "bash -s"
 2. 重建对应镜像
 3. `docker compose ... up -d <service>`
 4. 再次执行路由或健康检查验证
+
+## 6. PowerShell 下的时间戳与远端变量展开
+
+### 现象
+
+- 在 PowerShell 中直接执行 `ssh root@host "ts=$(date +%Y%m%d%H%M%S)"` 时，本地先把 `$(...)` 展开
+- 可能出现 `Get-Date` 参数错误或生成异常备份路径
+
+### 处理
+
+- 优先在本地用 `Get-Date -Format yyyyMMddHHmmss` 生成时间戳，再拼入远端命令
+- 如果必须让远端 bash 执行 `$(date ...)`，要用**单引号**包裹远端脚本，避免 PowerShell 预先展开
+- 已固化到 `scripts/deploy-mortise-app.ps1` 与 `scripts/deploy-community-standalone.ps1`，优先复用脚本
