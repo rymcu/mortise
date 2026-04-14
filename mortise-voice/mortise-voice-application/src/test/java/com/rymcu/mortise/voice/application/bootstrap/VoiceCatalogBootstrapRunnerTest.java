@@ -4,6 +4,7 @@ import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.voice.application.command.VoiceModelUpsertCommand;
 import com.rymcu.mortise.voice.application.command.VoiceProfileUpsertCommand;
 import com.rymcu.mortise.voice.application.command.VoiceProviderUpsertCommand;
+import com.rymcu.mortise.voice.application.service.bootstrap.VoiceCatalogBootstrapService;
 import com.rymcu.mortise.voice.application.service.command.VoiceModelCommandService;
 import com.rymcu.mortise.voice.application.service.command.VoiceProfileCommandService;
 import com.rymcu.mortise.voice.application.service.command.VoiceProviderCommandService;
@@ -72,7 +73,7 @@ class VoiceCatalogBootstrapRunnerTest {
 
     @BeforeEach
     void setUp() {
-        runner = new VoiceCatalogBootstrapRunner(
+        runner = new VoiceCatalogBootstrapRunner(new VoiceCatalogBootstrapService(
                 voiceProviderCommandService,
                 voiceModelCommandService,
                 voiceProfileCommandService,
@@ -81,7 +82,7 @@ class VoiceCatalogBootstrapRunnerTest {
                 voiceProfileRepository,
                 List.of(contributor),
                 createVoiceProperties(true)
-        );
+        ));
     }
 
     @Test
@@ -187,7 +188,7 @@ class VoiceCatalogBootstrapRunnerTest {
 
     @Test
     void shouldSkipWhenBootstrapIsDisabled() throws Exception {
-        VoiceCatalogBootstrapRunner disabledRunner = new VoiceCatalogBootstrapRunner(
+        VoiceCatalogBootstrapRunner disabledRunner = new VoiceCatalogBootstrapRunner(new VoiceCatalogBootstrapService(
                 voiceProviderCommandService,
                 voiceModelCommandService,
                 voiceProfileCommandService,
@@ -196,7 +197,7 @@ class VoiceCatalogBootstrapRunnerTest {
                 voiceProfileRepository,
                 List.of(contributor),
                 createVoiceProperties(false)
-        );
+        ));
 
         disabledRunner.run(new DefaultApplicationArguments(new String[0]));
 
