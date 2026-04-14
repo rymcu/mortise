@@ -102,7 +102,18 @@ if (-not $SkipSmoke) {
     Write-Step '校验后端健康状态'
     Invoke-RemoteBash -RemoteHost $DeployHost -Lines @(
         'set -e',
-        'curl -fsS http://127.0.0.1:9999/mortise/actuator/health',
+        'timeout_seconds=120',
+        'interval_seconds=5',
+        'until curl -fsS http://127.0.0.1:9999/mortise/actuator/health; do',
+        '  timeout_seconds=$((timeout_seconds - interval_seconds))',
+        '  if [ "$timeout_seconds" -le 0 ]; then',
+        '    docker inspect --format "{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{end}}" mortise-app || true',
+        '    docker logs --tail 200 mortise-app 2>&1 || true',
+        '    exit 1',
+        '  fi',
+        '  sleep "$interval_seconds"',
+        'done',
+        'docker inspect --format "{{.State.Status}} {{if .State.Health}}{{.State.Health.Status}}{{end}}" mortise-app',
         'docker logs --tail 20 mortise-app 2>&1 || true'
     )
 }
