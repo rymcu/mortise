@@ -1,0 +1,22 @@
+[Unit]
+Description=Mortise Application
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mortise
+Group=mortise
+WorkingDirectory=/opt/mortise
+Environment=SPRING_PROFILES_ACTIVE=prod
+Environment=JAVA_TOOL_OPTIONS=-Xms512m -Xmx1536m
+EnvironmentFile=-/etc/mortise/mortise.env
+ExecStart=/usr/bin/java -jar /opt/mortise/mortise-app.jar --spring.profiles.active=prod
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=30
+LimitNOFILE=65535
+
+[Install]
+WantedBy=multi-user.target

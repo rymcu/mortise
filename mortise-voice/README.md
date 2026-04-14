@@ -24,6 +24,14 @@
 - `GET /api/v1/voice/jobs`
 - `GET /api/v1/voice/jobs/{id}`
 
+## 部署建议
+
+- 对外服务的最小生产形态建议采用“`mortise-app` 公网入口 + `voice-runtime` 内网节点 + S3 兼容对象存储”。
+- `ASR` 第一阶段建议使用独立 `voice-runtime` 节点承载 `SenseVoice int8`。
+- `TTS` 第一阶段建议优先接入云厂商 Provider，避免过早自建 TTS 推理节点。
+- 运行时单机部署步骤见 [../docs/voice/VOICE_RUNTIME_PRODUCTION_DEPLOYMENT_GUIDE.md](../docs/voice/VOICE_RUNTIME_PRODUCTION_DEPLOYMENT_GUIDE.md)。
+- 国内标准云服务器部署建议见 [../docs/voice/VOICE_CLOUD_PRODUCTION_DEPLOYMENT_GUIDE.md](../docs/voice/VOICE_CLOUD_PRODUCTION_DEPLOYMENT_GUIDE.md)。
+
 后续将在此基础上补齐：
 
 - Job 重试、artifact 补偿与后续异步编排

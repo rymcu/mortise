@@ -285,8 +285,9 @@ mortise:
       connect-timeout-millis: ${VOICE_RUNTIME_CONNECT_TIMEOUT_MILLIS:1500}
       read-timeout-millis: ${VOICE_RUNTIME_READ_TIMEOUT_MILLIS:30000}
       nodes:
-        - node-id: ${VOICE_RUNTIME_NODE_ID:voice-runtime-pve-182}
-          base-url: ${VOICE_RUNTIME_BASE_URL:http://192.168.88.182}
+        # 生产环境默认走同地域、同 VPC 的内网 runtime 域名。
+        - node-id: ${VOICE_RUNTIME_NODE_ID:voice-runtime-prod-01}
+          base-url: ${VOICE_RUNTIME_BASE_URL:http://voice-runtime.internal}
           enabled: ${VOICE_RUNTIME_ENABLED:true}
           prewarm-models:
             - ${VOICE_RUNTIME_PREWARM_MODEL_1:sense-voice-zh-en-ja-ko-yue-int8}

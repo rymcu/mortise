@@ -1,0 +1,81 @@
+groups:
+  - name: mortise-voice-service
+    rules:
+      - alert: MortiseAppInstanceDown
+        expr: up{job="mortise-app"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: mortise-app
+        annotations:
+          summary: mortise-app 不可用
+          description: Prometheus 连续 2 分钟无法抓取 mortise-app。
+
+      - alert: MortiseVoiceApi5xxHigh
+        expr: sum(rate(http_server_requests_seconds_count{job="mortise-app",uri=~"/mortise/api/v1/voice/.*",status=~"5.."}[5m])) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+          service: mortise-voice
+        annotations:
+          summary: 语音接口 5xx 升高
+          description: 过去 5 分钟 voice API 5xx 速率持续高于阈值，请检查 runtime、对象存储或上游 TTS Provider。
+
+      - alert: MortiseVoiceAsrP95Slow
+        expr: histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{job="mortise-app",uri="/mortise/api/v1/voice/asr/recognize-once"}[5m]))) > 6
+        for: 10m
+        labels:
+          severity: warning
+          service: mortise-voice
+        annotations:
+          summary: ASR P95 响应变慢
+          description: 短音频识别 P95 连续 10 分钟超过 6 秒，按部署建议考虑扩到 8 vCPU / 16 GB。
+
+      - alert: MortiseVoiceTtsP95Slow
+        expr: histogram_quantile(0.95, sum by (le) (rate(http_server_requests_seconds_bucket{job="mortise-app",uri="/mortise/api/v1/voice/tts/synthesize"}[5m]))) > 8
+        for: 10m
+        labels:
+          severity: warning
+          service: mortise-voice
+        annotations:
+          summary: TTS P95 响应变慢
+          description: TTS 合成 P95 连续 10 分钟超过 8 秒，请检查上游云 TTS Provider 和对象存储回填链路。
+
+  - name: mortise-voice-hosts
+    rules:
+      - alert: VoiceRuntimeHealthProbeFailed
+        expr: probe_success{job="voice-runtime-health"} == 0
+        for: 2m
+        labels:
+          severity: critical
+          service: voice-runtime
+        annotations:
+          summary: voice-runtime 健康检查失败
+          description: blackbox 探针连续 2 分钟无法通过 voice-runtime 的 /health。
+
+      - alert: MortiseVoiceHostCpuHigh
+        expr: 100 - (avg by (instance) (rate(node_cpu_seconds_total{mode="idle",job=~"mortise-app-node|voice-runtime-node"}[5m])) * 100) > 70
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 语音相关节点 CPU 偏高
+          description: mortise-app 或 voice-runtime 所在节点 CPU 连续 10 分钟高于 70%。
+
+      - alert: MortiseVoiceHostMemoryHigh
+        expr: (1 - (node_memory_MemAvailable_bytes{job=~"mortise-app-node|voice-runtime-node"} / node_memory_MemTotal_bytes{job=~"mortise-app-node|voice-runtime-node"})) * 100 > 80
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: 语音相关节点内存使用率偏高
+          description: mortise-app 或 voice-runtime 所在节点内存使用率连续 10 分钟高于 80%。
+
+      - alert: MortiseVoiceHostDiskLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/",fstype!~"tmpfs|overlay",job=~"mortise-app-node|voice-runtime-node"} / node_filesystem_size_bytes{mountpoint="/",fstype!~"tmpfs|overlay",job=~"mortise-app-node|voice-runtime-node"}) * 100 < 20
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: 语音相关节点磁盘余量不足
+          description: 根分区剩余空间低于 20%，请检查日志、模型目录和临时音频文件。

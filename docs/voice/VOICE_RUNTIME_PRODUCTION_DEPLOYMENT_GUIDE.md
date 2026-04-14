@@ -9,6 +9,9 @@
 - systemd 负责开机自启与统一启停
 - 防火墙只放行管理与应用访问
 
+如果你的目标形态是“中国内地标准云服务器 + 主应用公网入口 + voice-runtime 内网节点 + 云 TTS”，请优先阅读
+[VOICE_CLOUD_PRODUCTION_DEPLOYMENT_GUIDE.md](./VOICE_CLOUD_PRODUCTION_DEPLOYMENT_GUIDE.md)。
+
 > 仓库治理说明
 >
 > - 截至当前阶段，voice 能力仍处于接入主仓前的治理过渡期。
