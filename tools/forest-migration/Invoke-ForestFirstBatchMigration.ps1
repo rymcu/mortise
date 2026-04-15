@@ -122,6 +122,19 @@ function To-Long {
     return [long]$text
 }
 
+function To-Decimal {
+    param(
+        [object]$Value,
+        [decimal]$Default = [decimal]0
+    )
+
+    $text = Null-IfBlank $Value
+    if ($null -eq $text) {
+        return $Default
+    }
+    return [decimal]::Parse($text, [System.Globalization.CultureInfo]::InvariantCulture)
+}
+
 function To-DateTimeString {
     param([object]$Value)
 
@@ -160,6 +173,24 @@ function Convert-MemberStatus {
     param([object]$Value)
 
     if ((Null-IfBlank $Value) -eq "0") { return 1 } else { return 0 }
+}
+
+function Convert-BalanceToCommunityPoints {
+    param([object]$Value)
+
+    $balance = To-Decimal -Value $Value -Default 0
+    return [int][Math]::Floor($balance / [decimal]10)
+}
+
+function Resolve-MemberLevelCode {
+    param([int]$Points)
+
+    $safePoints = [Math]::Max($Points, 0)
+    if ($safePoints -ge 10000) { return "evangelist" }
+    if ($safePoints -ge 2000) { return "expert" }
+    if ($safePoints -ge 500) { return "contributor" }
+    if ($safePoints -ge 100) { return "beginner" }
+    return "normal"
 }
 
 function Convert-ArticleStatus {
@@ -279,6 +310,7 @@ function New-LegacyKey {
     $result = switch ($TableName) {
         "forest_user" { [string]$Row["id"] }
         "forest_user_extend" { [string]$Row["id_user"] }
+        "forest_bank_account" { [string]$Row["id"] }
         "forest_article" { [string]$Row["id"] }
         "forest_article_content" { [string]$Row["id_article"] }
         "forest_comment" { [string]$Row["id"] }
@@ -410,6 +442,18 @@ SELECT JSON_OBJECT(
     'blog', blog
 ) FROM forest_user_extend
 ORDER BY id_user;
+"@
+    forest_bank_account = @"
+SELECT JSON_OBJECT(
+    'id', id,
+    'id_bank', id_bank,
+    'bank_account', bank_account,
+    'account_balance', account_balance,
+    'account_owner', account_owner,
+    'account_type', account_type,
+    'created_time', created_time
+) FROM forest_bank_account
+ORDER BY id;
 "@
     forest_article = @"
 SELECT JSON_OBJECT(
@@ -589,6 +633,7 @@ foreach ($tableName in $extractDefinitions.Keys) {
 
 $users = @($sourceData["forest_user"])
 $userExtends = @($sourceData["forest_user_extend"])
+$bankAccounts = @($sourceData["forest_bank_account"])
 $articles = @($sourceData["forest_article"])
 $articleContents = @($sourceData["forest_article_content"])
 $comments = @($sourceData["forest_comment"])
@@ -616,6 +661,7 @@ $anomalies = [ordered]@{
     filtered_self_follows = [System.Collections.Generic.List[hashtable]]::new()
     filtered_null_follows = [System.Collections.Generic.List[hashtable]]::new()
     filtered_non_user_follows = [System.Collections.Generic.List[hashtable]]::new()
+    filtered_orphan_bank_accounts = [System.Collections.Generic.List[hashtable]]::new()
 }
 
 $extendByUserId = @{}
@@ -626,6 +672,43 @@ foreach ($row in $userExtends) {
 $articleContentById = @{}
 foreach ($row in $articleContents) {
     $articleContentById[[string]$row["id_article"]] = $row
+}
+
+$sourceUserIds = @{}
+foreach ($row in $users) {
+    $sourceUserIds[[string]$row["id"]] = $true
+}
+
+$bankPointSummaryByOwnerId = @{}
+foreach ($row in ($bankAccounts | Sort-Object { [long]$_["id"] })) {
+    $ownerId = To-Long $row["account_owner"]
+    $ownerKey = if ($null -ne $ownerId) { [string]$ownerId } else { $null }
+    if ($null -eq $ownerKey -or -not $sourceUserIds.ContainsKey($ownerKey)) {
+        $anomalies.filtered_orphan_bank_accounts.Add([ordered]@{
+            account_id = To-Long $row["id"]
+            account_owner = $ownerId
+            account_type = Null-IfBlank $row["account_type"]
+            bank_account = Null-IfBlank $row["bank_account"]
+            account_balance = Null-IfBlank $row["account_balance"]
+        })
+        continue
+    }
+
+    if (-not $bankPointSummaryByOwnerId.ContainsKey($ownerKey)) {
+        $bankPointSummaryByOwnerId[$ownerKey] = [ordered]@{
+            owner_id = $ownerId
+            account_ids = [System.Collections.Generic.List[long]]::new()
+            total_balance = [decimal]0
+            first_created_time = $null
+        }
+    }
+
+    $summary = $bankPointSummaryByOwnerId[$ownerKey]
+    $summary["account_ids"].Add((To-Long $row["id"]))
+    $summary["total_balance"] = [decimal]$summary["total_balance"] + (To-Decimal -Value $row["account_balance"] -Default 0)
+    if ($null -eq $summary["first_created_time"]) {
+        $summary["first_created_time"] = To-DateTimeString $row["created_time"]
+    }
 }
 
 $emailGroups = @{}
@@ -656,9 +739,11 @@ foreach ($email in $emailGroups.Keys) {
 }
 
 $members = [System.Collections.Generic.List[hashtable]]::new()
+$memberPointHistories = [System.Collections.Generic.List[hashtable]]::new()
 $communityProfiles = [System.Collections.Generic.List[hashtable]]::new()
 $communityStats = [System.Collections.Generic.List[hashtable]]::new()
 $memberIds = @{}
+$nextMemberPointHistoryId = New-DeterministicIdSequence -Seed 820000000000000000
 
 Write-Stage "转换会员、社区档案与统计"
 foreach ($user in ($users | Sort-Object { [long]$_["id"] })) {
@@ -674,6 +759,13 @@ foreach ($user in ($users | Sort-Object { [long]$_["id"] })) {
         legacyPasswordResetRequired = $true
     }
 
+    $bankPointSummary = Get-Value -Map $bankPointSummaryByOwnerId -Key ([string]$memberId)
+    $communityPoints = if ($null -ne $bankPointSummary) {
+        Convert-BalanceToCommunityPoints $bankPointSummary["total_balance"]
+    } else {
+        0
+    }
+
     $member = [ordered]@{
         id = $memberId
         username = Null-IfBlank $user["account"]
@@ -685,8 +777,8 @@ foreach ($user in ($users | Sort-Object { [long]$_["id"] })) {
         avatar_url = Null-IfBlank $user["avatar_url"]
         gender = Convert-Gender $user["sex"]
         status = Convert-MemberStatus $user["status"]
-        member_level = "normal"
-        points = 0
+        member_level = Resolve-MemberLevelCode $communityPoints
+        points = $communityPoints
         balance = 0.00
         register_source = "forest"
         referrer_id = $null
@@ -702,6 +794,35 @@ foreach ($user in ($users | Sort-Object { [long]$_["id"] })) {
     }
     $members.Add($member)
     $memberIds[[string]$memberId] = $true
+
+    if ($communityPoints -gt 0) {
+        $historyCreatedTime = $bankPointSummary["first_created_time"]
+        if ($null -eq $historyCreatedTime) {
+            $historyCreatedTime = $member["updated_time"]
+        }
+        if ($null -eq $historyCreatedTime) {
+            $historyCreatedTime = $member["created_time"]
+        }
+
+        $historyBizId = $null
+        if ($bankPointSummary["account_ids"].Count -eq 1) {
+            $historyBizId = [long]$bankPointSummary["account_ids"][0]
+        }
+
+        $memberPointHistories.Add([ordered]@{
+            id = (& $nextMemberPointHistoryId)
+            user_id = $memberId
+            change_amount = $communityPoints
+            current_points = $communityPoints
+            biz_type = "forest_bank_account_migration"
+            biz_key = "forest-bank-account:$memberId"
+            biz_id = $historyBizId
+            reason = "Forest 余额迁移"
+            created_time = $historyCreatedTime
+            updated_time = $historyCreatedTime
+            del_flag = 0
+        })
+    }
 
     $extend = Get-Value -Map $extendByUserId -Key ([string]$memberId)
     $socialLinks = [ordered]@{}
@@ -725,6 +846,7 @@ foreach ($user in ($users | Sort-Object { [long]$_["id"] })) {
         del_flag = 0
     })
 }
+Write-Host "  会员积分初始化: $($memberPointHistories.Count) 行" -ForegroundColor DarkGray
 
 $tagRows = [System.Collections.Generic.List[hashtable]]::new()
 $tagIds = @{}
@@ -1410,8 +1532,19 @@ $mappingReport = @'
 - `email -> email`
 - `status: 0 -> 1, 1 -> 0`
 - `sex: 1 -> male, 2 -> female, 其他 -> other`
+- `forest_bank_account.account_owner -> mortise_member.id`（仅同步能关联到 `forest_user` 的账户）
+- `FLOOR(SUM(account_balance) / 10) -> points`
+- `member_level` 按积分阈值重新计算（`normal` / `beginner` / `contributor` / `expert` / `evangelist`）
 - `signature/avatar_type/legacyPasswordResetRequired -> profile`
 - `password_hash = NULL`
+
+## 社区积分
+
+- `forest_bank_account` 聚合后写入 `mortise_member.points`
+- 为每个积分大于 0 的用户生成一条 `mortise_member_point_history`
+- `biz_type = forest_bank_account_migration`
+- `biz_key = forest-bank-account:{userId}`
+- `reason = Forest 余额迁移`
 
 ## 社区资料
 
@@ -1535,6 +1668,11 @@ Add-InsertSql -Builder $loadBuilder -TableName "mortise.mortise_member" -Columns
     "created_time", "updated_time", "current_family_id", "del_flag"
 ) -Rows $members
 
+Add-InsertSql -Builder $loadBuilder -TableName "mortise.mortise_member_point_history" -Columns @(
+    "id", "user_id", "change_amount", "current_points", "biz_type", "biz_key", "biz_id",
+    "reason", "created_time", "updated_time", "del_flag"
+) -Rows $memberPointHistories
+
 Add-InsertSql -Builder $loadBuilder -TableName "mortise.mortise_community_profile" -Columns @(
     "id", "user_id", "banner_url", "ext_data", "created_time", "updated_time", "del_flag"
 ) -Rows $communityProfiles
@@ -1621,6 +1759,7 @@ if (-not $SkipExecution) {
 Write-Stage "执行校验"
 $expectedCounts = [ordered]@{
     mortise_member = $members.Count
+    mortise_member_point_history = $memberPointHistories.Count
     mortise_community_profile = $communityProfiles.Count
     mortise_community_user_stat = $communityStats.Count
     mortise_article = $articleRows.Count
@@ -1639,6 +1778,7 @@ $expectedCounts = [ordered]@{
 $expectedSourceCounts = [ordered]@{
     forest_user = $users.Count
     forest_user_extend = $userExtends.Count
+    forest_bank_account = $bankAccounts.Count
     forest_article = $articles.Count
     forest_article_content = $articleContents.Count
     forest_comment = $comments.Count
@@ -1665,6 +1805,7 @@ if (-not $SkipExecution) {
     Write-Host "  校验目标表行数..." -ForegroundColor DarkGray
     $countSql = @"
 SELECT 'mortise_member', COUNT(*)::text FROM $TargetSchema.mortise_member
+UNION ALL SELECT 'mortise_member_point_history', COUNT(*)::text FROM $TargetSchema.mortise_member_point_history
 UNION ALL SELECT 'mortise_community_profile', COUNT(*)::text FROM $TargetSchema.mortise_community_profile
 UNION ALL SELECT 'mortise_community_user_stat', COUNT(*)::text FROM $TargetSchema.mortise_community_user_stat
 UNION ALL SELECT 'mortise_article', COUNT(*)::text FROM $TargetSchema.mortise_article
@@ -1700,6 +1841,7 @@ UNION ALL SELECT 'mortise_product', COUNT(*)::text FROM $TargetSchema.mortise_pr
     $legacyCountSql = @"
 SELECT 'forest_user', COUNT(*)::text FROM $TargetLegacySchema.forest_user
 UNION ALL SELECT 'forest_user_extend', COUNT(*)::text FROM $TargetLegacySchema.forest_user_extend
+UNION ALL SELECT 'forest_bank_account', COUNT(*)::text FROM $TargetLegacySchema.forest_bank_account
 UNION ALL SELECT 'forest_article', COUNT(*)::text FROM $TargetLegacySchema.forest_article
 UNION ALL SELECT 'forest_article_content', COUNT(*)::text FROM $TargetLegacySchema.forest_article_content
 UNION ALL SELECT 'forest_comment', COUNT(*)::text FROM $TargetLegacySchema.forest_comment
@@ -1784,6 +1926,11 @@ SELECT 'dup_member_username', (COUNT(*) - COUNT(DISTINCT username))::text FROM $
 UNION ALL
 SELECT 'dup_member_email', (COUNT(*) - COUNT(DISTINCT email))::text FROM $TargetSchema.mortise_member WHERE email IS NOT NULL
 UNION ALL
+SELECT 'orphan_member_point_history_user', COUNT(*)::text
+FROM $TargetSchema.mortise_member_point_history h
+LEFT JOIN $TargetSchema.mortise_member m ON m.id = h.user_id
+WHERE m.id IS NULL
+UNION ALL
 SELECT 'orphan_follow_follower', COUNT(*)::text
 FROM $TargetSchema.mortise_community_follow_relation f
 LEFT JOIN $TargetSchema.mortise_member m ON m.id = f.follower_user_id
@@ -1826,6 +1973,17 @@ SELECT 'member_username', COUNT(*)::text
 FROM $TargetSchema.mortise_member m
 JOIN $TargetLegacySchema.forest_user l ON l.source_key = m.id::text
 WHERE m.username IS DISTINCT FROM TRIM(l.payload->>'account')
+UNION ALL
+SELECT 'member_points', COUNT(*)::text
+FROM $TargetSchema.mortise_member m
+LEFT JOIN (
+    SELECT (payload->>'account_owner')::bigint AS user_id,
+           FLOOR(SUM(COALESCE((payload->>'account_balance')::numeric, 0)) / 10)::int AS expected_points
+    FROM $TargetLegacySchema.forest_bank_account
+    WHERE NULLIF(TRIM(payload->>'account_owner'), '') IS NOT NULL
+    GROUP BY (payload->>'account_owner')::bigint
+) b ON b.user_id = m.id
+WHERE m.points IS DISTINCT FROM COALESCE(b.expected_points, 0)
 UNION ALL
 SELECT 'member_nickname', COUNT(*)::text
 FROM $TargetSchema.mortise_member m
@@ -1905,16 +2063,26 @@ WHERE p.title IS DISTINCT FROM TRIM(l.payload->>'product_title');
 SELECT jsonb_build_object(
     'id', m.id, 'username', m.username, 'nickname', m.nickname,
     'avatar_url', m.avatar_url, 'gender', m.gender, 'status', m.status, 'email', m.email,
+    'points', m.points, 'member_level', m.member_level,
     'profile_signature', m.profile->>'signature',
     'src_account', l.payload->>'account', 'src_nickname', l.payload->>'nickname',
     'src_avatar_url', l.payload->>'avatar_url', 'src_email', l.payload->>'email',
     'src_signature', l.payload->>'signature',
     'banner_url', cp.banner_url, 'src_bg_img_url', l.payload->>'bg_img_url',
+    'src_bank_balance', lb.total_balance, 'src_points', lb.expected_points,
     'social_links', cp.ext_data->'socialLinks'
 )::text
 FROM $TargetSchema.mortise_member m
 JOIN $TargetLegacySchema.forest_user l ON l.source_key = m.id::text
 LEFT JOIN $TargetSchema.mortise_community_profile cp ON cp.user_id = m.id
+LEFT JOIN (
+    SELECT (payload->>'account_owner')::bigint AS user_id,
+           SUM(COALESCE((payload->>'account_balance')::numeric, 0)) AS total_balance,
+           FLOOR(SUM(COALESCE((payload->>'account_balance')::numeric, 0)) / 10)::int AS expected_points
+    FROM $TargetLegacySchema.forest_bank_account
+    WHERE NULLIF(TRIM(payload->>'account_owner'), '') IS NOT NULL
+    GROUP BY (payload->>'account_owner')::bigint
+) lb ON lb.user_id = m.id
 ORDER BY RANDOM() LIMIT 20;
 "@
         $sampleMembers = Invoke-TargetPostgres -Sql $sampleMemberSql -AsQuery | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }
@@ -2027,6 +2195,7 @@ $validationReport = [ordered]@{
         filtered_self_follows = $anomalies.filtered_self_follows.Count
         filtered_null_follows = $anomalies.filtered_null_follows.Count
         filtered_non_user_follows = $anomalies.filtered_non_user_follows.Count
+        filtered_orphan_bank_accounts = $anomalies.filtered_orphan_bank_accounts.Count
     }
 }
 Save-JsonFile -Path (Join-Path $reportDir "validation.json") -Value $validationReport
@@ -2113,6 +2282,7 @@ if ($fieldCheckResults.Count -gt 0) {
 [void]$sb.AppendLine("| 自关注过滤 | $($anomalies.filtered_self_follows.Count) |")
 [void]$sb.AppendLine("| NULL following_id 过滤 | $($anomalies.filtered_null_follows.Count) |")
 [void]$sb.AppendLine("| 非用户关注排除 | $($anomalies.filtered_non_user_follows.Count) |")
+[void]$sb.AppendLine("| 孤儿账户过滤 | $($anomalies.filtered_orphan_bank_accounts.Count) |")
 [void]$sb.AppendLine()
 
 if ($sampleData.Count -gt 0) {
