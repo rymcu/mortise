@@ -1,5 +1,6 @@
 package com.rymcu.mortise.product.api.facade;
 
+import com.rymcu.mortise.product.api.dto.ApiProductModels.ProductDetailVO;
 import com.rymcu.mortise.product.entity.Product;
 
 import java.util.List;
@@ -9,7 +10,7 @@ public interface ProductCatalogApiFacade {
 
     List<Product> listProducts(String productType);
 
-    Product getProductDetail(Long id);
+    ProductDetailVO getProductDetail(Long id);
 
     Map<String, String> listProductTypes();
 }

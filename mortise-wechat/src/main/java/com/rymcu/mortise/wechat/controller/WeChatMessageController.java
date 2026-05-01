@@ -1,7 +1,7 @@
 package com.rymcu.mortise.wechat.controller;
 
-import com.rymcu.mortise.web.annotation.ApiController;
 import com.rymcu.mortise.core.result.GlobalResult;
+import com.rymcu.mortise.web.annotation.AdminController;
 import com.rymcu.mortise.wechat.entity.TemplateMessage;
 import com.rymcu.mortise.wechat.facade.WeChatMessageFacade;
 import com.rymcu.mortise.wechat.facade.WeChatMessageFacade.NewsMessageRequest;
@@ -10,6 +10,7 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -20,7 +21,7 @@ import java.util.Map;
  * @author ronger
  * @since 1.0.0
  */
-@ApiController
+@AdminController
 @RequestMapping("/wechat/messages")
 @RequiredArgsConstructor
 @ConditionalOnBean(WeChatMessageFacade.class)
@@ -38,6 +39,7 @@ public class WeChatMessageController {
      */
     @Operation(summary = "发送模板消息", description = "发送微信模板消息给指定用户")
     @PostMapping("/template")
+    @PreAuthorize("hasAuthority('wechat:account:edit')")
     public GlobalResult<Map<String, String>> sendTemplateMessage(
             @Parameter(description = "模板消息对象", required = true)
             @RequestBody TemplateMessage message,
@@ -56,6 +58,7 @@ public class WeChatMessageController {
      */
     @Operation(summary = "发送文本消息", description = "发送客服文本消息给指定用户")
     @PostMapping("/text")
+    @PreAuthorize("hasAuthority('wechat:account:edit')")
     public GlobalResult<Map<String, String>> sendTextMessage(
             @Parameter(description = "用户OpenID", required = true)
             @RequestParam String openId,
@@ -75,6 +78,7 @@ public class WeChatMessageController {
      */
     @Operation(summary = "发送图文消息", description = "发送客服图文消息给指定用户")
     @PostMapping("/news")
+    @PreAuthorize("hasAuthority('wechat:account:edit')")
     public GlobalResult<Map<String, String>> sendNewsMessage(
             @Parameter(description = "图文消息请求对象", required = true)
             @RequestBody NewsMessageRequest request,

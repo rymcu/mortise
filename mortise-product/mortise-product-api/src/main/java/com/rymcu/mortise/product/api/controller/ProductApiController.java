@@ -2,6 +2,7 @@ package com.rymcu.mortise.product.api.controller;
 
 import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.log.annotation.ApiLog;
+import com.rymcu.mortise.product.api.dto.ApiProductModels.ProductDetailVO;
 import com.rymcu.mortise.product.api.facade.ProductCatalogApiFacade;
 import com.rymcu.mortise.product.entity.Product;
 import com.rymcu.mortise.web.annotation.ApiController;
@@ -41,7 +42,7 @@ public class ProductApiController {
     @GetMapping("/{id}")
     @ApiLog("查询产品详情")
     @Operation(summary = "获取上架产品详情")
-    public GlobalResult<Product> getProductDetail(
+    public GlobalResult<ProductDetailVO> getProductDetail(
             @Parameter(description = "产品ID") @PathVariable("id") Long id) {
         return GlobalResult.success(productCatalogApiFacade.getProductDetail(id));
     }

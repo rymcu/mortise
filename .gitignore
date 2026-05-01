@@ -47,5 +47,6 @@ plan.md
 ### Docker 运行时数据与敏感配置 ###
 .env
 .env.properties
+tmp_*secrets*.txt
 config/rootCA.pem
 config/nginx/certs/
