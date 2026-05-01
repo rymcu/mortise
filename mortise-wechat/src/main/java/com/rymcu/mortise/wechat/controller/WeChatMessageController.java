@@ -39,7 +39,7 @@ public class WeChatMessageController {
      */
     @Operation(summary = "发送模板消息", description = "发送微信模板消息给指定用户")
     @PostMapping("/template")
-    @PreAuthorize("hasAuthority('wechat:account:edit')")
+    @PreAuthorize("hasAuthority('wechat:message:send')")
     public GlobalResult<Map<String, String>> sendTemplateMessage(
             @Parameter(description = "模板消息对象", required = true)
             @RequestBody TemplateMessage message,
@@ -58,7 +58,7 @@ public class WeChatMessageController {
      */
     @Operation(summary = "发送文本消息", description = "发送客服文本消息给指定用户")
     @PostMapping("/text")
-    @PreAuthorize("hasAuthority('wechat:account:edit')")
+    @PreAuthorize("hasAuthority('wechat:message:send')")
     public GlobalResult<Map<String, String>> sendTextMessage(
             @Parameter(description = "用户OpenID", required = true)
             @RequestParam String openId,
@@ -78,7 +78,7 @@ public class WeChatMessageController {
      */
     @Operation(summary = "发送图文消息", description = "发送客服图文消息给指定用户")
     @PostMapping("/news")
-    @PreAuthorize("hasAuthority('wechat:account:edit')")
+    @PreAuthorize("hasAuthority('wechat:message:send')")
     public GlobalResult<Map<String, String>> sendNewsMessage(
             @Parameter(description = "图文消息请求对象", required = true)
             @RequestBody NewsMessageRequest request,

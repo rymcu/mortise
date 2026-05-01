@@ -1,5 +1,6 @@
 package com.rymcu.mortise.product.api.facade.impl;
 
+import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.product.api.dto.ApiProductModels.ProductDetailVO;
 import com.rymcu.mortise.product.api.dto.ApiProductModels.SkuTargetVO;
 import com.rymcu.mortise.product.api.facade.ProductCatalogApiFacade;
@@ -20,7 +21,7 @@ import java.util.stream.Collectors;
 public class ProductCatalogApiFacadeImpl implements ProductCatalogApiFacade {
 
     private static final String ACTIVE_SKU_STATUS = "active";
-    private static final Integer ENABLED_TARGET_STATUS = 1;
+    private static final Integer ENABLED_TARGET_STATUS = Status.ENABLED.getCode();
 
     private final ProductQueryService productQueryService;
     private final ProductSkuQueryService productSkuQueryService;
