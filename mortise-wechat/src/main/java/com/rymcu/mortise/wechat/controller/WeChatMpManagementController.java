@@ -1,13 +1,13 @@
 package com.rymcu.mortise.wechat.controller;
 
+import com.rymcu.mortise.core.result.GlobalResult;
 import com.rymcu.mortise.web.annotation.AdminController;
 import com.rymcu.mortise.wechat.facade.WeChatMpManagementFacade;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -29,17 +29,13 @@ public class WeChatMpManagementController {
      * <p>从数据库重新加载所有配置，适用于批量变更后的刷新</p>
      */
     @PostMapping("/reload-all")
-    public ResponseEntity<Map<String, Object>> reloadAll() {
+    @PreAuthorize("hasAuthority('wechat:account:edit')")
+    public GlobalResult<Map<String, Object>> reloadAll() {
         try {
-            return ResponseEntity.ok(weChatMpManagementFacade.reloadAll());
+            return GlobalResult.success(weChatMpManagementFacade.reloadAll());
         } catch (Exception e) {
             log.error("Failed to reload all WeChat MP configurations", e);
-
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", false);
-            result.put("message", "重新加载失败: " + e.getMessage());
-
-            return ResponseEntity.internalServerError().body(result);
+            return GlobalResult.error("重新加载失败: " + e.getMessage());
         }
     }
 
@@ -48,18 +44,13 @@ public class WeChatMpManagementController {
      * <p>适用于单个账号配置变更后的热更新</p>
      */
     @PostMapping("/accounts/{accountId}/reload")
-    public ResponseEntity<Map<String, Object>> reloadAccount(@PathVariable Long accountId) {
+    @PreAuthorize("hasAuthority('wechat:account:edit')")
+    public GlobalResult<Map<String, Object>> reloadAccount(@PathVariable Long accountId) {
         try {
-            return ResponseEntity.ok(weChatMpManagementFacade.reloadAccount(accountId));
+            return GlobalResult.success(weChatMpManagementFacade.reloadAccount(accountId));
         } catch (Exception e) {
             log.error("Failed to reload WeChat MP configuration for accountId: {}", accountId, e);
-
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", false);
-            result.put("message", "账号配置更新失败: " + e.getMessage());
-            result.put("accountId", accountId);
-
-            return ResponseEntity.internalServerError().body(result);
+            return GlobalResult.error("账号配置更新失败: " + e.getMessage());
         }
     }
 
@@ -68,18 +59,13 @@ public class WeChatMpManagementController {
      * <p>适用于账号禁用或删除后的热移除</p>
      */
     @DeleteMapping("/accounts/{accountId}")
-    public ResponseEntity<Map<String, Object>> removeAccount(@PathVariable Long accountId) {
+    @PreAuthorize("hasAuthority('wechat:account:delete')")
+    public GlobalResult<Map<String, Object>> removeAccount(@PathVariable Long accountId) {
         try {
-            return ResponseEntity.ok(weChatMpManagementFacade.removeAccount(accountId));
+            return GlobalResult.success(weChatMpManagementFacade.removeAccount(accountId));
         } catch (Exception e) {
             log.error("Failed to remove WeChat MP configuration for accountId: {}", accountId, e);
-
-            Map<String, Object> result = new HashMap<>();
-            result.put("success", false);
-            result.put("message", "账号配置移除失败: " + e.getMessage());
-            result.put("accountId", accountId);
-
-            return ResponseEntity.internalServerError().body(result);
+            return GlobalResult.error("账号配置移除失败: " + e.getMessage());
         }
     }
 
@@ -88,8 +74,9 @@ public class WeChatMpManagementController {
      * <p>用于管理界面显示当前配置状态</p>
      */
     @GetMapping("/status")
-    public ResponseEntity<Map<String, Object>> getStatus() {
-        return ResponseEntity.ok(weChatMpManagementFacade.getStatus());
+    @PreAuthorize("hasAuthority('wechat:account:query')")
+    public GlobalResult<Map<String, Object>> getStatus() {
+        return GlobalResult.success(weChatMpManagementFacade.getStatus());
     }
 
     /**
@@ -97,8 +84,9 @@ public class WeChatMpManagementController {
      * <p>用于验证配置是否正确</p>
      */
     @GetMapping("/accounts/{accountId}/test")
-    public ResponseEntity<Map<String, Object>> testAccount(@PathVariable Long accountId) {
-        return ResponseEntity.ok(weChatMpManagementFacade.testAccount(accountId));
+    @PreAuthorize("hasAuthority('wechat:account:query')")
+    public GlobalResult<Map<String, Object>> testAccount(@PathVariable Long accountId) {
+        return GlobalResult.success(weChatMpManagementFacade.testAccount(accountId));
     }
 }
 

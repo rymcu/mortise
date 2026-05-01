@@ -83,10 +83,12 @@ useSeoMeta({
       <USeparator class="mb-8" />
 
       <!-- 文章内容 -->
+      <!-- eslint-disable vue/no-v-html -->
       <div
         class="prose prose-neutral dark:prose-invert max-w-none"
         v-html="sanitizedContent"
       />
+      <!-- eslint-enable vue/no-v-html -->
 
       <USeparator class="my-10" />
 
