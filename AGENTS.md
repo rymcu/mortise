@@ -86,7 +86,7 @@ Always method-level `@PreAuthorize("hasAuthority('...')")`, never class-level.
 - Run `./get-next-flyway-version.ps1` before adding a migration, or scan all `src/main/resources/db/migration/V*.sql` across the entire repo.
 - Standard path: `mortise-xx-infra/src/main/resources/db/migration/`. Legacy: `mortise-xx/src/main/resources/db/migration/`. Both count.
 - Naming: `V{version}__{description}.sql`. Resolve duplicates before creating new scripts.
-- Run `./setup-git-hooks.ps1` once per clone to enable the pre-commit hook that blocks duplicate versions.
+- Run `./setup-git-hooks.ps1` once per clone to enable the pre-commit hook that blocks duplicate Flyway versions and PRs missing `规范链接:`.
 - DB: PostgreSQL 17 preferred.
 
 ## SPI Extension Pattern
