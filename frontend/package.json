@@ -5,7 +5,6 @@
   "packageManager": "pnpm@10.29.3",
   "scripts": {
     "dev:admin": "pnpm --filter @mortise/admin dev",
-    "dev:mobile": "pnpm --filter @mortise/mobile dev",
     "dev:site": "pnpm --filter @mortise/site dev",
     "build": "pnpm -r --filter ./apps/* build",
     "lint": "pnpm -r --filter ./apps/* lint",

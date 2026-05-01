@@ -51,13 +51,14 @@ check_current_pr_spec_link() {
       ;;
   esac
 
-  pr_url=$(gh pr list --head "$branch_name" --state open --json url --jq ".[0].url // \"\"" 2>/dev/null || true)
+  pr_info=$(gh pr list --head "$branch_name" --state open --json url,body --template '{{with index . 0}}{{.url}}{{"\n"}}{{.body}}{{end}}' 2>/dev/null || true)
+  pr_url=$(printf "%s\n" "$pr_info" | sed -n '1p')
   if [ -z "$pr_url" ]; then
     echo "当前分支尚未关联 PR，跳过 PR 描述规范链接校验。"
     return 0
   fi
 
-  pr_body=$(gh pr list --head "$branch_name" --state open --json body --jq ".[0].body // \"\"" 2>/dev/null || true)
+  pr_body=$(printf "%s\n" "$pr_info" | sed '1d')
   if ! printf "%s" "$pr_body" | grep -Eq "规范链接:[[:space:]]*[^[:space:]]"; then
     echo "当前分支 PR 缺少非空 \"规范链接:\" 字段：$pr_url" >&2
     echo "请在 PR 描述中填写，例如：- 规范链接: https://github.com/rymcu/mortise/security/dependabot" >&2
