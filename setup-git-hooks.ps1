@@ -17,3 +17,4 @@ if ($LASTEXITCODE -ne 0) {
 
 Write-Host "已配置 Git hooksPath -> .githooks" -ForegroundColor Green
 Write-Host "后续提交会自动执行 Flyway 版本号重复检查。" -ForegroundColor Green
+Write-Host "后续提交会自动检查 PR 模板和当前分支 PR 的规范链接字段。" -ForegroundColor Green

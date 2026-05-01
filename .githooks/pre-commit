@@ -4,13 +4,68 @@ set -eu
 
 ROOT_DIR=$(git rev-parse --show-toplevel 2>/dev/null || pwd)
 
-if command -v pwsh >/dev/null 2>&1; then
-  exec pwsh -NoProfile -ExecutionPolicy Bypass -File "$ROOT_DIR/get-next-flyway-version.ps1" -FailOnDuplicates
-fi
+run_flyway_check() {
+  if command -v pwsh >/dev/null 2>&1; then
+    pwsh -NoProfile -ExecutionPolicy Bypass -File "$ROOT_DIR/get-next-flyway-version.ps1" -FailOnDuplicates
+    return $?
+  fi
 
-if command -v powershell >/dev/null 2>&1; then
-  exec powershell -NoProfile -ExecutionPolicy Bypass -File "$ROOT_DIR/get-next-flyway-version.ps1" -FailOnDuplicates
-fi
+  if command -v powershell >/dev/null 2>&1; then
+    powershell -NoProfile -ExecutionPolicy Bypass -File "$ROOT_DIR/get-next-flyway-version.ps1" -FailOnDuplicates
+    return $?
+  fi
 
-echo "未找到 pwsh 或 powershell，无法执行 Flyway pre-commit 校验。" >&2
-exit 1
+  echo "未找到 pwsh 或 powershell，无法执行 Flyway pre-commit 校验。" >&2
+  return 1
+}
+
+check_pr_template_spec_link() {
+  template_path="$ROOT_DIR/.github/pull_request_template.md"
+
+  if [ ! -f "$template_path" ]; then
+    echo "未找到 PR 模板：$template_path" >&2
+    return 1
+  fi
+
+  if ! grep -Eq "规范链接:" "$template_path"; then
+    echo "PR 模板缺少 \"规范链接:\" 字段，Spec Guard 会拒绝相关 PR。" >&2
+    return 1
+  fi
+}
+
+check_current_pr_spec_link() {
+  if ! command -v gh >/dev/null 2>&1; then
+    echo "未找到 gh，跳过当前分支 PR 规范链接校验。"
+    return 0
+  fi
+
+  if ! gh auth status >/dev/null 2>&1; then
+    echo "gh 未登录，跳过当前分支 PR 规范链接校验。"
+    return 0
+  fi
+
+  branch_name=$(git -C "$ROOT_DIR" branch --show-current 2>/dev/null || true)
+  case "$branch_name" in
+    "" | master | main)
+      return 0
+      ;;
+  esac
+
+  pr_info=$(gh pr list --head "$branch_name" --state open --json url,body --template '{{with index . 0}}{{.url}}{{"\n"}}{{.body}}{{end}}' 2>/dev/null || true)
+  pr_url=$(printf "%s\n" "$pr_info" | sed -n '1p')
+  if [ -z "$pr_url" ]; then
+    echo "当前分支尚未关联 PR，跳过 PR 描述规范链接校验。"
+    return 0
+  fi
+
+  pr_body=$(printf "%s\n" "$pr_info" | sed '1d')
+  if ! printf "%s" "$pr_body" | grep -Eq "规范链接:[[:space:]]*[^[:space:]]"; then
+    echo "当前分支 PR 缺少非空 \"规范链接:\" 字段：$pr_url" >&2
+    echo "请在 PR 描述中填写，例如：- 规范链接: https://github.com/rymcu/mortise/security/dependabot" >&2
+    return 1
+  fi
+}
+
+check_pr_template_spec_link
+check_current_pr_spec_link
+run_flyway_check
