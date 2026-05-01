@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.29.3",
   "scripts": {
     "dev:admin": "pnpm --filter @mortise/admin dev",
+    "dev:mobile": "pnpm --filter @mortise/mobile dev",
     "dev:site": "pnpm --filter @mortise/site dev",
     "build": "pnpm -r --filter ./apps/* build",
     "lint": "pnpm -r --filter ./apps/* lint",
@@ -29,6 +30,27 @@
     "prettier-plugin-tailwindcss": "^0.7.2"
   },
   "pnpm": {
+    "overrides": {
+      "brace-expansion@2.0.2": "2.0.3",
+      "brace-expansion@5.0.4": "5.0.5",
+      "defu@6.1.4": "6.1.7",
+      "dompurify": "3.4.0",
+      "glob@10.4.5": "10.5.0",
+      "h3@1.15.8": "1.15.9",
+      "lodash": "4.18.0",
+      "lodash-es": "4.18.0",
+      "node-forge": "1.4.0",
+      "picomatch@2.3.1": "2.3.2",
+      "picomatch@4.0.3": "4.0.4",
+      "postcss": "8.5.10",
+      "protocol-buffers-schema": "3.6.1",
+      "serialize-javascript": "7.0.5",
+      "srvx@0.11.12": "0.11.15",
+      "unhead": "2.1.13",
+      "vite": "7.3.2",
+      "yaml@1.10.2": "1.10.3",
+      "yaml@2.8.2": "2.8.3"
+    },
     "peerDependencyRules": {
       "allowedVersions": {
         "citty": ">=0.1.6",
