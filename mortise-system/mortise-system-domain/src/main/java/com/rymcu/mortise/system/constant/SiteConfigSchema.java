@@ -34,7 +34,7 @@ public enum SiteConfigSchema {
     )),
 
     FOOTER("footer", "页脚配置", List.of(
-            new SiteConfigFieldDef("footer.copyright",  "版权信息",           FormFieldType.TEXT, false, "© 2025 Mortise",             null, null),
+            new SiteConfigFieldDef("footer.copyright",  "版权信息",           FormFieldType.HTML, false, "<span>© 2025 Mortise</span>",             null, null),
             new SiteConfigFieldDef("footer.columns",    "页脚栏目(JSON)",     FormFieldType.TEXTAREA, false,
                     "[{\"label\":\"资源\",\"children\":[{\"label\":\"文档\",\"to\":\"/docs\"}]}]", null, null),
             new SiteConfigFieldDef("footer.icp",        "ICP 备案号",         FormFieldType.TEXT, false, "如：粤ICP备XXXXXXXX号",        null, null),

@@ -9,10 +9,13 @@ import com.rymcu.mortise.product.entity.ProductSku;
 import com.rymcu.mortise.product.service.query.ProductQueryService;
 import com.rymcu.mortise.product.service.query.ProductSkuQueryService;
 import com.rymcu.mortise.product.service.query.ProductSkuTargetQueryService;
+import com.rymcu.mortise.product.spi.ProductSkuMetadataProvider;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,15 +29,18 @@ public class ProductCatalogApiFacadeImpl implements ProductCatalogApiFacade {
     private final ProductQueryService productQueryService;
     private final ProductSkuQueryService productSkuQueryService;
     private final ProductSkuTargetQueryService productSkuTargetQueryService;
+    private final List<ProductSkuMetadataProvider> skuMetadataProviders;
 
     public ProductCatalogApiFacadeImpl(
             ProductQueryService productQueryService,
             ProductSkuQueryService productSkuQueryService,
-            ProductSkuTargetQueryService productSkuTargetQueryService
+            ProductSkuTargetQueryService productSkuTargetQueryService,
+            List<ProductSkuMetadataProvider> skuMetadataProviders
     ) {
         this.productQueryService = productQueryService;
         this.productSkuQueryService = productSkuQueryService;
         this.productSkuTargetQueryService = productSkuTargetQueryService;
+        this.skuMetadataProviders = skuMetadataProviders;
     }
 
     @Override
@@ -67,11 +73,13 @@ public class ProductCatalogApiFacadeImpl implements ProductCatalogApiFacade {
             return detailVO;
         }
 
+        Map<Long, Map<String, Object>> skuMetadata = collectSkuMetadata(skuIds);
         detailVO.setSkuTargets(productSkuTargetQueryService.findByProductSkuIds(skuIds).stream()
                 .filter(target -> ENABLED_TARGET_STATUS.equals(target.getStatus()))
                 .map(target -> {
                     SkuTargetVO targetVO = new SkuTargetVO();
                     BeanUtils.copyProperties(target, targetVO);
+                    targetVO.setMetadata(skuMetadata.getOrDefault(target.getProductSkuId(), Collections.emptyMap()));
                     return targetVO;
                 })
                 .collect(Collectors.toList()));
@@ -81,5 +89,20 @@ public class ProductCatalogApiFacadeImpl implements ProductCatalogApiFacade {
     @Override
     public Map<String, String> listProductTypes() {
         return productQueryService.getAllProductTypes();
+    }
+
+    private Map<Long, Map<String, Object>> collectSkuMetadata(List<Long> skuIds) {
+        if (skuIds.isEmpty() || skuMetadataProviders.isEmpty()) {
+            return Collections.emptyMap();
+        }
+        Map<Long, Map<String, Object>> result = new LinkedHashMap<>();
+        skuMetadataProviders.stream()
+                .sorted(Comparator.comparingInt(ProductSkuMetadataProvider::getOrder))
+                .forEach(provider -> provider.getSkuMetadata(skuIds).forEach((skuId, metadata) -> {
+                    Map<String, Object> merged = new LinkedHashMap<>(result.getOrDefault(skuId, Collections.emptyMap()));
+                    merged.putAll(metadata);
+                    result.put(skuId, merged);
+                }));
+        return result;
     }
 }

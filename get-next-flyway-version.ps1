@@ -12,7 +12,9 @@ $resolvedRoot = (Resolve-Path -Path $RootPath).Path
 $migrationFiles = Get-ChildItem -Path $resolvedRoot -Recurse -File -Filter "V*.sql" |
     Where-Object {
         $_.FullName -like "*\src\main\resources\db\migration\*" -and
-        $_.FullName -notlike "*\old-code\*"
+        $_.FullName -notlike "*\old-code\*" -and
+        $_.FullName -notlike "*\old-codes\*" -and
+        $_.FullName -notlike "*\.codex-worktrees\*"
     }
 
 $scripts = foreach ($file in $migrationFiles) {

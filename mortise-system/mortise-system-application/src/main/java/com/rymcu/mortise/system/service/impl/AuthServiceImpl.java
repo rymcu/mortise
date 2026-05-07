@@ -4,6 +4,7 @@ import com.github.f4b6a3.ulid.UlidCreator;
 import com.rymcu.mortise.auth.service.TokenManager;
 import com.rymcu.mortise.auth.spi.StandardOAuth2UserInfo;
 import com.rymcu.mortise.auth.util.OAuth2ProviderUtils;
+import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.common.exception.BusinessException;
 import com.rymcu.mortise.common.exception.CaptchaException;
 import com.rymcu.mortise.common.exception.ServiceException;
@@ -102,6 +103,7 @@ public class AuthServiceImpl implements AuthService {
             user.setEmail(email);
             user.setPassword(passwordEncoder.encode(password));
             user.setAvatar(DEFAULT_AVATAR);
+            user.setStatus(Status.ENABLED.getCode());
             boolean result = userRepository.save(user);
             if (result) {
                 // 注册成功后执行相关初始化事件
@@ -326,6 +328,7 @@ public class AuthServiceImpl implements AuthService {
         newUser.setAccount(userCommandService.nextAccount());
         newUser.setEmail(userInfo.getEmail());
         newUser.setPhone(userInfo.getPhone());
+        newUser.setStatus(Status.ENABLED.getCode());
 
         String avatar = userInfo.getAvatar();
         newUser.setAvatar(StringUtils.isNotBlank(avatar) ? avatar : DEFAULT_AVATAR);

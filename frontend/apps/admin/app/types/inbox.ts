@@ -12,13 +12,13 @@ export type SessionStatus = 0 | 1 | 2 // OPEN=0, CLOSED=1, WAITING=2
  * 对应后端 SessionVO
  */
 export interface ChatSession {
-  id: number
-  userId: number
+  id: string
+  userId: string
   userName: string | null
   userAvatar: string | null
   status: SessionStatus
   contextType: string | null
-  contextId: number | null
+  contextId: string | null
   contextTitle: string | null
   lastMessage: string | null
   unreadCount: number
@@ -33,24 +33,24 @@ export interface ChatSession {
  */
 export interface InboxChatMessage {
   id: string
-  sessionId: number
+  sessionId: string
   /** 'user' = 访客来信，'assistant' = 客服回复 */
   role: 'user' | 'assistant'
   parts: Array<{ type: 'text'; text: string }>
   /** 后端 createdTime 格式化后的显示时间 */
   time: string
-  senderId: number | null
+  senderId: string | null
 }
 
 /** 后端会话原始结构，对应 SessionVO */
 export interface BackendSession {
-  id: number
-  userId: number
+  id: string
+  userId: string
   userName: string | null
   userAvatar: string | null
   status: number
   contextType: string | null
-  contextId: number | null
+  contextId: string | null
   contextTitle: string | null
   lastMessage: string | null
   unreadCount: number
@@ -59,10 +59,10 @@ export interface BackendSession {
 
 /** 后端消息原始结构，对应 MessageVO */
 export interface BackendMessage {
-  id: number
-  sessionId: number
+  id: string
+  sessionId: string
   role: string
-  senderId: number | null
+  senderId: string | null
   content: string
   createdTime: string
 }

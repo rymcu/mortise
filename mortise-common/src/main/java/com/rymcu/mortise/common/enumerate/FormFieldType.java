@@ -15,6 +15,8 @@ package com.rymcu.mortise.common.enumerate;
  *   <li>{@link #EMAIL}    → {@code <UInput type="email" />}</li>
  *   <li>{@link #SELECT}   → {@code <USelect />}，字段定义中附带 options 列表</li>
  *   <li>{@link #TEXTAREA} → {@code <UTextarea />}</li>
+ *   <li>{@link #RICH_TEXT} → 富文本编辑器（结构可由前端自行决定，默认输出 HTML）</li>
+ *   <li>{@link #HTML} → HTML 富文本编辑器，适用于需要直接渲染 HTML 的配置项</li>
  * </ul>
  *
  * @author ronger
@@ -41,6 +43,12 @@ public enum FormFieldType {
 
     /** 多行文本输入框 */
     TEXTAREA,
+
+    /** 富文本编辑器，适用于长说明、内容片段等需要格式化编辑的场景 */
+    RICH_TEXT,
+
+    /** HTML 富文本编辑器，适用于需要在前台直接按 HTML 渲染的配置项 */
+    HTML,
 
     /**
      * 图片上传控件，接口返回已存储的文件相对路径；

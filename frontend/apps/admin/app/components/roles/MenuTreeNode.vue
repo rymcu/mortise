@@ -5,7 +5,7 @@
  */
 
 interface MenuTreeItem {
-  id: string | number
+  id: string
   label?: string
   permission?: string
   icon?: string
@@ -16,8 +16,8 @@ interface MenuTreeItem {
 const props = defineProps<{
   node: MenuTreeItem
   depth: number
-  checkedIds: Set<string | number>
-  expandedIds: Set<string | number>
+  checkedIds: Set<string>
+  expandedIds: Set<string>
   isIndeterminate: (node: MenuTreeItem) => boolean
 }>()
 

@@ -43,7 +43,7 @@ export async function fetchAdminGet<T>(
 export async function fetchAdminPost<T>(
   api: ApiInvoker,
   path: string,
-  body: Record<string, unknown>
+  body: unknown
 ): Promise<T> {
   const response = await api<GlobalResult<T>>(path, {
     method: 'POST',
@@ -59,7 +59,7 @@ export async function fetchAdminPost<T>(
 export async function fetchAdminPut<T>(
   api: ApiInvoker,
   path: string,
-  body: Record<string, unknown>
+  body: unknown
 ): Promise<T> {
   const response = await api<GlobalResult<T>>(path, {
     method: 'PUT',
@@ -103,7 +103,7 @@ export async function fetchAdminDelete<T = void>(
 export async function fetchAdminBatchDelete<T = void>(
   api: ApiInvoker,
   path: string,
-  ids: (string | number)[]
+  ids: string[]
 ): Promise<T> {
   const response = await api<GlobalResult<T>>(path, {
     method: 'DELETE',

@@ -26,7 +26,7 @@ interface AdminAuthRuntimeConfigLike {
 }
 
 export interface AdminLoginResponse {
-  id?: number
+  id?: string
   account?: string
   token?: string
   refreshToken?: string
@@ -135,7 +135,10 @@ export function createAdminAuthStore<TMenu>(
       tokenCookie.value = payload.token
       refreshTokenCookie.value = payload.refreshToken ?? null
       tokenTypeCookie.value = 'Bearer'
-      userCookie.value = { id: payload.id, account: payload.account }
+      userCookie.value = {
+        id: payload.id == null ? undefined : String(payload.id),
+        account: payload.account,
+      }
     }
 
     function clearTokens() {

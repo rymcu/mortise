@@ -10,7 +10,7 @@ import {
 } from '@mortise/core-sdk'
 
 interface RoleItem {
-  id: string | number
+  id: string
   label?: string
   permission?: string
   status?: number
@@ -37,7 +37,7 @@ const loading = ref(false)
 const rolesLoading = ref(false)
 const errorMessage = ref('')
 const allRoles = ref<RoleItem[]>([])
-const checkedIds = ref<Set<string | number>>(new Set())
+const checkedIds = ref<Set<string>>(new Set())
 
 /** 加载所有角色 + 当前用户已绑定角色 */
 async function loadData() {
@@ -57,7 +57,7 @@ async function loadData() {
       )
     ])
     allRoles.value = pageResult.records || []
-    checkedIds.value = new Set((userRoles || []).map((r) => r.id))
+    checkedIds.value = new Set((userRoles || []).map((r) => String(r.id)))
   } catch (err) {
     errorMessage.value = err instanceof Error ? err.message : '加载角色失败'
   } finally {
@@ -65,7 +65,7 @@ async function loadData() {
   }
 }
 
-function toggleRole(id: string | number) {
+function toggleRole(id: string) {
   const s = new Set(checkedIds.value)
   if (s.has(id)) {
     s.delete(id)

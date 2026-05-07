@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { usePagedAdminResource } from '~/composables/usePagedAdminResource'
+import type { WeChatMenuAccount } from '~/types/wechat-menu'
 
 interface WeChatAccountInfo {
-  id: number
+  id: string
   accountName?: string
   accountType?: string
   appId?: string
@@ -45,6 +46,7 @@ await loadData()
 const showAddModal = ref(false)
 const showEditModal = ref(false)
 const showDeleteModal = ref(false)
+const showMenuModal = ref(false)
 const currentRow = ref<Record<string, unknown>>({})
 
 function openEditModal(row: Record<string, unknown>) {
@@ -56,6 +58,18 @@ function openDeleteModal(row: Record<string, unknown>) {
   currentRow.value = { ...row }
   showDeleteModal.value = true
 }
+
+function openMenuModal(row: Record<string, unknown>) {
+  currentRow.value = { ...row }
+  showMenuModal.value = true
+}
+
+const currentMenuAccount = computed<WeChatMenuAccount>(() => ({
+  id: currentRow.value.id == null ? undefined : String(currentRow.value.id),
+  accountName: currentRow.value.accountName as string | undefined,
+  accountType: currentRow.value.accountType as string | undefined,
+  appId: currentRow.value.appId as string | undefined
+}))
 </script>
 
 <template>
@@ -119,6 +133,15 @@ function openDeleteModal(row: Record<string, unknown>) {
 
         <template #actions="{ row }">
           <UButton
+            icon="i-lucide-list-tree"
+            color="primary"
+            variant="ghost"
+            size="xs"
+            @click="openMenuModal(row)"
+          >
+            菜单
+          </UButton>
+          <UButton
             icon="i-lucide-pencil"
             color="primary"
             variant="ghost"
@@ -152,6 +175,11 @@ function openDeleteModal(row: Record<string, unknown>) {
       <WechatAccountsWeChatAccountDeleteModal
         v-model:open="showDeleteModal"
         :account="currentRow"
+        @success="loadData"
+      />
+      <WechatAccountsWeChatAccountMenuModal
+        v-model:open="showMenuModal"
+        :account="currentMenuAccount"
         @success="loadData"
       />
     </template>

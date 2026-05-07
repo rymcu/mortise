@@ -32,6 +32,7 @@ const emit = defineEmits<{
 const { $api } = useNuxtApp()
 const toast = useToast()
 const { uploadFile } = useAppFileUpload()
+const adminFilePickerProvider = useAdminFilePickerProvider()
 
 const schema = z.object({
   title: z.string().min(1, '请输入产品标题'),
@@ -80,34 +81,6 @@ async function onCoverFileChange(file: File) {
 function clearCoverImage() {
   state.coverImageUrl = ''
 }
-
-// ─── 编辑器工具栏 ──────────────────────────────────────────────────────────────
-const editorToolbarItems = [
-  [
-    { kind: 'heading', level: 1, icon: 'i-lucide-heading-1', tooltip: { text: '标题 1' } },
-    { kind: 'heading', level: 2, icon: 'i-lucide-heading-2', tooltip: { text: '标题 2' } },
-    { kind: 'heading', level: 3, icon: 'i-lucide-heading-3', tooltip: { text: '标题 3' } },
-    { kind: 'paragraph', icon: 'i-lucide-pilcrow', tooltip: { text: '正文' } }
-  ],
-  [
-    { kind: 'mark', mark: 'bold', icon: 'i-lucide-bold', tooltip: { text: '粗体' } },
-    { kind: 'mark', mark: 'italic', icon: 'i-lucide-italic', tooltip: { text: '斜体' } },
-    { kind: 'mark', mark: 'strike', icon: 'i-lucide-strikethrough', tooltip: { text: '删除线' } },
-    { kind: 'mark', mark: 'code', icon: 'i-lucide-code', tooltip: { text: '行内代码' } }
-  ],
-  [
-    { kind: 'bulletList', icon: 'i-lucide-list', tooltip: { text: '无序列表' } },
-    { kind: 'orderedList', icon: 'i-lucide-list-ordered', tooltip: { text: '有序列表' } },
-    { kind: 'blockquote', icon: 'i-lucide-quote', tooltip: { text: '引用' } },
-    { kind: 'codeBlock', icon: 'i-lucide-square-code', tooltip: { text: '代码块' } },
-    { kind: 'horizontalRule', icon: 'i-lucide-minus', tooltip: { text: '水平线' } }
-  ],
-  [
-    { kind: 'undo', icon: 'i-lucide-undo-2', tooltip: { text: '撤销' } },
-    { kind: 'redo', icon: 'i-lucide-redo-2', tooltip: { text: '重做' } },
-    { kind: 'clearFormatting', icon: 'i-lucide-remove-formatting', tooltip: { text: '清除格式' } }
-  ]
-]
 
 // 加载产品类型列表
 const productTypeItems = ref<ProductTypeItem[]>([])
@@ -242,22 +215,11 @@ defineExpose({ validate, state })
     </UFormField>
 
     <UFormField label="详细描述" name="description">
-      <div class="border-default focus-within:ring-primary/50 w-full rounded-md border focus-within:ring-2">
-        <UEditor
-          v-model="state.description"
-          content-type="html"
-          placeholder="产品详细描述"
-          class="min-h-48"
-        >
-          <template #default="{ editor }">
-            <UEditorToolbar
-              :editor="editor"
-              :items="editorToolbarItems"
-              class="border-default border-b"
-            />
-          </template>
-        </UEditor>
-      </div>
+      <CompatRichTextEditor
+        v-model="state.description"
+        :asset-picker-provider="adminFilePickerProvider"
+        placeholder="产品详细描述"
+      />
     </UFormField>
 
     <!-- SEO 信息 -->

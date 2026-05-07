@@ -5,7 +5,7 @@
 const open = defineModel<boolean>('open', { default: false })
 
 const props = defineProps<{
-  productId: number | string
+  productId: string
   sku: Record<string, unknown>
 }>()
 

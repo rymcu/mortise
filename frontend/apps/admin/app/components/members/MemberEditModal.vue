@@ -31,7 +31,7 @@ watch(
 )
 
 async function handleConfirm() {
-  const id = props.member.id as number
+  const id = String(props.member.id)
   if (selectedStatus.value === 1) {
     const ok = await putAction(`${id}/enable`)
     if (ok) {

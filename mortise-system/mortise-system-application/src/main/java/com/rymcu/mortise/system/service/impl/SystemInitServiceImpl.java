@@ -1,5 +1,6 @@
 package com.rymcu.mortise.system.service.impl;
 
+import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.system.constant.SystemAuthConstants;
 import com.rymcu.mortise.system.entity.Role;
 import com.rymcu.mortise.system.entity.User;
@@ -98,6 +99,7 @@ public class SystemInitServiceImpl implements SystemInitService {
         admin.setPassword(passwordEncoder.encode(initInfo.getAdminPassword()));
         admin.setNickname(initInfo.getAdminNickname());
         admin.setEmail(initInfo.getAdminEmail());
+        admin.setStatus(Status.ENABLED.getCode());
         admin.setCreatedTime(LocalDateTime.now());
         userRepository.save(admin);
         log.info("管理员用户创建完成，ID={}", admin.getId());

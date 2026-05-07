@@ -5,6 +5,12 @@
  * 管理产品规格单元（SKU）的增删改查，以及设置默认 SKU、切换状态
  */
 import { fetchAdminGet } from '@mortise/core-sdk'
+import type { ProductSkuInfo } from '~/types/migration'
+import {
+  isRecord,
+  toOptionalBoolean,
+  toOptionalString,
+} from '~/utils/migration'
 
 const route = useRoute()
 const productId = route.params.id as string
@@ -29,17 +35,49 @@ async function loadProduct() {
 // ============ SKU 列表 ============
 const loading = ref(false)
 const error = ref('')
-const skus = ref<Record<string, unknown>[]>([])
+const skus = ref<ProductSkuInfo[]>([])
+
+function normalizeSku(value: unknown): ProductSkuInfo | null {
+  if (!isRecord(value)) {
+    return null
+  }
+
+  const id = toOptionalString(value.id)
+  if (!id) {
+    return null
+  }
+
+  return {
+    id,
+    skuCode: toOptionalString(value.skuCode),
+    name: toOptionalString(value.name),
+    description: toOptionalString(value.description),
+    status: toOptionalString(value.status),
+    isDefault: toOptionalBoolean(value.isDefault),
+    attributes: isRecord(value.attributes) ? value.attributes : undefined,
+    createdTime: toOptionalString(value.createdTime)
+  }
+}
+
+function normalizeSkus(value: unknown): ProductSkuInfo[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value
+    .map(item => normalizeSku(item))
+    .filter((item): item is ProductSkuInfo => !!item)
+}
 
 async function loadSkus() {
   loading.value = true
   error.value = ''
   try {
-    const list = await fetchAdminGet<Record<string, unknown>[]>(
+    const list = await fetchAdminGet<unknown[]>(
       $api,
       `/api/v1/admin/products/${productId}/skus`
     )
-    skus.value = list || []
+    skus.value = normalizeSkus(list)
   } catch (err) {
     error.value = err instanceof Error ? err.message : '加载规格失败'
   } finally {
@@ -61,6 +99,8 @@ const showAddModal = ref(false)
 const showEditModal = ref(false)
 const showDeleteModal = ref(false)
 const currentSku = ref<Record<string, unknown>>({})
+const targetSku = ref<ProductSkuInfo | null>(null)
+const showTargetSlideover = ref(false)
 
 function openEdit(sku: Record<string, unknown>) {
   currentSku.value = { ...sku }
@@ -72,26 +112,31 @@ function openDelete(sku: Record<string, unknown>) {
   showDeleteModal.value = true
 }
 
+function openTargetManager(sku: ProductSkuInfo) {
+  targetSku.value = { ...sku }
+  showTargetSlideover.value = true
+}
+
 // ============ 设为默认 ============
 const { patchAction, loading: _patchLoading } = useAdminCrud(
   `/api/v1/admin/products/${productId}/skus`
 )
-const settingDefaultId = ref<number | null>(null)
+const settingDefaultId = ref<string | null>(null)
 
-async function setDefault(sku: Record<string, unknown>) {
-  settingDefaultId.value = sku.id as number
+async function setDefault(sku: ProductSkuInfo) {
+  settingDefaultId.value = sku.id
   const ok = await patchAction(`${sku.id}/default`)
   settingDefaultId.value = null
   if (ok !== null) loadSkus()
 }
 
 // ============ 切换状态 ============
-const togglingStatusId = ref<number | null>(null)
+const togglingStatusId = ref<string | null>(null)
 
-async function toggleStatus(sku: Record<string, unknown>) {
+async function toggleStatus(sku: ProductSkuInfo) {
   const current = sku.status as string
   const next = current === 'active' ? 'inactive' : 'active'
-  togglingStatusId.value = sku.id as number
+  togglingStatusId.value = sku.id
   const ok = await patchAction(`${sku.id}/status`, { status: next })
   togglingStatusId.value = null
   if (ok !== null) loadSkus()
@@ -193,12 +238,9 @@ async function toggleStatus(sku: Record<string, unknown>) {
 
                   <!-- 规格属性 -->
                   <td class="px-3 py-2">
-                    <div
-                      v-if="sku.attributes && Object.keys(sku.attributes as object).length"
-                      class="flex flex-wrap gap-1"
-                    >
+                    <div v-if="sku.attributes && Object.keys(sku.attributes).length" class="flex flex-wrap gap-1">
                       <UBadge
-                        v-for="[k, v] in Object.entries(sku.attributes as Record<string, unknown>)"
+                        v-for="[k, v] in Object.entries(sku.attributes)"
                         :key="k"
                         color="neutral"
                         variant="soft"
@@ -245,7 +287,15 @@ async function toggleStatus(sku: Record<string, unknown>) {
                         color="neutral"
                         variant="ghost"
                         size="xs"
-                        @click="openEdit(sku as Record<string, unknown>)"
+                        @click="openEdit(sku as unknown as Record<string, unknown>)"
+                      />
+                      <UButton
+                        icon="i-lucide-link-2"
+                        color="primary"
+                        variant="ghost"
+                        size="xs"
+                        title="目标映射"
+                        @click="openTargetManager(sku)"
                       />
                       <!-- 设为默认 -->
                       <UButton
@@ -256,7 +306,7 @@ async function toggleStatus(sku: Record<string, unknown>) {
                         size="xs"
                         :loading="settingDefaultId === sku.id"
                         title="设为默认"
-                        @click="setDefault(sku as Record<string, unknown>)"
+                        @click="setDefault(sku)"
                       />
                       <!-- 切换上架/下架 -->
                       <UButton
@@ -266,7 +316,7 @@ async function toggleStatus(sku: Record<string, unknown>) {
                         size="xs"
                         :loading="togglingStatusId === sku.id"
                         :title="sku.status === 'active' ? '点击下架' : '点击上架'"
-                        @click="toggleStatus(sku as Record<string, unknown>)"
+                        @click="toggleStatus(sku)"
                       />
                       <!-- 删除 -->
                       <UButton
@@ -274,7 +324,7 @@ async function toggleStatus(sku: Record<string, unknown>) {
                         color="error"
                         variant="ghost"
                         size="xs"
-                        @click="openDelete(sku as Record<string, unknown>)"
+                        @click="openDelete(sku as unknown as Record<string, unknown>)"
                       />
                     </div>
                   </td>
@@ -316,6 +366,12 @@ async function toggleStatus(sku: Record<string, unknown>) {
         :product-id="productId"
         :sku="currentSku"
         @success="loadSkus"
+      />
+
+      <ProductSkuTargetsTargetManagerSlideover
+        v-model:open="showTargetSlideover"
+        :product-id="productId"
+        :sku="targetSku"
       />
     </template>
   </UDashboardPanel>

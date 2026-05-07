@@ -53,7 +53,7 @@ export function useImChat() {
     error.value = null
     try {
       // 1. 优先查询已有活跃会话（锁页面刷新后恢复）
-      const activeRes = await $fetch<{ code: number; data: { id: number; status: number } | null }>(
+      const activeRes = await $fetch<{ code: number; data: { id: string; status: number } | null }>(
         '/api/v1/app/im/sessions/active',
         {
           method: 'GET',
@@ -67,7 +67,7 @@ export function useImChat() {
         }
       )
       if (activeRes.code === 200 && activeRes.data) {
-        session.value = { id: activeRes.data.id, status: activeRes.data.status }
+        session.value = { id: String(activeRes.data.id), status: activeRes.data.status }
         await loadMessages()
         if (ctx.subject && messages.value.length === 0) await sendMessage(ctx.subject)
         startPolling()
@@ -79,7 +79,7 @@ export function useImChat() {
       if (ctx.contextType) body.contextType = ctx.contextType
       if (ctx.contextId) body.contextId = ctx.contextId
 
-      const createRes = await $fetch<{ code: number; data: { id: number; status: number } }>(
+      const createRes = await $fetch<{ code: number; data: { id: string; status: number } }>(
         '/api/v1/app/im/sessions',
         {
           method: 'POST',
@@ -90,7 +90,7 @@ export function useImChat() {
         }
       )
       if (createRes.code === 200 && createRes.data) {
-        session.value = { id: createRes.data.id, status: createRes.data.status }
+        session.value = { id: String(createRes.data.id), status: createRes.data.status }
         await loadMessages()
         if (ctx.subject && messages.value.length === 0) await sendMessage(ctx.subject)
         startPolling()
@@ -114,7 +114,7 @@ export function useImChat() {
     try {
       const res = await $fetch<{
         code: number
-        data: { records: Array<{ id: number; role: string; content: string; createdTime: string }> }
+        data: { records: Array<{ id: string; role: string; content: string; createdTime: string }> }
       }>(
         `/api/v1/app/im/sessions/${session.value.id}/messages`,
         {
@@ -143,7 +143,7 @@ export function useImChat() {
   async function syncSessionStatus() {
     if (!session.value) return
     try {
-      const res = await $fetch<{ code: number; data: { id: number; status: number } }>(
+      const res = await $fetch<{ code: number; data: { id: string; status: number } }>(
         `/api/v1/app/im/sessions/${session.value.id}`,
         {
           method: 'GET',
@@ -170,7 +170,7 @@ export function useImChat() {
     try {
       const res = await $fetch<{
         code: number
-        data: { id: number; role: string; content: string; createdTime: string }
+        data: { id: string; role: string; content: string; createdTime: string }
       }>(
         `/api/v1/app/im/sessions/${session.value.id}/messages`,
         {
@@ -214,7 +214,11 @@ export function useImChat() {
         }
       )
       if (res.code === 200) {
-        sessions.value = res.data?.records ?? []
+        sessions.value = (res.data?.records ?? []).map((item) => ({
+          ...item,
+          id: String(item.id),
+          contextId: item.contextId == null ? null : String(item.contextId),
+        }))
       }
     } catch {
       // 静默忽略
@@ -223,13 +227,13 @@ export function useImChat() {
     }
   }
 
-  async function openHistorySession(sessionId: number): Promise<void> {
+  async function openHistorySession(sessionId: string): Promise<void> {
     historyLoading.value = true
     historyMessages.value = []
     try {
       const res = await $fetch<{
         code: number
-        data: { records: Array<{ id: number; role: string; content: string; createdTime: string }> }
+        data: { records: Array<{ id: string; role: string; content: string; createdTime: string }> }
       }>(
         `/api/v1/app/im/sessions/${sessionId}/messages`,
         {

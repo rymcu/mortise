@@ -15,7 +15,7 @@ const emit = defineEmits<{
 const { remove, loading, errorMessage } = useAdminCrud('/api/v1/admin/menus')
 
 async function handleConfirm() {
-  const ok = await remove(props.menu.id as number)
+  const ok = await remove(String(props.menu.id))
   if (ok) {
     open.value = false
     emit('success')
