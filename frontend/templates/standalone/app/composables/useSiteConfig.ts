@@ -110,6 +110,7 @@ export const useSiteConfig = () => {
   const footerCopyright = computed(() =>
     normalizeConfigValue(values.value['footer.copyright']) ?? `${communityName.value} • © ${new Date().getFullYear()}`
   )
+  const footerCopyrightHtml = useSanitizedHtml(footerCopyright)
   const icp = computed(() => normalizeConfigValue(values.value['footer.icp']))
   const footerLinks = computed<FooterLink[]>(() => {
     const rawLinks: Array<FooterLink | null> = [
@@ -137,6 +138,7 @@ export const useSiteConfig = () => {
     siteFavicon,
     icp,
     footerCopyright,
+    footerCopyrightHtml,
     footerLinks,
     footerColumns,
     titleTemplate

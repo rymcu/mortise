@@ -8,7 +8,7 @@
 import { fetchAdminGet, fetchAdminPut } from '@mortise/core-sdk'
 
 interface MenuTreeItem {
-  id: string | number
+  id: string
   label?: string
   permission?: string
   icon?: string
@@ -38,8 +38,8 @@ const loading = ref(false)
 const dataLoading = ref(false)
 const errorMessage = ref('')
 const menuTree = ref<MenuTreeItem[]>([])
-const checkedIds = ref<Set<string | number>>(new Set())
-const expandedIds = ref<Set<string | number>>(new Set())
+const checkedIds = ref<Set<string>>(new Set())
+const expandedIds = ref<Set<string>>(new Set())
 
 // ============ 工具方法 ============
 
@@ -70,7 +70,7 @@ function collectSubtree(node: MenuTreeItem): MenuTreeItem[] {
 /** 查找目标节点的所有祖先节点 */
 function findAncestors(
   tree: MenuTreeItem[],
-  targetId: string | number
+  targetId: string
 ): MenuTreeItem[] {
   const path: MenuTreeItem[] = []
   const find = (nodes: MenuTreeItem[], stack: MenuTreeItem[]): boolean => {
@@ -104,15 +104,15 @@ async function loadData() {
     ])
     menuTree.value = tree || []
     // 初始化选中状态：仅保留菜单树中存在的 ID
-    const allIds = new Set(flattenTree(menuTree.value).map((m) => m.id))
+    const allIds = new Set(flattenTree(menuTree.value).map((m) => String(m.id)))
     checkedIds.value = new Set(
-      (roleMenus || []).filter((m) => allIds.has(m.id)).map((m) => m.id)
+      (roleMenus || []).filter((m) => allIds.has(String(m.id))).map((m) => String(m.id))
     )
     // 默认展开所有节点
     expandedIds.value = new Set(
       flattenTree(menuTree.value)
         .filter((m) => m.children?.length)
-        .map((m) => m.id)
+        .map((m) => String(m.id))
     )
   } catch (err) {
     errorMessage.value = err instanceof Error ? err.message : '加载菜单失败'
@@ -147,9 +147,9 @@ function toggleMenu(node: MenuTreeItem) {
 
 /** 向上检查：如果某个节点的所有子节点都已选中，则自动选中该节点 */
 function autoCheckAncestors(
-  ids: Set<string | number>,
+  ids: Set<string>,
   tree: MenuTreeItem[],
-  targetId: string | number
+  targetId: string
 ) {
   const ancestors = findAncestors(tree, targetId)
   for (let i = ancestors.length - 1; i >= 0; i--) {

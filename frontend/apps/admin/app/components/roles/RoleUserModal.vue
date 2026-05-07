@@ -6,7 +6,7 @@
 import { fetchAdminGet, fetchAdminPut, fetchAdminPage } from '@mortise/core-sdk'
 
 interface UserItem {
-  id: string | number
+  id: string
   account?: string
   nickname?: string
   email?: string
@@ -34,7 +34,7 @@ const loading = ref(false)
 const dataLoading = ref(false)
 const errorMessage = ref('')
 const allUsers = ref<UserItem[]>([])
-const checkedIds = ref<Set<string | number>>(new Set())
+const checkedIds = ref<Set<string>>(new Set())
 
 // 分页搜索
 const searchKeyword = ref('')
@@ -75,7 +75,7 @@ async function loadData() {
     hasNext.value = Boolean(pageResult.hasNext)
     // 仅首次打开时初始化选中状态
     if (checkedIds.value.size === 0) {
-      checkedIds.value = new Set((roleUsers || []).map((u) => u.id))
+      checkedIds.value = new Set((roleUsers || []).map((u) => String(u.id)))
     }
   } catch (err) {
     errorMessage.value = err instanceof Error ? err.message : '加载用户失败'
@@ -116,7 +116,7 @@ async function loadUsers() {
   }
 }
 
-function toggleUser(id: string | number) {
+function toggleUser(id: string) {
   const s = new Set(checkedIds.value)
   if (s.has(id)) {
     s.delete(id)

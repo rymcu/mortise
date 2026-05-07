@@ -2,7 +2,7 @@
 import { usePagedAdminResource } from '~/composables/usePagedAdminResource'
 
 interface RoleInfo {
-  id: number
+  id: string
   label?: string
   permission?: string
   status?: number

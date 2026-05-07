@@ -61,6 +61,8 @@ export interface AppProduct {
   status?: number
   isFeatured?: boolean
   sortNo?: number
+  viewCount?: number
+  saleCount?: number
   createdTime?: string
   updatedTime?: string
   publishedTime?: string
@@ -77,6 +79,25 @@ export interface AppProductCategory {
   isActive?: boolean
   status?: number
   children?: AppProductCategory[]
+}
+
+export interface AppProductSkuTarget {
+  id: string
+  productSkuId?: string
+  targetType?: string
+  targetId?: string
+  quantity?: number
+  validityDays?: number
+  accessLevel?: string
+  conditions?: Record<string, unknown>
+  metadata?: Record<string, unknown>
+  status?: number
+  createdTime?: string
+  updatedTime?: string
+}
+
+export interface AppProductDetail extends AppProduct {
+  skuTargets?: AppProductSkuTarget[]
 }
 
 export function normalizeAppProduct(value: unknown): AppProduct | null {
@@ -109,6 +130,8 @@ export function normalizeAppProduct(value: unknown): AppProduct | null {
     status: typeof value.status === 'number' ? value.status : undefined,
     isFeatured: typeof value.isFeatured === 'boolean' ? value.isFeatured : undefined,
     sortNo: typeof value.sortNo === 'number' ? value.sortNo : undefined,
+    viewCount: typeof value.viewCount === 'number' ? value.viewCount : undefined,
+    saleCount: typeof value.saleCount === 'number' ? value.saleCount : undefined,
     createdTime: toOptionalString(value.createdTime),
     updatedTime: toOptionalString(value.updatedTime),
     publishedTime: toOptionalString(value.publishedTime),
@@ -123,6 +146,60 @@ export function normalizeAppProducts(value: unknown): AppProduct[] {
   return value
     .map(item => normalizeAppProduct(item))
     .filter((item): item is AppProduct => !!item)
+}
+
+export function normalizeAppProductSkuTarget(value: unknown): AppProductSkuTarget | null {
+  if (!isRecord(value)) {
+    return null
+  }
+
+  const id = toOptionalString(value.id)
+  if (!id) {
+    return null
+  }
+
+  return {
+    id,
+    productSkuId: toOptionalString(value.productSkuId),
+    targetType: toOptionalString(value.targetType),
+    targetId: toOptionalString(value.targetId),
+    quantity: typeof value.quantity === 'number' ? value.quantity : undefined,
+    validityDays: typeof value.validityDays === 'number' ? value.validityDays : undefined,
+    accessLevel: toOptionalString(value.accessLevel),
+    conditions: toRecord(value.conditions),
+    metadata: toRecord(value.metadata),
+    status: typeof value.status === 'number' ? value.status : undefined,
+    createdTime: toOptionalString(value.createdTime),
+    updatedTime: toOptionalString(value.updatedTime),
+  }
+}
+
+export function normalizeAppProductSkuTargets(value: unknown): AppProductSkuTarget[] {
+  if (!Array.isArray(value)) {
+    return []
+  }
+
+  return value
+    .map(item => normalizeAppProductSkuTarget(item))
+    .filter((item): item is AppProductSkuTarget => !!item)
+}
+
+export function normalizeAppProductDetail(value: unknown): AppProductDetail | null {
+  if (!isRecord(value)) {
+    return null
+  }
+
+  const product = normalizeAppProduct(value)
+  if (!product) {
+    return null
+  }
+
+  const skuTargets = normalizeAppProductSkuTargets(value.skuTargets)
+
+  return {
+    ...product,
+    skuTargets: skuTargets.length ? skuTargets : undefined,
+  }
 }
 
 export function normalizeAppProductCategory(value: unknown): AppProductCategory | null {
@@ -183,12 +260,45 @@ export async function fetchAppProductsByType(api: ApiInvoker, productType: strin
   return normalizeAppProducts(assertSuccess(response, '获取产品列表失败'))
 }
 
+export async function fetchAllAppProducts(api: ApiInvoker): Promise<AppProduct[]> {
+  const productTypes = await fetchAppProductTypes(api)
+  const typeKeys = Object.keys(productTypes)
+  if (!typeKeys.length) {
+    return []
+  }
+
+  const productLists = await Promise.all(typeKeys.map(productType => fetchAppProductsByType(api, productType)))
+  const deduped = new Map<string, AppProduct>()
+  for (const product of productLists.flat()) {
+    deduped.set(product.id, product)
+  }
+
+  return [...deduped.values()].sort((left, right) => {
+    const leftSort = left.sortNo ?? Number.MAX_SAFE_INTEGER
+    const rightSort = right.sortNo ?? Number.MAX_SAFE_INTEGER
+    if (leftSort !== rightSort) {
+      return leftSort - rightSort
+    }
+
+    return left.title.localeCompare(right.title, 'zh-CN')
+  })
+}
+
 export async function fetchAppProductById(api: ApiInvoker, id: string): Promise<AppProduct | null> {
+  const detail = await fetchAppProductDetail(api, id)
+  if (!detail) {
+    return null
+  }
+
+  return detail
+}
+
+export async function fetchAppProductDetail(api: ApiInvoker, id: string): Promise<AppProductDetail | null> {
   const response = await api<GlobalResult<unknown>>(`/api/v1/products/${id}`, {
     method: 'GET',
   })
 
-  return normalizeAppProduct(assertSuccess(response, '获取产品详情失败'))
+  return normalizeAppProductDetail(assertSuccess(response, '获取产品详情失败'))
 }
 
 export async function fetchAppProductCategories(api: ApiInvoker): Promise<AppProductCategory[]> {

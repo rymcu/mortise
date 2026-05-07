@@ -33,7 +33,7 @@ export function useAdminCrud(basePath: string) {
 
   /** 更新 */
   async function update<T = unknown>(
-    id: string | number,
+    id: string,
     data: Record<string, unknown>
   ): Promise<T | null> {
     loading.value = true
@@ -49,7 +49,7 @@ export function useAdminCrud(basePath: string) {
   }
 
   /** 删除 */
-  async function remove(id: string | number): Promise<boolean> {
+  async function remove(id: string): Promise<boolean> {
     loading.value = true
     errorMessage.value = ''
     try {
@@ -64,7 +64,7 @@ export function useAdminCrud(basePath: string) {
   }
 
   /** 批量删除 */
-  async function batchRemove(ids: (string | number)[]): Promise<boolean> {
+  async function batchRemove(ids: string[]): Promise<boolean> {
     loading.value = true
     errorMessage.value = ''
     try {

@@ -27,7 +27,7 @@ const schema = z.object({
   href: z.string().optional(),
   menuType: z.coerce.number().default(0),
   status: z.coerce.number().default(1),
-  parentId: z.union([z.string(), z.number()]).optional(),
+  parentId: z.string().optional(),
   sortNo: z.coerce.number().default(0)
 })
 
@@ -49,13 +49,13 @@ const state = reactive({
   href: '',
   menuType: 0,
   status: 1,
-  parentId: undefined as string | number | undefined,
+  parentId: undefined as string | undefined,
   sortNo: 0,
   ...props.data
 })
 
 // 加载菜单树作为父级菜单选项
-const parentMenuItems = ref<Array<{ label: string; value: string | number }>>(
+const parentMenuItems = ref<Array<{ label: string; value: string }>>(
   []
 )
 const noneParentValue = '__none__'
@@ -81,7 +81,7 @@ async function loadMenuTree() {
       $api,
       '/api/v1/admin/menus/tree'
     )
-    const items: Array<{ label: string; value: string | number }> = [
+    const items: Array<{ label: string; value: string }> = [
       { label: '根菜单', value: '0' }
     ]
     function flatten(nodes: Array<Record<string, unknown>>, depth = 0) {
@@ -89,7 +89,7 @@ async function loadMenuTree() {
         const prefix = depth > 0 ? '　'.repeat(depth) + '└ ' : ''
         items.push({
           label: `${prefix}${node.label}`,
-          value: node.id as string | number
+          value: String(node.id)
         })
         if (Array.isArray(node.children) && node.children.length > 0) {
           flatten(node.children as Array<Record<string, unknown>>, depth + 1)

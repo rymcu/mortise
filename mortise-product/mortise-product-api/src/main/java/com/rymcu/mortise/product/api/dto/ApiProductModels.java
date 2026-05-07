@@ -53,5 +53,6 @@ public final class ApiProductModels {
         private Integer quantity;
         private Integer validityDays;
         private String accessLevel;
+        private Map<String, Object> metadata;
     }
 }

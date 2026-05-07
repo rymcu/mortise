@@ -2,7 +2,7 @@
 import { usePagedAdminResource } from '~/composables/usePagedAdminResource'
 
 interface UserInfo {
-  id: number
+  id: string
   account?: string
   nickname?: string
   email?: string

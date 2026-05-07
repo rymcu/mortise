@@ -47,7 +47,7 @@ const defaultColumns = [{
   }]
 }]
 
-const { footerColumns, footerCopyright, footerLinks } = useSiteConfig()
+const { footerColumns, footerCopyrightHtml, footerLinks } = useSiteConfig()
 
 const columns = computed(() => footerColumns.value.length ? footerColumns.value : defaultColumns)
 </script>
@@ -75,7 +75,8 @@ const columns = computed(() => footerColumns.value.length ? footerColumns.value 
 
     <template #left>
       <div class="space-y-1 text-sm text-muted">
-        <p>{{ footerCopyright }}</p>
+        <!-- eslint-disable-next-line vue/no-v-html -->
+        <div class="leading-6 [&_a]:text-primary [&_a]:underline-offset-4 hover:[&_a]:underline" v-html="footerCopyrightHtml" />
         <div v-if="footerLinks.length" class="flex flex-wrap items-center gap-x-3 gap-y-1">
           <template v-for="item in footerLinks" :key="item.label">
             <NuxtLink

@@ -15,7 +15,7 @@ const emit = defineEmits<{
 const { remove, loading, errorMessage } = useAdminCrud('/api/v1/admin/roles')
 
 async function handleConfirm() {
-  const ok = await remove(props.role.id as number)
+  const ok = await remove(String(props.role.id))
   if (ok) {
     open.value = false
     emit('success')

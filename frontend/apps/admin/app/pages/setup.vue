@@ -13,8 +13,7 @@ useSeoMeta({
 })
 
 const { checkInitStatus, initializeSystem, getInitProgress } = useSystemInit()
-
-const router = useRouter()
+const initializedState = useState<boolean | null>('system-initialized', () => null)
 
 // 步骤状态
 const currentStep = ref(0)
@@ -26,6 +25,7 @@ const isInitializing = ref(false)
 const showAdminPassword = ref(false)
 const showAdminPasswordConfirm = ref(false)
 let progressTimer: ReturnType<typeof setInterval> | null = null
+let redirectTimer: ReturnType<typeof setTimeout> | null = null
 
 // 检查是否已初始化
 const initialized = ref(false)
@@ -130,8 +130,16 @@ function stopProgressPolling() {
   }
 }
 
+function stopRedirectTimer() {
+  if (redirectTimer) {
+    clearTimeout(redirectTimer)
+    redirectTimer = null
+  }
+}
+
 onUnmounted(() => {
   stopProgressPolling()
+  stopRedirectTimer()
 })
 
 async function doInitialize() {
@@ -154,10 +162,12 @@ async function doInitialize() {
     await initializeSystem(initInfo)
     stopProgressPolling()
     progress.value = 100
+    initialized.value = true
+    initializedState.value = true
     successMessage.value = '系统初始化成功！即将跳转到登录页面...'
 
-    setTimeout(() => {
-      router.push('/auth/login')
+    redirectTimer = setTimeout(() => {
+      void navigateTo('/auth/login', { replace: true })
     }, 2000)
   } catch (error) {
     stopProgressPolling()

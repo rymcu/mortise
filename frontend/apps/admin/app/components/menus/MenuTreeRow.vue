@@ -5,7 +5,7 @@
  */
 
 interface MenuTreeItem {
-  id: number | string
+  id: string
   label?: string
   permission?: string
   href?: string
@@ -28,13 +28,13 @@ type BadgeColor =
 const props = defineProps<{
   node: MenuTreeItem
   depth: number
-  expandedIds: Set<string | number>
+  expandedIds: Set<string>
   formatMenuType: (type?: number) => string
   menuTypeBadgeColor: (type?: number) => BadgeColor
 }>()
 
 const emit = defineEmits<{
-  (e: 'toggle-expand', id: string | number): void
+  (e: 'toggle-expand', id: string): void
   (e: 'edit' | 'delete', row: MenuTreeItem): void
 }>()
 

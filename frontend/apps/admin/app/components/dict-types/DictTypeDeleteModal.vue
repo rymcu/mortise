@@ -17,7 +17,7 @@ const { remove, loading, errorMessage } = useAdminCrud(
 )
 
 async function handleConfirm() {
-  const ok = await remove(props.dictType.id as number)
+  const ok = await remove(String(props.dictType.id))
   if (ok) {
     open.value = false
     emit('success')

@@ -26,7 +26,7 @@ interface AuthRuntimeConfigLike {
 }
 
 export interface WebLoginResponse {
-  memberId?: number
+  memberId?: string
   username?: string
   nickname?: string
   avatarUrl?: string
@@ -35,6 +35,15 @@ export interface WebLoginResponse {
   tokenType?: string
   expiresIn?: number
   refreshExpiresIn?: number
+}
+
+export interface WebAuthSessionPatch {
+  token?: string | null
+  refreshToken?: string | null
+  tokenType?: string | null
+  expiresIn?: number | null
+  refreshExpiresIn?: number | null
+  user?: Record<string, unknown> | null
 }
 
 export interface FetchCurrentUserOptions {
@@ -131,6 +140,9 @@ export function createWebAuthStore(options: CreateWebAuthStoreOptions) {
 
     const isAuthenticated = computed(() => Boolean(tokenCookie.value))
     const accessToken = computed(() => tokenCookie.value ?? '')
+    const refreshToken = computed(() => refreshTokenCookie.value ?? '')
+    const tokenType = computed(() => tokenTypeCookie.value ?? 'Bearer')
+    const currentUser = computed(() => userCookie.value ?? null)
     const authHeader = computed(() => {
       if (!tokenCookie.value) return ''
       return `${tokenTypeCookie.value ?? 'Bearer'} ${tokenCookie.value}`
@@ -168,10 +180,25 @@ export function createWebAuthStore(options: CreateWebAuthStoreOptions) {
       tokenTypeCookie.value = payload.tokenType ?? 'Bearer'
       userCookie.value = {
         ...(userCookie.value ?? {}),
-        memberId: payload.memberId,
+        memberId: payload.memberId == null ? undefined : String(payload.memberId),
         username: payload.username,
         nickname: payload.nickname,
         avatarUrl: payload.avatarUrl,
+      }
+    }
+
+    function patchSession(patch: WebAuthSessionPatch) {
+      if ('token' in patch) {
+        tokenCookie.value = patch.token ?? null
+      }
+      if ('refreshToken' in patch) {
+        refreshTokenCookie.value = patch.refreshToken ?? null
+      }
+      if ('tokenType' in patch) {
+        tokenTypeCookie.value = patch.tokenType ?? 'Bearer'
+      }
+      if ('user' in patch) {
+        userCookie.value = patch.user ?? null
       }
     }
 
@@ -293,6 +320,9 @@ export function createWebAuthStore(options: CreateWebAuthStoreOptions) {
       refreshPromise,
       isAuthenticated,
       accessToken,
+      refreshToken,
+      tokenType,
+      currentUser,
       authHeader,
       restore,
       persist,
@@ -303,6 +333,7 @@ export function createWebAuthStore(options: CreateWebAuthStoreOptions) {
       fetchCurrentUser,
       restoreSession,
       setSessionUser,
+      patchSession,
       logout,
       buildClient,
     }

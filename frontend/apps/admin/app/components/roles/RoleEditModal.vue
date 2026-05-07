@@ -28,7 +28,7 @@ async function handleConfirm() {
   const valid = await formRef.value?.validate()
   if (!valid) return
 
-  const ok = await update(props.role.id as number, formData.value)
+  const ok = await update(String(props.role.id), formData.value)
   if (ok) {
     open.value = false
     emit('success')

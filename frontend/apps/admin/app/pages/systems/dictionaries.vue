@@ -7,13 +7,13 @@ import { fetchAdminPage } from '@mortise/core-sdk'
 import { usePagedAdminResource } from '~/composables/usePagedAdminResource'
 
 interface DictTypeOption {
-  id: number
+  id: string
   typeCode: string
   label: string
 }
 
 interface DictInfo {
-  id: number
+  id: string
   dictTypeCode?: string
   label?: string
   value?: string

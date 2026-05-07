@@ -4,7 +4,7 @@
 
 /** 咨询会话信息（创建成功后保存到本地） */
 export interface SiteSession {
-  id: number
+  id: string
   status: number
 }
 
@@ -23,19 +23,19 @@ export interface SiteChatMessage {
 /** 发起会话的上下文（用于标识用户在咨询哪个产品/服务） */
 export interface ConsultContext {
   contextType?: string
-  contextId?: number
+  contextId?: string
   /** 前端展示用的预设问题 */
   subject?: string
 }
 
 /** 历史会话列表项 */
 export interface SiteSessionItem {
-  id: number
+  id: string
   status: number
   lastMessage: string | null
   updatedTime: string
   contextType: string | null
-  contextId: number | null
+  contextId: string | null
 }
 
 /** 会话状态常量 */

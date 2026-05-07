@@ -1,5 +1,6 @@
 package com.rymcu.mortise.system.service.impl;
 
+import com.rymcu.mortise.common.enumerate.Status;
 import com.rymcu.mortise.common.exception.BusinessException;
 import com.rymcu.mortise.common.model.Avatar;
 import com.rymcu.mortise.common.util.Utils;
@@ -134,6 +135,7 @@ public class UserServiceImpl implements UserService, UserCommandService {
         user.setPassword(passwordEncoder.encode(code));
         user.setAvatar(Objects.isNull(userInfo.getAvatar()) ? DEFAULT_AVATAR : userInfo.getAvatar().getSrc());
         user.setAccount(nextAccount());
+        user.setStatus(Status.ENABLED.getCode());
         boolean result = userRepository.save(user);
         if (result) {
             systemCacheService.cacheUserCount(userRepository.count());

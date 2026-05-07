@@ -9,7 +9,7 @@ const { loading, remove } = useAdminCrud('/api/v1/admin/users')
 const open = ref(false)
 
 async function onConfirm() {
-  const ok = await remove(props.user.id as number)
+  const ok = await remove(String(props.user.id))
   if (ok) {
     open.value = false
     emit('success')

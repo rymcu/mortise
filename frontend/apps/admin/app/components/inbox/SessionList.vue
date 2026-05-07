@@ -10,7 +10,7 @@ const props = defineProps<{
   sessions: ChatSession[]
   sessionsLoading: boolean
   sessionsError: string
-  selectedSessionId: number | null
+  selectedSessionId: string | null
 }>()
 
 const emit = defineEmits<{

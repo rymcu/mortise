@@ -41,7 +41,7 @@ function mapRole(role: string): 'user' | 'assistant' {
 const sessions= ref<ChatSession[]>([])
 const sessionsLoading = ref(false)
 const sessionsError = ref('')
-const selectedSessionId = ref<number | null>(null)
+const selectedSessionId = ref<string | null>(null)
 
 const selectedSession = computed(
   () => sessions.value.find((s) => s.id === selectedSessionId.value) ?? null
@@ -57,13 +57,13 @@ async function loadSessions() {
     )
     if (res.code === 200) {
       sessions.value = (res.data?.records ?? []).map((s) => ({
-        id: s.id,
-        userId: s.userId,
+        id: String(s.id),
+        userId: String(s.userId),
         userName: s.userName,
         userAvatar: s.userAvatar,
         status: s.status as 0 | 1 | 2,
         contextType: s.contextType,
-        contextId: s.contextId,
+        contextId: s.contextId == null ? null : String(s.contextId),
         contextTitle: s.contextTitle,
         lastMessage: s.lastMessage,
         unreadCount: s.unreadCount,
@@ -93,7 +93,7 @@ async function selectSession(session: ChatSession) {
 
 // ── 消息记录 ──────────────────────────────────────────────────────────────────
 
-const messagesMap = ref<Record<number, InboxChatMessage[]>>({})
+const messagesMap = ref<Record<string, InboxChatMessage[]>>({})
 const messagesLoading = ref(false)
 
 const currentMessages = computed<InboxChatMessage[]>(() =>
@@ -102,7 +102,7 @@ const currentMessages = computed<InboxChatMessage[]>(() =>
     : []
 )
 
-async function loadMessages(sessionId: number) {
+async function loadMessages(sessionId: string) {
   messagesLoading.value = true
   try {
     const res = await $api<GlobalResult<PageResult<BackendMessage>>>(
@@ -112,11 +112,11 @@ async function loadMessages(sessionId: number) {
     if (res.code === 200) {
       messagesMap.value[sessionId] = (res.data?.records ?? []).map((m) => ({
         id: String(m.id),
-        sessionId: m.sessionId,
+        sessionId: String(m.sessionId),
         role: mapRole(m.role),
         parts: [{ type: 'text' as const, text: m.content }],
         time: formatTime(m.createdTime),
-        senderId: m.senderId
+        senderId: m.senderId == null ? null : String(m.senderId)
       }))
     }
   } catch {
@@ -174,11 +174,11 @@ async function sendReply() {
     if (res.code === 200 && res.data) {
       const msg: InboxChatMessage = {
         id: String(res.data.id),
-        sessionId: res.data.sessionId,
+        sessionId: String(res.data.sessionId),
         role: 'assistant',
         parts: [{ type: 'text', text: res.data.content }],
         time: formatTime(res.data.createdTime),
-        senderId: res.data.senderId
+        senderId: res.data.senderId == null ? null : String(res.data.senderId)
       }
       if (!messagesMap.value[currentSessionId]) {
         messagesMap.value[currentSessionId] = []

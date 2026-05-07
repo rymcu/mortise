@@ -6,7 +6,7 @@
 import { fetchAdminGet } from '@mortise/core-sdk'
 
 interface MenuTreeItem {
-  id: number | string
+  id: string
   label?: string
   permission?: string
   href?: string
@@ -14,7 +14,7 @@ interface MenuTreeItem {
   menuType?: number
   sortNo?: number
   status?: number
-  parentId?: number | string
+  parentId?: string
   children?: MenuTreeItem[]
 }
 
@@ -23,7 +23,7 @@ const { $api } = useNuxtApp()
 const loading = ref(false)
 const errorMessage = ref('')
 const menuTree = ref<MenuTreeItem[]>([])
-const expandedIds = ref<Set<string | number>>(new Set())
+const expandedIds = ref<Set<string>>(new Set())
 const keyword = ref('')
 
 async function loadMenus() {
@@ -36,11 +36,11 @@ async function loadMenus() {
     )
     menuTree.value = tree || []
     // 默认展开所有含子节点的节点
-    const ids = new Set<string | number>()
+    const ids = new Set<string>()
     const walk = (nodes: MenuTreeItem[]) => {
       for (const n of nodes) {
         if (n.children?.length) {
-          ids.add(n.id)
+          ids.add(String(n.id))
           walk(n.children)
         }
       }
@@ -94,7 +94,7 @@ const filteredTree = computed(() => {
   return filterNodes(menuTree.value)
 })
 
-function toggleExpand(id: string | number) {
+function toggleExpand(id: string) {
   const s = new Set(expandedIds.value)
   if (s.has(id)) {
     s.delete(id)
@@ -105,11 +105,11 @@ function toggleExpand(id: string | number) {
 }
 
 function expandAll() {
-  const ids = new Set<string | number>()
+  const ids = new Set<string>()
   const walk = (nodes: MenuTreeItem[]) => {
     for (const n of nodes) {
       if (n.children?.length) {
-        ids.add(n.id)
+        ids.add(String(n.id))
         walk(n.children)
       }
     }

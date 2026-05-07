@@ -2,7 +2,7 @@
 import { usePagedAdminResource } from '~/composables/usePagedAdminResource'
 
 interface MemberInfo {
-  id: number
+  id: string
   username?: string
   email?: string
   phone?: string

@@ -20,7 +20,7 @@ async function onSubmit() {
   const valid = await formRef.value?.validate()
   if (!valid) return
 
-  const result = await update(props.user.id as number, formRef.value!.state)
+  const result = await update(String(props.user.id), formRef.value!.state)
   if (result !== null) {
     open.value = false
     emit('success')

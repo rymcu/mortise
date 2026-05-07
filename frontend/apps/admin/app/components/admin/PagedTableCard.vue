@@ -1,31 +1,11 @@
 <script setup lang="ts">
-interface ColumnDef {
-  key: string
-  label: string
-  align?: 'left' | 'center' | 'right'
-}
+import type {
+  AdminPagedTableCardEmits,
+  AdminPagedTableCardProps
+} from '~/types/resource'
 
 const props = withDefaults(
-  defineProps<{
-    columns: ColumnDef[]
-    rows: Record<string, unknown>[]
-    loading: boolean
-    errorMessage?: string
-    total: number
-    pageNum: number
-    pageSize: number
-    totalPage?: number
-    hasNext?: boolean
-    hasPrevious?: boolean
-    keyword: string
-    showSearch?: boolean
-    searchPlaceholder?: string
-    emptyText?: string
-    /** 是否显示操作列 */
-    showActions?: boolean
-    /** 操作列标题 */
-    actionsLabel?: string
-  }>(),
+  defineProps<AdminPagedTableCardProps>(),
   {
     errorMessage: '',
     showSearch: true,
@@ -36,11 +16,7 @@ const props = withDefaults(
   }
 )
 
-const emit = defineEmits<{
-  (e: 'update:keyword', value: string): void
-  (e: 'update:pageNum', value: number): void
-  (e: 'refresh' | 'searchEnter'): void
-}>()
+const emit = defineEmits<AdminPagedTableCardEmits>()
 
 /** 最终列 = 原始列 + (可选)操作列 */
 const allColumns = computed(() => {

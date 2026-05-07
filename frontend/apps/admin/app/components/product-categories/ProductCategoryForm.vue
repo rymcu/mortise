@@ -34,7 +34,7 @@ const state = reactive({
   name: '',
   slug: '',
   description: '',
-  parentId: null as number | null,
+  parentId: null as string | null,
   sortNo: 0,
   status: 1,
   ...props.data

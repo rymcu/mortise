@@ -5,6 +5,7 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 /**
  * Mortise 主应用程序
@@ -27,6 +28,7 @@ import org.springframework.scheduling.annotation.EnableAsync;
  * @author ronger
  */
 @EnableAsync
+@EnableScheduling
 @EnableFileStorage
 @SpringBootApplication
 @MapperScan({"com.rymcu.mortise.**.mapper"})
