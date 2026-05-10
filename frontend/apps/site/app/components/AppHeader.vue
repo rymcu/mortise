@@ -39,7 +39,8 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => [
     }
   ],
   [
-    { label: '个人中心', icon: 'i-lucide-user', to: '/profile' }
+    { label: '个人中心', icon: 'i-lucide-user', to: '/profile' },
+    { label: '账号安全', icon: 'i-lucide-shield-check', to: '/security' }
   ],
   [
     {

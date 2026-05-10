@@ -59,9 +59,6 @@ async function onSubmit(event: FormSubmitEvent<Schema>) {
   errorMessage.value = ''
   try {
     await auth.login(event.data.account, event.data.password)
-    if (route.query.returnToChat === '1') {
-      useChatWidget().open()
-    }
     const redirect = typeof route.query.redirect === 'string' && route.query.redirect
       ? route.query.redirect
       : '/'
