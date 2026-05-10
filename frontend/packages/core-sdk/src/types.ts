@@ -78,6 +78,38 @@ export interface TokenRefreshResponse {
   refreshExpiresIn?: number
 }
 
+export interface DesktopAuthorizeResponse {
+  redirectUri?: string
+}
+
+export interface DesktopTokenResponse {
+  memberId?: string | number | null
+  username?: string | null
+  nickname?: string | null
+  avatarUrl?: string | null
+  token?: string
+  refreshToken?: string
+  tokenType?: string
+  accessTokenExpiryMs?: number
+  refreshTokenExpiryMs?: number
+  sessionId?: string | number | null
+  clientId?: string | null
+}
+
+export type MemberClientSessionStatus = 'active' | 'revoked' | string
+
+export interface MemberClientSession {
+  id: string
+  clientId?: string | null
+  clientName?: string | null
+  deviceName?: string | null
+  status: MemberClientSessionStatus
+  lastActiveAt?: string | null
+  revokedAt?: string | null
+  createdTime?: string | null
+  current?: boolean | null
+}
+
 export interface WeChatSilentOpenIdResponse {
   openId?: string
   isBound?: boolean

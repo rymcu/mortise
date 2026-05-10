@@ -28,7 +28,10 @@ const userMenuItems = computed<DropdownMenuItem[][]>(() => [
       avatar: { src: avatarSrc.value, alt: displayName.value }
     }
   ],
-  [{ label: '个人中心', icon: 'i-lucide-user', to: '/profile' }],
+  [
+    { label: '个人中心', icon: 'i-lucide-user', to: '/profile' },
+    { label: '账号安全', icon: 'i-lucide-shield-check', to: '/security' }
+  ],
   [
     {
       label: '退出登录',

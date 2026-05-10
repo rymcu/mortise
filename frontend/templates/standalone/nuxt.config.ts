@@ -60,7 +60,8 @@ export default defineNuxtConfig({
         refreshPath: '/api/v1/app/auth/refresh-token',
         callbackPath: '/api/v1/app/oauth2/callback',
         mePath: '/api/v1/app/auth/profile',
-        oauthAuthUrlPath: '/api/v1/app/oauth2/auth-url'
+        oauthAuthUrlPath: '/api/v1/app/oauth2/auth-url',
+        desktopAuthorizePath: '/auth/desktop/authorize'
       }
     }
   },

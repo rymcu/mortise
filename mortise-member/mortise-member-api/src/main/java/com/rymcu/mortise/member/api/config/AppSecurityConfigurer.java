@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
  * <p>
  * 路径规则:
  * - /api/v1/app/auth/** : 公开接口 (注册、登录、发送验证码等)
+ * - /api/v1/app/desktop/oauth/token : 桌面端授权码换 token 公开接口
  * - /api/v1/app/** : 需要会员认证 (ROLE_MEMBER)
  *
  * @author ronger
@@ -29,7 +30,9 @@ public class AppSecurityConfigurer implements SecurityConfigurer {
             "/api/v1/app/auth/refresh-token-by-jwt",
             "/api/v1/app/auth/send-code",
             "/api/v1/app/auth/reset-password",
-            "/api/v1/app/auth/verify-code"
+            "/api/v1/app/auth/verify-code",
+            "/api/v1/app/desktop/oauth/token",
+            "/api/v1/app/desktop/oauth/logout"
     };
 
     /**

@@ -1,6 +1,8 @@
 import type { ApiInvoker } from './admin'
 import type {
   GlobalResult,
+  DesktopAuthorizeResponse,
+  MemberClientSession,
   OAuth2AuthUrlResponse,
   OAuth2LoginResponse,
   OAuth2QRCodeResponse,
@@ -311,6 +313,55 @@ export async function fetchWechatSilentOpenId(
   )
 
   return normalizeWeChatSilentOpenIdResponse(assertSuccess(response, '获取微信 openId 失败'))
+}
+
+export async function authorizeDesktopClient(
+  api: ApiInvoker,
+  query: Record<string, unknown>,
+): Promise<DesktopAuthorizeResponse | null> {
+  const response = await api<GlobalResult<DesktopAuthorizeResponse>>(
+    '/api/v1/app/desktop/oauth/authorize',
+    {
+      method: 'GET',
+      query,
+    },
+  )
+
+  return assertSuccess(response, '授权 Rodak 失败') ?? null
+}
+
+function normalizeMemberClientSession(value: MemberClientSession): MemberClientSession {
+  return {
+    ...value,
+    id: String(value.id),
+  }
+}
+
+export async function fetchMemberClientSessions(
+  api: ApiInvoker,
+): Promise<MemberClientSession[]> {
+  const response = await api<GlobalResult<MemberClientSession[]>>(
+    '/api/v1/app/security/client-sessions',
+    {
+      method: 'GET',
+    },
+  )
+
+  return (assertSuccess(response, '获取设备会话失败') ?? []).map(normalizeMemberClientSession)
+}
+
+export async function revokeMemberClientSession(
+  api: ApiInvoker,
+  sessionId: string,
+): Promise<boolean> {
+  const response = await api<GlobalResult<boolean>>(
+    `/api/v1/app/security/client-sessions/${encodeURIComponent(sessionId)}`,
+    {
+      method: 'DELETE',
+    },
+  )
+
+  return Boolean(assertSuccess(response, '撤销设备会话失败'))
 }
 
 export async function uploadAppFile<T extends Record<string, unknown>>(
