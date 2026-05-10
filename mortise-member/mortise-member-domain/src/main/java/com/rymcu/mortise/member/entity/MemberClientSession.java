@@ -33,6 +33,8 @@ public class MemberClientSession implements Serializable {
 
     private String deviceFingerprintHash;
 
+    private String scope;
+
     private String status;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

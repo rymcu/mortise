@@ -8,6 +8,7 @@ import com.rymcu.mortise.member.entity.MemberClientSession;
 import com.rymcu.mortise.member.mapper.MemberClientSessionMapper;
 import com.rymcu.mortise.member.service.MemberClientSessionService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,13 +34,15 @@ public class MemberClientSessionServiceImpl
     public MemberClientSession createSession(Long memberId,
                                              String clientId,
                                              String deviceName,
-                                             String deviceFingerprintHash) {
+                                             String deviceFingerprintHash,
+                                             String scope) {
         LocalDateTime now = LocalDateTime.now();
         MemberClientSession session = new MemberClientSession();
         session.setMemberId(memberId);
         session.setClientId(clientId);
         session.setDeviceName(deviceName);
         session.setDeviceFingerprintHash(deviceFingerprintHash);
+        session.setScope(StringUtils.defaultIfBlank(scope, DesktopOAuthConstants.DEFAULT_SCOPE));
         session.setStatus(DesktopOAuthConstants.SESSION_STATUS_ACTIVE);
         session.setLastActiveAt(now);
         session.setCreatedTime(now);

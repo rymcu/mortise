@@ -19,12 +19,14 @@ public interface MemberClientSessionService extends IService<MemberClientSession
      * @param clientId              客户端ID
      * @param deviceName            设备名称
      * @param deviceFingerprintHash 设备指纹哈希
+     * @param scope                 授权作用域
      * @return 会话
      */
     MemberClientSession createSession(Long memberId,
                                       String clientId,
                                       String deviceName,
-                                      String deviceFingerprintHash);
+                                      String deviceFingerprintHash,
+                                      String scope);
 
     /**
      * 标记会话活跃。

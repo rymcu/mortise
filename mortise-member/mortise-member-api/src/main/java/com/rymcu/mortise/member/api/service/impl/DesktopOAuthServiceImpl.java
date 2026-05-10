@@ -205,7 +205,8 @@ public class DesktopOAuthServiceImpl implements DesktopOAuthService {
                 member.getId(),
                 payload.clientId(),
                 payload.deviceName(),
-                payload.deviceFingerprintHash()
+                payload.deviceFingerprintHash(),
+                payload.scope()
         );
 
         return buildTokenResponse(member, session, payload.scope(), null);
@@ -232,7 +233,7 @@ public class DesktopOAuthServiceImpl implements DesktopOAuthService {
         }
 
         Member member = getActiveMember(memberId);
-        return buildTokenResponse(member, session, DesktopOAuthConstants.DEFAULT_SCOPE, request.refreshToken());
+        return buildTokenResponse(member, session, session.getScope(), request.refreshToken());
     }
 
     private DesktopTokenResponse buildTokenResponse(Member member,

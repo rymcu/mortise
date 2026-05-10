@@ -13,10 +13,12 @@ import com.rymcu.mortise.member.api.model.DesktopTokenRequest;
 import com.rymcu.mortise.member.api.model.DesktopTokenResponse;
 import com.rymcu.mortise.member.api.service.ApiMemberService;
 import com.rymcu.mortise.member.constant.DesktopOAuthConstants;
+import com.rymcu.mortise.member.constant.MemberJwtConstants;
 import com.rymcu.mortise.member.entity.Member;
 import com.rymcu.mortise.member.entity.MemberClientSession;
 import com.rymcu.mortise.member.service.MemberClientSessionService;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
@@ -132,13 +134,19 @@ class DesktopOAuthServiceImplTest {
                 DesktopOAuthConstants.RODAK_CLIENT_ID,
                 "http://127.0.0.1:49152/auth/callback",
                 challengeOf("verifier"),
-                "profile",
+                "profile offline_access",
                 "Dev PC",
                 "device-hash",
                 LocalDateTime.now().plusMinutes(5)
         )));
         when(fixture.memberService.getMemberById(5L)).thenReturn(member);
-        when(fixture.clientSessionService.createSession(5L, DesktopOAuthConstants.RODAK_CLIENT_ID, "Dev PC", "device-hash"))
+        when(fixture.clientSessionService.createSession(
+                5L,
+                DesktopOAuthConstants.RODAK_CLIENT_ID,
+                "Dev PC",
+                "device-hash",
+                "profile offline_access"
+        ))
                 .thenReturn(session);
         when(fixture.jwtTokenUtil.generateToken(eq("ronger"), anyMap())).thenReturn("jwt-token");
         when(fixture.jwtTokenUtil.getTokenPrefix()).thenReturn("Bearer ");
@@ -169,6 +177,7 @@ class DesktopOAuthServiceImplTest {
         TestFixture fixture = new TestFixture();
         Member member = member();
         MemberClientSession session = session();
+        session.setScope("profile offline_access");
         when(fixture.authCacheService.getMemberIdByRefreshToken(any(String.class))).thenReturn(5L);
         when(fixture.cacheService.get(eq(DesktopOAuthConstants.REFRESH_SESSION_CACHE), any(String.class), eq(Long.class)))
                 .thenReturn(99L);
@@ -186,6 +195,9 @@ class DesktopOAuthServiceImplTest {
         ));
 
         assertEquals("new-jwt", response.token());
+        ArgumentCaptor<Map<String, Object>> claimsCaptor = ArgumentCaptor.forClass(Map.class);
+        verify(fixture.jwtTokenUtil).generateToken(eq("ronger"), claimsCaptor.capture());
+        assertEquals("profile offline_access", claimsCaptor.getValue().get(MemberJwtConstants.CLAIM_SCOPE));
         verify(fixture.authCacheService).removeMemberRefreshToken(any(String.class));
         verify(fixture.authCacheService).storeMemberRefreshToken(any(String.class), eq(5L));
     }
@@ -250,6 +262,7 @@ class DesktopOAuthServiceImplTest {
         session.setId(99L);
         session.setMemberId(5L);
         session.setClientId(DesktopOAuthConstants.RODAK_CLIENT_ID);
+        session.setScope(DesktopOAuthConstants.DEFAULT_SCOPE);
         session.setStatus(DesktopOAuthConstants.SESSION_STATUS_ACTIVE);
         return session;
     }
