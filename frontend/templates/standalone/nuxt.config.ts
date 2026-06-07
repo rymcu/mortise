@@ -32,7 +32,7 @@ const routePrefixes = layerEntries
 export default defineNuxtConfig({
   extends: layers,
 
-  modules: ['@nuxt/eslint', '@nuxt/ui', '@pinia/nuxt', '@nuxt/content', '@nuxt/image'],
+  modules: ['@nuxt/eslint', '@nuxt/ui', '@pinia/nuxt', '@nuxt/content', '@nuxt/image', '@comark/nuxt'],
 
   ssr: true,
 
@@ -43,7 +43,34 @@ export default defineNuxtConfig({
   mdc: {
     highlight: {
       noApiRoute: false,
-      langs: ['diff', 'ts', 'vue', 'css', 'java', 'xml', 'yaml', 'json', 'bash', 'sql']
+      langs: [
+        'diff',
+        'ts',
+        'tsx',
+        'js',
+        'jsx',
+        'vue',
+        'html',
+        'css',
+        'scss',
+        'java',
+        'xml',
+        'yaml',
+        'json',
+        'bash',
+        'sql',
+        'md',
+        'properties',
+        'ini',
+        'dockerfile',
+        'nginx',
+        'python',
+        'go',
+        'rust',
+        'kotlin',
+        'c',
+        'cpp'
+      ]
     }
   },
 
