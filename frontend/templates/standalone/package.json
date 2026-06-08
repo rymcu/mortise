@@ -11,6 +11,7 @@
     "typecheck": "nuxt typecheck"
   },
   "dependencies": {
+    "@comark/nuxt": "^0.4.0",
     "@mortise/auth": "workspace:*",
     "@mortise/base-layer": "workspace:*",
     "@mortise/core-sdk": "workspace:*",
