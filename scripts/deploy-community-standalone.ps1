@@ -235,6 +235,8 @@ try {
             'node -e "require(''better-sqlite3'')"',
             'rm -rf /work/node_modules/better-sqlite3',
             'cp -a /tmp/sqlitefix/node_modules/better-sqlite3 /work/node_modules/',
+            'cd /work',
+            'node -e "require(''/work/node_modules/better-sqlite3'')"',
             'SQLITEFIX',
             "docker run --rm -v /opt/mortise/frontend/site/.output/server:/work -v /tmp/mortise-fix-better-sqlite3.sh:/tmp/mortise-fix-better-sqlite3.sh:ro node:22-slim bash /tmp/mortise-fix-better-sqlite3.sh '$BetterSqlite3Version' || docker run --rm -v /opt/mortise/frontend/site/.output/server:/work -v /tmp/mortise-fix-better-sqlite3.sh:/tmp/mortise-fix-better-sqlite3.sh:ro node:22-slim bash -lc ""set -e; printf 'deb https://mirrors.aliyun.com/debian bookworm main\n' >/etc/apt/sources.list; printf 'deb https://mirrors.aliyun.com/debian-security bookworm-security main\n' >>/etc/apt/sources.list; printf 'deb https://mirrors.aliyun.com/debian bookworm-updates main\n' >>/etc/apt/sources.list; timeout 180s apt-get update >/dev/null; DEBIAN_FRONTEND=noninteractive timeout 240s apt-get install -y python3 make g++ >/dev/null; bash /tmp/mortise-fix-better-sqlite3.sh '$BetterSqlite3Version'""",
             'rm -f /tmp/mortise-fix-better-sqlite3.sh'
