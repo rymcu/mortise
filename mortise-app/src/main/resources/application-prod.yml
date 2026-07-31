@@ -20,6 +20,8 @@ spring:
           max-wait: 1
           max-idle: 500
           min-idle: 0
+  rabbitmq:
+    dynamic: false
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT:5432}/${POSTGRES_DB:postgres}?currentSchema=${POSTGRES_SCHEMA:mortise}
     username: ${POSTGRES_USER}
@@ -78,6 +80,9 @@ logging:
       rymcu: info
 
 management:
+  health:
+    rabbit:
+      enabled: ${MORTISE_COMMERCE_PAYMENT_EVENTS_ENABLED:false}
   endpoints:
     web:
       exposure:
